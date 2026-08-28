@@ -24,7 +24,10 @@ from django.views import View
 from cloudinary.uploader import upload
 from django.utils import timezone
 from django.http import FileResponse
+from django.db.models.functions import Lower
 import os
+import hmac
+import hashlib
 from django.conf import settings
 import re
 from developer.models import Premium
@@ -56,6 +59,9 @@ import tempfile
 import os
 import cloudinary.uploader
 from django.conf import settings
+from django.core.files.base import ContentFile
+
+import base64
 
 
 razorpay_client = razorpay.Client(
@@ -233,6 +239,8 @@ def sitemap_view(request):
 #             return render(request, 'agent_form.html')
     
 #     return render(request, 'agent_form.html')
+
+
 from .forms import AgentRegister
 def agent_form(request):
     if request.method == 'POST':
@@ -1676,7 +1684,94 @@ class RegisterAPI(APIView):
 
         return Response(serializer.errors, status=400)
 
+# import random
+# from datetime import timedelta
 
+# from django.utils import timezone
+# from rest_framework.views import APIView
+# from rest_framework.response import Response
+# from rest_framework import status
+
+# from .models import UserCreate
+# from .serializers import RegisterSerializer
+# from .utils import send_otp_email
+
+
+# class RegisterAPI(APIView):
+
+#     def post(self, request):
+
+#         email = request.data.get("email")
+
+#         existing_user = UserCreate.objects.filter(email=email).first()
+
+#         if existing_user:
+
+#             # Already verified
+#             if existing_user.is_verified:
+#                 return Response(
+#                     {"error": "Email already registered"},
+#                     status=status.HTTP_400_BAD_REQUEST
+#                 )
+
+#             # OTP resend cooldown (30 seconds)
+#             if (
+#                 existing_user.otp_created_at
+#                 and timezone.now()
+#                 < existing_user.otp_created_at + timedelta(seconds=30)
+#             ):
+#                 return Response(
+#                     {
+#                         "error": "Please wait 30 seconds before requesting another OTP."
+#                     },
+#                     status=status.HTTP_429_TOO_MANY_REQUESTS,
+#                 )
+
+#             # OTP expired (5 minutes)
+#             if (
+#                 existing_user.otp_created_at
+#                 and timezone.now()
+#                 > existing_user.otp_created_at + timedelta(minutes=5)
+#             ):
+#                 existing_user.delete()
+
+#             else:
+#                 return Response(
+#                     {
+#                         "error": "OTP already sent. Please verify your email."
+#                     },
+#                     status=status.HTTP_400_BAD_REQUEST,
+#                 )
+
+#         serializer = RegisterSerializer(data=request.data)
+
+#         if not serializer.is_valid():
+#             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+#         user = serializer.save()
+
+#         otp = str(random.randint(100000, 999999))
+
+#         user.otp = otp
+#         user.otp_created_at = timezone.now()
+#         user.save()
+
+#         email_sent = send_otp_email(user.email, otp)
+
+#         if not email_sent:
+#             user.delete()
+#             return Response(
+#                 {"error": "Unable to send OTP email. Please try again."},
+#                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+#             )
+
+#         return Response(
+#             {
+#                 "message": "OTP sent successfully.",
+#                 "email": user.email,
+#             },
+#             status=status.HTTP_201_CREATED,
+#         )
 
 class VerifyOTPAPI(APIView):
 
@@ -4199,211 +4294,1523 @@ class AgentChangePasswordAPI(APIView):
                 status=400
             )
 
+from django.core.exceptions import ValidationError as DjangoValidationError
 
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+
+# class AgentPendingRegisterAPIView(APIView):
+
+#     authentication_classes = [UserJWTAuthentication]
+#     permission_classes = [IsAuthenticated]
+
+#     def post(self, request):
+
+#         print("====================================")
+#         print("AGENT PENDING REGISTRATION")
+#         print("====================================")
+
+#         print("AUTH USER:", request.user)
+#         print(
+#             "AUTH USER ID:",
+#             getattr(request.user, "id", None)
+#         )
+#         print(
+#             "IS AUTHENTICATED:",
+#             request.user.is_authenticated
+#         )
+
+#         if not request.user or not request.user.is_authenticated:
+
+#             return Response(
+#                 {
+#                     "status": False,
+#                     "message": "Authentication required."
+#                 },
+#                 status=status.HTTP_401_UNAUTHORIZED
+#             )
+
+#         # =================================================
+#         # COPY REQUEST DATA
+#         # =================================================
+
+#         data = request.data.copy()
+
+#         # =================================================
+#         # NORMALIZE VALUES
+#         # =================================================
+
+#         data["email"] = str(
+#             data.get("email", "")
+#         ).strip().lower()
+
+#         data["agent_type"] = str(
+#             data.get("agent_type", "")
+#         ).strip().lower()
+
+#         data["full_name"] = str(
+#             data.get("full_name", "")
+#         ).strip()
+
+#         data["phone_number"] = str(
+#             data.get("phone_number", "")
+#         ).strip()
+
+#         data["city"] = str(
+#             data.get("city", "")
+#         ).strip()
+
+#         data["pin_code"] = str(
+#             data.get("pin_code", "")
+#         ).strip()
+
+#         data["address"] = str(
+#             data.get("address", "")
+#         ).strip()
+
+#         # =================================================
+#         # DEALS FIELD
+#         # =================================================
+
+#         if "total_deals_served" in data:
+
+#             data["deals_closed"] = data.get(
+#                 "total_deals_served"
+#             )
+
+#             data.pop(
+#                 "total_deals_served",
+#                 None
+#             )
+
+#         # =================================================
+#         # NEVER ACCEPT submitted_by FROM FRONTEND
+#         # =================================================
+
+#         data.pop(
+#             "submitted_by",
+#             None
+#         )
+
+#         # =================================================
+#         # GET PLAN ID
+#         # =================================================
+
+#         plan_id = data.get("plan_id")
+
+#         print("AGENT TYPE:", data.get("agent_type"))
+#         print("PLAN ID:", plan_id)
+
+#         # Remove plan_id because serializer does not
+#         # have a plan_id field.
+#         data.pop(
+#             "plan_id",
+#             None
+#         )
+
+#         # =================================================
+#         # RESET PLAN FIELDS
+#         # =================================================
+
+#         data["premium_plan"] = None
+#         data["elite_plan"] = None
+
+#         agent_type = data.get("agent_type")
+
+#         # =================================================
+#         # BASIC
+#         # =================================================
+
+#         if agent_type == "basic":
+
+#             if not plan_id:
+
+#                 return Response(
+#                     {
+#                         "status": False,
+#                         "message": (
+#                             "Basic agent does not require a plan."
+#                         )
+#                     },
+#                     status=status.HTTP_400_BAD_REQUEST
+#                 )
+
+#         # =================================================
+#         # PREMIUM
+#         # =================================================
+
+#         elif agent_type == "premium":
+
+#             if not plan_id:
+
+#                 return Response(
+#                     {
+#                         "status": False,
+#                         "message": (
+#                             "Premium plan is required."
+#                         )
+#                     },
+#                     status=status.HTTP_400_BAD_REQUEST
+#                 )
+
+#             premium_plan = PremiumPlan.objects.filter(
+#                 pk=plan_id
+#             ).first()
+
+#             if not premium_plan:
+
+#                 return Response(
+#                     {
+#                         "status": False,
+#                         "message": (
+#                             "Invalid premium plan ID."
+#                         )
+#                     },
+#                     status=status.HTTP_400_BAD_REQUEST
+#                 )
+
+#             print(
+#                 "PREMIUM PLAN FOUND:",
+#                 premium_plan.id
+#             )
+
+#             data["premium_plan"] = premium_plan.pk
+
+#         # =================================================
+#         # ELITE
+#         # =================================================
+
+#         elif agent_type == "elite":
+
+#             if not plan_id:
+
+#                 return Response(
+#                     {
+#                         "status": False,
+#                         "message": (
+#                             "Elite plan is required."
+#                         )
+#                     },
+#                     status=status.HTTP_400_BAD_REQUEST
+#                 )
+
+#             elite_plan = ElitePlan.objects.filter(
+#                 pk=plan_id
+#             ).first()
+
+#             if not elite_plan:
+
+#                 return Response(
+#                     {
+#                         "status": False,
+#                         "message": (
+#                             "Invalid elite plan ID."
+#                         )
+#                     },
+#                     status=status.HTTP_400_BAD_REQUEST
+#                 )
+
+#             print(
+#                 "ELITE PLAN FOUND:",
+#                 elite_plan.id
+#             )
+
+#             data["elite_plan"] = elite_plan.pk
+
+#         # =================================================
+#         # INVALID AGENT TYPE
+#         # =================================================
+
+#         else:
+
+#             return Response(
+#                 {
+#                     "status": False,
+#                     "message": "Invalid agent type."
+#                 },
+#                 status=status.HTTP_400_BAD_REQUEST
+#             )
+
+#         # =================================================
+#         # DEBUG PLAN VALUES
+#         # =================================================
+
+#         print(
+#             "===================================="
+#         )
+
+#         print(
+#             "FINAL AGENT TYPE:",
+#             data.get("agent_type")
+#         )
+
+#         print(
+#             "FINAL PREMIUM PLAN:",
+#             data.get("premium_plan")
+#         )
+
+#         print(
+#             "FINAL ELITE PLAN:",
+#             data.get("elite_plan")
+#         )
+
+#         print(
+#             "===================================="
+#         )
+
+#         # =================================================
+#         # SERIALIZER
+#         # =================================================
+
+#         serializer = PendingAgentRegistrationSerializer(
+#             data=data
+#         )
+
+#         # =================================================
+#         # VALIDATION
+#         # =================================================
+
+#         if not serializer.is_valid():
+
+#             errors = serializer.errors
+
+#             print(
+#                 "SERIALIZER ERRORS:",
+#                 errors
+#             )
+
+#             # Return first useful error
+#             first_message = (
+#                 "Please correct the errors below."
+#             )
+
+#             for field_errors in errors.values():
+
+#                 if field_errors:
+
+#                     first_message = str(
+#                         field_errors[0]
+#                     )
+
+#                     break
+
+#             return Response(
+#                 {
+#                     "status": False,
+#                     "message": first_message
+#                 },
+#                 status=status.HTTP_400_BAD_REQUEST
+#             )
+
+#         # =================================================
+#         # CREATE REGISTRATION
+#         # =================================================
+
+#         try:
+
+#             registration = serializer.save(
+#                 submitted_by=request.user
+#             )
+
+#         except DjangoValidationError as exc:
+
+#             print(
+#                 "===================================="
+#             )
+
+#             print(
+#                 "DJANGO VALIDATION ERROR:"
+#             )
+
+#             print(
+#                 repr(exc)
+#             )
+
+#             print(
+#                 "===================================="
+#             )
+
+#             first_message = str(exc)
+
+#             if hasattr(
+#                 exc,
+#                 "message_dict"
+#             ):
+
+#                 for field_errors in (
+#                     exc.message_dict.values()
+#                 ):
+
+#                     if field_errors:
+
+#                         first_message = str(
+#                             field_errors[0]
+#                         )
+
+#                         break
+
+#             elif getattr(
+#                 exc,
+#                 "messages",
+#                 None
+#             ):
+
+#                 first_message = str(
+#                     exc.messages[0]
+#                 )
+
+#             return Response(
+#                 {
+#                     "status": False,
+#                     "message": first_message
+#                 },
+#                 status=status.HTTP_400_BAD_REQUEST
+#             )
+
+#         except Exception as exc:
+
+#             print(
+#                 "===================================="
+#             )
+
+#             print(
+#                 "REGISTRATION CREATE ERROR:"
+#             )
+
+#             print(
+#                 repr(exc)
+#             )
+
+#             print(
+#                 "===================================="
+#             )
+
+#             return Response(
+#                 {
+#                     "status": False,
+#                     "message": (
+#                         "Unable to submit registration."
+#                     ),
+#                     "error": str(exc)
+#                 },
+#                 status=status.HTTP_400_BAD_REQUEST
+#             )
+
+#         # =================================================
+#         # SUCCESS
+#         # =================================================
+
+#         print(
+#             "===================================="
+#         )
+
+#         print(
+#             "REGISTRATION CREATED"
+#         )
+
+#         print(
+#             "REGISTRATION ID:",
+#             registration.id
+#         )
+
+#         print(
+#             "SUBMITTED BY:",
+#             registration.submitted_by
+#         )
+
+#         print(
+#             "SUBMITTED BY ID:",
+#             getattr(
+#                 registration.submitted_by,
+#                 "id",
+#                 None
+#             )
+#         )
+
+#         print(
+#             "PREMIUM PLAN:",
+#             registration.premium_plan
+#         )
+
+#         print(
+#             "ELITE PLAN:",
+#             registration.elite_plan
+#         )
+
+#         print(
+#             "===================================="
+#         )
+
+#         return Response(
+#             {
+#                 "status": True,
+#                 "message": (
+#                     "Registration submitted. "
+#                     "Waiting for admin approval."
+#                 ),
+#                 "registration_id": str(
+#                     registration.id
+#                 ),
+#                 "submitted_by": (
+#                     str(
+#                         registration.submitted_by.id
+#                     )
+#                     if registration.submitted_by
+#                     else None
+#                 ),
+#                 "agent_type": registration.agent_type,
+#                 "plan_id": (
+#                     str(registration.elite_plan_id)
+#                     if registration.agent_type == "elite"
+#                     else (
+#                         str(registration.premium_plan_id)
+#                         if registration.agent_type == "premium"
+#                         else None
+#                     )
+#                 )
+#             },
+#             status=status.HTTP_201_CREATED
+#         )
 class AgentPendingRegisterAPIView(APIView):
 
     authentication_classes = [UserJWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        print("AUTH HEADER:", request.headers.get("Authorization"))
-        print("USER:", request.user)
-        print("IS AUTHENTICATED:", request.user.is_authenticated)
-        
-        data = request.data
-        email = str(data.get("email", "")).strip().lower()
-        password = str(data.get("password", "")).strip()
-        agent_type = str(data.get("agent_type", "")).strip().lower()
+
+        print("====================================")
+        print("AGENT PENDING REGISTRATION")
+        print("====================================")
+
+        print(
+            "AUTH USER:",
+            request.user
+        )
+
+        print(
+            "AUTH USER ID:",
+            getattr(request.user, "id", None)
+        )
+
+        print(
+            "IS AUTHENTICATED:",
+            request.user.is_authenticated
+        )
+
+        # =================================================
+        # AUTHENTICATION CHECK
+        # =================================================
+
+        if (
+            not request.user
+            or not request.user.is_authenticated
+        ):
+
+            return Response(
+                {
+                    "status": False,
+                    "message": "Authentication required."
+                },
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        # =================================================
+        # COPY REQUEST DATA
+        # =================================================
+
+        data = request.data.copy()
+
+        # =================================================
+        # NORMALIZE VALUES
+        # =================================================
+
+        data["email"] = str(
+            data.get("email", "")
+        ).strip().lower()
+
+        data["agent_type"] = str(
+            data.get("agent_type", "")
+        ).strip().lower()
+
+        data["full_name"] = str(
+            data.get("full_name", "")
+        ).strip()
+
+        data["phone_number"] = str(
+            data.get("phone_number", "")
+        ).strip()
+
+        data["city"] = str(
+            data.get("city", "")
+        ).strip()
+
+        data["pin_code"] = str(
+            data.get("pin_code", "")
+        ).strip()
+
+        data["address"] = str(
+            data.get("address", "")
+        ).strip()
+
+        # =================================================
+        # DEALS FIELD
+        # =================================================
+
+        if "total_deals_served" in data:
+
+            data["deals_closed"] = data.get(
+                "total_deals_served"
+            )
+
+            data.pop(
+                "total_deals_served",
+                None
+            )
+
+        # =================================================
+        # NEVER ACCEPT submitted_by FROM FRONTEND
+        # =================================================
+
+        data.pop(
+            "submitted_by",
+            None
+        )
+
+        # =================================================
+        # GET PLAN ID
+        # =================================================
+
         plan_id = data.get("plan_id")
-        full_name = str(data.get("full_name", "")).strip()
-        phone_number = str(data.get("phone_number", "")).strip()
-        city = str(data.get("city", "")).strip()
-        pin_code = str(data.get("pin_code", "")).strip()
-        address = str(data.get("address", "")).strip()
-        years_of_experience = data.get("years_of_experience")
-        total_deals_served = data.get("total_deals_served", 0)
 
-        if not re.fullmatch(r"\d{10}", phone_number):
-            return Response(
-                {
-                    "status": False,
-                    "message": "Mobile number must contain exactly 10 digits."
-                },
-                status=400
-            )
+        if plan_id:
+            plan_id = str(plan_id).strip()
 
-        if not re.fullmatch(r"\d{6}", pin_code):
-            return Response(
-                {
-                    "status": False,
-                    "message": "Pincode must contain exactly 6 digits."
-                },
-                status=400
-            )
+        print(
+            "AGENT TYPE:",
+            data.get("agent_type")
+        )
 
-        try:
-            years_of_experience = (
-                int(years_of_experience)
-                if years_of_experience not in [None, ""]
-                else None
-            )
+        print(
+            "PLAN ID:",
+            plan_id
+        )
 
-            deals_closed = (
-                int(total_deals_served)
-                if total_deals_served not in [None, ""]
-                else 0
-            )
+        # =================================================
+        # REMOVE plan_id
+        # =================================================
+        # plan_id is only used internally to find the
+        # correct plan object.
+        #
+        # The actual ForeignKey field is populated below.
+        # =================================================
 
-        except ValueError:
+        data.pop(
+            "plan_id",
+            None
+        )
 
-            return Response({
-                "status": False,
-                "message": "years_of_experience and total_deals_served must be valid numbers."
-            }, status=400)
+        # =================================================
+        # RESET ALL PLAN FIELDS
+        # =================================================
 
-        if not all([
-            email,
-            password,
-            agent_type,
-            full_name,
-            phone_number,
-            city,
-            pin_code,
-            address,
-            years_of_experience,
-            total_deals_served
-        ]):
-            return Response({
-                "status": False,
-                "message": "All fields are required."
-            }, status=400)
+        data["basic_plan"] = None
+        data["premium_plan"] = None
+        data["elite_plan"] = None
 
+        agent_type = data.get("agent_type")
 
-        try:
-            validate_email(email)
+        # =================================================
+        # BASIC AGENT
+        # =================================================
 
-        except ValidationError:
+        if agent_type == "basic":
 
-            return Response({
-                "status": False,
-                "message": "Invalid email format."
-            }, status=400)
-
-
-        if PendingAgentRegistration.objects.filter(
-            email=email,
-            status='pending'
-        ).exists():
-
-            return Response({
-                "status": False,
-                "message": "You have already submitted a request."
-            }, status=400)
-
-        if AgentUserProfile.objects.filter(
-            email=email
-        ).exists():
-
-            return Response({
-                "status": False,
-                "message": "Account already exists. Please login."
-            }, status=400)
-
-        valid_agent_types = [
-            "basic",
-            "premium",
-            "elite"
-        ]
-
-        if agent_type not in valid_agent_types:
-
-            return Response({
-                "status": False,
-                "message": "Invalid agent type."
-            }, status=400)
-
-        # =====================================================
-        # PLAN HANDLING
-        # =====================================================
-
-        premium_plan = None
-        elite_plan = None
-
-        # ================= ELITE =================
-
-        if agent_type == "elite":
-
+            # Basic agent ALSO requires a plan
             if not plan_id:
 
-                return Response({
-                    "status": False,
-                    "message": "Elite plan required"
-                }, status=400)
+                return Response(
+                    {
+                        "status": False,
+                        "message": (
+                            "Basic plan is required."
+                        )
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
-            elite_plan = ElitePlan.objects.filter(
-                id=plan_id
+            # ---------------------------------------------
+            # FIND BASIC AGENT PLAN
+            # ---------------------------------------------
+
+            basic_plan = AgentPlan.objects.filter(
+                pk=plan_id
             ).first()
 
-            if not elite_plan:
+            if not basic_plan:
 
-                return Response({
-                    "status": False,
-                    "message": "Invalid elite plan"
-                }, status=400)
+                return Response(
+                    {
+                        "status": False,
+                        "message": (
+                            "Invalid basic plan ID."
+                        )
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
-        # ================= PREMIUM =================
+            print(
+                "BASIC PLAN FOUND:",
+                basic_plan.id
+            )
+
+            print(
+                "BASIC PLAN NAME:",
+                basic_plan.name
+            )
+
+            # ---------------------------------------------
+            # IMPORTANT
+            # ---------------------------------------------
+            # This was missing in your original code.
+            #
+            # Without this, model.clean() receives
+            # basic_plan=None.
+            # ---------------------------------------------
+
+            data["basic_plan"] = basic_plan.pk
+
+        # =================================================
+        # PREMIUM AGENT
+        # =================================================
 
         elif agent_type == "premium":
 
             if not plan_id:
 
-                return Response({
-                    "status": False,
-                    "message": "Premium plan required"
-                }, status=400)
+                return Response(
+                    {
+                        "status": False,
+                        "message": (
+                            "Premium plan is required."
+                        )
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # ---------------------------------------------
+            # FIND PREMIUM PLAN
+            # ---------------------------------------------
 
             premium_plan = PremiumPlan.objects.filter(
-                id=plan_id
+                pk=plan_id
             ).first()
 
             if not premium_plan:
 
-                return Response({
+                return Response(
+                    {
+                        "status": False,
+                        "message": (
+                            "Invalid premium plan ID."
+                        )
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            print(
+                "PREMIUM PLAN FOUND:",
+                premium_plan.id
+            )
+
+            print(
+                "PREMIUM PLAN NAME:",
+                premium_plan.name
+            )
+
+            data["premium_plan"] = premium_plan.pk
+
+        # =================================================
+        # ELITE AGENT
+        # =================================================
+
+        elif agent_type == "elite":
+
+            if not plan_id:
+
+                return Response(
+                    {
+                        "status": False,
+                        "message": (
+                            "Elite plan is required."
+                        )
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # ---------------------------------------------
+            # FIND ELITE PLAN
+            # ---------------------------------------------
+
+            elite_plan = ElitePlan.objects.filter(
+                pk=plan_id
+            ).first()
+
+            if not elite_plan:
+
+                return Response(
+                    {
+                        "status": False,
+                        "message": (
+                            "Invalid elite plan ID."
+                        )
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            print(
+                "ELITE PLAN FOUND:",
+                elite_plan.id
+            )
+
+            print(
+                "ELITE PLAN NAME:",
+                elite_plan.name
+            )
+
+            data["elite_plan"] = elite_plan.pk
+
+        # =================================================
+        # INVALID AGENT TYPE
+        # =================================================
+
+        else:
+
+            return Response(
+                {
                     "status": False,
-                    "message": "Invalid premium plan"
-                }, status=400)
+                    "message": "Invalid agent type."
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
-        # ================= BASIC =================
-        # NO PLAN REQUIRED
+        # =================================================
+        # DEBUG FINAL PLAN VALUES
+        # =================================================
 
-        # =====================================================
-        # CREATE PENDING REGISTRATION
-        # =====================================================
-        print("agent_type =", request.POST.get("agent_type"))
-        print("plan_id =", request.POST.get("plan_id"))
-        print("plan_name =", request.POST.get("plan_name"))
-
-        PendingAgentRegistration.objects.create(
-            full_name=full_name,
-            email=email,
-            phone_number=phone_number,
-            password=password,
-            city=city,
-            pin_code=pin_code,
-            address=address,
-            agent_type=agent_type,
-            premium_plan=premium_plan,
-            elite_plan=elite_plan,
-            years_of_experience=years_of_experience,
-            deals_closed=deals_closed,
-            submitted_by=request.user if request.user.is_authenticated else None,
-            status="pending"
+        print(
+            "===================================="
         )
 
-        return Response({
-            "status": True,
-            "message": "Registration submitted. Waiting for admin approval."
-        }, status=201)
+        print(
+            "FINAL AGENT TYPE:",
+            data.get("agent_type")
+        )
+
+        print(
+            "FINAL BASIC PLAN:",
+            data.get("basic_plan")
+        )
+
+        print(
+            "FINAL PREMIUM PLAN:",
+            data.get("premium_plan")
+        )
+
+        print(
+            "FINAL ELITE PLAN:",
+            data.get("elite_plan")
+        )
+
+        print(
+            "===================================="
+        )
+
+        # =================================================
+        # SERIALIZER
+        # =================================================
+
+        serializer = PendingAgentRegistrationSerializer(
+            data=data
+        )
+
+        # =================================================
+        # SERIALIZER VALIDATION
+        # =================================================
+
+        if not serializer.is_valid():
+
+            errors = serializer.errors
+
+            print(
+                "===================================="
+            )
+
+            print(
+                "SERIALIZER ERRORS:",
+                errors
+            )
+
+            print(
+                "===================================="
+            )
+
+            # ---------------------------------------------
+            # FIRST USEFUL ERROR
+            # ---------------------------------------------
+
+            first_message = (
+                "Please correct the errors below."
+            )
+
+            for field_errors in errors.values():
+
+                if field_errors:
+
+                    first_message = str(
+                        field_errors[0]
+                    )
+
+                    break
+
+            return Response(
+                {
+                    "status": False,
+                    "message": first_message,
+                    "errors": errors
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # =================================================
+        # CREATE REGISTRATION
+        # =================================================
+
+        try:
+
+            registration = serializer.save(
+                submitted_by=request.user
+            )
+
+        except DjangoValidationError as exc:
+
+            print(
+                "===================================="
+            )
+
+            print(
+                "DJANGO VALIDATION ERROR:"
+            )
+
+            print(
+                repr(exc)
+            )
+
+            print(
+                "===================================="
+            )
+
+            first_message = str(exc)
+
+            # ---------------------------------------------
+            # FIELD VALIDATION ERROR
+            # ---------------------------------------------
+
+            if hasattr(
+                exc,
+                "message_dict"
+            ):
+
+                for field_errors in (
+                    exc.message_dict.values()
+                ):
+
+                    if field_errors:
+
+                        first_message = str(
+                            field_errors[0]
+                        )
+
+                        break
+
+            # ---------------------------------------------
+            # NORMAL VALIDATION ERROR
+            # ---------------------------------------------
+
+            elif getattr(
+                exc,
+                "messages",
+                None
+            ):
+
+                first_message = str(
+                    exc.messages[0]
+                )
+
+            return Response(
+                {
+                    "status": False,
+                    "message": first_message
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        except Exception as exc:
+
+            print(
+                "===================================="
+            )
+
+            print(
+                "REGISTRATION CREATE ERROR:"
+            )
+
+            print(
+                repr(exc)
+            )
+
+            print(
+                "===================================="
+            )
+
+            return Response(
+                {
+                    "status": False,
+                    "message": (
+                        "Unable to submit registration."
+                    ),
+                    "error": str(exc)
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # =================================================
+        # SUCCESS DEBUG
+        # =================================================
+
+        print(
+            "===================================="
+        )
+
+        print(
+            "REGISTRATION CREATED"
+        )
+
+        print(
+            "REGISTRATION ID:",
+            registration.id
+        )
+
+        print(
+            "SUBMITTED BY:",
+            registration.submitted_by
+        )
+
+        print(
+            "SUBMITTED BY ID:",
+            getattr(
+                registration.submitted_by,
+                "id",
+                None
+            )
+        )
+
+        print(
+            "BASIC PLAN:",
+            registration.basic_plan
+        )
+
+        print(
+            "BASIC PLAN ID:",
+            registration.basic_plan_id
+        )
+
+        print(
+            "PREMIUM PLAN:",
+            registration.premium_plan
+        )
+
+        print(
+            "PREMIUM PLAN ID:",
+            registration.premium_plan_id
+        )
+
+        print(
+            "ELITE PLAN:",
+            registration.elite_plan
+        )
+
+        print(
+            "ELITE PLAN ID:",
+            registration.elite_plan_id
+        )
+
+        print(
+            "===================================="
+        )
+
+        # =================================================
+        # FINAL PLAN ID
+        # =================================================
+
+        if registration.agent_type == "basic":
+
+            final_plan_id = (
+                str(registration.basic_plan_id)
+                if registration.basic_plan_id
+                else None
+            )
+
+        elif registration.agent_type == "premium":
+
+            final_plan_id = (
+                str(registration.premium_plan_id)
+                if registration.premium_plan_id
+                else None
+            )
+
+        elif registration.agent_type == "elite":
+
+            final_plan_id = (
+                str(registration.elite_plan_id)
+                if registration.elite_plan_id
+                else None
+            )
+
+        else:
+
+            final_plan_id = None
+
+        # =================================================
+        # SUCCESS RESPONSE
+        # =================================================
+
+        return Response(
+            {
+                "status": True,
+
+                "message": (
+                    "Registration submitted. "
+                    "Waiting for admin approval."
+                ),
+
+                "registration_id": str(
+                    registration.id
+                ),
+
+                "submitted_by": (
+                    str(
+                        registration.submitted_by.id
+                    )
+                    if registration.submitted_by
+                    else None
+                ),
+
+                "agent_type": registration.agent_type,
+
+                "plan_id": final_plan_id
+            },
+            status=status.HTTP_201_CREATED
+        )
+
+# class AgentPendingRegisterAPIView(APIView):
+
+#     authentication_classes = [UserJWTAuthentication]
+#     permission_classes = [IsAuthenticated]
+
+#     def post(self, request):
+
+#         print("====================================")
+#         print("AGENT PENDING REGISTRATION")
+#         print("====================================")
+
+#         print(
+#             "AUTH HEADER:",
+#             request.headers.get("Authorization")
+#         )
+
+#         print(
+#             "USER:",
+#             request.user
+#         )
+
+#         print(
+#             "IS AUTHENTICATED:",
+#             request.user.is_authenticated
+#         )
+
+#         print(
+#             "REQUEST DATA:",
+#             request.data
+#         )
+
+#         # =================================================
+#         # COPY REQUEST DATA
+#         # =================================================
+
+#         data = request.data.copy()
+
+#         # =================================================
+#         # NORMALIZE BASIC VALUES
+#         # =================================================
+
+#         if "email" in data:
+#             data["email"] = str(
+#                 data.get("email", "")
+#             ).strip().lower()
+
+#         if "agent_type" in data:
+#             data["agent_type"] = str(
+#                 data.get("agent_type", "")
+#             ).strip().lower()
+
+#         if "full_name" in data:
+#             data["full_name"] = str(
+#                 data.get("full_name", "")
+#             ).strip()
+
+#         if "phone_number" in data:
+#             data["phone_number"] = str(
+#                 data.get("phone_number", "")
+#             ).strip()
+
+#         if "city" in data:
+#             data["city"] = str(
+#                 data.get("city", "")
+#             ).strip()
+
+#         if "pin_code" in data:
+#             data["pin_code"] = str(
+#                 data.get("pin_code", "")
+#             ).strip()
+
+#         if "address" in data:
+#             data["address"] = str(
+#                 data.get("address", "")
+#             ).strip()
+
+#         # =================================================
+#         # SUPPORT YOUR EXISTING FRONTEND FIELD
+#         # =================================================
+#         #
+#         # Frontend sends:
+#         #
+#         # total_deals_served
+#         #
+#         # Model/serializer uses:
+#         #
+#         # deals_closed
+#         #
+#         # =================================================
+
+#         if "total_deals_served" in data:
+
+#             data["deals_closed"] = data.get(
+#                 "total_deals_served"
+#             )
+
+#             data.pop(
+#                 "total_deals_served",
+#                 None
+#             )
+
+#         # =================================================
+#         # SERIALIZER
+#         # =================================================
+
+#         serializer = PendingAgentRegistrationSerializer(
+#             data=data
+#         )
+
+#         # =================================================
+#         # VALIDATION
+#         # =================================================
+
+#         if not serializer.is_valid():
+
+#             errors = serializer.errors
+
+#             # Password validation error
+#             if "password" in errors:
+
+#                 return Response(
+#                     {
+#                         "status": False,
+#                         "message": errors["password"][0]
+#                     },
+#                     status=status.HTTP_400_BAD_REQUEST
+#                 )
+
+#             # Other validation errors
+#             first_error = next(
+#                 iter(errors.values()),
+#                 ["Please correct the errors below."]
+#             )
+
+#             return Response(
+#                 {
+#                     "status": False,
+#                     "message": first_error[0]
+#                 },
+#                 status=status.HTTP_400_BAD_REQUEST
+#             )
+
+#         # =================================================
+#         # SAVE
+#         # =================================================
+
+#         try:
+
+#             registration = serializer.save()
+
+#         except DjangoValidationError as exc:
+
+#             print(
+#                 "DJANGO MODEL VALIDATION ERROR:",
+#                 exc
+#             )
+
+#             if hasattr(
+#                 exc,
+#                 "message_dict"
+#             ):
+
+#                 errors = exc.message_dict
+
+#             else:
+
+#                 errors = {
+#                     "error": exc.messages
+#                 }
+
+#             return Response(
+#                 {
+#                     "status": False,
+#                     "message": errors
+#                     # "errors": errors
+#                 },
+#                 status=status.HTTP_400_BAD_REQUEST
+#             )
+
+#         # =================================================
+#         # SUCCESS
+#         # =================================================
+
+#         return Response(
+#             {
+#                 "status": True,
+#                 "message": (
+#                     "Registration submitted. "
+#                     "Waiting for admin approval."
+#                 )
+#             },
+#             status=status.HTTP_201_CREATED
+#         )
+
+# class AgentPendingRegisterAPIView(APIView):
+
+#     authentication_classes = [UserJWTAuthentication]
+#     permission_classes = [IsAuthenticated]
+
+#     def post(self, request):
+#         print("AUTH HEADER:", request.headers.get("Authorization"))
+#         print("USER:", request.user)
+#         print("IS AUTHENTICATED:", request.user.is_authenticated)
+        
+#         data = request.data
+#         email = str(data.get("email", "")).strip().lower()
+#         password = str(data.get("password", "")).strip()
+#         agent_type = str(data.get("agent_type", "")).strip().lower()
+#         plan_id = data.get("plan_id")
+#         full_name = str(data.get("full_name", "")).strip()
+#         phone_number = str(data.get("phone_number", "")).strip()
+#         city = str(data.get("city", "")).strip()
+#         pin_code = str(data.get("pin_code", "")).strip()
+#         address = str(data.get("address", "")).strip()
+#         years_of_experience = data.get("years_of_experience")
+#         total_deals_served = data.get("total_deals_served", 0)
+
+#         if not re.fullmatch(r"\d{10}", phone_number):
+#             return Response(
+#                 {
+#                     "status": False,
+#                     "message": "Mobile number must contain exactly 10 digits."
+#                 },
+#                 status=400
+#             )
+
+#         if not re.fullmatch(r"\d{6}", pin_code):
+#             return Response(
+#                 {
+#                     "status": False,
+#                     "message": "Pincode must contain exactly 6 digits."
+#                 },
+#                 status=400
+#             )
+
+#         try:
+#             years_of_experience = (
+#                 int(years_of_experience)
+#                 if years_of_experience not in [None, ""]
+#                 else None
+#             )
+
+#             deals_closed = (
+#                 int(total_deals_served)
+#                 if total_deals_served not in [None, ""]
+#                 else 0
+#             )
+
+#         except ValueError:
+
+#             return Response({
+#                 "status": False,
+#                 "message": "years_of_experience and total_deals_served must be valid numbers."
+#             }, status=400)
+
+#         if not all([
+#             email,
+#             password,
+#             agent_type,
+#             full_name,
+#             phone_number,
+#             city,
+#             pin_code,
+#             address,
+#             years_of_experience,
+#             total_deals_served
+#         ]):
+#             return Response({
+#                 "status": False,
+#                 "message": "All fields are required."
+#             }, status=400)
+
+
+#         try:
+#             validate_email(email)
+
+#         except ValidationError:
+
+#             return Response({
+#                 "status": False,
+#                 "message": "Invalid email format."
+#             }, status=400)
+
+
+#         if PendingAgentRegistration.objects.filter(
+#             email=email,
+#             status='pending'
+#         ).exists():
+
+#             return Response({
+#                 "status": False,
+#                 "message": "You have already submitted a request."
+#             }, status=400)
+
+#         if AgentUserProfile.objects.filter(
+#             email=email
+#         ).exists():
+
+#             return Response({
+#                 "status": False,
+#                 "message": "Account already exists. Please login."
+#             }, status=400)
+
+#         valid_agent_types = [
+#             "basic",
+#             "premium",
+#             "elite"
+#         ]
+
+#         if agent_type not in valid_agent_types:
+
+#             return Response({
+#                 "status": False,
+#                 "message": "Invalid agent type."
+#             }, status=400)
+
+#         # =====================================================
+#         # PLAN HANDLING
+#         # =====================================================
+
+#         premium_plan = None
+#         elite_plan = None
+
+#         # ================= ELITE =================
+
+#         if agent_type == "elite":
+
+#             if not plan_id:
+
+#                 return Response({
+#                     "status": False,
+#                     "message": "Elite plan required"
+#                 }, status=400)
+
+#             elite_plan = ElitePlan.objects.filter(
+#                 id=plan_id
+#             ).first()
+
+#             if not elite_plan:
+
+#                 return Response({
+#                     "status": False,
+#                     "message": "Invalid elite plan"
+#                 }, status=400)
+
+#         # ================= PREMIUM =================
+
+#         elif agent_type == "premium":
+
+#             if not plan_id:
+
+#                 return Response({
+#                     "status": False,
+#                     "message": "Premium plan required"
+#                 }, status=400)
+
+#             premium_plan = PremiumPlan.objects.filter(
+#                 id=plan_id
+#             ).first()
+
+#             if not premium_plan:
+
+#                 return Response({
+#                     "status": False,
+#                     "message": "Invalid premium plan"
+#                 }, status=400)
+
+#         # ================= BASIC =================
+#         # NO PLAN REQUIRED
+
+#         # =====================================================
+#         # CREATE PENDING REGISTRATION
+#         # =====================================================
+#         print("agent_type =", request.POST.get("agent_type"))
+#         print("plan_id =", request.POST.get("plan_id"))
+#         print("plan_name =", request.POST.get("plan_name"))
+
+#         PendingAgentRegistration.objects.create(
+#             full_name=full_name,
+#             email=email,
+#             phone_number=phone_number,
+#             password=password,
+#             city=city,
+#             pin_code=pin_code,
+#             address=address,
+#             agent_type=agent_type,
+#             premium_plan=premium_plan,
+#             elite_plan=elite_plan,
+#             years_of_experience=years_of_experience,
+#             deals_closed=deals_closed,
+#             submitted_by=request.user if request.user.is_authenticated else None,
+#             status="pending"
+#         )
+
+#         return Response({
+#             "status": True,
+#             "message": "Registration submitted. Waiting for admin approval."
+#         }, status=201)
 
 class AgentTokenRefreshAPIView(APIView):
     authentication_classes = []
@@ -9521,15 +10928,15 @@ class PropertySearchAPIView(APIView):
         if search_text:
 
             user_properties = user_properties.filter(
-                Q(label__icontains=search_text) |
-                Q(city__icontains=search_text) |
-                Q(district__icontains=search_text)
+                Q(label__istartswith=search_text) |
+                Q(city__istartswith=search_text) |
+                Q(district__istartswith=search_text)
             )
 
             agent_properties = agent_properties.filter(
-                Q(label__icontains=search_text) |
-                Q(city__icontains=search_text) |
-                Q(district__icontains=search_text)
+                Q(label__istartswith=search_text) |
+                Q(city__istartswith=search_text) |
+                Q(district__istartswith=search_text)
             )
 
 
@@ -9905,14 +11312,43 @@ class EnquiryDetailAPIView(APIView):
     
 
 
-from collections import defaultdict
+# from collections import defaultdict
 
-from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny
-from rest_framework.response import Response
+# from rest_framework.views import APIView
+# from rest_framework.permissions import AllowAny
+# from rest_framework.response import Response
+
+# from collections import defaultdict
+
+# from rest_framework.views import APIView
+# from rest_framework.permissions import AllowAny
+# from rest_framework.response import Response
+
+# from .models import (
+#     Property,
+#     AgentProperty,
+#     Category,
+#     Purpose,
+# )
+
+
+def normalize_location_value(value):
+
+    if not value:
+        return ""
+
+    return (
+        str(value)
+        .strip()
+        .lower()
+        .replace(" ", "")
+        .replace("_", "")
+        .replace("-", "")
+    )
 
 
 class PropertyFilterOptionsAPIView(APIView):
+
     permission_classes = [AllowAny]
     authentication_classes = []
 
@@ -9921,6 +11357,7 @@ class PropertyFilterOptionsAPIView(APIView):
         # -------------------------
         # CATEGORY
         # -------------------------
+
         categories = list(
             Category.objects.values(
                 "id",
@@ -9928,10 +11365,10 @@ class PropertyFilterOptionsAPIView(APIView):
             ).order_by("name")
         )
 
-
         # -------------------------
         # PURPOSE
         # -------------------------
+
         purposes = list(
             Purpose.objects.values(
                 "id",
@@ -9939,73 +11376,210 @@ class PropertyFilterOptionsAPIView(APIView):
             ).order_by("name")
         )
 
-
         # -------------------------
-        # DISTRICT -> CITIES
+        # STATE -> DISTRICT -> CITY
         # USER + AGENT PROPERTIES
         # -------------------------
-        district_map = defaultdict(set)
 
+        location_map = defaultdict(
+            lambda: defaultdict(set)
+        )
 
-        # user added properties
+        # -------------------------
+        # USER PROPERTIES
+        # -------------------------
+
         user_properties = Property.objects.values(
+            "state",
             "district",
             "city"
         )
 
+        # -------------------------
+        # AGENT PROPERTIES
+        # -------------------------
 
-        # agent added properties
         agent_properties = AgentProperty.objects.values(
+            "state",
             "district",
             "city"
         )
 
+        # -------------------------
+        # COMBINE
+        # -------------------------
 
-        # combine both
-        all_properties = list(user_properties) + list(agent_properties)
+        all_properties = (
+            list(user_properties)
+            + list(agent_properties)
+        )
 
+        # -------------------------
+        # BUILD LOCATION MAP
+        # -------------------------
 
         for item in all_properties:
 
-            district = (
-                item.get("district", "")
-                .strip()
+            state = normalize_location_value(
+                item.get("state")
             )
 
-            city = (
-                item.get("city", "")
-                .strip()
+            district = normalize_location_value(
+                item.get("district")
             )
 
+            city = normalize_location_value(
+                item.get("city")
+            )
 
-            if not district or not city:
+            if not state:
                 continue
 
+            if not district:
+                continue
 
-            district_map[district].add(city)
+            if not city:
+                continue
 
-        districts_data = []
+            location_map[state][district].add(city)
 
-        for district, cities in district_map.items():
+        # -------------------------
+        # CONVERT TO RESPONSE
+        # -------------------------
 
-            districts_data.append({
-                "name": district,
-                "cities": sorted(
-                    list(cities)
-                )
+        states_data = []
+
+        for state, districts in location_map.items():
+
+            districts_data = []
+
+            for district, cities in districts.items():
+
+                districts_data.append({
+                    "name": district,
+                    "cities": sorted(
+                        list(cities)
+                    )
+                })
+
+            districts_data.sort(
+                key=lambda x: x["name"]
+            )
+
+            states_data.append({
+                "name": state,
+                "districts": districts_data
             })
 
-
-        districts_data = sorted(
-            districts_data,
-            key=lambda x: x["name"].lower()
+        # Sort states
+        states_data.sort(
+            key=lambda x: x["name"]
         )
+
+        # -------------------------
+        # RESPONSE
+        # -------------------------
 
         return Response({
             "categories": categories,
             "purposes": purposes,
-            "districts": districts_data
+            "locations": states_data
         })
+
+# class PropertyFilterOptionsAPIView(APIView):
+#     permission_classes = [AllowAny]
+#     authentication_classes = []
+
+#     def get(self, request):
+
+#         # -------------------------
+#         # CATEGORY
+#         # -------------------------
+#         categories = list(
+#             Category.objects.values(
+#                 "id",
+#                 "name"
+#             ).order_by("name")
+#         )
+
+
+#         # -------------------------
+#         # PURPOSE
+#         # -------------------------
+#         purposes = list(
+#             Purpose.objects.values(
+#                 "id",
+#                 "name"
+#             ).order_by("name")
+#         )
+
+
+#         # -------------------------
+#         # DISTRICT -> CITIES
+#         # USER + AGENT PROPERTIES
+#         # -------------------------
+#         district_map = defaultdict(set)
+
+
+#         # user added properties
+#         user_properties = Property.objects.values(
+#             "district",
+#             "city"
+#         )
+
+
+#         # agent added properties
+#         agent_properties = AgentProperty.objects.values(
+#             "district",
+#             "city"
+#         )
+
+
+#         # combine both
+#         all_properties = list(user_properties) + list(agent_properties)
+
+
+#         for item in all_properties:
+
+#             district = (
+#                 item.get("district", "")
+#                 .strip()
+#             )
+
+#             city = (
+#                 item.get("city", "")
+#                 .strip()
+#             )
+
+
+#             if not district or not city:
+#                 continue
+
+
+#             district_map[district].add(city)
+
+#         districts_data = []
+
+#         for district, cities in district_map.items():
+
+#             districts_data.append({
+#                 "name": district,
+#                 "cities": sorted(
+#                     list(cities)
+#                 )
+#             })
+
+
+#         districts_data = sorted(
+#             districts_data,
+#             key=lambda x: x["name"].lower()
+#         )
+
+#         return Response({
+#             "categories": categories,
+#             "purposes": purposes,
+#             "districts": districts_data
+#         })
 
 
 class CityDistrictFilterAPIView(APIView):
@@ -11283,8 +12857,46 @@ from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
+# import re
+
+# from math import (
+#     radians,
+#     sin,
+#     cos,
+#     sqrt,
+#     atan2
+# )
+
+# from itertools import chain
+
+# import requests
+
+# import jwt
+
+# from jwt import (
+#     ExpiredSignatureError,
+#     InvalidTokenError
+# )
+
+# from django.conf import settings
+
+# from rest_framework.views import APIView
+# from rest_framework.permissions import AllowAny
+# from rest_framework.response import Response
+
+# from .models import (
+#     Property,
+#     AgentProperty,
+#     Wishlist
+# )
+
+# from .serializers import (
+#     CombinedPropertyListSerializer
+# )
+
 
 class NearbyPropertyAPIView(APIView):
+
     permission_classes = [AllowAny]
     authentication_classes = []
 
@@ -11298,7 +12910,8 @@ class NearbyPropertyAPIView(APIView):
         lat2,
         lon2
     ):
-        R = 6371
+
+        R = 6371.0
 
         dlat = radians(
             lat2 - lat1
@@ -11309,22 +12922,209 @@ class NearbyPropertyAPIView(APIView):
         )
 
         a = (
-            sin(dlat/2) ** 2
+            sin(dlat / 2) ** 2
             +
             cos(radians(lat1))
             *
             cos(radians(lat2))
             *
-            sin(dlon/2) ** 2
+            sin(dlon / 2) ** 2
         )
 
         c = 2 * atan2(
             sqrt(a),
-            sqrt(1-a)
+            sqrt(1 - a)
         )
 
         return R * c
 
+    # --------------------------------
+    # EXTRACT COORDINATES FROM URL
+    # --------------------------------
+    def extract_coordinates_from_url(
+        self,
+        url
+    ):
+
+        if not url:
+            return None, None
+
+        url = str(url).strip()
+
+        # --------------------------------
+        # 1. @LAT,LNG
+        #
+        # Example:
+        # https://www.google.com/maps/@10.1234,76.1234,15z
+        # --------------------------------
+
+        match = re.search(
+            r'@(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)',
+            url
+        )
+
+        if match:
+
+            try:
+
+                lat = float(
+                    match.group(1)
+                )
+
+                lng = float(
+                    match.group(2)
+                )
+
+                return lat, lng
+
+            except (ValueError, TypeError):
+
+                pass
+
+        # --------------------------------
+        # 2. !2dLONG!3dLAT
+        #
+        # Example:
+        # !2d76.1234!3d10.1234
+        # --------------------------------
+
+        match = re.search(
+            r'!2d(-?\d+(?:\.\d+)?)!3d(-?\d+(?:\.\d+)?)',
+            url
+        )
+
+        if match:
+
+            try:
+
+                lng = float(
+                    match.group(1)
+                )
+
+                lat = float(
+                    match.group(2)
+                )
+
+                return lat, lng
+
+            except (ValueError, TypeError):
+
+                pass
+
+        # --------------------------------
+        # 3. q=LAT,LNG
+        #
+        # Example:
+        # https://www.google.com/maps?q=10.1234,76.1234
+        # --------------------------------
+
+        match = re.search(
+            r'(?:[?&]q=|[?&]query=)(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)',
+            url
+        )
+
+        if match:
+
+            try:
+
+                lat = float(
+                    match.group(1)
+                )
+
+                lng = float(
+                    match.group(2)
+                )
+
+                return lat, lng
+
+            except (ValueError, TypeError):
+
+                pass
+
+        # --------------------------------
+        # 4. /place/LAT,LNG
+        #
+        # Sometimes Google Maps URLs contain:
+        #
+        # /place/10.1234,76.1234
+        # --------------------------------
+
+        match = re.search(
+            r'/place/(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)',
+            url
+        )
+
+        if match:
+
+            try:
+
+                lat = float(
+                    match.group(1)
+                )
+
+                lng = float(
+                    match.group(2)
+                )
+
+                return lat, lng
+
+            except (ValueError, TypeError):
+
+                pass
+
+        return None, None
+
+    # --------------------------------
+    # RESOLVE GOOGLE SHORT URL
+    # --------------------------------
+    def resolve_short_google_url(
+        self,
+        url
+    ):
+
+        if not url:
+            return None
+
+        url = str(url).strip()
+
+        # Only resolve shortened Google Maps URLs
+        if (
+            "goo.gl/maps/" not in url
+            and
+            "maps.app.goo.gl/" not in url
+        ):
+            return url
+
+        try:
+
+            response = requests.get(
+                url,
+                allow_redirects=True,
+                timeout=5,
+                headers={
+                    "User-Agent": (
+                        "Mozilla/5.0 "
+                        "(Windows NT 10.0; Win64; x64) "
+                        "AppleWebKit/537.36 "
+                        "(KHTML, like Gecko) "
+                        "Chrome/151.0 Safari/537.36"
+                    )
+                }
+            )
+
+            if response.url:
+
+                return response.url
+
+        except requests.RequestException:
+
+            pass
+
+        except Exception:
+
+            pass
+
+        return None
 
     # --------------------------------
     # EXTRACT LAT LNG
@@ -11339,54 +13139,89 @@ class NearbyPropertyAPIView(APIView):
 
         url = str(url).strip()
 
+        # --------------------------------
+        # FIRST:
+        # Try the original URL
+        # --------------------------------
 
-        # @lat,lng
-        match = re.search(
-            r'@([0-9\-.]+),([0-9\-.]+)',
-            url
+        lat, lng = (
+            self.extract_coordinates_from_url(
+                url
+            )
         )
 
-        if match:
-            return (
-                float(match.group(1)),
-                float(match.group(2))
+        if lat is not None and lng is not None:
+
+            return lat, lng
+
+        # --------------------------------
+        # SECOND:
+        # Resolve Google short URL
+        # --------------------------------
+
+        resolved_url = (
+            self.resolve_short_google_url(
+                url
             )
-
-
-        # !2dLONG!3dLAT
-        match = re.search(
-            r'!2d([0-9\-.]+)!3d([0-9\-.]+)',
-            url
         )
 
-        if match:
-            return (
-                float(match.group(2)),
-                float(match.group(1))
+        if not resolved_url:
+
+            return None, None
+
+        # --------------------------------
+        # Extract from resolved URL
+        # --------------------------------
+
+        lat, lng = (
+            self.extract_coordinates_from_url(
+                resolved_url
             )
-
-
-        # q=lat,lng
-        match = re.search(
-            r'q=([0-9\-.]+),([0-9\-.]+)',
-            url
         )
 
-        if match:
-            return (
-                float(match.group(1)),
-                float(match.group(2))
-            )
+        if lat is not None and lng is not None:
+
+            return lat, lng
 
         return None, None
 
+    # --------------------------------
+    # VALIDATE COORDINATES
+    # --------------------------------
+    def valid_coordinates(
+        self,
+        lat,
+        lng
+    ):
+
+        if lat is None or lng is None:
+
+            return False
+
+        if lat < -90 or lat > 90:
+
+            return False
+
+        if lng < -180 or lng > 180:
+
+            return False
+
+        return True
 
     # --------------------------------
     # GET
     # --------------------------------
-    def get(self, request):
+    def get(
+        self,
+        request
+    ):
+
+        # --------------------------------
+        # USER LOCATION
+        # --------------------------------
 
         try:
+
             user_lat = float(
                 request.GET.get("lat")
             )
@@ -11395,7 +13230,11 @@ class NearbyPropertyAPIView(APIView):
                 request.GET.get("lng")
             )
 
-        except:
+        except (
+            TypeError,
+            ValueError
+        ):
+
             return Response(
                 {
                     "error": "lat & lng required"
@@ -11403,38 +13242,85 @@ class NearbyPropertyAPIView(APIView):
                 status=400
             )
 
+        # --------------------------------
+        # VALIDATE USER LOCATION
+        # --------------------------------
+
+        if not self.valid_coordinates(
+            user_lat,
+            user_lng
+        ):
+
+            return Response(
+                {
+                    "error": "Invalid latitude or longitude"
+                },
+                status=400
+            )
+
+        # --------------------------------
+        # RADIUS
+        # --------------------------------
 
         radius = request.GET.get(
             "radius"
         )
 
-        radius = (
-            float(radius)
-            if radius else None
-        )
+        if radius:
 
+            try:
+
+                radius = float(
+                    radius
+                )
+
+                if radius < 0:
+
+                    radius = None
+
+            except (
+                TypeError,
+                ValueError
+            ):
+
+                radius = None
+
+        else:
+
+            radius = None
 
         # --------------------------------
         # USER PROPERTIES
         # --------------------------------
-        user_properties = Property.objects.select_related(
-            "user",
-            "category",
-            "purpose"
-        ).prefetch_related(
-            "images"
-        )
 
+        user_properties = (
+            Property.objects
+            .select_related(
+                "user",
+                "category",
+                "purpose"
+            )
+            .prefetch_related(
+                "images"
+            )
+        )
 
         # --------------------------------
         # AGENT PROPERTIES
         # --------------------------------
-        agent_properties = AgentProperty.objects.select_related(
-            "agent",
-            "category",
-            "purpose"
+
+        agent_properties = (
+            AgentProperty.objects
+            .select_related(
+                "agent",
+                "category",
+                "purpose"
+            )
         )
 
+        # --------------------------------
+        # COMBINE
+        # --------------------------------
 
         all_properties = list(
             chain(
@@ -11443,10 +13329,10 @@ class NearbyPropertyAPIView(APIView):
             )
         )
 
-
         # --------------------------------
         # AUTH USER WISHLIST
         # --------------------------------
+
         wishlist_ids = set()
 
         auth = request.headers.get(
@@ -11454,54 +13340,97 @@ class NearbyPropertyAPIView(APIView):
         )
 
         if auth:
+
             try:
-                token = auth.split()[1]
 
-                decoded = jwt.decode(
-                    token,
-                    settings.SECRET_KEY,
-                    algorithms=["HS256"]
-                )
+                parts = auth.split()
 
-                user_id = (
-                    decoded.get("user_id")
-                    or decoded.get("id")
-                )
+                if len(parts) >= 2:
 
-                if user_id:
+                    token = parts[1]
 
-                    wishlist_ids = set(
-                        str(x)
-                        for x in
-                        Wishlist.objects.filter(
-                            user_id=user_id
-                        ).values_list(
-                            "property_uuid",
-                            flat=True
-                        )
+                    decoded = jwt.decode(
+                        token,
+                        settings.SECRET_KEY,
+                        algorithms=["HS256"]
                     )
+
+                    user_id = (
+                        decoded.get("user_id")
+                        or
+                        decoded.get("id")
+                    )
+
+                    if user_id:
+
+                        wishlist_ids = set(
+                            str(x)
+                            for x in
+                            Wishlist.objects.filter(
+                                user_id=user_id
+                            ).values_list(
+                                "property_uuid",
+                                flat=True
+                            )
+                        )
 
             except (
                 ExpiredSignatureError,
                 InvalidTokenError
             ):
+
                 pass
 
+            except Exception:
+
+                pass
 
         # --------------------------------
         # DISTANCE FILTER
         # --------------------------------
+
         results = []
 
         for prop in all_properties:
 
-            lat, lng = self.extract_lat_lng(
-                prop.location
+            # --------------------------------
+            # GET LOCATION URL
+            # --------------------------------
+
+            location_url = getattr(
+                prop,
+                "location",
+                None
             )
 
-            if lat is None:
+            if not location_url:
+
                 continue
 
+            # --------------------------------
+            # EXTRACT LAT/LNG
+            # --------------------------------
+
+            lat, lng = (
+                self.extract_lat_lng(
+                    location_url
+                )
+            )
+
+            # --------------------------------
+            # INVALID LOCATION
+            # --------------------------------
+
+            if not self.valid_coordinates(
+                lat,
+                lng
+            ):
+
+                continue
+
+            # --------------------------------
+            # HAVERSINE DISTANCE
+            # --------------------------------
 
             distance = self.haversine(
                 user_lat,
@@ -11510,10 +13439,21 @@ class NearbyPropertyAPIView(APIView):
                 lng
             )
 
+            # --------------------------------
+            # RADIUS FILTER
+            # --------------------------------
 
-            if radius and distance > radius:
+            if (
+                radius is not None
+                and
+                distance > radius
+            ):
+
                 continue
 
+            # --------------------------------
+            # ADD RESULT
+            # --------------------------------
 
             results.append(
                 (
@@ -11522,47 +13462,353 @@ class NearbyPropertyAPIView(APIView):
                 )
             )
 
+        # --------------------------------
+        # NEAREST FIRST
+        # --------------------------------
 
-        # nearest first
         results.sort(
             key=lambda x: x[1]
         )
 
+        # --------------------------------
+        # MAX 20
+        # --------------------------------
+
         results = results[:20]
 
+        # --------------------------------
+        # PROPERTIES ONLY
+        # --------------------------------
 
         properties = [
             item[0]
             for item in results
         ]
 
+        # --------------------------------
+        # SERIALIZE
+        # --------------------------------
 
-        serialized = CombinedPropertyListSerializer(
-            properties,
-            many=True,
-            context={
-                "request": request,
-                "wishlist_ids": wishlist_ids
-            }
-        ).data
+        serialized = (
+            CombinedPropertyListSerializer(
+                properties,
+                many=True,
+                context={
+                    "request": request,
+                    "wishlist_ids": wishlist_ids
+                }
+            ).data
+        )
 
+        # --------------------------------
+        # ADD DISTANCE
+        # --------------------------------
 
         final = []
 
-        for i, item in enumerate(serialized):
+        for i, item in enumerate(
+            serialized
+        ):
 
             item["distance_km"] = round(
                 results[i][1],
                 2
             )
 
-            final.append(item)
+            final.append(
+                item
+            )
+
+        # --------------------------------
+        # RESPONSE
+        # --------------------------------
+
+        return Response(
+            {
+                "count": len(final),
+                "data": final
+            }
+        )
+
+# class NearbyPropertyAPIView(APIView):
+#     permission_classes = [AllowAny]
+#     authentication_classes = []
+
+#     # --------------------------------
+#     # HAVERSINE
+#     # --------------------------------
+#     def haversine(
+#         self,
+#         lat1,
+#         lon1,
+#         lat2,
+#         lon2
+#     ):
+#         R = 6371
+
+#         dlat = radians(
+#             lat2 - lat1
+#         )
+
+#         dlon = radians(
+#             lon2 - lon1
+#         )
+
+#         a = (
+#             sin(dlat/2) ** 2
+#             +
+#             cos(radians(lat1))
+#             *
+#             cos(radians(lat2))
+#             *
+#             sin(dlon/2) ** 2
+#         )
+
+#         c = 2 * atan2(
+#             sqrt(a),
+#             sqrt(1-a)
+#         )
+
+#         return R * c
 
 
-        return Response({
-            "count": len(final),
-            "data": final
-        })
+#     # --------------------------------
+#     # EXTRACT LAT LNG
+#     # --------------------------------
+#     def extract_lat_lng(
+#         self,
+#         url
+#     ):
+
+#         if not url:
+#             return None, None
+
+#         url = str(url).strip()
+
+
+#         # @lat,lng
+#         match = re.search(
+#             r'@([0-9\-.]+),([0-9\-.]+)',
+#             url
+#         )
+
+#         if match:
+#             return (
+#                 float(match.group(1)),
+#                 float(match.group(2))
+#             )
+
+
+#         # !2dLONG!3dLAT
+#         match = re.search(
+#             r'!2d([0-9\-.]+)!3d([0-9\-.]+)',
+#             url
+#         )
+
+#         if match:
+#             return (
+#                 float(match.group(2)),
+#                 float(match.group(1))
+#             )
+
+
+#         # q=lat,lng
+#         match = re.search(
+#             r'q=([0-9\-.]+),([0-9\-.]+)',
+#             url
+#         )
+
+#         if match:
+#             return (
+#                 float(match.group(1)),
+#                 float(match.group(2))
+#             )
+
+#         return None, None
+
+
+#     # --------------------------------
+#     # GET
+#     # --------------------------------
+#     def get(self, request):
+
+#         try:
+#             user_lat = float(
+#                 request.GET.get("lat")
+#             )
+
+#             user_lng = float(
+#                 request.GET.get("lng")
+#             )
+
+#         except:
+#             return Response(
+#                 {
+#                     "error": "lat & lng required"
+#                 },
+#                 status=400
+#             )
+
+
+#         radius = request.GET.get(
+#             "radius"
+#         )
+
+#         radius = (
+#             float(radius)
+#             if radius else None
+#         )
+
+
+#         # --------------------------------
+#         # USER PROPERTIES
+#         # --------------------------------
+#         user_properties = Property.objects.select_related(
+#             "user",
+#             "category",
+#             "purpose"
+#         ).prefetch_related(
+#             "images"
+#         )
+
+
+#         # --------------------------------
+#         # AGENT PROPERTIES
+#         # --------------------------------
+#         agent_properties = AgentProperty.objects.select_related(
+#             "agent",
+#             "category",
+#             "purpose"
+#         )
+
+
+#         all_properties = list(
+#             chain(
+#                 user_properties,
+#                 agent_properties
+#             )
+#         )
+
+
+#         # --------------------------------
+#         # AUTH USER WISHLIST
+#         # --------------------------------
+#         wishlist_ids = set()
+
+#         auth = request.headers.get(
+#             "Authorization"
+#         )
+
+#         if auth:
+#             try:
+#                 token = auth.split()[1]
+
+#                 decoded = jwt.decode(
+#                     token,
+#                     settings.SECRET_KEY,
+#                     algorithms=["HS256"]
+#                 )
+
+#                 user_id = (
+#                     decoded.get("user_id")
+#                     or decoded.get("id")
+#                 )
+
+#                 if user_id:
+
+#                     wishlist_ids = set(
+#                         str(x)
+#                         for x in
+#                         Wishlist.objects.filter(
+#                             user_id=user_id
+#                         ).values_list(
+#                             "property_uuid",
+#                             flat=True
+#                         )
+#                     )
+
+#             except (
+#                 ExpiredSignatureError,
+#                 InvalidTokenError
+#             ):
+#                 pass
+
+
+#         # --------------------------------
+#         # DISTANCE FILTER
+#         # --------------------------------
+#         results = []
+
+#         for prop in all_properties:
+
+#             lat, lng = self.extract_lat_lng(
+#                 prop.location
+#             )
+
+#             if lat is None:
+#                 continue
+
+
+#             distance = self.haversine(
+#                 user_lat,
+#                 user_lng,
+#                 lat,
+#                 lng
+#             )
+
+
+#             if radius and distance > radius:
+#                 continue
+
+
+#             results.append(
+#                 (
+#                     prop,
+#                     distance
+#                 )
+#             )
+
+
+#         # nearest first
+#         results.sort(
+#             key=lambda x: x[1]
+#         )
+
+#         results = results[:20]
+
+
+#         properties = [
+#             item[0]
+#             for item in results
+#         ]
+
+
+#         serialized = CombinedPropertyListSerializer(
+#             properties,
+#             many=True,
+#             context={
+#                 "request": request,
+#                 "wishlist_ids": wishlist_ids
+#             }
+#         ).data
+
+
+#         final = []
+
+#         for i, item in enumerate(serialized):
+
+#             item["distance_km"] = round(
+#                 results[i][1],
+#                 2
+#             )
+
+#             final.append(item)
+
+
+#         return Response({
+#             "count": len(final),
+#             "data": final
+#         })
 
 import jwt
 
@@ -11613,6 +13859,7 @@ class PropertiesFilterAPIView(APIView):
 
         purpose = request.data.get("purpose")
         category = request.data.get("category")
+        state = request.data.get("state")  
         city = request.data.get("city")
         district = request.data.get("district")
         min_price = request.data.get("min_price")
@@ -11644,6 +13891,16 @@ class PropertiesFilterAPIView(APIView):
 
             agent_queryset = agent_queryset.filter(
                 category__name__icontains=category
+            )
+
+        if state and state.lower() != "all":
+
+            user_queryset = user_queryset.filter(
+                state__icontains=state
+            )
+
+            agent_queryset = agent_queryset.filter(
+                state__icontains=state
             )
 
 
@@ -15039,893 +17296,14 @@ from rest_framework.permissions import AllowAny
 from users.models import Payment, UserProfile
 
 
-# class VerifyPaymentAPIView(APIView):
-
-#     authentication_classes = []
-#     permission_classes = [AllowAny]
-
-#     # =================================================
-#     # VALIDITY HELPER
-#     # =================================================
-#     def get_validity_days(self, validity):
-
-#         if not validity:
-#             return 30
-
-#         try:
-#             nums = re.findall(r"\d+", str(validity))
-#             return int(nums[0]) if nums else int(validity)
-#         except Exception:
-#             return 30
-
-#     # =================================================
-#     # GET PLAN DETAILS
-#     # =================================================
-#     def get_plan_details(self, payment):
-
-#         plan_map = [
-#             "user_plan",
-#             "premium_plan",
-#             "elite_plan",
-#             "agent_plan",
-#             "single_property_package"
-#         ]
-
-#         for key in plan_map:
-#             plan = getattr(payment, key, None)
-#             if plan:
-#                 return {
-#                     "name": plan.name,
-#                     "validity": getattr(plan, "validity", None),
-#                     "price": getattr(plan, "price", None)
-#                 }
-
-#         if getattr(payment, "advertisement_package", None):
-#             return {
-#                 "name": payment.advertisement_package.name,
-#                 "validity": "1 Day",
-#                 "price": payment.advertisement_package.price_per_day
-#             }
-
-#         if getattr(payment, "reel_package", None):
-#             return {
-#                 "name": payment.reel_package.name,
-#                 "validity": "1 Day",
-#                 "price": payment.reel_package.price_per_day
-#             }
-
-#         return {
-#             "name": None,
-#             "validity": None,
-#             "price": None
-#         }
-#     # =================================================
-#     # DEACTIVATE EXPIRED AGENT PLANS
-#     # =================================================
-#     def deactivate_expired_agent_plans(self, agent):
-
-#         Subscription.objects.filter(
-#             agent=agent,
-#             is_active=True,
-#             end_date__lt=timezone.now().date()
-#         ).update(
-#             is_active=False
-#         )
-#     def post(self, request):
-
-#         try:
-
-#             payment_id = request.data.get("payment_id")
-#             razorpay_order_id = request.data.get("razorpay_order_id")
-#             razorpay_payment_id = request.data.get("razorpay_payment_id")
-#             razorpay_signature = request.data.get("razorpay_signature")
-
-#             if not all([payment_id, razorpay_order_id, razorpay_payment_id, razorpay_signature]):
-#                 return Response({
-#                     "status": False,
-#                     "message": "All payment fields required"
-#                 }, status=400)
-
-#             payment = Payment.objects.filter(
-#                 id=payment_id,
-#                 razorpay_order_id=razorpay_order_id
-#             ).first()
-
-#             if not payment:
-#                 return Response({
-#                     "status": False,
-#                     "message": "Payment not found"
-#                 }, status=404)
-
-#             if payment.payment_status == "success":
-#                 return Response({
-#                     "status": True,
-#                     "message": "Payment already verified"
-#                 })
-
-#             generated_signature = hmac.new(
-#                 settings.RAZORPAY_KEY_SECRET.encode(),
-#                 f"{razorpay_order_id}|{razorpay_payment_id}".encode(),
-#                 hashlib.sha256
-#             ).hexdigest()
-
-#             if generated_signature != razorpay_signature:
-#                 return Response({
-#                     "status": False,
-#                     "message": "Invalid payment signature"
-#                 }, status=400)
-
-#             payment.razorpay_payment_id = razorpay_payment_id
-#             payment.razorpay_signature = razorpay_signature
-#             payment.payment_status = "success"
-#             payment.paid_at = timezone.now()
-#             payment.save()
-#             # ==========================================
-#             # REEL PURCHASE NOTIFICATION
-#             # ==========================================
-
-#             if payment.plan_type in [
-#                 "short_reel",
-#                 "cinematic_reel"
-#             ]:
-
-#                 ReelPurchaseNotification.objects.create(
-
-#                     title="New Reel Package Purchased",
-
-#                     message=(
-#                         f"{payment.agent.username} "
-#                         f"purchased "
-#                         f"{payment.reel_package.name}"
-#                     ),
-
-#                     notification_type="reel_purchase",
-
-#                     payment=payment,
-
-#                     agent=payment.agent
-#                 )
-#                 plan_details = self.get_plan_details(payment)
-
-#                 return Response({
-
-#                     "status": True,
-
-#                     "message": "Payment verified successfully. Our team will contact you shortly to discuss your reel requirements.",
-
-#                     "payment": {
-
-#                         "payment_db_id": str(payment.id),
-
-#                         "paid_by": payment.agent.username,
-
-#                         "paid_email": payment.agent.email,
-
-#                         "plan_type": payment.plan_type,
-
-#                         "plan_name": plan_details["name"],
-
-#                         "plan_price": plan_details["price"],
-
-#                         "payment_status": payment.payment_status,
-
-#                         "paid_at": payment.paid_at,
-
-#                         "created_at": payment.created_at,
-#                     }
-
-#                 }, status=200)
-#             # =================================================
-#             # SINGLE PROPERTY PAYMENT
-#             # =================================================
-
-#             if payment.single_property_package:
-
-#                 cache_key = request.data.get("cache_key")
-
-#                 if not cache_key:
-
-#                     return Response({
-
-#                         "status": False,
-
-#                         "message": "cache_key required"
-
-#                     }, status=400)
-
-#                 property_data = cache.get(cache_key)
-
-#                 if not property_data:
-
-#                     return Response({
-
-#                         "status": False,
-
-#                         "message": "Property data expired"
-
-#                     }, status=400)
-
-#                 from django.core.files.base import ContentFile
-
-#                 import base64
-
-#                 # Category
-#                 category_value = property_data.get("category")
-
-#                 if str(category_value).isdigit():
-#                     category = Category.objects.get(id=int(category_value))
-#                 else:
-#                     category = Category.objects.get(name__iexact=category_value)
-
-#                 # Purpose
-#                 purpose_value = property_data.get("purpose")
-
-#                 if str(purpose_value).isdigit():
-#                     purpose = Purpose.objects.get(id=int(purpose_value))
-#                 else:
-#                     purpose = Purpose.objects.get(name__iexact=purpose_value)
-
-#                 # Subcategory
-#                 subcategory = None
-
-#                 subcategory_value = property_data.get("subcategory")
-
-#                 if subcategory_value:
-
-#                     if str(subcategory_value).isdigit():
-#                         subcategory = Subcategory.objects.get(
-#                             id=int(subcategory_value)
-#                         )
-
-#                     else:
-#                         subcategory = Subcategory.objects.get(
-#                             name__iexact=subcategory_value
-#                         )
-
-#                 property_obj = Property.objects.create(
-
-#                     user=payment.user,
-
-#                     category=category,
-
-#                     subcategory=subcategory,
-
-#                     purpose=purpose,
-
-#                     label=property_data.get("label"),
-
-#                     description=property_data.get("description"),
-
-#                     price=property_data.get("price"),
-
-#                     perprice=property_data.get("perprice"),
-
-#                     deposit=property_data.get("deposit"),
-
-#                     phone=property_data.get("phone"),
-
-#                     whatsapp=property_data.get("whatsapp"),
-
-#                     city=property_data.get("city"),
-
-#                     district=property_data.get("district"),
-
-#                     state=property_data.get("state"),
-
-#                     taluk=property_data.get("taluk"),
-
-#                     village=property_data.get("village"),
-
-#                     pincode=property_data.get("pincode"),
-
-#                     location=property_data.get("location"),
-
-#                     selling_points=property_data.get("selling_points"),
-
-#                     land_mark=property_data.get("landmarks"),
-
-#                     paid="yes",
-
-#                     single_property_package=payment.single_property_package,
-
-#                     single_property_edit_limit=payment.single_property_package.edit_limit,
-
-#                     single_property_edit_used=0
-#                 )
-#                 # try:
-#                 #     if property_data.get("main_image"):
-
-#                 #         image_data = base64.b64decode(
-#                 #             property_data["main_image"]
-#                 #         )
-
-#                 #         property_obj.image.save(
-#                 #             property_data["main_image_name"],
-#                 #             ContentFile(
-#                 #                 image_data,
-#                 #                 name=property_data["main_image_name"]
-#                 #             ),
-#                 #             save=True
-#                 #         )
-
-#                 # except Exception as e:
-#                 #     print("MAIN IMAGE ERROR:", e)
-#                 #     raise
-
-#                 # try:
-
-#                 #     for img in property_data.get("multiple_images", []):
-
-#                 #         image_data = base64.b64decode(
-#                 #             img["content"]
-#                 #         )
-
-#                 #         property_image = PropertyImage(
-#                 #             property=property_obj
-#                 #         )
-
-#                 #         property_image.image.save(
-#                 #             img["name"],
-#                 #             ContentFile(image_data),
-#                 #             save=False
-#                 #         )
-
-#                 #         property_image.save()
-
-#                 # except Exception as e:
-
-#                 #     print("MULTIPLE IMAGE ERROR:", str(e))
-                
-
-#                 for img in property_data.get("multiple_images", []):
-
-#                     try:
-
-#                         image_bytes = base64.b64decode(
-#                             img["content"]
-#                         )
-
-#                         suffix = os.path.splitext(
-#                             img["name"]
-#                         )[1]
-
-#                         with tempfile.NamedTemporaryFile(
-#                             suffix=suffix,
-#                             delete=False
-#                         ) as temp_file:
-
-#                             temp_file.write(image_bytes)
-
-#                             temp_path = temp_file.name
-
-#                         # Upload to Cloudinary
-#                         upload_result = cloudinary.uploader.upload(
-#                             temp_path,
-#                             folder="properties/multiple"
-#                         )
-
-#                         # Save only the public_id
-#                         PropertyImage.objects.create(
-
-#                             property=property_obj,
-
-#                             image=upload_result["public_id"]
-
-#                         )
-
-#                     except Exception as e:
-
-#                         print("MULTIPLE IMAGE ERROR:", str(e))
-
-#                     finally:
-
-#                         if os.path.exists(temp_path):
-#                             os.remove(temp_path)
-
-#                     # Don't stop payment verification if image upload fails
-#                     pass
-#                 if property_data.get("amenities"):
-
-#                     amenities = Amenities.objects.filter(
-
-#                         id__in=property_data["amenities"]
-
-#                     )
-
-#                     property_obj.amenities.set(amenities)
-#                 PropertyFeature.objects.filter(
-#                     property=property_obj
-#                 ).delete()
-
-#                 for feature in property_data.get("field_values", []):
-
-#                     if not isinstance(feature, dict):
-#                         continue
-
-#                     field_name = str(
-#                         feature.get("name", "")
-#                     ).strip()
-
-#                     if not field_name:
-#                         continue
-
-#                     field = SubcategoryField.objects.filter(
-
-#                         subcategory=property_obj.subcategory,
-
-#                         field_name__iexact=field_name
-
-#                     ).first()
-
-#                     if not field:
-#                         continue
-
-#                     PropertyFeature.objects.create(
-
-#                         property=property_obj,
-
-#                         field=field,
-
-#                         value=json.dumps({
-
-#                             "option": feature.get("option"),
-
-#                             "value": feature.get("value"),
-
-#                             "icon": feature.get("icon")
-
-#                         })
-
-#                     )
-#                 profile = UserProfile.objects.get(user=payment.user)
-#                 payment.user.profile.increase_property_usage(
-#                     property_obj.category.name
-#                 )
-#                 print("Calling increase_property_usage")
-#                 print("Payment User:", payment.user.id)
-#                 print("Property Category:", property_obj.category.name)
-#                 print("Profile Exists:", hasattr(payment.user, "profile"))
-#                 cache.delete(cache_key)
-#                 return Response({
-
-#                     "status": True,
-
-#                     "message": "Payment verified successfully",
-
-#                     "property_id": str(property_obj.id),
-
-#                     "payment": {
-
-#                         "payment_db_id": str(payment.id),
-
-#                         "plan_type": payment.plan_type,
-
-#                         "plan_name": payment.single_property_package.name,
-
-#                         "amount_paid": str(payment.amount),
-
-#                         "payment_status": payment.payment_status,
-
-#                         "paid_at": payment.paid_at
-
-#                     }
-
-#                 })
-
-#             if payment.agent:
-
-#                 agent = payment.agent
-
-#                 self.deactivate_expired_agent_plans(agent)
-
-#                 active_subscriptions = Subscription.objects.filter(
-#                     agent=agent,
-#                     is_active=True,
-#                     end_date__gt=timezone.now().date()
-#                 )
-
-#                 if active_subscriptions.count() >= 2:
-
-#                     return Response({
-
-#                         "status": False,
-
-#                         "message": "Maximum 2 active agent plans allowed"
-
-#                     }, status=400)
-
-#                 plan_name = ""
-
-#                 validity_days = 30
-
-#                 property_limit = 0
-#                 featured_limit = 0
-
-#                 if payment.premium_plan:
-#                     plan_type = "premium"
-#                     plan_name = payment.premium_plan.name
-
-#                     validity_days = payment.premium_plan.validity
-
-#                     property_limit = payment.premium_plan.total_listing
-
-#                 elif payment.elite_plan:
-#                     plan_type = "elite"
-#                     plan_name = payment.elite_plan.name
-
-#                     validity_days = payment.elite_plan.plan_validity_days
-
-#                     property_limit = payment.elite_plan.total_property_listings
-#                     featured_limit = payment.elite_plan.featured_listings_limit
-
-#                 elif payment.agent_plan:
-#                     plan_type = "basic"
-#                     plan_name = payment.agent_plan.name
-
-#                     validity_days = getattr(
-#                         payment.agent_plan,
-#                         "validity",
-#                         30
-#                     )
-
-#                     property_limit = getattr(
-#                         payment.agent_plan,
-#                         "property_limit",
-#                         0
-#                     )
-#                 edit_limit = 0
-
-#                 if payment.premium_plan and payment.premium_plan.edit:
-
-#                     match = re.search(
-#                         r"(\d+)",
-#                         str(payment.premium_plan.edit)
-#                     )
-
-#                     if match:
-#                         edit_limit = int(match.group(1))
-
-#                 elif payment.elite_plan and payment.elite_plan.edit:
-
-#                     match = re.search(
-#                         r"(\d+)",
-#                         str(payment.elite_plan.edit)
-#                     )
-
-#                     if match:
-#                         edit_limit = int(match.group(1))
-
-#                 Subscription.objects.create(
-#                     payment=payment,
-#                     agent=agent,
-#                     plan_type=plan_type,
-#                     plan_name=plan_name,
-#                     property_limit=property_limit,
-#                     used_listings=0,
-#                     edit_limit=edit_limit,
-#                     edit_used=0,
-#                     featured_limit=featured_limit,
-#                     featured_used=0,
-#                     start_date=timezone.now().date(),
-#                     end_date=timezone.now().date() + timedelta(days=int(validity_days)),
-#                     is_active=True
-#                 )
-
-#             if payment.pending_registration:
-
-#                 pending = payment.pending_registration
-
-#                 if pending.status == "pending":
-
-#                     pending.status = "approved"
-
-#                     pending.save()
-#                     # agent = pending.agent
-#                     pending.refresh_from_db()
-
-#                     agent = AgentUserProfile.objects.filter(
-
-#                         email=pending.email
-
-#                     ).first()
-
-#                     if not agent:
-
-#                         return Response({
-
-#                             "status": False,
-
-#                             "message": "Agent profile creation failed"
-
-#                         }, status=400) 
-
-#                     self.deactivate_expired_agent_plans(agent)
-
-#                     active_subscriptions = Subscription.objects.filter(
-
-#                         agent=agent,
-
-#                         is_active=True,
-
-#                         end_date__gt=timezone.now().date()
-
-#                     )
-
-#                     if active_subscriptions.count() >= 2:
-
-#                         return Response({
-
-#                             "status": False,
-
-#                             "message": "Maximum 2 active agent plans allowed"
-
-#                         }, status=400)
-
-#                     plan_name = "Agent Plan"
-
-#                     validity_days = 30
-
-#                     property_limit = 0
-#                     featured_limit = 0
-
-#                     if pending.premium_plan:
-#                         plan_type = "premium"
-#                         plan_name = pending.premium_plan.name
-
-#                         validity_days = pending.premium_plan.validity
-
-#                         property_limit = pending.premium_plan.total_listing
-
-#                     elif pending.elite_plan:
-#                         plan_type = "elite"
-#                         plan_name = pending.elite_plan.name
-
-#                         validity_days = pending.elite_plan.plan_validity_days
-
-#                         property_limit = pending.elite_plan.total_property_listings
-#                         featured_limit = pending.elite_plan.featured_listings_limit
-
-#                     elif payment.agent_plan:
-#                         plan_type = "basic"
-#                         plan_name = payment.agent_plan.name
-
-#                         validity_days = getattr(
-
-#                             payment.agent_plan,
-
-#                             "validity",
-
-#                             30
-
-#                         )
-
-#                         property_limit = getattr(
-
-#                             payment.agent_plan,
-
-#                             "property_limit",
-
-#                             0
-
-#                         )
-#                     edit_limit = 0
-
-#                     if pending.premium_plan and pending.premium_plan.edit:
-
-#                         match = re.search(
-#                             r"(\d+)",
-#                             str(pending.premium_plan.edit)
-#                         )
-
-#                         if match:
-#                             edit_limit = int(match.group(1))
-
-#                     elif pending.elite_plan and pending.elite_plan.edit:
-
-#                         match = re.search(
-#                             r"(\d+)",
-#                             str(pending.elite_plan.edit)
-#                         )
-
-#                         if match:
-#                             edit_limit = int(match.group(1))
-
-#                     Subscription.objects.create(
-#                         payment=payment,
-#                         agent=agent,
-#                         plan_type=plan_type,
-#                         plan_name=plan_name,
-#                         property_limit=property_limit,
-#                         used_listings=0,
-#                         edit_limit=edit_limit,
-#                         edit_used=0,
-#                         featured_limit=featured_limit,
-#                         featured_used=0,
-#                         start_date=timezone.now().date(),
-#                         end_date=timezone.now().date() + timedelta(days=int(validity_days)),
-#                         is_active=True
-#                     )
-
-#             if payment.user and payment.user_plan:
-
-#                 profile = UserProfile.objects.filter(
-#                     user=payment.user
-#                 ).first()
-
-#                 if profile:
-#                     expired_subscriptions = UserPlanSubscription.objects.filter(
-#                         user=payment.user,
-#                         is_active=True,
-#                         expiry_date__lt=timezone.now()
-#                     )
-
-#                     expired_subscriptions.update(
-#                         is_active=False
-#                     )
-
-#                     active_subscriptions = UserPlanSubscription.objects.filter(
-#                         user=payment.user,
-#                         is_active=True,
-#                         expiry_date__gt=timezone.now()
-#                     )
-
-#                     if active_subscriptions.count() >= 2:
-
-#                         return Response({
-#                             "status": False,
-#                             "message": "Maximum 2 active plans allowed"
-#                         }, status=400)
-
-#                     # ==========================================
-#                     # VALIDITY
-#                     # ==========================================
-
-#                     validity_days = self.get_validity_days(
-#                         payment.user_plan.validity
-#                     )
-
-#                     now = timezone.now()
-
-#                     expiry_date = (
-#                         now +
-#                         timedelta(days=validity_days)
-#                     )
-
-#                     # ==========================================
-#                     # CREATE SUBSCRIPTION
-#                     # ==========================================
-
-#                     subscription = UserPlanSubscription.objects.create(
-#                         user=payment.user,
-#                         plan=payment.user_plan,
-#                         is_active=True,
-#                         expiry_date=expiry_date
-#                     )
-
-#                     subscriptions = UserPlanSubscription.objects.filter(
-#                         user=payment.user,
-#                         is_active=True,
-#                         expiry_date__gt=timezone.now()
-#                     ).select_related("plan")
-
-#                     # ==========================================
-#                     # HIGHEST PLAN WINS
-#                     # ==========================================
-
-#                     highest_subscription = max(
-#                         subscriptions,
-#                         key=lambda x: (
-#                             int(
-#                                 re.findall(
-#                                     r"\d+",
-#                                     str(x.plan.property_listing_limit)
-#                                 )[0]
-#                             )
-#                             if re.findall(
-#                                 r"\d+",
-#                                 str(x.plan.property_listing_limit)
-#                             )
-#                             else 999999
-#                         )
-#                     )
-
-#                     UserPlanSubscription.objects.filter(
-#                         user=payment.user
-#                     ).update(
-#                         is_primary=False
-#                     )
-
-#                     highest_subscription.is_primary = True
-
-#                     highest_subscription.save(
-#                         update_fields=["is_primary"]
-#                     )
-
-#                     active_plan = highest_subscription.plan
-
-#                     # ==========================================
-#                     # PROFILE UPDATE
-#                     # ==========================================
-
-#                     profile.user_plan = active_plan
-
-#                     profile.is_paid_user = True
-
-#                     profile.user_role = "owner"
-
-#                     profile.plan_start_date = (
-#                         highest_subscription.purchased_at
-#                     )
-
-#                     profile.plan_expiry_date = (
-#                         highest_subscription.expiry_date
-#                     )
-
-#                     profile.save()
-
-#                     payment.user.role = "owner"
-
-#                     payment.user.last_plan_expiry = (
-#                         highest_subscription.expiry_date
-#                     )
-
-#                     payment.user.save()
-
-#                     if hasattr(payment.user, "user_plans"):
-
-#                         payment.user.user_plans.add(
-#                             payment.user_plan
-#                         )
-#             active_plan = None
-#             profile = None
-
-#             if payment.user:
-
-#                 profile = UserProfile.objects.filter(
-#                     user=payment.user
-#                 ).first()
-
-#                 if profile:
-
-#                     profile.check_plan_expiry()
-
-#                     active_plan = profile.active_plan
-#             plan_details = self.get_plan_details(payment)
-
-#             return Response({
-#                 "status": True,
-#                 "message": "Payment verified successfully",
-#                 "payment": {
-#                     "payment_db_id": str(payment.id),
-#                     "paid_by": payment.user.name if payment.user else payment.agent.username,
-#                     "paid_email": payment.user.email if payment.user else payment.agent.email,
-#                     "plan_type": payment.plan_type,
-#                     "plan_name": plan_details["name"],
-#                     "plan_validity": plan_details["validity"],
-#                     "plan_price": plan_details["price"],
-#                     "amount_paid": str(payment.amount),
-#                     "payment_status": payment.payment_status,
-#                     "paid_at": payment.paid_at,
-#                     "created_at": payment.created_at
-#                 },
-#             })
-
-#         except Exception as e:
-#             return Response({
-#                 "status": False,
-#                 "message": "Payment verification failed",
-#                 "error": str(e)
-#             }, status=400)
-
-
 class VerifyPaymentAPIView(APIView):
 
     authentication_classes = []
     permission_classes = [AllowAny]
 
-    # ==========================================================
+    # =================================================
     # VALIDITY HELPER
-    # ==========================================================
+    # =================================================
     def get_validity_days(self, validity):
 
         if not validity:
@@ -15933,18 +17311,13 @@ class VerifyPaymentAPIView(APIView):
 
         try:
             nums = re.findall(r"\d+", str(validity))
-
-            if nums:
-                return int(nums[0])
-
-            return int(validity)
-
+            return int(nums[0]) if nums else int(validity)
         except Exception:
             return 30
 
-    # ==========================================================
+    # =================================================
     # GET PLAN DETAILS
-    # ==========================================================
+    # =================================================
     def get_plan_details(self, payment):
 
         plan_map = [
@@ -15956,29 +17329,22 @@ class VerifyPaymentAPIView(APIView):
         ]
 
         for key in plan_map:
-
             plan = getattr(payment, key, None)
-
             if plan:
-
                 return {
                     "name": plan.name,
                     "validity": getattr(plan, "validity", None),
                     "price": getattr(plan, "price", None)
                 }
 
-        # Advertisement package
         if getattr(payment, "advertisement_package", None):
-
             return {
                 "name": payment.advertisement_package.name,
                 "validity": "1 Day",
                 "price": payment.advertisement_package.price_per_day
             }
 
-        # Reel package
         if getattr(payment, "reel_package", None):
-
             return {
                 "name": payment.reel_package.name,
                 "validity": "1 Day",
@@ -15990,10 +17356,9 @@ class VerifyPaymentAPIView(APIView):
             "validity": None,
             "price": None
         }
-
-    # ==========================================================
+    # =================================================
     # DEACTIVATE EXPIRED AGENT PLANS
-    # ==========================================================
+    # =================================================
     def deactivate_expired_agent_plans(self, agent):
 
         Subscription.objects.filter(
@@ -16003,313 +17368,59 @@ class VerifyPaymentAPIView(APIView):
         ).update(
             is_active=False
         )
-
-    # ==========================================================
-    # CREATE AGENT SUBSCRIPTION
-    # ==========================================================
-    def create_agent_subscription(self, payment, agent):
-
-        today = timezone.now().date()
-
-        # ------------------------------------------------------
-        # Deactivate expired subscriptions first
-        # ------------------------------------------------------
-        self.deactivate_expired_agent_plans(agent)
-
-        # ------------------------------------------------------
-        # Check active subscriptions
-        # ------------------------------------------------------
-        active_subscriptions = Subscription.objects.filter(
-            agent=agent,
-            is_active=True,
-            end_date__gte=today
-        )
-
-        # ------------------------------------------------------
-        # Maximum 2 active plans
-        # ------------------------------------------------------
-        if active_subscriptions.count() >= 2:
-
-            # If this payment already has a subscription,
-            # don't create another one.
-            existing_for_payment = Subscription.objects.filter(
-                payment=payment
-            ).first()
-
-            if existing_for_payment:
-                return existing_for_payment
-
-            raise ValueError(
-                "Maximum 2 active agent plans allowed"
-            )
-
-        # ------------------------------------------------------
-        # Prevent duplicate subscription for same payment
-        # ------------------------------------------------------
-        existing = Subscription.objects.filter(
-            payment=payment
-        ).first()
-
-        if existing:
-
-            return existing
-
-        # ------------------------------------------------------
-        # Default values
-        # ------------------------------------------------------
-        plan_type = "basic"
-        plan_name = "Agent Plan"
-        validity_days = 30
-        property_limit = 0
-        featured_limit = 0
-        edit_limit = 0
-
-        # ======================================================
-        # PREMIUM PLAN
-        # ======================================================
-        if payment.premium_plan:
-
-            plan_type = "premium"
-
-            plan_name = payment.premium_plan.name
-
-            validity_days = payment.premium_plan.validity
-
-            property_limit = payment.premium_plan.total_listing
-
-            if payment.premium_plan.edit:
-
-                match = re.search(
-                    r"(\d+)",
-                    str(payment.premium_plan.edit)
-                )
-
-                if match:
-                    edit_limit = int(match.group(1))
-
-        # ======================================================
-        # ELITE PLAN
-        # ======================================================
-        elif payment.elite_plan:
-
-            plan_type = "elite"
-
-            plan_name = payment.elite_plan.name
-
-            validity_days = payment.elite_plan.plan_validity_days
-
-            property_limit = (
-                payment.elite_plan.total_property_listings
-            )
-
-            featured_limit = (
-                payment.elite_plan.featured_listings_limit
-            )
-
-            if payment.elite_plan.edit:
-
-                match = re.search(
-                    r"(\d+)",
-                    str(payment.elite_plan.edit)
-                )
-
-                if match:
-                    edit_limit = int(match.group(1))
-
-        # ======================================================
-        # BASIC / AGENT PLAN
-        # ======================================================
-        elif payment.agent_plan:
-
-            plan_type = "basic"
-
-            plan_name = payment.agent_plan.name
-
-            validity_days = getattr(
-                payment.agent_plan,
-                "validity",
-                30
-            )
-
-            property_limit = getattr(
-                payment.agent_plan,
-                "property_limit",
-                0
-            )
-
-        # ======================================================
-        # CREATE SUBSCRIPTION
-        # ======================================================
-        # subscription = Subscription.objects.create(
-
-        #     payment=payment,
-
-        #     agent=agent,
-
-        #     plan_type=plan_type,
-
-        #     plan_name=plan_name,
-
-        #     property_limit=property_limit,
-
-        #     used_listings=0,
-
-        #     edit_limit=edit_limit,
-
-        #     edit_used=0,
-
-        #     featured_limit=featured_limit,
-
-        #     featured_used=0,
-
-        #     start_date=today,
-
-        #     end_date=today + timedelta(
-        #         days=int(validity_days)
-        #     ),
-
-        #     is_active=True
-        # )
-
-        subscription = Subscription.objects.filter(
-            payment=payment
-        ).first()
-
-        if not subscription:
-            subscription = Subscription.objects.create(
-                payment=payment,
-                agent=agent,
-                plan_type=plan_type,
-                plan_name=plan_name,
-                property_limit=property_limit,
-                used_listings=0,
-                edit_limit=edit_limit,
-                edit_used=0,
-                featured_limit=featured_limit,
-                featured_used=0,
-                start_date=timezone.now().date(),
-                end_date=timezone.now().date() + timedelta(
-                    days=int(validity_days)
-                ),
-                is_active=True
-            )
-
-        # ======================================================
-        # IMPORTANT
-        # Sync Agent Profile
-        # ======================================================
-        agent.sync_subscription()
-
-        return subscription
-
-    # ==========================================================
-    # POST
-    # ==========================================================
     def post(self, request):
 
         try:
 
-            # ==================================================
-            # PAYMENT DATA
-            # ==================================================
             payment_id = request.data.get("payment_id")
+            razorpay_order_id = request.data.get("razorpay_order_id")
+            razorpay_payment_id = request.data.get("razorpay_payment_id")
+            razorpay_signature = request.data.get("razorpay_signature")
 
-            razorpay_order_id = request.data.get(
-                "razorpay_order_id"
-            )
-
-            razorpay_payment_id = request.data.get(
-                "razorpay_payment_id"
-            )
-
-            razorpay_signature = request.data.get(
-                "razorpay_signature"
-            )
-
-            # ==================================================
-            # VALIDATE PAYMENT DATA
-            # ==================================================
-            if not all([
-                payment_id,
-                razorpay_order_id,
-                razorpay_payment_id,
-                razorpay_signature
-            ]):
-
+            if not all([payment_id, razorpay_order_id, razorpay_payment_id, razorpay_signature]):
                 return Response({
-
                     "status": False,
-
                     "message": "All payment fields required"
-
                 }, status=400)
 
-            # ==================================================
-            # GET PAYMENT
-            # ==================================================
             payment = Payment.objects.filter(
-
                 id=payment_id,
-
                 razorpay_order_id=razorpay_order_id
-
             ).first()
 
             if not payment:
-
                 return Response({
-
                     "status": False,
-
                     "message": "Payment not found"
-
                 }, status=404)
 
-            # ==================================================
-            # VERIFY RAZORPAY SIGNATURE
-            # ==================================================
+            if payment.payment_status == "success":
+                return Response({
+                    "status": True,
+                    "message": "Payment already verified"
+                })
+
             generated_signature = hmac.new(
-
                 settings.RAZORPAY_KEY_SECRET.encode(),
-
                 f"{razorpay_order_id}|{razorpay_payment_id}".encode(),
-
                 hashlib.sha256
-
             ).hexdigest()
 
             if generated_signature != razorpay_signature:
-
                 return Response({
-
                     "status": False,
-
                     "message": "Invalid payment signature"
-
                 }, status=400)
 
-            # ==================================================
-            # UPDATE PAYMENT
-            # ==================================================
-            if payment.payment_status != "success":
+            payment.razorpay_payment_id = razorpay_payment_id
+            payment.razorpay_signature = razorpay_signature
+            payment.payment_status = "success"
+            payment.paid_at = timezone.now()
+            payment.save()
+            # ==========================================
+            # REEL PURCHASE NOTIFICATION
+            # ==========================================
 
-                payment.razorpay_payment_id = (
-                    razorpay_payment_id
-                )
-
-                payment.razorpay_signature = (
-                    razorpay_signature
-                )
-
-                payment.payment_status = "success"
-
-                payment.paid_at = timezone.now()
-
-                payment.save()
-
-            # ==================================================
-            # REEL PURCHASE
-            # ==================================================
             if payment.plan_type in [
                 "short_reel",
                 "cinematic_reel"
@@ -16331,38 +17442,21 @@ class VerifyPaymentAPIView(APIView):
 
                     agent=payment.agent
                 )
-
-                plan_details = self.get_plan_details(
-                    payment
-                )
+                plan_details = self.get_plan_details(payment)
 
                 return Response({
 
                     "status": True,
 
-                    "message": (
-                        "Payment verified successfully. "
-                        "Our team will contact you shortly "
-                        "to discuss your reel requirements."
-                    ),
+                    "message": "Payment verified successfully. Our team will contact you shortly to discuss your reel requirements.",
 
                     "payment": {
 
-                        "payment_db_id": str(
-                            payment.id
-                        ),
+                        "payment_db_id": str(payment.id),
 
-                        "paid_by": (
-                            payment.agent.username
-                            if payment.agent
-                            else None
-                        ),
+                        "paid_by": payment.agent.username,
 
-                        "paid_email": (
-                            payment.agent.email
-                            if payment.agent
-                            else None
-                        ),
+                        "paid_email": payment.agent.email,
 
                         "plan_type": payment.plan_type,
 
@@ -16370,26 +17464,21 @@ class VerifyPaymentAPIView(APIView):
 
                         "plan_price": plan_details["price"],
 
-                        "payment_status": (
-                            payment.payment_status
-                        ),
+                        "payment_status": payment.payment_status,
 
                         "paid_at": payment.paid_at,
 
                         "created_at": payment.created_at,
-
                     }
 
                 }, status=200)
-
-            # ==================================================
+            # =================================================
             # SINGLE PROPERTY PAYMENT
-            # ==================================================
+            # =================================================
+
             if payment.single_property_package:
 
-                cache_key = request.data.get(
-                    "cache_key"
-                )
+                cache_key = request.data.get("cache_key")
 
                 if not cache_key:
 
@@ -16401,9 +17490,7 @@ class VerifyPaymentAPIView(APIView):
 
                     }, status=400)
 
-                property_data = cache.get(
-                    cache_key
-                )
+                property_data = cache.get(cache_key)
 
                 if not property_data:
 
@@ -16415,84 +17502,39 @@ class VerifyPaymentAPIView(APIView):
 
                     }, status=400)
 
-                from django.core.files.base import ContentFile
-
-                import base64
-
-                # ----------------------------------------------
-                # CATEGORY
-                # ----------------------------------------------
-                category_value = property_data.get(
-                    "category"
-                )
+                # Category
+                category_value = property_data.get("category")
 
                 if str(category_value).isdigit():
-
-                    category = Category.objects.get(
-                        id=int(category_value)
-                    )
-
+                    category = Category.objects.get(id=int(category_value))
                 else:
+                    category = Category.objects.get(name__iexact=category_value)
 
-                    category = Category.objects.get(
-                        name__iexact=category_value
-                    )
-
-                # ----------------------------------------------
-                # PURPOSE
-                # ----------------------------------------------
-                purpose_value = property_data.get(
-                    "purpose"
-                )
+                # Purpose
+                purpose_value = property_data.get("purpose")
 
                 if str(purpose_value).isdigit():
-
-                    purpose = Purpose.objects.get(
-                        id=int(purpose_value)
-                    )
-
+                    purpose = Purpose.objects.get(id=int(purpose_value))
                 else:
+                    purpose = Purpose.objects.get(name__iexact=purpose_value)
 
-                    purpose = Purpose.objects.get(
-                        name__iexact=purpose_value
-                    )
-
-                # ----------------------------------------------
-                # SUBCATEGORY
-                # ----------------------------------------------
+                # Subcategory
                 subcategory = None
 
-                subcategory_value = property_data.get(
-                    "subcategory"
-                )
+                subcategory_value = property_data.get("subcategory")
 
                 if subcategory_value:
 
-                    if str(
-                        subcategory_value
-                    ).isdigit():
-
-                        subcategory = (
-                            Subcategory.objects.get(
-                                id=int(
-                                    subcategory_value
-                                )
-                            )
+                    if str(subcategory_value).isdigit():
+                        subcategory = Subcategory.objects.get(
+                            id=int(subcategory_value)
                         )
 
                     else:
-
-                        subcategory = (
-                            Subcategory.objects.get(
-                                name__iexact=(
-                                    subcategory_value
-                                )
-                            )
+                        subcategory = Subcategory.objects.get(
+                            name__iexact=subcategory_value
                         )
 
-                # ----------------------------------------------
-                # CREATE PROPERTY
-                # ----------------------------------------------
                 property_obj = Property.objects.create(
 
                     user=payment.user,
@@ -16503,92 +17545,92 @@ class VerifyPaymentAPIView(APIView):
 
                     purpose=purpose,
 
-                    label=property_data.get(
-                        "label"
-                    ),
+                    label=property_data.get("label"),
 
-                    description=property_data.get(
-                        "description"
-                    ),
+                    description=property_data.get("description"),
 
-                    price=property_data.get(
-                        "price"
-                    ),
+                    price=property_data.get("price"),
 
-                    perprice=property_data.get(
-                        "perprice"
-                    ),
+                    perprice=property_data.get("perprice"),
 
-                    deposit=property_data.get(
-                        "deposit"
-                    ),
+                    deposit=property_data.get("deposit"),
 
-                    phone=property_data.get(
-                        "phone"
-                    ),
+                    phone=property_data.get("phone"),
 
-                    whatsapp=property_data.get(
-                        "whatsapp"
-                    ),
+                    whatsapp=property_data.get("whatsapp"),
 
-                    city=property_data.get(
-                        "city"
-                    ),
+                    city=property_data.get("city"),
 
-                    district=property_data.get(
-                        "district"
-                    ),
+                    district=property_data.get("district"),
 
-                    state=property_data.get(
-                        "state"
-                    ),
+                    state=property_data.get("state"),
 
-                    taluk=property_data.get(
-                        "taluk"
-                    ),
+                    taluk=property_data.get("taluk"),
 
-                    village=property_data.get(
-                        "village"
-                    ),
+                    village=property_data.get("village"),
 
-                    pincode=property_data.get(
-                        "pincode"
-                    ),
+                    pincode=property_data.get("pincode"),
 
-                    location=property_data.get(
-                        "location"
-                    ),
+                    location=property_data.get("location"),
 
-                    selling_points=property_data.get(
-                        "selling_points"
-                    ),
+                    selling_points=property_data.get("selling_points"),
 
-                    land_mark=property_data.get(
-                        "landmarks"
-                    ),
+                    land_mark=property_data.get("landmarks"),
 
                     paid="yes",
 
-                    single_property_package=(
-                        payment.single_property_package
-                    ),
+                    single_property_package=payment.single_property_package,
 
-                    single_property_edit_limit=(
-                        payment.single_property_package.edit_limit
-                    ),
+                    single_property_edit_limit=payment.single_property_package.edit_limit,
 
                     single_property_edit_used=0
                 )
+                # try:
+                #     if property_data.get("main_image"):
 
-                # ----------------------------------------------
-                # MULTIPLE IMAGES
-                # ----------------------------------------------
-                for img in property_data.get(
-                    "multiple_images",
-                    []
-                ):
+                #         image_data = base64.b64decode(
+                #             property_data["main_image"]
+                #         )
 
-                    temp_path = None
+                #         property_obj.image.save(
+                #             property_data["main_image_name"],
+                #             ContentFile(
+                #                 image_data,
+                #                 name=property_data["main_image_name"]
+                #             ),
+                #             save=True
+                #         )
+
+                # except Exception as e:
+                #     print("MAIN IMAGE ERROR:", e)
+                #     raise
+
+                # try:
+
+                #     for img in property_data.get("multiple_images", []):
+
+                #         image_data = base64.b64decode(
+                #             img["content"]
+                #         )
+
+                #         property_image = PropertyImage(
+                #             property=property_obj
+                #         )
+
+                #         property_image.image.save(
+                #             img["name"],
+                #             ContentFile(image_data),
+                #             save=False
+                #         )
+
+                #         property_image.save()
+
+                # except Exception as e:
+
+                #     print("MULTIPLE IMAGE ERROR:", str(e))
+                
+
+                for img in property_data.get("multiple_images", []):
 
                     try:
 
@@ -16605,116 +17647,70 @@ class VerifyPaymentAPIView(APIView):
                             delete=False
                         ) as temp_file:
 
-                            temp_file.write(
-                                image_bytes
-                            )
+                            temp_file.write(image_bytes)
 
-                            temp_path = (
-                                temp_file.name
-                            )
+                            temp_path = temp_file.name
 
-                        upload_result = (
-                            cloudinary.uploader.upload(
-                                temp_path,
-                                folder="properties/multiple"
-                            )
+                        # Upload to Cloudinary
+                        upload_result = cloudinary.uploader.upload(
+                            temp_path,
+                            folder="properties/multiple"
                         )
 
+                        # Save only the public_id
                         PropertyImage.objects.create(
 
                             property=property_obj,
 
-                            image=upload_result[
-                                "public_id"
-                            ]
+                            image=upload_result["public_id"]
 
                         )
 
                     except Exception as e:
 
-                        print(
-                            "MULTIPLE IMAGE ERROR:",
-                            str(e)
-                        )
+                        print("MULTIPLE IMAGE ERROR:", str(e))
 
                     finally:
 
-                        if (
-                            temp_path
-                            and os.path.exists(
-                                temp_path
-                            )
-                        ):
+                        if os.path.exists(temp_path):
+                            os.remove(temp_path)
 
-                            os.remove(
-                                temp_path
-                            )
+                    # Don't stop payment verification if image upload fails
+                    pass
+                if property_data.get("amenities"):
 
-                # ----------------------------------------------
-                # AMENITIES
-                # ----------------------------------------------
-                if property_data.get(
-                    "amenities"
-                ):
+                    amenities = Amenities.objects.filter(
 
-                    amenities = (
-                        Amenities.objects.filter(
-                            id__in=property_data[
-                                "amenities"
-                            ]
-                        )
+                        id__in=property_data["amenities"]
+
                     )
 
-                    property_obj.amenities.set(
-                        amenities
-                    )
-
-                # ----------------------------------------------
-                # PROPERTY FEATURES
-                # ----------------------------------------------
+                    property_obj.amenities.set(amenities)
                 PropertyFeature.objects.filter(
                     property=property_obj
                 ).delete()
 
-                for feature in property_data.get(
-                    "field_values",
-                    []
-                ):
+                for feature in property_data.get("field_values", []):
 
-                    if not isinstance(
-                        feature,
-                        dict
-                    ):
-
+                    if not isinstance(feature, dict):
                         continue
 
                     field_name = str(
-                        feature.get(
-                            "name",
-                            ""
-                        )
+                        feature.get("name", "")
                     ).strip()
 
                     if not field_name:
-
                         continue
 
-                    field = (
-                        SubcategoryField.objects.filter(
+                    field = SubcategoryField.objects.filter(
 
-                            subcategory=(
-                                property_obj.subcategory
-                            ),
+                        subcategory=property_obj.subcategory,
 
-                            field_name__iexact=(
-                                field_name
-                            )
+                        field_name__iexact=field_name
 
-                        ).first()
-                    )
+                    ).first()
 
                     if not field:
-
                         continue
 
                     PropertyFeature.objects.create(
@@ -16725,90 +17721,43 @@ class VerifyPaymentAPIView(APIView):
 
                         value=json.dumps({
 
-                            "option": feature.get(
-                                "option"
-                            ),
+                            "option": feature.get("option"),
 
-                            "value": feature.get(
-                                "value"
-                            ),
+                            "value": feature.get("value"),
 
-                            "icon": feature.get(
-                                "icon"
-                            )
+                            "icon": feature.get("icon")
 
                         })
 
                     )
-
-                # ----------------------------------------------
-                # USER PROFILE
-                # ----------------------------------------------
-                profile = UserProfile.objects.get(
-                    user=payment.user
-                )
-
+                profile = UserProfile.objects.get(user=payment.user)
                 payment.user.profile.increase_property_usage(
                     property_obj.category.name
                 )
-
-                print(
-                    "Calling increase_property_usage"
-                )
-
-                print(
-                    "Payment User:",
-                    payment.user.id
-                )
-
-                print(
-                    "Property Category:",
-                    property_obj.category.name
-                )
-
-                print(
-                    "Profile Exists:",
-                    hasattr(
-                        payment.user,
-                        "profile"
-                    )
-                )
-
-                cache.delete(
-                    cache_key
-                )
-
+                print("Calling increase_property_usage")
+                print("Payment User:", payment.user.id)
+                print("Property Category:", property_obj.category.name)
+                print("Profile Exists:", hasattr(payment.user, "profile"))
+                cache.delete(cache_key)
                 return Response({
 
                     "status": True,
 
-                    "message": (
-                        "Payment verified successfully"
-                    ),
+                    "message": "Payment verified successfully",
 
-                    "property_id": str(
-                        property_obj.id
-                    ),
+                    "property_id": str(property_obj.id),
 
                     "payment": {
 
-                        "payment_db_id": str(
-                            payment.id
-                        ),
+                        "payment_db_id": str(payment.id),
 
                         "plan_type": payment.plan_type,
 
-                        "plan_name": (
-                            payment.single_property_package.name
-                        ),
+                        "plan_name": payment.single_property_package.name,
 
-                        "amount_paid": str(
-                            payment.amount
-                        ),
+                        "amount_paid": str(payment.amount),
 
-                        "payment_status": (
-                            payment.payment_status
-                        ),
+                        "payment_status": payment.payment_status,
 
                         "paid_at": payment.paid_at
 
@@ -16816,165 +17765,622 @@ class VerifyPaymentAPIView(APIView):
 
                 })
 
-            # ==================================================
-            # AGENT SUBSCRIPTION
-            # ==================================================
-            #
-            # IMPORTANT:
-            # Agent subscription is handled ONLY HERE.
-            #
-            # We do NOT create subscription separately inside
-            # payment.agent and payment.pending_registration.
-            #
-            # This prevents duplicate subscriptions.
-            # ==================================================
-            if payment.agent or payment.pending_registration:
+            if payment.agent:
 
                 agent = payment.agent
 
-                # ----------------------------------------------
-                # If payment.agent is missing, get agent from
-                # pending registration.
-                # ----------------------------------------------
-                if not agent and payment.pending_registration:
+                self.deactivate_expired_agent_plans(agent)
 
-                    pending = payment.pending_registration
+                active_subscriptions = Subscription.objects.filter(
+                    agent=agent,
+                    is_active=True,
+                    end_date__gt=timezone.now().date()
+                )
 
-                    agent = (
-                        AgentUserProfile.objects.filter(
-                            email=pending.email
-                        ).first()
-                    )
-
-                if not agent:
+                if active_subscriptions.count() >= 2:
 
                     return Response({
 
                         "status": False,
 
-                        "message": (
-                            "Agent profile creation failed"
-                        )
+                        "message": "Maximum 2 active agent plans allowed"
 
                     }, status=400)
 
-                # ----------------------------------------------
-                # Make sure payment points to agent
-                # ----------------------------------------------
-                if not payment.agent:
+                plan_name = ""
 
-                    payment.agent = agent
+                validity_days = 30
 
-                    payment.save(
-                        update_fields=["agent"]
+                property_limit = 0
+                featured_limit = 0
+
+                if payment.premium_plan:
+                    plan_type = "premium"
+                    plan_name = payment.premium_plan.name
+
+                    validity_days = payment.premium_plan.validity
+
+                    property_limit = payment.premium_plan.total_listing
+
+                elif payment.elite_plan:
+                    plan_type = "elite"
+                    plan_name = payment.elite_plan.name
+
+                    validity_days = payment.elite_plan.plan_validity_days
+
+                    property_limit = payment.elite_plan.total_property_listings
+                    featured_limit = payment.elite_plan.featured_listings_limit
+
+                elif payment.agent_plan:
+                    plan_type = "basic"
+                    plan_name = payment.agent_plan.name
+
+                    validity_days = getattr(
+                        payment.agent_plan,
+                        "validity",
+                        30
                     )
 
-                # ----------------------------------------------
-                # Create subscription only once
-                # ----------------------------------------------
+                    property_limit = getattr(
+                        payment.agent_plan,
+                        "property_limit",
+                        0
+                    )
+                edit_limit = 0
+
+                if payment.premium_plan and payment.premium_plan.edit:
+
+                    match = re.search(
+                        r"(\d+)",
+                        str(payment.premium_plan.edit)
+                    )
+
+                    if match:
+                        edit_limit = int(match.group(1))
+
+                elif payment.elite_plan and payment.elite_plan.edit:
+
+                    match = re.search(
+                        r"(\d+)",
+                        str(payment.elite_plan.edit)
+                    )
+
+                    if match:
+                        edit_limit = int(match.group(1))
+
+                Subscription.objects.create(
+                    payment=payment,
+                    agent=agent,
+                    plan_type=plan_type,
+                    plan_name=plan_name,
+                    property_limit=property_limit,
+                    used_listings=0,
+                    edit_limit=edit_limit,
+                    edit_used=0,
+                    featured_limit=featured_limit,
+                    featured_used=0,
+                    start_date=timezone.now().date(),
+                    end_date=timezone.now().date() + timedelta(days=int(validity_days)),
+                    is_active=True
+                )
+
+            # if payment.pending_registration:
+
+            #     pending = payment.pending_registration
+
+            #     if pending.status == "pending":
+
+            #         pending.status = "approved"
+
+            #         pending.save()
+            #         # agent = pending.agent
+            #         pending.refresh_from_db()
+
+            #         agent = AgentUserProfile.objects.filter(
+
+            #             email=pending.email
+
+            #         ).first()
+
+            #         if not agent:
+
+            #             return Response({
+
+            #                 "status": False,
+
+            #                 "message": "Agent profile creation failed"
+
+            #             }, status=400) 
+
+            #         self.deactivate_expired_agent_plans(agent)
+
+            #         active_subscriptions = Subscription.objects.filter(
+
+            #             agent=agent,
+
+            #             is_active=True,
+
+            #             end_date__gt=timezone.now().date()
+
+            #         )
+
+            #         if active_subscriptions.count() >= 2:
+
+            #             return Response({
+
+            #                 "status": False,
+
+            #                 "message": "Maximum 2 active agent plans allowed"
+
+            #             }, status=400)
+
+            #         plan_name = "Agent Plan"
+
+            #         validity_days = 30
+
+            #         property_limit = 0
+            #         featured_limit = 0
+
+            #         if pending.premium_plan:
+            #             plan_type = "premium"
+            #             plan_name = pending.premium_plan.name
+
+            #             validity_days = pending.premium_plan.validity
+
+            #             property_limit = pending.premium_plan.total_listing
+
+            #         elif pending.elite_plan:
+            #             plan_type = "elite"
+            #             plan_name = pending.elite_plan.name
+
+            #             validity_days = pending.elite_plan.plan_validity_days
+
+            #             property_limit = pending.elite_plan.total_property_listings
+            #             featured_limit = pending.elite_plan.featured_listings_limit
+
+            #         elif payment.agent_plan:
+            #             plan_type = "basic"
+            #             plan_name = payment.agent_plan.name
+
+            #             validity_days = getattr(
+
+            #                 payment.agent_plan,
+
+            #                 "validity",
+
+            #                 30
+
+            #             )
+
+            #             property_limit = getattr(
+
+            #                 payment.agent_plan,
+
+            #                 "property_limit",
+
+            #                 0
+
+            #             )
+            #         edit_limit = 0
+
+            #         if pending.premium_plan and pending.premium_plan.edit:
+
+            #             match = re.search(
+            #                 r"(\d+)",
+            #                 str(pending.premium_plan.edit)
+            #             )
+
+            #             if match:
+            #                 edit_limit = int(match.group(1))
+
+            #         elif pending.elite_plan and pending.elite_plan.edit:
+
+            #             match = re.search(
+            #                 r"(\d+)",
+            #                 str(pending.elite_plan.edit)
+            #             )
+
+            #             if match:
+            #                 edit_limit = int(match.group(1))
+
+            #         Subscription.objects.create(
+            #             payment=payment,
+            #             agent=agent,
+            #             plan_type=plan_type,
+            #             plan_name=plan_name,
+            #             property_limit=property_limit,
+            #             used_listings=0,
+            #             edit_limit=edit_limit,
+            #             edit_used=0,
+            #             featured_limit=featured_limit,
+            #             featured_used=0,
+            #             start_date=timezone.now().date(),
+            #             end_date=timezone.now().date() + timedelta(days=int(validity_days)),
+            #             is_active=True
+            #         )
+
+
+            if payment.pending_registration:
+
+                pending = payment.pending_registration
+
+                if pending.status != "pending":
+                    return Response(
+                        {
+                            "status": False,
+                            "message": "This registration has already been processed."
+                        },
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+
                 try:
 
-                    subscription = (
-                        self.create_agent_subscription(
-                            payment,
-                            agent
-                        )
-                    )
+                    with transaction.atomic():
 
-                except ValueError as e:
-
-                    return Response({
-
-                        "status": False,
-
-                        "message": str(e)
-
-                    }, status=400)
-
-                # ----------------------------------------------
-                # Approve pending registration
-                # ----------------------------------------------
-                if payment.pending_registration:
-
-                    pending = (
-                        payment.pending_registration
-                    )
-
-                    pending.refresh_from_db()
-
-                    if pending.status == "pending":
+                        # =================================================
+                        # 1. APPROVE PENDING REGISTRATION
+                        # =================================================
 
                         pending.status = "approved"
+                        pending.save()
 
-                        pending.save(
-                            update_fields=["status"]
+                        # =================================================
+                        # 2. FIND AUTO-CREATED AGENT
+                        # =================================================
+
+                        agent = AgentUserProfile.objects.filter(
+                            email__iexact=pending.email
+                        ).first()
+
+                        if not agent:
+
+                            raise Exception(
+                                "Agent profile creation failed after approval."
+                            )
+
+                        print(
+                            "AGENT CREATED:",
+                            agent.id
                         )
 
-                # ----------------------------------------------
-                # Refresh agent
-                # ----------------------------------------------
-                agent.refresh_from_db()
+                        # =================================================
+                        # 3. EXPIRE OLD SUBSCRIPTIONS
+                        # =================================================
 
-                print(
-                    "================================="
-                )
+                        self.deactivate_expired_agent_plans(agent)
 
-                print(
-                    "AGENT SUBSCRIPTION CREATED/FOUND"
-                )
+                        today = timezone.now().date()
 
-                print(
-                    "Agent:",
-                    agent.username
-                )
+                        # =================================================
+                        # 4. CHECK ACTIVE SUBSCRIPTIONS
+                        # =================================================
 
-                print(
-                    "Subscription:",
-                    subscription.id
-                )
+                        active_count = Subscription.objects.filter(
+                            agent=agent,
+                            is_active=True,
+                            end_date__gte=today
+                        ).count()
 
-                print(
-                    "Plan:",
-                    agent.plan
-                )
+                        if active_count >= 2:
 
-                print(
-                    "Agent Type:",
-                    agent.agent_type
-                )
+                            raise Exception(
+                                "Maximum 2 active agent plans allowed."
+                            )
 
-                print(
-                    "Paid:",
-                    agent.paid
-                )
+                        # =================================================
+                        # 5. DEFAULT VALUES
+                        # =================================================
 
-                print(
-                    "Plan Start:",
-                    agent.plan_start_date
-                )
+                        plan_type = "basic"
 
-                print(
-                    "Plan Expiry:",
-                    agent.plan_expiry_date
-                )
+                        plan_name = "Basic Agent Plan"
 
-                print(
-                    "Plan Active:",
-                    agent.is_plan_active()
-                )
+                        validity_days = 30
 
-                print(
-                    "Plan Limits:",
-                    agent.get_plan_limits()
-                )
+                        property_limit = 0
 
-                print(
-                    "================================="
-                )
+                        featured_limit = 0
 
-            # ==================================================
-            # USER PLAN SUBSCRIPTION
-            # ==================================================
+                        edit_limit = 0
+
+                        # =================================================
+                        # 6. PREMIUM PLAN
+                        # =================================================
+
+                        if pending.premium_plan:
+
+                            plan_type = "premium"
+
+                            plan_name = pending.premium_plan.name
+
+                            validity_days = (
+                                pending.premium_plan.validity
+                            )
+
+                            property_limit = (
+                                pending.premium_plan.total_listing
+                            )
+
+                            if pending.premium_plan.edit:
+
+                                match = re.search(
+                                    r"(\d+)",
+                                    str(pending.premium_plan.edit)
+                                )
+
+                                if match:
+                                    edit_limit = int(
+                                        match.group(1)
+                                    )
+
+                        # =================================================
+                        # 7. ELITE PLAN
+                        # =================================================
+
+                        elif pending.elite_plan:
+
+                            plan_type = "elite"
+
+                            plan_name = pending.elite_plan.name
+
+                            validity_days = (
+                                pending.elite_plan.plan_validity_days
+                            )
+
+                            property_limit = (
+                                pending.elite_plan.total_property_listings
+                            )
+
+                            featured_limit = (
+                                pending.elite_plan.featured_listings_limit
+                            )
+
+                            if pending.elite_plan.edit:
+
+                                match = re.search(
+                                    r"(\d+)",
+                                    str(pending.elite_plan.edit)
+                                )
+
+                                if match:
+                                    edit_limit = int(
+                                        match.group(1)
+                                    )
+
+                        # =================================================
+                        # 8. BASIC PLAN
+                        # =================================================
+
+                        elif payment.agent_plan:
+
+                            plan_type = "basic"
+
+                            plan_name = payment.agent_plan.name
+
+                            validity_days = getattr(
+                                payment.agent_plan,
+                                "validity",
+                                30
+                            )
+
+                            property_limit = getattr(
+                                payment.agent_plan,
+                                "property_limit",
+                                0
+                            )
+
+                        # =================================================
+                        # 9. VALIDATE VALIDITY
+                        # =================================================
+
+                        try:
+
+                            validity_days = int(
+                                validity_days
+                            )
+
+                        except (
+                            TypeError,
+                            ValueError
+                        ):
+
+                            validity_days = 30
+
+                        # =================================================
+                        # 10. END DATE
+                        # =================================================
+
+                        end_date = (
+                            today +
+                            timedelta(
+                                days=validity_days
+                            )
+                        )
+
+                        # =================================================
+                        # 11. PREVENT DUPLICATE SUBSCRIPTION
+                        # =================================================
+
+                        subscription = Subscription.objects.filter(
+                            payment=payment,
+                            agent=agent
+                        ).first()
+
+                        if subscription:
+
+                            print(
+                                "Subscription already exists:",
+                                subscription.id
+                            )
+
+                        else:
+
+                            # =================================================
+                            # 12. CREATE SUBSCRIPTION
+                            # =================================================
+
+                            subscription = Subscription.objects.create(
+
+                                payment=payment,
+
+                                agent=agent,
+
+                                plan_type=plan_type,
+
+                                plan_name=plan_name,
+
+                                property_limit=property_limit,
+
+                                used_listings=0,
+
+                                edit_limit=edit_limit,
+
+                                edit_used=0,
+
+                                featured_limit=featured_limit,
+
+                                featured_used=0,
+
+                                start_date=today,
+
+                                end_date=end_date,
+
+                                is_active=True
+                            )
+
+                            print(
+                                "========================================"
+                            )
+
+                            print(
+                                "SUBSCRIPTION CREATED SUCCESSFULLY"
+                            )
+
+                            print(
+                                "Subscription ID:",
+                                subscription.id
+                            )
+
+                            print(
+                                "Agent ID:",
+                                agent.id
+                            )
+
+                            print(
+                                "Plan Type:",
+                                plan_type
+                            )
+
+                            print(
+                                "Plan Name:",
+                                plan_name
+                            )
+
+                            print(
+                                "Property Limit:",
+                                property_limit
+                            )
+
+                            print(
+                                "Featured Limit:",
+                                featured_limit
+                            )
+
+                            print(
+                                "Edit Limit:",
+                                edit_limit
+                            )
+
+                            print(
+                                "Start Date:",
+                                today
+                            )
+
+                            print(
+                                "End Date:",
+                                end_date
+                            )
+
+                            print(
+                                "========================================"
+                            )
+
+                        # =================================================
+                        # 13. SUCCESS
+                        # =================================================
+
+                        # return Response(
+                        #     {
+                        #         "status": True,
+                        #         "message": (
+                        #             "Payment successful. "
+                        #             "Agent profile and subscription "
+                        #             "created successfully."
+                        #         ),
+                        #         "agent_id": str(agent.id),
+                        #         "subscription_id": str(
+                        #             subscription.id
+                        #         ),
+                        #         "plan_type": plan_type,
+                        #         "plan_name": plan_name
+                        #     },
+                        #     status=status.HTTP_200_OK
+                        # )
+                        
+
+                        return Response(
+                            {
+                                "status": True,
+                                "message": "Payment verified successfully",
+                                "payment": {
+                                    "payment_db_id": str(payment.id),
+
+                                    # Use the newly created agent
+                                    "paid_by": agent.username,
+                                    "paid_email": agent.email,
+
+                                    "plan_type": plan_type,
+                                    "plan_name": plan_name,
+                                    "plan_validity": validity_days,
+
+                                    "plan_price": payment.amount,
+                                    "amount_paid": str(payment.amount),
+
+                                    "payment_status": payment.payment_status,
+                                    "paid_at": payment.paid_at,
+                                    "created_at": payment.created_at
+                                },
+                            },
+                            status=status.HTTP_200_OK
+                        )
+
+
+                except Exception as exc:
+
+                    print(
+                        "========================================"
+                    )
+
+                    print(
+                        "PENDING AGENT PAYMENT ERROR:"
+                    )
+
+                    print(
+                        repr(exc)
+                    )
+
+                    print(
+                        "========================================"
+                    )
+
+                    return Response(
+                        {
+                            "status": False,
+                            "message": str(exc)
+                        },
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+
             if payment.user and payment.user_plan:
 
                 profile = UserProfile.objects.filter(
@@ -16982,154 +18388,82 @@ class VerifyPaymentAPIView(APIView):
                 ).first()
 
                 if profile:
-
-                    # ------------------------------------------
-                    # Expire old subscriptions
-                    # ------------------------------------------
-                    expired_subscriptions = (
-                        UserPlanSubscription.objects.filter(
-
-                            user=payment.user,
-
-                            is_active=True,
-
-                            expiry_date__lt=timezone.now()
-
-                        )
+                    expired_subscriptions = UserPlanSubscription.objects.filter(
+                        user=payment.user,
+                        is_active=True,
+                        expiry_date__lt=timezone.now()
                     )
 
                     expired_subscriptions.update(
                         is_active=False
                     )
 
-                    # ------------------------------------------
-                    # Get active subscriptions
-                    # ------------------------------------------
-                    active_subscriptions = (
-                        UserPlanSubscription.objects.filter(
-
-                            user=payment.user,
-
-                            is_active=True,
-
-                            expiry_date__gt=timezone.now()
-
-                        )
+                    active_subscriptions = UserPlanSubscription.objects.filter(
+                        user=payment.user,
+                        is_active=True,
+                        expiry_date__gt=timezone.now()
                     )
 
                     if active_subscriptions.count() >= 2:
 
                         return Response({
-
                             "status": False,
-
-                            "message": (
-                                "Maximum 2 active plans allowed"
-                            )
-
+                            "message": "Maximum 2 active plans allowed"
                         }, status=400)
 
-                    # ------------------------------------------
-                    # Validity
-                    # ------------------------------------------
-                    validity_days = (
-                        self.get_validity_days(
-                            payment.user_plan.validity
-                        )
+                    # ==========================================
+                    # VALIDITY
+                    # ==========================================
+
+                    validity_days = self.get_validity_days(
+                        payment.user_plan.validity
                     )
 
                     now = timezone.now()
 
                     expiry_date = (
                         now +
-                        timedelta(
-                            days=validity_days
-                        )
+                        timedelta(days=validity_days)
                     )
 
-                    # ------------------------------------------
-                    # Prevent duplicate user subscription
-                    # ------------------------------------------
-                    subscription = (
-                        UserPlanSubscription.objects.filter(
-                            user=payment.user,
-                            plan=payment.user_plan
-                        ).first()
+                    # ==========================================
+                    # CREATE SUBSCRIPTION
+                    # ==========================================
+
+                    subscription = UserPlanSubscription.objects.create(
+                        user=payment.user,
+                        plan=payment.user_plan,
+                        is_active=True,
+                        expiry_date=expiry_date
                     )
 
-                    if not subscription:
+                    subscriptions = UserPlanSubscription.objects.filter(
+                        user=payment.user,
+                        is_active=True,
+                        expiry_date__gt=timezone.now()
+                    ).select_related("plan")
 
-                        subscription = (
-                            UserPlanSubscription.objects.create(
+                    # ==========================================
+                    # HIGHEST PLAN WINS
+                    # ==========================================
 
-                                user=payment.user,
-
-                                plan=payment.user_plan,
-
-                                is_active=True,
-
-                                expiry_date=expiry_date
-
-                            )
-                        )
-
-                    # ------------------------------------------
-                    # Get active subscriptions
-                    # ------------------------------------------
-                    subscriptions = (
-                        UserPlanSubscription.objects.filter(
-
-                            user=payment.user,
-
-                            is_active=True,
-
-                            expiry_date__gt=timezone.now()
-
-                        ).select_related("plan")
-                    )
-
-                    # ------------------------------------------
-                    # Highest plan wins
-                    # ------------------------------------------
                     highest_subscription = max(
-
                         subscriptions,
-
                         key=lambda x: (
-
                             int(
-
                                 re.findall(
-
                                     r"\d+",
-
-                                    str(
-                                        x.plan.property_listing_limit
-                                    )
-
+                                    str(x.plan.property_listing_limit)
                                 )[0]
-
                             )
-
                             if re.findall(
-
                                 r"\d+",
-
-                                str(
-                                    x.plan.property_listing_limit
-                                )
-
+                                str(x.plan.property_listing_limit)
                             )
-
                             else 999999
-
                         )
-
                     )
 
-                    # ------------------------------------------
-                    # Reset primary
-                    # ------------------------------------------
                     UserPlanSubscription.objects.filter(
                         user=payment.user
                     ).update(
@@ -17139,18 +18473,15 @@ class VerifyPaymentAPIView(APIView):
                     highest_subscription.is_primary = True
 
                     highest_subscription.save(
-                        update_fields=[
-                            "is_primary"
-                        ]
+                        update_fields=["is_primary"]
                     )
 
-                    active_plan = (
-                        highest_subscription.plan
-                    )
+                    active_plan = highest_subscription.plan
 
-                    # ------------------------------------------
-                    # Update profile
-                    # ------------------------------------------
+                    # ==========================================
+                    # PROFILE UPDATE
+                    # ==========================================
+
                     profile.user_plan = active_plan
 
                     profile.is_paid_user = True
@@ -17167,9 +18498,6 @@ class VerifyPaymentAPIView(APIView):
 
                     profile.save()
 
-                    # ------------------------------------------
-                    # Update user
-                    # ------------------------------------------
                     payment.user.role = "owner"
 
                     payment.user.last_plan_expiry = (
@@ -17178,20 +18506,12 @@ class VerifyPaymentAPIView(APIView):
 
                     payment.user.save()
 
-                    if hasattr(
-                        payment.user,
-                        "user_plans"
-                    ):
+                    if hasattr(payment.user, "user_plans"):
 
                         payment.user.user_plans.add(
                             payment.user_plan
                         )
-
-            # ==================================================
-            # FINAL PLAN DETAILS
-            # ==================================================
             active_plan = None
-
             profile = None
 
             if payment.user:
@@ -17205,98 +18525,31 @@ class VerifyPaymentAPIView(APIView):
                     profile.check_plan_expiry()
 
                     active_plan = profile.active_plan
-
-            # ==================================================
-            # PAYMENT RESPONSE
-            # ==================================================
-            plan_details = self.get_plan_details(
-                payment
-            )
+            plan_details = self.get_plan_details(payment)
 
             return Response({
-
                 "status": True,
-
-                "message": (
-                    "Payment verified successfully"
-                ),
-
+                "message": "Payment verified successfully",
                 "payment": {
-
-                    "payment_db_id": str(
-                        payment.id
-                    ),
-
-                    "paid_by": (
-                        payment.user.name
-                        if payment.user
-                        else (
-                            payment.agent.username
-                            if payment.agent
-                            else None
-                        )
-                    ),
-
-                    "paid_email": (
-                        payment.user.email
-                        if payment.user
-                        else (
-                            payment.agent.email
-                            if payment.agent
-                            else None
-                        )
-                    ),
-
+                    "payment_db_id": str(payment.id),
+                    "paid_by": payment.user.name if payment.user else payment.agent.username,
+                    "paid_email": payment.user.email if payment.user else payment.agent.email,
                     "plan_type": payment.plan_type,
-
-                    "plan_name": (
-                        plan_details["name"]
-                    ),
-
-                    "plan_validity": (
-                        plan_details["validity"]
-                    ),
-
-                    "plan_price": (
-                        plan_details["price"]
-                    ),
-
-                    "amount_paid": str(
-                        payment.amount
-                    ),
-
-                    "payment_status": (
-                        payment.payment_status
-                    ),
-
+                    "plan_name": plan_details["name"],
+                    "plan_validity": plan_details["validity"],
+                    "plan_price": plan_details["price"],
+                    "amount_paid": str(payment.amount),
+                    "payment_status": payment.payment_status,
                     "paid_at": payment.paid_at,
-
                     "created_at": payment.created_at
+                },
+            })
 
-                }
-
-            }, status=200)
-
-        # ======================================================
-        # EXCEPTION
-        # ======================================================
         except Exception as e:
-
-            print(
-                "PAYMENT VERIFICATION ERROR:",
-                str(e)
-            )
-
             return Response({
-
                 "status": False,
-
-                "message": (
-                    "Payment verification failed"
-                ),
-
+                "message": "Payment verification failed",
                 "error": str(e)
-
             }, status=400)
 
 
@@ -17508,6 +18761,8 @@ class AgentPurchaseHistoryAPIView(APIView):
             "plans": serializer.data
         })
  
+
+
 
 from django.conf import settings
 from rest_framework.response import Response

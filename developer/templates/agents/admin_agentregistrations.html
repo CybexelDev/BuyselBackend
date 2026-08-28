@@ -551,6 +551,119 @@
 
         </div>
 
+<!-- ========================================== -->
+<!-- Basic Plan -->
+<!-- ========================================== -->
+
+<div id="basicDiv"
+     class="hidden mt-8 rounded-3xl overflow-hidden border border-green-300 shadow-xl bg-gradient-to-br from-green-50 to-lime-50">
+
+    <!-- Header -->
+
+    <div class="bg-gradient-to-r from-green-600 to-lime-500 px-8 py-5">
+
+        <div class="flex items-center gap-4">
+
+            <div class="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center">
+
+                <i class="fa-solid fa-user text-white text-xl"></i>
+
+            </div>
+
+            <div>
+
+                <h2 class="text-xl font-semibold text-white">
+                    Basic Plan
+                </h2>
+
+                <p class="text-green-100 text-sm">
+                    Assign a Basic membership plan.
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Body -->
+
+    <div class="p-8">
+
+        <div class="grid md:grid-cols-2 gap-6">
+
+
+            <!-- BASIC PLAN -->
+
+            <div>
+
+                <label
+                    for="id_basic_plan"
+                    class="block mb-2 font-semibold text-gray-700">
+
+                    Basic Plan
+
+                    <span class="text-red-500">*</span>
+
+                </label>
+
+
+                {{ form.basic_plan }}
+
+
+                {% if form.basic_plan.errors %}
+
+                    <p class="text-red-500 text-sm mt-2">
+
+                        {{ form.basic_plan.errors.0 }}
+
+                    </p>
+
+                {% endif %}
+
+            </div>
+
+
+            <!-- BASIC BENEFITS -->
+
+            <div>
+
+                <div class="rounded-2xl border border-green-300 bg-white p-6 h-full">
+
+                    <div class="flex items-center gap-3 mb-4">
+
+                        <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+
+                            <i class="fa-solid fa-star text-green-600"></i>
+
+                        </div>
+
+                        <h3 class="font-bold text-lg">
+                            Basic Benefits
+                        </h3>
+
+                    </div>
+
+
+                    <ul class="space-y-3 text-gray-600 text-sm">
+
+                        <li>✔ Basic Agent Badge</li>
+                        <li>✔ Agent promotion</li>
+                        <li>✔ Agent Profile</li>
+                        <li>✔ Standard Search Visibility</li>
+
+                    </ul>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
         <!-- ========================================== -->
         <!-- Premium Plan -->
         <!-- ========================================== -->
@@ -770,8 +883,229 @@
 
 </div>
 
-
 <script>
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        const agentType =
+            document.getElementById(
+                "id_agent_type"
+            );
+
+        const basicDiv =
+            document.getElementById(
+                "basicDiv"
+            );
+
+        const premiumDiv =
+            document.getElementById(
+                "premiumDiv"
+            );
+
+        const eliteDiv =
+            document.getElementById(
+                "eliteDiv"
+            );
+
+
+        const basicPlan =
+            document.getElementById(
+                "id_basic_plan"
+            );
+
+        const premiumPlan =
+            document.getElementById(
+                "id_premium_plan"
+            );
+
+        const elitePlan =
+            document.getElementById(
+                "id_elite_plan"
+            );
+
+
+        if (!agentType) {
+            return;
+        }
+
+
+        function togglePlans() {
+
+            const value =
+                agentType.value;
+
+
+            // --------------------------------
+            // HIDE EVERYTHING
+            // --------------------------------
+
+            if (basicDiv) {
+                basicDiv.classList.add(
+                    "hidden"
+                );
+            }
+
+            if (premiumDiv) {
+                premiumDiv.classList.add(
+                    "hidden"
+                );
+            }
+
+            if (eliteDiv) {
+                eliteDiv.classList.add(
+                    "hidden"
+                );
+            }
+
+
+            // --------------------------------
+            // REMOVE REQUIRED
+            // --------------------------------
+
+            if (basicPlan) {
+                basicPlan.required = false;
+            }
+
+            if (premiumPlan) {
+                premiumPlan.required = false;
+            }
+
+            if (elitePlan) {
+                elitePlan.required = false;
+            }
+
+
+            // --------------------------------
+            // BASIC
+            // --------------------------------
+
+            if (value === "basic") {
+
+                if (basicDiv) {
+
+                    basicDiv.classList.remove(
+                        "hidden"
+                    );
+                }
+
+
+                if (basicPlan) {
+
+                    basicPlan.required = true;
+                }
+
+
+                if (premiumPlan) {
+
+                    premiumPlan.required = false;
+                    premiumPlan.value = "";
+                }
+
+
+                if (elitePlan) {
+
+                    elitePlan.required = false;
+                    elitePlan.value = "";
+                }
+
+            }
+
+
+            // --------------------------------
+            // PREMIUM
+            // --------------------------------
+
+            else if (value === "premium") {
+
+                if (premiumDiv) {
+
+                    premiumDiv.classList.remove(
+                        "hidden"
+                    );
+                }
+
+
+                if (premiumPlan) {
+
+                    premiumPlan.required = true;
+                }
+
+
+                if (basicPlan) {
+
+                    basicPlan.required = false;
+                    basicPlan.value = "";
+                }
+
+
+                if (elitePlan) {
+
+                    elitePlan.required = false;
+                    elitePlan.value = "";
+                }
+
+            }
+
+
+            // --------------------------------
+            // ELITE
+            // --------------------------------
+
+            else if (value === "elite") {
+
+                if (eliteDiv) {
+
+                    eliteDiv.classList.remove(
+                        "hidden"
+                    );
+                }
+
+
+                if (elitePlan) {
+
+                    elitePlan.required = true;
+                }
+
+
+                if (basicPlan) {
+
+                    basicPlan.required = false;
+                    basicPlan.value = "";
+                }
+
+
+                if (premiumPlan) {
+
+                    premiumPlan.required = false;
+                    premiumPlan.value = "";
+                }
+
+            }
+
+        }
+
+
+        // Initial state
+
+        togglePlans();
+
+
+        // Agent type changed
+
+        agentType.addEventListener(
+            "change",
+            togglePlans
+        );
+
+    }
+
+);
+
+</script>
+
+<!-- <script>
 document.addEventListener("DOMContentLoaded", function () {
 
     const agentType = document.getElementById("id_agent_type");
@@ -841,7 +1175,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 
-</script>
+</script> -->
 <style>
 
     .form-control {

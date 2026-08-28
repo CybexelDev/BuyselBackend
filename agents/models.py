@@ -4,7 +4,7 @@ from cloudinary.models import CloudinaryField
 import cloudinary.uploader
 from playwright.sync_api import sync_playwright
 import time
-from developer .models import *
+from developer.models import *
 from django.contrib.auth.hashers import make_password, check_password
 from developer.validators import *
 from django.db import transaction
@@ -49,6 +49,12 @@ class AgentUserProfile(models.Model):
     is_active = models.BooleanField(default=True)
 
     agent_type = models.CharField(max_length=20, choices=AGENT_TYPES, default='basic')
+    basic_plan = models.ForeignKey(
+        "developer.AgentPlan",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
 
     plan = models.ForeignKey(
         "developer.PremiumPlan",
@@ -161,6 +167,27 @@ class AgentUserProfile(models.Model):
     def is_authenticated(self):
         return True if self.pk else False
 
+    def activate_basic_plan(self, plan):
+
+        self.basic_plan = plan
+
+        # Clear other plan types
+        self.plan = None
+        self.elite_plan = None
+
+        self.agent_type = "basic"
+
+        self.plan_start_date = timezone.now()
+
+        self.plan_expiry_date = (
+            timezone.now()
+            + timedelta(days=plan.validity)
+        )
+
+        self.paid = True
+
+        self.save()
+
     def activate_premium_plan(self, plan):
         self.plan = plan
         self.elite_plan = None
@@ -195,6 +222,7 @@ class AgentUserProfile(models.Model):
         # Downgrade only if there is no new plan
         if self.plan_expiry_date and timezone.now() > self.plan_expiry_date:
             # self.agent_type = "basic"
+            self.basic_plan = None
             self.plan = None
             self.elite_plan = None
             self.paid = False
@@ -202,6 +230,7 @@ class AgentUserProfile(models.Model):
             self.plan_expiry_date = None
             self.save(update_fields=[
                 "agent_type",
+                # "basic_plan",
                 "plan",
                 "elite_plan",
                 "paid",
@@ -211,7 +240,7 @@ class AgentUserProfile(models.Model):
 
 
     def check_and_downgrade_plan(self):
-        # self.agent_type = "basic"
+        self.agent_type = "basic"
         self.plan = None
         self.elite_plan = None
         self.paid = False
@@ -751,14 +780,21 @@ class PendingAgentRegistration(models.Model):
     
     agent_type = models.CharField(max_length=20, choices=AGENT_TYPES)
 
+    basic_plan = models.ForeignKey(
+        "developer.AgentPlan",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+
     premium_plan = models.ForeignKey(
-        PremiumPlan,
+        "developer.PremiumPlan",
         on_delete=models.SET_NULL,
         null=True,
         blank=True
     )
     elite_plan = models.ForeignKey(
-        ElitePlan,
+        "developer.ElitePlan",
         on_delete=models.SET_NULL,
         null=True,
         blank=True
@@ -766,7 +802,7 @@ class PendingAgentRegistration(models.Model):
     years_of_experience = models.IntegerField(null=True, blank=True)
     deals_closed = models.IntegerField(default=0)
     submitted_by = models.ForeignKey(
-        UserCreate,
+        "developer.UserCreate",
         # settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         null=True,
@@ -787,18 +823,29 @@ class PendingAgentRegistration(models.Model):
         if self.agent_type == "elite" and not self.elite_plan:
             raise ValidationError("Elite plan must be selected for elite agent.")
 
+        # if self.agent_type == "basic":
+        #     if self.premium_plan or self.elite_plan:
+        #         raise ValidationError("Basic agent should not have any plan.")
         if self.agent_type == "basic":
-            if self.premium_plan or self.elite_plan:
-                raise ValidationError("Basic agent should not have any plan.")
+
+            if not self.basic_plan:
+                raise ValidationError(
+                    "Basic plan must be selected for basic agent."
+                )
+
 
     def get_plan_name(self):
+        if self.agent_type == "basic" and self.basic_plan:
+            return self.basic_plan.name
         if self.agent_type == "premium" and self.premium_plan:
             return self.premium_plan.name
         elif self.agent_type == "elite" and self.elite_plan:
             return self.elite_plan.name
-        return "Basic"
-
+        return None
+    
     def get_plan(self):
+        if self.agent_type == "basic":
+            return self.basic_plan
         if self.agent_type == "premium":
             return self.premium_plan
         elif self.agent_type == "elite":
@@ -847,201 +894,73 @@ class PendingAgentRegistration(models.Model):
 
     #             elif self.agent_type == "elite" and self.elite_plan:
     #                 agent.activate_elite_plan(self.elite_plan)
+    def save(self, *args, **kwargs):
 
-    # <------------this was old one ------------->
-    # def save(self, *args, **kwargs):
+        self.full_clean()
 
-    #     self.full_clean()
+        # Hash password only once
+        if self.password and not self.password.startswith("pbkdf2_"):
+            self.password = make_password(self.password)
 
-    #     # Hash password only once
-    #     if self.password and not self.password.startswith("pbkdf2_"):
-    #         self.password = make_password(self.password)
+        # Check previous status before saving
+        old_status = None
+        if self.pk:
+            old_status = (
+                PendingAgentRegistration.objects.filter(pk=self.pk)
+                .values_list("status", flat=True)
+                .first()
+            )
 
-    #     # Check previous status before saving
-    #     old_status = None
-    #     if self.pk:
-    #         old_status = (
-    #             PendingAgentRegistration.objects.filter(pk=self.pk)
-    #             .values_list("status", flat=True)
-    #             .first()
-    #         )
+        super().save(*args, **kwargs)
 
-    #     super().save(*args, **kwargs)
+        # Create agent only when status becomes approved
+        if (
+            self.status == "approved"
+            and old_status != "approved"
+            and not AgentUserProfile.objects.filter(email=self.email).exists()
+        ):
 
-    #     # Create agent only when status becomes approved
-    #     if (
-    #         self.status == "approved"
-    #         and old_status != "approved"
-    #         and not AgentUserProfile.objects.filter(email=self.email).exists()
-    #     ):
+            # Generate unique username
+            base_username = self.email.split("@")[0]
+            username = base_username
+            counter = 1
 
-    #         # Generate unique username
-    #         base_username = self.email.split("@")[0]
-    #         username = base_username
-    #         counter = 1
+            while AgentUserProfile.objects.filter(username=username).exists():
+                username = f"{base_username}{counter}"
+                counter += 1
 
-    #         while AgentUserProfile.objects.filter(username=username).exists():
-    #             username = f"{base_username}{counter}"
-    #             counter += 1
+            # Create Agent
+            agent = AgentUserProfile.objects.create(
+                username=username,
+                email=self.email,
+                phone_number=self.phone_number,
+                whatsapp_number=self.phone_number,
+                password=self.password,
+                address=self.address,
+                city=self.city,
+                pin_code=int(self.pin_code),
+                agent_type=self.agent_type,
+                years_of_experience=self.years_of_experience,
+                deals_closed=self.deals_closed,
+                # submitted_by=self.submitted_by,
+                is_agent=True,
+                is_active=True,
+                paid=self.agent_type in ["premium", "elite"],
+            )
+            if (
+                self.agent_type == "basic"
+                and self.basic_plan
+            ):
 
-    #         # Create Agent
-    #         agent = AgentUserProfile.objects.create(
-    #             username=username,
-    #             email=self.email,
-    #             phone_number=self.phone_number,
-    #             whatsapp_number=self.phone_number,
-    #             password=self.password,
-    #             address=self.address,
-    #             city=self.city,
-    #             pin_code=int(self.pin_code),
-    #             agent_type=self.agent_type,
-    #             years_of_experience=self.years_of_experience,
-    #             deals_closed=self.deals_closed,
-    #             # submitted_by=self.submitted_by,
-    #             is_agent=True,
-    #             is_active=True,
-    #             paid=self.agent_type in ["premium", "elite"],
-    #         )
+                agent.activate_basic_plan(
+                    self.basic_plan
+                )
+            # Activate selected plan
+            if self.agent_type == "premium" and self.premium_plan:
+                agent.activate_premium_plan(self.premium_plan)
 
-    #         # Activate selected plan
-    #         if self.agent_type == "premium" and self.premium_plan:
-    #             agent.activate_premium_plan(self.premium_plan)
-
-    #         elif self.agent_type == "elite" and self.elite_plan:
-    #             agent.activate_elite_plan(self.elite_plan)
-
-
-    
-def save(self, *args, **kwargs):
-
-    self.full_clean()
-
-    # ==========================================================
-    # 1. Hash password only once
-    # ==========================================================
-
-    if self.password and not self.password.startswith("pbkdf2_"):
-        self.password = make_password(self.password)
-
-    # ==========================================================
-    # 2. Check previous status
-    # ==========================================================
-
-    old_status = None
-
-    if self.pk:
-        old_status = (
-            PendingAgentRegistration.objects
-            .filter(pk=self.pk)
-            .values_list("status", flat=True)
-            .first()
-        )
-
-    # ==========================================================
-    # 3. Save Pending Registration
-    # ==========================================================
-
-    super().save(*args, **kwargs)
-
-    # ==========================================================
-    # 4. Only process APPROVED registration
-    # ==========================================================
-
-    if self.status != "approved":
-        return
-
-    # ==========================================================
-    # 5. Find existing Agent using email
-    # ==========================================================
-
-    agent = AgentUserProfile.objects.filter(
-        email=self.email
-    ).first()
-
-    # ==========================================================
-    # 6. If Agent does NOT exist → CREATE Agent
-    # ==========================================================
-
-    if not agent:
-
-        # ------------------------------------------------------
-        # Generate unique username
-        # ------------------------------------------------------
-
-        base_username = self.email.split("@")[0]
-        username = base_username
-        counter = 1
-
-        while AgentUserProfile.objects.filter(
-            username=username
-        ).exists():
-
-            username = f"{base_username}{counter}"
-            counter += 1
-
-        # ------------------------------------------------------
-        # Create Agent
-        # ------------------------------------------------------
-
-        agent = AgentUserProfile.objects.create(
-            username=username,
-            email=self.email,
-            phone_number=self.phone_number,
-            whatsapp_number=self.phone_number,
-            password=self.password,
-            address=self.address,
-            city=self.city,
-            pin_code=int(self.pin_code),
-            agent_type=self.agent_type,
-            years_of_experience=self.years_of_experience,
-            deals_closed=self.deals_closed,
-            is_agent=True,
-            is_active=True,
-            paid=False,
-        )
-
-    # ==========================================================
-    # 7. IMPORTANT:
-    #    Existing Agent or Newly Created Agent
-    #    → Apply selected plan
-    # ==========================================================
-
-    if self.agent_type == "premium" and self.premium_plan:
-
-        agent.activate_premium_plan(
-            self.premium_plan
-        )
-
-    elif self.agent_type == "elite" and self.elite_plan:
-
-        agent.activate_elite_plan(
-            self.elite_plan
-        )
-
-    else:
-
-        # ------------------------------------------------------
-        # Basic Agent
-        # ------------------------------------------------------
-
-        agent.plan = None
-        agent.elite_plan = None
-        agent.agent_type = "basic"
-        agent.paid = False
-        agent.plan_start_date = None
-        agent.plan_expiry_date = None
-
-        agent.save(
-            update_fields=[
-                "plan",
-                "elite_plan",
-                "agent_type",
-                "paid",
-                "plan_start_date",
-                "plan_expiry_date",
-            ]
-        )
-
+            elif self.agent_type == "elite" and self.elite_plan:
+                agent.activate_elite_plan(self.elite_plan)
 
     def __str__(self):
         return f"{self.full_name} ({self.status})"
@@ -1061,7 +980,7 @@ class AgentContact(models.Model):
     )
 
     user = models.ForeignKey(
-        UserCreate,
+        "developer.UserCreate",
         on_delete=models.CASCADE,
         related_name='sent_contacts',
         null=True,
@@ -1178,47 +1097,6 @@ def generate_global_property_uuid():
             return new_uuid
 
 class AgentProperty(models.Model):
-    
-    STATUS_PENDING = "pending"
-    STATUS_ACTIVE = "active"
-    STATUS_EXPIRED = "expired"
-    STATUS_REJECTED = "rejected"
-
-    STATUS_CHOICES = (
-        (STATUS_PENDING, "Pending Approval"),
-        (STATUS_ACTIVE, "Active"),
-        (STATUS_EXPIRED, "Expired"),
-        (STATUS_REJECTED, "Rejected"),
-    )
-
-    status = models.CharField(
-        max_length=20,
-        choices=STATUS_CHOICES,
-        default=STATUS_PENDING,
-        db_index=True
-    )
-
-    expiry_date = models.DateTimeField(
-        null=True,
-        blank=True,
-        db_index=True
-    )
-
-    approved_at = models.DateTimeField(
-        null=True,
-        blank=True
-    )
-
-    expired_at = models.DateTimeField(
-        null=True,
-        blank=True
-    )
-
-    expiry_reason = models.CharField(
-        max_length=100,
-        blank=True,
-        default=""
-    )
 
     id = models.UUIDField(
         default=generate_global_property_uuid,
@@ -1230,7 +1108,9 @@ class AgentProperty(models.Model):
     agent = models.ForeignKey(
         AgentUserProfile,
         on_delete=models.CASCADE,
-        related_name="properties"
+        related_name="properties",
+        null=True,
+        blank=True
     )
 
     property_hash_id = models.CharField(
@@ -1286,14 +1166,14 @@ class AgentProperty(models.Model):
     )
 
     image = CloudinaryField(
-        'image',
+        "image",
         folder="agent_properties",
         null=True,
         blank=True
     )
 
     screenshot = CloudinaryField(
-        'image',
+        "image",
         folder="agents_properties/screenshots",
         blank=True,
         null=True
@@ -1311,7 +1191,6 @@ class AgentProperty(models.Model):
         validators=[validate_safe_text]
     )
 
-    # ✅ NEW FIELD
     deposit = models.CharField(
         max_length=50,
         blank=True,
@@ -1334,6 +1213,7 @@ class AgentProperty(models.Model):
     )
 
     location = models.TextField(
+        null=True,blank=True,
         validators=[validate_safe_text]
     )
 
@@ -1389,9 +1269,7 @@ class AgentProperty(models.Model):
 
     paid = models.BooleanField(default=False)
 
-    is_featured = models.BooleanField(
-        default=False
-    )
+    is_featured = models.BooleanField(default=False)
 
     notes = models.CharField(
         max_length=255,
@@ -1399,6 +1277,7 @@ class AgentProperty(models.Model):
         null=True,
         validators=[validate_safe_message]
     )
+
     subscription = models.ForeignKey(
         "developer.Subscription",
         on_delete=models.SET_NULL,
@@ -1407,7 +1286,23 @@ class AgentProperty(models.Model):
         related_name="properties"
     )
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    # ============================================================
+    # DURATION
+    # ============================================================
+
+    duration_days = models.IntegerField(
+        default=30,
+        null=False,
+        blank=False
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    # ============================================================
+    # VALIDATION
+    # ============================================================
 
     def clean(self):
 
@@ -1416,9 +1311,6 @@ class AgentProperty(models.Model):
         if self.purpose:
             purpose_name = self.purpose.name.lower().strip()
 
-        # =========================
-        # SALE
-        # =========================
         if purpose_name == "sale":
 
             if not self.price:
@@ -1431,9 +1323,6 @@ class AgentProperty(models.Model):
                     "perprice": "Per price is required for sale"
                 })
 
-        # =========================
-        # RENT
-        # =========================
         elif purpose_name == "rent":
 
             if not self.price:
@@ -1446,12 +1335,6 @@ class AgentProperty(models.Model):
                     "deposit": "Deposit is required for rent"
                 })
 
-            # remove perprice automatically
-            # self.perprice = None
-
-        # =========================
-        # LEASE
-        # =========================
         elif purpose_name == "lease":
 
             if not self.price:
@@ -1459,45 +1342,106 @@ class AgentProperty(models.Model):
                     "price": "Price is required for lease"
                 })
 
-            # remove unwanted fields
-            # self.perprice = None
-            # self.deposit = None
+        # ========================================================
+        # DURATION VALIDATION
+        # ========================================================
+
+        if self.duration_days is None:
+            self.duration_days = 30
+
+        if self.duration_days < 0:
+            raise ValidationError({
+                "duration_days": "Duration cannot be negative."
+            })
+
+    # ============================================================
+    # STRING
+    # ============================================================
 
     def __str__(self):
+
         return f"{self.label} - {self.city}"
 
-    def save(self, *args, **kwargs):
+    # ============================================================
+    # SAVE
+    # ============================================================
 
-        is_new = self.pk is None
+    def save(self, *args, **kwargs):
+        restoring = kwargs.pop(
+            "restoring",
+            False
+        )
+
+        is_new = self._state.adding
 
         self.full_clean()
 
         super().save(*args, **kwargs)
+
+        if is_new and restoring:
+            return
+
+        # ========================================================
+        # NEW PROPERTY
+        # ========================================================
 
         if is_new:
 
             agent = self.agent
 
             agent.properties_listed += 1
-            agent.save()
 
-            if self.subscription is None:
-                return
+            agent.save(
+                update_fields=[
+                    "properties_listed"
+                ]
+            )
 
-            total_limit, _, _ = agent.get_plan_limits()
+            # IMPORTANT:
+            # No subscription is required here.
+            #
+            # A property can exist with:
+            #
+            # subscription = None
+            # duration_days = 30
+            #
+            # and the expiry command will control it.
+
+            try:
+
+                total_limit, _, _ = agent.get_plan_limits()
+
+                total_limit = int(total_limit or 0)
+
+            except Exception:
+
+                total_limit = 0
+
+            # ====================================================
+            # NO ACTIVE PLAN
+            # ====================================================
 
             if total_limit == 0:
 
                 Notification.objects.create(
                     agent=agent,
                     title="No Active Plan",
-                    message="You don’t have an active plan. Upgrade to add properties.",
+                    message=(
+                        "You don't have an active plan. "
+                        "Your property will use its duration."
+                    ),
                     type="system"
                 )
 
                 return
 
-            if agent.properties_listed >= int(0.8 * total_limit):
+            # ====================================================
+            # 80% LIMIT
+            # ====================================================
+
+            if agent.properties_listed >= int(
+                0.8 * total_limit
+            ):
 
                 if not Notification.objects.filter(
                     agent=agent,
@@ -1507,9 +1451,17 @@ class AgentProperty(models.Model):
                     Notification.objects.create(
                         agent=agent,
                         title="Listing Limit Almost Reached",
-                        message=f"You have used {agent.properties_listed}/{total_limit} listings.",
+                        message=(
+                            f"You have used "
+                            f"{agent.properties_listed}/"
+                            f"{total_limit} listings."
+                        ),
                         type="usage"
                     )
+
+            # ====================================================
+            # LIMIT REACHED
+            # ====================================================
 
             if agent.properties_listed >= total_limit:
 
@@ -1521,9 +1473,204 @@ class AgentProperty(models.Model):
                     Notification.objects.create(
                         agent=agent,
                         title="Listing Limit Reached",
-                        message="You have reached your property listing limit.",
+                        message=(
+                            "You have reached your "
+                            "property listing limit."
+                        ),
                         type="usage"
                     )
+
+    # ============================================================
+    # ACTIVE SUBSCRIPTION
+    # ============================================================
+
+    def has_active_subscription(self):
+
+        today = timezone.now().date()
+
+        return self.agent.subscriptions.filter(
+            is_active=True,
+            start_date__lte=today,
+            end_date__gte=today
+        ).exists()
+
+    # ============================================================
+    # SHOULD EXPIRE
+    # ============================================================
+
+    def should_expire(self):
+
+        # Active subscription protects property
+        if self.has_active_subscription():
+            return False
+
+        # No active subscription:
+        # duration controls expiry
+        return self.duration_days <= 0
+
+    # ============================================================
+    # MOVE TO EXPIRED
+    # ============================================================
+
+    @transaction.atomic
+    def move_to_expired(self):
+
+        # ========================================================
+        # PROPERTY MUST STILL EXIST
+        # ========================================================
+
+        if not AgentProperty.objects.filter(
+            pk=self.pk
+        ).exists():
+
+            return None
+
+        # ========================================================
+        # ACTIVE SUBSCRIPTION PROTECTS PROPERTY
+        # ========================================================
+
+        if self.has_active_subscription():
+
+            return None
+
+        # ========================================================
+        # DURATION MUST BE FINISHED
+        # ========================================================
+
+        if self.duration_days > 0:
+
+            return None
+
+        # ========================================================
+        # CREATE EXPIRED PROPERTY
+        # ========================================================
+
+        expired_property = ExpiredAgentProperty.objects.create(
+
+            id=self.id,
+
+            agent=self.agent,
+
+            property_hash_id=self.property_hash_id,
+
+            category=self.category,
+
+            subcategory=self.subcategory,
+
+            purpose=self.purpose,
+
+            label=self.label,
+
+            land_area=self.land_area,
+
+            sq_ft=self.sq_ft,
+
+            description=self.description,
+
+            image=self.image,
+
+            screenshot=self.screenshot,
+
+            perprice=self.perprice,
+
+            price=self.price,
+
+            deposit=self.deposit,
+
+            whatsapp=self.whatsapp,
+
+            phone=self.phone,
+
+            location=self.location,
+
+            city=self.city,
+
+            pincode=self.pincode,
+
+            district=self.district,
+
+            land_mark=self.land_mark,
+
+            owner=self.owner,
+
+            taluk=self.taluk,
+
+            village=self.village,
+
+            state=self.state,
+
+            paid=self.paid,
+
+            is_featured=self.is_featured,
+
+            notes=self.notes,
+
+            subscription=self.subscription,
+
+            duration_days=0,
+        )
+
+        # ========================================================
+        # AMENITIES
+        # ========================================================
+
+        expired_property.amenities.set(
+            self.amenities.all()
+        )
+
+        # ========================================================
+        # DYNAMIC FIELDS
+        # ========================================================
+
+        for field_value in self.field_values.all():
+
+            ExpiredAgentPropertyFieldValue.objects.create(
+                property=expired_property,
+                field=field_value.field,
+                value=field_value.value
+            )
+
+        # ========================================================
+        # IMAGES
+        # ========================================================
+
+        for property_image in self.images.all():
+
+            ExpiredAgentPropertyImage.objects.create(
+                property=expired_property,
+                image=property_image.image
+            )
+
+        # ========================================================
+        # SELLING POINTS
+        # ========================================================
+
+        for selling_point in self.selling_points.all():
+
+            ExpiredAgentPropertySellingPoint.objects.create(
+                property=expired_property,
+                point=selling_point.point
+            )
+
+        # ========================================================
+        # LANDMARKS
+        # ========================================================
+
+        for landmark in self.landmarks.all():
+
+            ExpiredAgentPropertyLandmark.objects.create(
+                property=expired_property,
+                name=landmark.name,
+                distance=landmark.distance
+            )
+
+        # ========================================================
+        # DELETE ACTIVE PROPERTY
+        # ========================================================
+
+        self.delete()
+
+        return expired_property
 
 
 class AgentPropertyFieldValue(models.Model):
@@ -1630,6 +1777,404 @@ class AgentPropertyLandmark(models.Model):
     def __str__(self):
         return self.name
 
+
+class ExpiredAgentProperty(models.Model):
+
+    id = models.UUIDField(
+        default=generate_global_property_uuid,
+        editable=False,
+        db_index=True,
+        primary_key=True
+    )
+
+    agent = models.ForeignKey(
+        AgentUserProfile,
+        on_delete=models.CASCADE,
+        related_name="expired_properties"
+    )
+
+    property_hash_id = models.CharField(
+        max_length=100,
+        unique=True,
+        null=True,
+        blank=True
+    )
+
+    category = models.ForeignKey(
+        "developer.Category",
+        on_delete=models.CASCADE,
+        related_name="expired_agent_properties"
+    )
+
+    subcategory = models.ForeignKey(
+        "developer.Subcategory",
+        on_delete=models.CASCADE,
+        related_name="expired_agent_properties",
+        null=True,
+        blank=True
+    )
+
+    purpose = models.ForeignKey(
+        "developer.Purpose",
+        on_delete=models.CASCADE,
+        related_name="expired_agent_properties"
+    )
+
+    label = models.CharField(
+        max_length=255,
+        validators=[validate_safe_text]
+    )
+
+    land_area = models.CharField(
+        max_length=255,
+        validators=[validate_safe_text]
+    )
+
+    sq_ft = models.FloatField(
+        null=True,
+        blank=True
+    )
+
+    description = models.TextField(
+        validators=[validate_safe_message]
+    )
+
+    amenities = models.ManyToManyField(
+        "developer.Amenities",
+        blank=True,
+        related_name="expired_agent_properties"
+    )
+
+    image = CloudinaryField(
+        "image",
+        folder="agent_properties",
+        null=True,
+        blank=True
+    )
+
+    screenshot = CloudinaryField(
+        "image",
+        folder="agents_properties/screenshots",
+        blank=True,
+        null=True
+    )
+
+    perprice = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True,
+        validators=[validate_safe_text]
+    )
+
+    price = models.CharField(
+        max_length=50,
+        validators=[validate_safe_text]
+    )
+
+    deposit = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True,
+        validators=[validate_safe_text]
+    )
+
+    whatsapp = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        validators=[validate_phone_number]
+    )
+
+    phone = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        validators=[validate_phone_number]
+    )
+
+    location = models.TextField(
+        null=True,blank=True,
+        validators=[validate_safe_text]
+    )
+
+    city = models.CharField(
+        max_length=255,
+        validators=[validate_safe_text]
+    )
+
+    pincode = models.CharField(
+        max_length=50,
+        validators=[validate_pincode]
+    )
+
+    district = models.CharField(
+        max_length=255,
+        validators=[validate_safe_text]
+    )
+
+    land_mark = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        validators=[validate_safe_text]
+    )
+
+    owner = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        validators=[validate_safe_text]
+    )
+
+    taluk = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        validators=[validate_safe_text]
+    )
+
+    village = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        validators=[validate_safe_text]
+    )
+
+    state = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        validators=[validate_safe_text]
+    )
+
+    paid = models.BooleanField(
+        default=False
+    )
+
+    is_featured = models.BooleanField(
+        default=False
+    )
+
+    notes = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        validators=[validate_safe_message]
+    )
+
+    subscription = models.ForeignKey(
+        "developer.Subscription",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="expired_properties"
+    )
+
+    duration_days = models.IntegerField(
+        default=0,
+        null=False,
+        blank=False
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    def clean(self):
+
+        purpose_name = ""
+
+        if self.purpose:
+            purpose_name = self.purpose.name.lower().strip()
+
+        # =========================
+        # SALE
+        # =========================
+
+        if purpose_name == "sale":
+
+            if not self.price:
+                raise ValidationError({
+                    "price": "Price is required for sale"
+                })
+
+            if not self.perprice:
+                raise ValidationError({
+                    "perprice": "Per price is required for sale"
+                })
+
+        # =========================
+        # RENT
+        # =========================
+
+        elif purpose_name == "rent":
+
+            if not self.price:
+                raise ValidationError({
+                    "price": "Rent amount is required"
+                })
+
+            if not self.deposit:
+                raise ValidationError({
+                    "deposit": "Deposit is required for rent"
+                })
+
+        # =========================
+        # LEASE
+        # =========================
+
+        elif purpose_name == "lease":
+
+            if not self.price:
+                raise ValidationError({
+                    "price": "Price is required for lease"
+                })
+
+    def __str__(self):
+        return f"{self.label} - {self.city}"
+
+    def save(self, *args, **kwargs):
+
+        self.full_clean()
+
+        super().save(*args, **kwargs)
+
+
+class ExpiredAgentPropertyFieldValue(models.Model):
+
+    property = models.ForeignKey(
+        "ExpiredAgentProperty",
+        on_delete=models.CASCADE,
+        related_name="field_values"
+    )
+
+    field = models.ForeignKey(
+        "developer.SubcategoryField",
+        on_delete=models.CASCADE
+    )
+
+    value = models.CharField(
+        max_length=255,
+        validators=[validate_safe_text]
+    )
+
+    def clean(self):
+
+        if not self.value:
+            raise ValidationError(
+                "Value cannot be empty."
+            )
+
+    def save(self, *args, **kwargs):
+
+        self.full_clean()
+
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+
+        return (
+            f"{self.property.label} - "
+            f"{self.field.field_name}"
+        )
+
+class ExpiredAgentPropertyImage(models.Model):
+
+    property = models.ForeignKey(
+        "ExpiredAgentProperty",
+        on_delete=models.CASCADE,
+        related_name="images"
+    )
+
+    image = CloudinaryField(
+        "image",
+        folder="Agentproperties/multiple"
+    )
+
+    def clean(self):
+
+        if not self.image:
+            raise ValidationError(
+                "Image is required."
+            )
+
+    def save(self, *args, **kwargs):
+
+        self.full_clean()
+
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+
+        return f"Image for {self.property.label}"
+
+class ExpiredAgentPropertySellingPoint(models.Model):
+
+    property = models.ForeignKey(
+        "ExpiredAgentProperty",
+        on_delete=models.CASCADE,
+        related_name="selling_points"
+    )
+
+    point = models.CharField(
+        max_length=255,
+        validators=[validate_safe_text]
+    )
+
+    def clean(self):
+
+        if not self.point:
+            raise ValidationError(
+                "Selling point cannot be empty."
+            )
+
+    def save(self, *args, **kwargs):
+
+        self.full_clean()
+
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+
+        return self.point
+
+class ExpiredAgentPropertyLandmark(models.Model):
+
+    property = models.ForeignKey(
+        "ExpiredAgentProperty",
+        on_delete=models.CASCADE,
+        related_name="landmarks"
+    )
+
+    name = models.CharField(
+        max_length=255,
+        validators=[validate_safe_text]
+    )
+
+    distance = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True,
+        validators=[validate_safe_text]
+    )
+
+    def clean(self):
+
+        if not self.name:
+            raise ValidationError(
+                "Landmark name cannot be empty."
+            )
+
+    def save(self, *args, **kwargs):
+
+        self.full_clean()
+
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+
+        return self.name
+
 class AgentPropertyEnquiry(models.Model):
     id = models.UUIDField(
         primary_key=True,
@@ -1644,7 +2189,7 @@ class AgentPropertyEnquiry(models.Model):
     )
 
     user = models.ForeignKey(
-        UserCreate,
+        "developer.UserCreate",
         on_delete=models.CASCADE,
         related_name="agent_property_enquiries"
     )

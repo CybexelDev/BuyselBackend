@@ -1,0 +1,7666 @@
+{% extends "base3.html" %}
+
+{% block content %}
+
+
+<style>
+/* =========================================================
+   EXPIRED AGENT PROPERTIES — SCREENSHOT STYLE UI
+   UI ONLY — existing modal/backend JS is preserved below
+========================================================= */
+
+
+/* HERO */
+.expired-agent-hero {
+    position: relative;
+    overflow: hidden;
+    min-height: 134px;
+    padding: 28px 30px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 22px;
+    border-radius: 24px;
+    background: linear-gradient(115deg, #93d53d 0%, #83c837 52%, #72b62d 100%);
+    box-shadow: 0 12px 28px rgba(91, 139, 40, .14);
+    color: #fff;
+}
+
+.expired-agent-hero::before,
+.expired-agent-hero::after {
+    content: "";
+    position: absolute;
+    border: 1px solid rgba(255,255,255,.10);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.expired-agent-hero::before {
+    width: 310px;
+    height: 310px;
+    right: -115px;
+    top: -165px;
+    background: rgba(255,255,255,.05);
+}
+
+.expired-agent-hero::after {
+    width: 220px;
+    height: 220px;
+    right: 60px;
+    bottom: -165px;
+    background: rgba(255,255,255,.04);
+}
+
+.expired-agent-hero-copy {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 17px;
+}
+
+.expired-agent-hero-icon {
+    width: 58px;
+    height: 58px;
+    flex: 0 0 58px;
+    display: grid;
+    place-items: center;
+    border-radius: 18px;
+    background: rgba(255,255,255,.17);
+    border: 1px solid rgba(255,255,255,.38);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.20);
+    font-size: 23px;
+}
+
+.expired-agent-eyebrow {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 9px;
+    line-height: 1;
+    letter-spacing: .20em;
+    text-transform: uppercase;
+    font-weight: 800;
+    opacity: .82;
+}
+
+.expired-agent-hero h1 {
+    margin: 0;
+    font-size: 31px;
+    line-height: 1.05;
+    font-weight: 800;
+    letter-spacing: -.03em;
+}
+
+.expired-agent-hero p {
+    margin: 7px 0 0;
+    font-size: 12px;
+    font-weight: 500;
+    opacity: .91;
+}
+
+.expired-agent-hero-actions {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.expired-agent-hero-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 39px;
+    padding: 0 16px;
+    border: 0;
+    border-radius: 13px;
+    background: rgba(255,255,255,.96);
+    color: #527f27;
+    font-size: 11px;
+    font-weight: 800;
+    text-decoration: none;
+    cursor: pointer;
+    box-shadow: 0 5px 12px rgba(52, 87, 25, .10);
+    transition: .18s ease;
+}
+
+.expired-agent-hero-btn:hover {
+    transform: translateY(-1px);
+    background: #fff;
+    box-shadow: 0 8px 17px rgba(52, 87, 25, .16);
+}
+
+.expired-agent-hero-btn.secondary {
+    background: rgba(255,255,255,.93);
+}
+
+/* STATS */
+.expired-agent-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.expired-agent-stat {
+    position: relative;
+    overflow: hidden;
+    min-height: 108px;
+    padding: 16px;
+    border: 1px solid var(--ea-border);
+    border-radius: 19px;
+    background: rgba(255,255,255,.92);
+    box-shadow: 0 7px 18px rgba(45, 66, 38, .045);
+}
+
+.expired-agent-stat::after {
+    content: "";
+    position: absolute;
+    width: 95px;
+    height: 95px;
+    right: -32px;
+    top: -38px;
+    border-radius: 50%;
+    background: #f8fbf5;
+}
+
+.expired-agent-stat-icon {
+    position: relative;
+    z-index: 1;
+    width: 32px;
+    height: 32px;
+    display: grid;
+    place-items: center;
+    border-radius: 10px;
+    margin-bottom: 9px;
+    font-size: 13px;
+}
+
+.expired-agent-stat.total .expired-agent-stat-icon {
+    background: #fff0f0;
+    color: #d96b6b;
+}
+
+.expired-agent-stat.renewed .expired-agent-stat-icon {
+    background: #edf8e6;
+    color: #63a832;
+}
+
+.expired-agent-stat.none .expired-agent-stat-icon {
+    background: #fff7df;
+    color: #d99b16;
+}
+
+.expired-agent-stat-label {
+    position: relative;
+    z-index: 1;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: #879184;
+}
+
+.expired-agent-stat-value {
+    position: relative;
+    z-index: 1;
+    margin-top: 4px;
+    font-size: 22px;
+    line-height: 1;
+    font-weight: 800;
+    color: var(--ea-text);
+}
+
+/* SEARCH */
+.expired-agent-search-card {
+    margin-top: 16px;
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    border: 1px solid var(--ea-border);
+    border-radius: 17px;
+    background: rgba(255,255,255,.94);
+    box-shadow: 0 7px 18px rgba(45, 66, 38, .04);
+}
+
+.expired-agent-search-wrap {
+    position: relative;
+    flex: 1;
+}
+
+.expired-agent-search-wrap i {
+    position: absolute;
+    left: 13px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9aa59a;
+    font-size: 12px;
+}
+
+#expiredAgentSearch {
+    width: 100%;
+    height: 37px;
+    padding: 0 13px 0 34px;
+    border: 1px solid #dce7d7;
+    border-radius: 11px;
+    outline: none;
+    background: #fbfdf9;
+    color: #334033;
+    font-size: 11px;
+}
+
+#expiredAgentSearch:focus {
+    border-color: #9bce68;
+    box-shadow: 0 0 0 3px rgba(139,200,63,.10);
+}
+
+.expired-agent-filter-btn,
+.expired-agent-reset-btn {
+    height: 37px;
+    padding: 0 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    border-radius: 11px;
+    font-size: 10px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: .18s ease;
+}
+
+.expired-agent-filter-btn {
+    border: 1px solid #80bd42;
+    background: #7fbd3b;
+    color: #fff;
+}
+
+.expired-agent-reset-btn {
+    border: 1px solid #dce7d7;
+    background: #fff;
+    color: #6f7d6e;
+}
+
+.expired-agent-filter-btn:hover,
+.expired-agent-reset-btn:hover {
+    transform: translateY(-1px);
+}
+
+/* TABLE CARD */
+.expired-agent-table-card {
+    margin-top: 16px;
+    overflow: hidden;
+    border: 1px solid var(--ea-border);
+    border-radius: 21px;
+    background: rgba(255,255,255,.95);
+    box-shadow: 0 10px 24px rgba(45, 66, 38, .05);
+}
+
+.expired-agent-table-head {
+    padding: 17px 18px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    border-bottom: 1px solid #edf2e9;
+}
+
+.expired-agent-table-title {
+    margin: 0;
+    color: #30402f;
+    font-size: 15px;
+    font-weight: 800;
+}
+
+.expired-agent-table-subtitle {
+    margin: 3px 0 0;
+    color: #8a9489;
+    font-size: 9px;
+}
+
+.expired-agent-count-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 10px;
+    border: 1px solid #f1cfcf;
+    border-radius: 999px;
+    background: #fff5f5;
+    color: #cc6666;
+    font-size: 9px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.expired-agent-count-badge i {
+    font-size: 8px;
+}
+
+.expired-agent-table-scroll {
+    overflow-x: auto;
+}
+
+.expired-agent-table {
+    width: 100%;
+    min-width: 1050px;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.expired-agent-table th {
+    padding: 11px 12px;
+    background: #f4f8ef;
+    border-bottom: 1px solid #dce8d4;
+    color: #6e7e69;
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: .07em;
+    text-align: left;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.expired-agent-table td {
+    padding: 12px;
+    border-bottom: 1px solid #edf2e9;
+    color: #536054;
+    font-size: 10px;
+    vertical-align: middle;
+}
+
+.expired-agent-table tbody tr {
+    transition: background .16s ease;
+}
+
+.expired-agent-table tbody tr:hover {
+    background: #fbfdf8;
+}
+
+.expired-agent-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.expired-agent-property-main {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    min-width: 170px;
+}
+
+.expired-agent-property-image {
+    width: 39px;
+    height: 39px;
+    flex: 0 0 39px;
+    overflow: hidden;
+    display: grid;
+    place-items: center;
+    border-radius: 10px;
+    border: 1px solid #e0e9da;
+    background: #f2f7ed;
+    color: #8caf72;
+}
+
+.expired-agent-property-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.expired-agent-property-image.no-image {
+    font-size: 13px;
+}
+
+.expired-agent-property-name {
+    color: #354335;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+.expired-agent-property-code {
+    margin-top: 3px;
+    color: #98a198;
+    font-size: 8px;
+}
+
+.expired-agent-date strong,
+.expired-agent-date small {
+    display: block;
+}
+
+.expired-agent-date strong {
+    color: #566455;
+    font-size: 9px;
+    font-weight: 800;
+}
+
+.expired-agent-date small {
+    margin-top: 2px;
+    color: #a0a8a0;
+    font-size: 8px;
+}
+
+.expired-agent-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 8px;
+    border-radius: 999px;
+    font-size: 8px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.expired-agent-badge.expired {
+    background: #fff0f0;
+    color: #ce6b6b;
+    border: 1px solid #f2d5d5;
+}
+
+.expired-agent-badge.renewed {
+    background: #edf8e8;
+    color: #65a53b;
+    border: 1px solid #d7ebcb;
+}
+
+.expired-agent-badge.no-plan {
+    background: #fff7df;
+    color: #c79524;
+    border: 1px solid #f2e3b5;
+}
+
+.expired-agent-actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+}
+
+.expired-agent-action {
+    width: 29px;
+    height: 29px;
+    display: grid;
+    place-items: center;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    background: #f4f7f1;
+    color: #71806e;
+    cursor: pointer;
+    transition: .16s ease;
+}
+
+.expired-agent-action:hover {
+    transform: translateY(-1px);
+}
+
+.expired-agent-action.edit:hover {
+    background: #edf6e7;
+    border-color: #d7eacb;
+    color: #67a33b;
+}
+
+.expired-agent-action.restore:hover {
+    background: #eef8e8;
+    border-color: #d7ebcb;
+    color: #5d9f32;
+}
+
+.expired-agent-action.delete:hover {
+    background: #fff0f0;
+    border-color: #f1d2d2;
+    color: #cf6666;
+}
+
+/* EMPTY */
+.expired-agent-empty {
+    height: 175px;
+    text-align: center;
+}
+
+.expired-agent-empty td {
+    color: #a0a99f !important;
+    font-size: 10px !important;
+}
+
+.expired-agent-empty-icon {
+    width: 42px;
+    height: 42px;
+    margin: 0 auto 9px;
+    display: grid;
+    place-items: center;
+    border-radius: 12px;
+    background: #f4f7f1;
+    color: #929d8f;
+    font-size: 16px;
+}
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+    .expired-agent-hero {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .expired-agent-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .expired-agent-search-card {
+        flex-wrap: wrap;
+    }
+
+    .expired-agent-search-wrap {
+        flex-basis: 100%;
+    }
+}
+
+@media (max-width: 560px) {
+    .expired-agent-hero {
+        padding: 21px 18px;
+        border-radius: 19px;
+    }
+
+    .expired-agent-hero h1 {
+        font-size: 24px;
+    }
+
+    .expired-agent-hero-copy {
+        align-items: flex-start;
+    }
+
+    .expired-agent-hero-actions {
+        width: 100%;
+    }
+
+    .expired-agent-hero-btn {
+        flex: 1;
+    }
+}
+
+/* =========================================================
+   ACTION BUTTONS
+========================================================= */
+
+.expired-agent-action {
+    width: 42px;
+    height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 14px;
+    border: 1px solid #d7e8c8;
+    background: #f7fbf3;
+    color: #6e9f39;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all .2s ease;
+}
+
+/* EDIT */
+.expired-agent-action.edit {
+    color: #65a62f;
+    border-color: #cfe5b9;
+    background: #f6fbf1;
+}
+
+.expired-agent-action.edit:hover {
+    background: #eaf6df;
+    border-color: #afd38e;
+}
+
+/* RESTORE */
+.expired-agent-action.restore {
+    color: #6e9f39;
+    border-color: #d5e8c5;
+    background: #f7fbf3;
+}
+
+.expired-agent-action.restore:hover {
+    background: #eaf6df;
+    border-color: #afd38e;
+}
+
+/* DELETE — RED LIKE YOUR SECOND IMAGE */
+.expired-agent-action.delete {
+    color: #ef4444;
+    border: 1px solid #fecaca;
+    background: #fff5f5;
+}
+
+.expired-agent-action.delete:hover {
+    color: #dc2626;
+    border-color: #fca5a5;
+    background: #fff0f0;
+}
+
+/* =========================================================
+   AGENT PROPERTIES — MATCHED UI STYLE
+   Expired Agent Properties intentionally reuses the same
+   dimensions, spacing, typography and table proportions.
+   Existing functionality / modal / backend JS is untouched.
+========================================================= */
+
+/* HERO — same proportions as Agent Properties */
+.expired-agent-hero {
+    position: relative;
+    overflow: hidden;
+    min-height: 180px;
+    padding: 30px;
+    border-radius: 24px;
+    color: #fff;
+    background: linear-gradient(135deg, #8bc83f 0%, #659d28 100%);
+    box-shadow: 0 18px 40px rgba(75,112,35,.18);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 25px;
+}
+
+.expired-agent-hero::before {
+    content: "";
+    position: absolute;
+    width: 260px;
+    height: 260px;
+    right: -90px;
+    top: -120px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.08);
+    pointer-events: none;
+}
+
+.expired-agent-hero::after {
+    content: "";
+    position: absolute;
+    width: 170px;
+    height: 170px;
+    right: 120px;
+    bottom: -120px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,.10);
+    background: rgba(255,255,255,.035);
+    pointer-events: none;
+}
+
+.expired-agent-hero-copy {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.expired-agent-hero-icon {
+    display: grid;
+    width: 64px;
+    height: 64px;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 1px solid rgba(255,255,255,.30);
+    border-radius: 16px;
+    color: #fff;
+    background: rgba(255,255,255,.12);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.18);
+    font-size: 23px;
+}
+
+.expired-agent-eyebrow {
+    display: block;
+    margin-bottom: 6px;
+    color: rgba(255,255,255,.80);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .16em;
+    line-height: 1;
+    text-transform: uppercase;
+}
+
+.expired-agent-hero h1 {
+    margin: 0;
+    color: #fff;
+    font-size: clamp(29px, 3vw, 38px);
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -.04em;
+}
+
+.expired-agent-hero p {
+    margin: 8px 0 0;
+    color: rgba(255,255,255,.84);
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.expired-agent-hero-actions {
+    position: relative;
+    z-index: 3;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.expired-agent-hero-btn {
+    display: inline-flex;
+    min-height: 42px;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 18px;
+    border: 1px solid rgba(255,255,255,.55);
+    border-radius: 14px;
+    color: #527c2c;
+    background: rgba(255,255,255,.96);
+    box-shadow: 0 12px 25px rgba(58,88,28,.15);
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    transition: .2s ease;
+}
+
+.expired-agent-hero-btn:hover {
+    transform: translateY(-2px);
+    background: #fff;
+}
+
+/* STATS — same card dimensions as Agent Properties */
+.expired-agent-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: 20px;
+}
+
+.expired-agent-stat {
+    position: relative;
+    overflow: hidden;
+    min-height: 112px;
+    padding: 18px;
+    border: 1px solid var(--ea-border);
+    border-radius: 19px;
+    background: #fff;
+    box-shadow: 0 12px 30px rgba(49,70,36,.07);
+    transition: .2s ease;
+}
+
+.expired-agent-stat:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 16px 35px rgba(49,70,36,.11);
+}
+
+.expired-agent-stat::after {
+    content: "";
+    position: absolute;
+    top: -38px;
+    right: -34px;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: rgba(139,200,63,.06);
+}
+
+.expired-agent-stat-icon {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    width: 38px;
+    height: 38px;
+    margin-bottom: 0;
+    place-items: center;
+    border-radius: 12px;
+    font-size: 14px;
+}
+
+.expired-agent-stat.total .expired-agent-stat-icon {
+    color: #cc5656;
+    background: #fff0f0;
+}
+
+.expired-agent-stat.renewed .expired-agent-stat-icon {
+    color: #499024;
+    background: #eef8e7;
+}
+
+.expired-agent-stat.none .expired-agent-stat-icon {
+    color: #bd8011;
+    background: #fff7df;
+}
+
+.expired-agent-stat-label {
+    position: relative;
+    z-index: 2;
+    margin-top: 14px;
+    color: #7d8878;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.expired-agent-stat-value {
+    position: relative;
+    z-index: 2;
+    margin-top: 3px;
+    color: #34402f;
+    font-size: 25px;
+    font-weight: 800;
+    line-height: 1;
+}
+
+/* FILTER / SEARCH — same sizing as Agent Properties */
+.expired-agent-search-card {
+    margin-top: 20px;
+    padding: 17px;
+    border: 1px solid var(--ea-border);
+    border-radius: 20px;
+    background: #fff;
+    box-shadow: 0 12px 30px rgba(49,70,36,.06);
+    display: block;
+}
+
+.expired-agent-search-wrap {
+    position: relative;
+    width: 100%;
+}
+
+.expired-agent-search-wrap i {
+    position: absolute;
+    top: 50%;
+    left: 14px;
+    color: #94a08f;
+    font-size: 12px;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+#expiredAgentSearch {
+    width: 100%;
+    height: 42px;
+    padding: 0 14px 0 38px;
+    border: 1px solid #dce6d6;
+    border-radius: 12px;
+    outline: none;
+    color: #475342;
+    background: #fbfdf9;
+    font-size: 12px;
+    transition: .2s ease;
+}
+
+#expiredAgentSearch:focus {
+    border-color: #a9cf89;
+    background: #fff;
+    box-shadow: 0 0 0 4px rgba(139,200,63,.10);
+}
+
+.expired-agent-filter-btn,
+.expired-agent-reset-btn {
+    display: inline-flex;
+    height: 42px;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 0 15px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    transition: .2s ease;
+}
+
+.expired-agent-filter-btn {
+    border: 1px solid #7dbd43;
+    color: #fff;
+    background: #7dbd43;
+}
+
+.expired-agent-reset-btn {
+    border: 1px solid #dce6d6;
+    color: #74806f;
+    background: #fff;
+}
+
+.expired-agent-filter-btn:hover,
+.expired-agent-reset-btn:hover {
+    transform: translateY(-1px);
+}
+
+/* =========================================================
+   SEARCH / FILTER / RESET
+   Agent Properties style — single row
+========================================================= */
+
+.expired-agent-search-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    gap: 10px;
+    align-items: center;
+    width: 100%;
+}
+
+.expired-agent-search-wrap {
+    min-width: 0;
+    width: 100%;
+}
+
+.expired-agent-search-wrap input {
+    width: 100%;
+    height: 42px;
+    box-sizing: border-box;
+}
+
+/* Filter */
+.expired-agent-filter-btn {
+    height: 42px;
+    min-width: 86px;
+    padding: 0 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    border-radius: 14px;
+    border: 1px solid #7dbd43;
+    background: #7dbd43;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+/* TABLE FONT SIZE */
+.expired-agent-table th {
+    font-size: 10.5px !important;
+}
+
+.expired-agent-table td {
+    font-size: 13px !important;
+}
+
+/* Reset */
+.expired-agent-reset-btn {
+    height: 42px;
+    min-width: 92px;
+    padding: 0 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    border-radius: 14px;
+    border: 1px solid #dce6d6;
+    background: #fff;
+    color: #74806f;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    text-decoration: none;
+}
+
+/* Hover */
+.expired-agent-filter-btn:hover,
+.expired-agent-reset-btn:hover {
+    transform: translateY(-1px);
+}
+
+/* Responsive */
+@media (max-width: 820px) {
+    .expired-agent-search-card {
+        grid-template-columns: 1fr;
+    }
+
+    .expired-agent-filter-btn,
+    .expired-agent-reset-btn {
+        width: 100%;
+    }
+}
+
+/* =========================================================
+   FINAL ACTION BUTTON FIX
+========================================================= */
+
+.expired-agent-actions {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    width: 100% !important;
+}
+
+.expired-agent-action {
+    width: 42px !important;
+    height: 42px !important;
+    min-width: 42px !important;
+    max-width: 42px !important;
+    padding: 0 !important;
+
+    flex: 0 0 42px !important;
+
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    border-radius: 12px !important;
+    box-sizing: border-box !important;
+
+    font-size: 15px !important;
+    line-height: 1 !important;
+}
+
+/* EDIT */
+.expired-agent-action.edit {
+    color: #65a62f !important;
+    background: #f6fbf1 !important;
+    border: 1px solid #cfe5b9 !important;
+}
+
+/* RESTORE */
+.expired-agent-action.restore {
+    color: #4f8fc9 !important;
+    background: #f2f8fd !important;
+    border: 1px solid #c5ddf2 !important;
+}
+
+/* DELETE */
+.expired-agent-action.delete {
+    color: #ef4444 !important;
+    background: #fff5f5 !important;
+    border: 1px solid #fecaca !important;
+}
+
+/* Actions table cell */
+.expired-agent-table td:last-child {
+    width: 150px !important;
+    min-width: 150px !important;
+    text-align: center !important;
+    vertical-align: middle !important;
+}
+
+/* FINAL ACTIONS SPACING */
+.expired-agent-table td:last-child {
+    min-width: 190px !important;
+    width: 190px !important;
+    padding-left: 14px !important;
+    padding-right: 22px !important;
+    box-sizing: border-box !important;
+}
+
+.expired-agent-actions {
+    width: 100% !important;
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+}
+
+/* =========================================================
+   ACTION BUTTONS — ALL IN ONE ROW
+========================================================= */
+
+.expired-agent-actions {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: nowrap !important;
+    width: 100%;
+}
+
+/* Common button */
+.expired-agent-action {
+    width: 50px;
+    height: 42px;
+    min-width: 50px;
+    padding: 0;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 50px;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all .2s ease;
+}
+
+/* EDIT — Green */
+.expired-agent-action.edit {
+    color: #65a62f;
+    border: 1px solid #cfe5b9;
+    background: #f6fbf1;
+}
+
+.expired-agent-action.edit:hover {
+    color: #579424;
+    border-color: #afd38e;
+    background: #edf8e5;
+}
+
+/* RESTORE — Blue */
+.expired-agent-action.restore {
+    color: #4f8fc9;
+    border: 1px solid #c5ddf2;
+    background: #f2f8fd;
+}
+
+.expired-agent-action.restore:hover {
+    color: #3679b3;
+    border-color: #a8cbe8;
+    background: #e8f3fc;
+}
+
+/* DELETE — Red */
+.expired-agent-action.delete {
+    color: #ef4444;
+    border: 1px solid #fecaca;
+    background: #fff5f5;
+}
+
+.expired-agent-action.delete:hover {
+    color: #dc2626;
+    border-color: #fca5a5;
+    background: #fff0f0;
+}
+
+/* TABLE CARD — same shape and header proportions */
+.expired-agent-table-card {
+    margin-top: 20px;
+    overflow: hidden;
+    border: 1px solid var(--ea-border);
+    border-radius: 24px;
+    background: #fff;
+    box-shadow:
+        0 18px 46px rgba(49,70,36,.09),
+        0 4px 12px rgba(49,70,36,.04);
+}
+
+.expired-agent-table-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 19px 22px;
+    border-bottom: 1px solid #e7ede2;
+    background:
+        radial-gradient(circle at 94% 0%, rgba(139,200,63,.08), transparent 28%),
+        linear-gradient(180deg,#fff,#fbfdf9);
+}
+
+.expired-agent-table-title {
+    margin: 0;
+    color: #303d2a;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.expired-agent-table-subtitle {
+    margin: 4px 0 0;
+    color: #8a9384;
+    font-size: 11px;
+}
+
+.expired-agent-count-badge {
+    display: inline-flex;
+    min-height: 34px;
+    align-items: center;
+    gap: 8px;
+    padding: 0 12px;
+    border: 1px solid #f0c4c4;
+    border-radius: 999px;
+    color: #c55656;
+    background: #fff0f0;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.expired-agent-count-badge i {
+    width: 8px;
+    height: 8px;
+    font-size: 8px;
+}
+
+/* TABLE — exact Agent Properties scale */
+.expired-agent-table-scroll {
+    position: relative;
+    width: 100%;
+    max-height: 620px;
+    overflow: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #9fba89 transparent;
+    overscroll-behavior: contain;
+}
+
+.expired-agent-table-scroll::-webkit-scrollbar {
+    width: 9px;
+    height: 9px;
+}
+
+.expired-agent-table-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.expired-agent-table-scroll::-webkit-scrollbar-thumb {
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background: #9fba89;
+    background-clip: padding-box;
+}
+
+.expired-agent-table {
+    width: 100%;
+    min-width: 2050px;
+    border-collapse: separate;
+    border-spacing: 0;
+    table-layout: fixed;
+}
+
+.expired-agent-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    height: 50px;
+    padding: 0 15px;
+    border-bottom: 1px solid #dbe7d3;
+    color: #61705a;
+    background: #f2f7ee;
+    box-shadow: 0 2px 0 rgba(219,231,211,.95);
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-align: left;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.expired-agent-table tbody tr {
+    height: 88px;
+    background: #fff;
+    transition: .2s ease;
+}
+
+.expired-agent-table tbody tr:nth-child(even) {
+    background: #fcfdfb;
+}
+
+.expired-agent-table tbody tr:hover {
+    background: #f7fbf3;
+    box-shadow: inset 3px 0 0 var(--ea-green);
+}
+
+.expired-agent-table tbody td {
+    height: 88px;
+    padding: 13px 15px;
+    border-bottom: 1px solid #edf1e9;
+    color: #4f5a4a;
+    background: inherit;
+    font-size: 12px;
+    line-height: 1.45;
+    vertical-align: middle;
+    overflow-wrap: anywhere;
+}
+
+/* Column proportions — preserve the existing expired-property data */
+.expired-agent-table th:nth-child(1),
+.expired-agent-table td:nth-child(1) { width: 145px; }
+.expired-agent-table th:nth-child(2),
+.expired-agent-table td:nth-child(2) { width: 105px; }
+.expired-agent-table th:nth-child(3),
+.expired-agent-table td:nth-child(3) { width: 190px; }
+.expired-agent-table th:nth-child(4),
+.expired-agent-table td:nth-child(4) { width: 180px; }
+.expired-agent-table th:nth-child(5),
+.expired-agent-table td:nth-child(5) { width: 130px; }
+.expired-agent-table th:nth-child(6),
+.expired-agent-table td:nth-child(6) { width: 105px; }
+.expired-agent-table th:nth-child(7),
+.expired-agent-table td:nth-child(7) { width: 115px; }
+.expired-agent-table th:nth-child(8),
+.expired-agent-table td:nth-child(8) { width: 120px; }
+.expired-agent-table th:nth-child(9),
+.expired-agent-table td:nth-child(9) { width: 130px; }
+.expired-agent-table th:nth-child(10),
+.expired-agent-table td:nth-child(10) { width: 130px; }
+.expired-agent-table th:nth-child(11),
+.expired-agent-table td:nth-child(11) { width: 150px; }
+.expired-agent-table th:nth-child(12),
+.expired-agent-table td:nth-child(12) { width: 135px; }
+.expired-agent-table th:nth-child(13),
+.expired-agent-table td:nth-child(13) { width: 150px; }
+.expired-agent-table th:nth-child(14),
+.expired-agent-table td:nth-child(14) { width: 125px; }
+
+.expired-agent-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+/* Property image — same 76x56 visual size as Agent Properties */
+.expired-agent-property-image {
+    display: grid;
+    width: 76px;
+    height: 56px;
+    flex: 0 0 auto;
+    overflow: hidden;
+    place-items: center;
+    border: 1px solid #dce5d7;
+    border-radius: 12px;
+    color: #a8b2a2;
+    background: #f7faf5;
+    box-shadow: 0 6px 14px rgba(49,70,36,.08);
+}
+
+.expired-agent-property-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.expired-agent-property-image.no-image {
+    border-style: dashed;
+    font-size: 16px;
+}
+
+.expired-agent-property-main {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 10px;
+}
+
+.expired-agent-property-name {
+    color: #34412f;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+.expired-agent-property-code {
+    margin-top: 4px;
+    overflow: hidden;
+    color: #8a9585;
+    font-size: 10.5px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.expired-agent-date {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.expired-agent-date strong {
+    color: #4b5746;
+    font-size: 11.5px;
+    font-weight: 700;
+}
+
+.expired-agent-date small {
+    margin-top: 0;
+    color: #8e988a;
+    font-size: 10px;
+}
+
+/* Status badges — same size as Agent Properties badges */
+.expired-agent-badge {
+    display: inline-flex;
+    min-height: 28px;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 0 10px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.expired-agent-badge.expired {
+    border: 1px solid #f0c4c4;
+    color: #c55656;
+    background: #fff0f0;
+}
+
+.expired-agent-badge.renewed {
+    border: 1px solid #c8e2b2;
+    color: #588f2e;
+    background: #eff8e8;
+}
+
+.expired-agent-badge.no-plan {
+    border: 1px solid #f0d69a;
+    color: #a9700b;
+    background: #fff7df;
+}
+
+.expired-agent-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.expired-agent-action {
+    display: inline-grid;
+    width: 34px;
+    height: 34px;
+    place-items: center;
+    border: 1px solid #dce6d6;
+    border-radius: 10px;
+    color: #74806f;
+    background: #f7faf5;
+    font-size: 12px;
+    cursor: pointer;
+    transition: .2s ease;
+}
+
+.expired-agent-action:hover {
+    transform: translateY(-2px);
+}
+
+.expired-agent-action.edit:hover {
+    border-color: #c9e2b3;
+    color: #61a72c;
+    background: #f1f9e9;
+}
+
+.expired-agent-action.restore:hover {
+    border-color: #c8e2b2;
+    color: #588f2e;
+    background: #eff8e8;
+}
+
+.expired-agent-action.delete:hover {
+    border-color: #f2c3c3;
+    color: #e35b5b;
+    background: #fff0f0;
+}
+
+.expired-agent-empty {
+    height: 180px;
+    text-align: center;
+}
+
+.expired-agent-empty td {
+    color: #a0a99f !important;
+    font-size: 11px !important;
+}
+
+.expired-agent-empty-icon {
+    display: grid;
+    width: 44px;
+    height: 44px;
+    margin: 0 auto 10px;
+    place-items: center;
+    border-radius: 12px;
+    color: #929d8f;
+    background: #f4f7f1;
+    font-size: 16px;
+}
+
+/* RESPONSIVE — follow Agent Properties breakpoints */
+@media (max-width: 1180px) {
+    .expired-agent-stats {
+        grid-template-columns: repeat(3,minmax(0,1fr));
+    }
+}
+
+@media (max-width: 820px) {
+    .expired-agent-hero {
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 21px;
+        border-radius: 20px;
+    }
+
+    .expired-agent-hero-icon {
+        width: 52px;
+        height: 52px;
+        border-radius: 16px;
+    }
+
+    .expired-agent-hero-actions {
+        width: 100%;
+        justify-content: stretch;
+    }
+
+    .expired-agent-hero-btn {
+        flex: 1;
+    }
+
+    .expired-agent-stats {
+        grid-template-columns: repeat(2,minmax(0,1fr));
+    }
+
+    .expired-agent-search-card {
+        grid-template-columns: 1fr;
+    }
+
+    .expired-agent-filter-btn,
+    .expired-agent-reset-btn {
+        flex: 1;
+    }
+
+    .expired-agent-table-head {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 480px) {
+    .expired-agent-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .expired-agent-hero-copy {
+        align-items: flex-start;
+    }
+
+    .expired-agent-hero h1 {
+        font-size: 28px;
+    }
+}
+
+</style>
+
+<div class="expired-agent-page">
+
+    <!-- HERO -->
+    <section class="expired-agent-hero">
+
+        <div class="expired-agent-hero-copy">
+
+            <div class="expired-agent-hero-icon">
+                <i class="fa-solid fa-hourglass-end"></i>
+            </div>
+
+            <div>
+                <span class="expired-agent-eyebrow">
+                    Property Expiry Management
+                </span>
+
+                <h1>Expired Agent Properties</h1>
+
+                <p>
+                    Review expired listings, verify renewed agent plans and safely
+                    reactivate or remove properties.
+                </p>
+            </div>
+
+        </div>
+
+        <div class="expired-agent-hero-actions">
+
+            <!-- UI button; keeps the current page functionality untouched -->
+
+            <a
+                href="{% url 'agent_property_dashboard' %}"
+                class="expired-agent-hero-btn secondary">
+                <i class="fa-solid fa-arrow-left"></i>
+                All Agent Properties
+            </a>
+
+        </div>
+
+    </section>
+
+
+    <!-- STAT CARDS -->
+    <section class="expired-agent-stats">
+
+        <article class="expired-agent-stat total">
+
+            <div class="expired-agent-stat-icon">
+                <i class="fa-solid fa-hourglass-end"></i>
+            </div>
+
+            <div class="expired-agent-stat-label">
+                Expired Properties
+            </div>
+
+            <div
+                id="expiredTotalCount"
+                class="expired-agent-stat-value">
+                {{ properties|length }}
+            </div>
+
+        </article>
+
+
+        <article class="expired-agent-stat renewed">
+
+            <div class="expired-agent-stat-icon">
+                <i class="fa-solid fa-rotate-left"></i>
+            </div>
+
+            <div class="expired-agent-stat-label">
+                Renewed Plan
+            </div>
+
+            <div
+                id="expiredRenewedCount"
+                class="expired-agent-stat-value">
+                0
+            </div>
+
+        </article>
+
+
+        <article class="expired-agent-stat none">
+
+            <div class="expired-agent-stat-icon">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+
+            <div class="expired-agent-stat-label">
+                Still Expired / No Plan
+            </div>
+
+            <div
+                id="expiredNoPlanCount"
+                class="expired-agent-stat-value">
+                0
+            </div>
+
+        </article>
+
+    </section>
+
+
+    <!-- SEARCH -->
+    <section class="expired-agent-search-card">
+
+        <div class="expired-agent-search-wrap">
+
+            <i class="fa-solid fa-magnifying-glass"></i>
+
+            <input
+                type="search"
+                id="expiredAgentSearch"
+                placeholder="Search property code, label, agent, city..."
+                autocomplete="off">
+
+        </div>
+
+        <button
+            type="button"
+            class="expired-agent-filter-btn"
+            id="expiredAgentFilterBtn">
+            <i class="fa-solid fa-filter"></i>
+            Filter
+        </button>
+
+        <button
+            type="button"
+            class="expired-agent-reset-btn"
+            id="expiredAgentResetBtn">
+            <i class="fa-solid fa-rotate-left"></i>
+            Reset
+        </button>
+
+    </section>
+
+
+    <!-- TABLE -->
+    <section class="expired-agent-table-card">
+
+        <div class="expired-agent-table-head">
+
+            <div>
+                <h2 class="expired-agent-table-title">
+                    Expired Property Listings
+                </h2>
+
+                <p class="expired-agent-table-subtitle">
+                    Expiry details, agent plan status and property management actions.
+                </p>
+            </div>
+
+            <span class="expired-agent-count-badge">
+                <i class="fa-solid fa-circle"></i>
+                <span id="expiredTableCount">
+                    {{ properties|length }}
+                </span>
+                Expired
+            </span>
+
+        </div>
+
+
+        <div class="expired-agent-table-scroll">
+
+            <table class="expired-agent-table">
+
+                <thead>
+                    <tr>
+                        <th>Property Code</th>
+                        <th>Image</th>
+                        <th>Property</th>
+                        <th>Agent</th>
+                        <th>Category</th>
+                        <th>City</th>
+                        <th>Duration</th>
+                        <th>Price</th>
+                        <th>Owner</th>
+                        <th>Phone</th>
+                        <th>Plan Expiry</th>
+                        <th>Plan Status</th>
+                        <th>Expired On</th>
+                        <th style="text-align:center;">Actions</th>
+                    </tr>
+                </thead>
+
+
+                <tbody id="expiredAgentTableBody">
+
+                    {% for property in properties %}
+
+                    <tr
+                        class="expired-agent-row"
+                        data-search="
+                            {{ property.property_code|default:'' }}
+                            {{ property.label|default:'' }}
+                            {{ property.city|default:'' }}
+                            {{ property.agent.username|default:'' }}
+                            {{ property.category.name|default:'' }}
+                            {{ property.owner|default:'' }}
+                            {{ property.phone|default:'' }}
+                        "
+                        data-plan-expiry="{% if property.agent.plan_expiry_date %}{{ property.agent.plan_expiry_date|date:'c' }}{% endif %}">
+
+                        <td>
+                            <strong>{{ property.property_code|default:"-" }}</strong>
+                        </td>
+
+
+                        <td>
+                            <div class="expired-agent-property-image no-image">
+                                {% if property.image %}
+                                    <img
+                                        src="{{ property.image.url }}"
+                                        alt="{{ property.label|default:'Property' }}">
+                                {% else %}
+                                    <i class="fa-regular fa-image"></i>
+                                {% endif %}
+                            </div>
+                        </td>
+
+
+                        <td>
+                            <div class="expired-agent-property-main">
+
+                                <div>
+                                    <div class="expired-agent-property-name">
+                                        {{ property.label|default:"-" }}
+                                    </div>
+
+                                    <div class="expired-agent-property-code">
+                                        Property listing
+                                    </div>
+                                </div>
+
+                            </div>
+                        </td>
+
+
+                        <td>
+                            {{ property.agent.username|default:"-" }}
+                        </td>
+
+
+                        <td>
+                            {{ property.category.name|default:"-" }}
+                        </td>
+
+
+                        <td>
+                            {{ property.city|default:"-" }}
+                        </td>
+
+
+                        <td>
+                            {{ property.duration_days|default:0 }} days
+                        </td>
+
+
+                        <td>
+                            {% if property.price %}
+                                ₹ {{ property.price }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+
+
+                        <td>
+                            {{ property.owner|default:"-" }}
+                        </td>
+
+
+                        <td>
+                            {{ property.phone|default:"-" }}
+                        </td>
+
+
+                        <td>
+                            <div class="expired-agent-date">
+
+                                {% if property.agent.plan_expiry_date %}
+
+                                    <strong>
+                                        {{ property.agent.plan_expiry_date|date:"d M Y" }}
+                                    </strong>
+
+                                    <small>
+                                        {{ property.agent.plan_expiry_date|date:"h:i A" }}
+                                    </small>
+
+                                {% else %}
+
+                                    <strong>-</strong>
+                                    <small>No plan expiry</small>
+
+                                {% endif %}
+
+                            </div>
+                        </td>
+
+
+                        <td>
+
+                            <span
+                                class="expired-agent-badge no-plan js-expired-agent-plan-status"
+                                data-expiry="{% if property.agent.plan_expiry_date %}{{ property.agent.plan_expiry_date|date:'c' }}{% endif %}">
+                                Checking...
+                            </span>
+
+                        </td>
+
+
+                        <td>
+                            <div class="expired-agent-date">
+
+                                {% if property.expired_on %}
+
+                                    <strong>
+                                        {{ property.expired_on|date:"d M Y" }}
+                                    </strong>
+
+                                    <small>
+                                        {{ property.expired_on|date:"h:i A" }}
+                                    </small>
+
+                                {% else %}
+
+                                    <strong>{{ property.expired_on|default:"-" }}</strong>
+                                    <small>Not recorded</small>
+
+                                {% endif %}
+
+                            </div>
+                        </td>
+
+
+                        <td>
+
+                            <div class="expired-agent-actions">
+
+                                <button
+                                    type="button"
+                                    class="expired-agent-action edit"
+                                    onclick="openExpiredAgentPropertyModal('{{ property.id }}')"
+                                    title="Edit property">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </button>
+
+
+                                <button
+                                    type="button"
+                                    class="expired-agent-action restore"
+                                    onclick="openRestoreExpiredPropertyModal('{{ property.id }}')"
+                                    title="Restore property">
+                                    <i class="fa-solid fa-rotate-left"></i>
+                                </button>
+
+
+                                <button
+                                    type="button"
+                                    class="expired-agent-action delete"
+                                    onclick="openDeleteExpiredPropertyModal('{{ property.id }}')"
+                                    title="Delete property">
+                                    <i class="fa-regular fa-trash-can"></i>
+                                </button>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr class="expired-agent-empty">
+                        <td colspan="14">
+
+                            <div class="expired-agent-empty-icon">
+                                <i class="fa-regular fa-folder-open"></i>
+                            </div>
+
+                            <div>
+                                No expired agent properties found.
+                            </div>
+
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+</div>
+
+
+<!-- =========================================================
+     SCREENSHOT-STYLE UI BEHAVIOUR
+     Does not replace existing property edit/restore/delete JS.
+========================================================= -->
+<script>
+(function () {
+
+    function initializeExpiredAgentDashboard() {
+
+        const searchInput =
+            document.getElementById("expiredAgentSearch");
+
+        const resetButton =
+            document.getElementById("expiredAgentResetBtn");
+
+        const filterButton =
+            document.getElementById("expiredAgentFilterBtn");
+
+        const rows = Array.from(
+            document.querySelectorAll(
+                "#expiredAgentTableBody .expired-agent-row"
+            )
+        );
+
+        const countBadge =
+            document.getElementById("expiredTableCount");
+
+        const renewedCount =
+            document.getElementById("expiredRenewedCount");
+
+        const noPlanCount =
+            document.getElementById("expiredNoPlanCount");
+
+
+        function updatePlanStatuses() {
+
+            let renewed = 0;
+            let noPlan = 0;
+
+            const now = new Date();
+
+            document
+                .querySelectorAll(".js-expired-agent-plan-status")
+                .forEach(function (badge) {
+
+                    const expiryValue =
+                        badge.dataset.expiry || "";
+
+                    badge.className =
+                        "expired-agent-badge js-expired-agent-plan-status";
+
+                    if (!expiryValue) {
+
+                        badge.classList.add("no-plan");
+
+                        badge.innerHTML =
+                            '<i class="fa-solid fa-triangle-exclamation"></i> No Plan';
+
+                        noPlan += 1;
+                        return;
+                    }
+
+
+                    const expiryDate =
+                        new Date(expiryValue);
+
+
+                    if (
+                        Number.isNaN(expiryDate.getTime()) ||
+                        expiryDate.getTime() <= now.getTime()
+                    ) {
+
+                        badge.classList.add("expired");
+
+                        badge.innerHTML =
+                            '<i class="fa-solid fa-circle-xmark"></i> Expired';
+
+                        noPlan += 1;
+                        return;
+                    }
+
+
+                    badge.classList.add("renewed");
+
+                    badge.innerHTML =
+                        '<i class="fa-solid fa-circle-check"></i> Renewed';
+
+                    renewed += 1;
+
+                });
+
+
+            if (renewedCount) {
+                renewedCount.textContent = renewed;
+            }
+
+            if (noPlanCount) {
+                noPlanCount.textContent = noPlan;
+            }
+
+        }
+
+
+        function applySearch() {
+
+            if (!searchInput) {
+                return;
+            }
+
+            const term =
+                searchInput.value.trim().toLowerCase();
+
+            let visible = 0;
+
+            rows.forEach(function (row) {
+
+                const searchable =
+                    (
+                        row.dataset.search || ""
+                    ).toLowerCase();
+
+                const match =
+                    !term ||
+                    searchable.includes(term);
+
+                row.style.display =
+                    match ? "" : "none";
+
+                if (match) {
+                    visible += 1;
+                }
+
+            });
+
+
+            if (countBadge) {
+                countBadge.textContent = visible;
+            }
+
+        }
+
+
+        if (searchInput) {
+
+            searchInput.addEventListener(
+                "input",
+                applySearch
+            );
+
+        }
+
+
+        if (filterButton) {
+
+            filterButton.addEventListener(
+                "click",
+                applySearch
+            );
+
+        }
+
+
+        if (resetButton) {
+
+            resetButton.addEventListener(
+                "click",
+                function () {
+
+                    if (searchInput) {
+                        searchInput.value = "";
+                    }
+
+                    rows.forEach(function (row) {
+                        row.style.display = "";
+                    });
+
+                    if (countBadge) {
+                        countBadge.textContent =
+                            rows.length;
+                    }
+
+                }
+            );
+
+        }
+
+
+        updatePlanStatuses();
+
+    }
+
+
+    if (document.readyState === "loading") {
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            initializeExpiredAgentDashboard
+        );
+
+    } else {
+
+        initializeExpiredAgentDashboard();
+
+    }
+
+})();
+</script>
+
+
+<!-- =========================================================
+     EDIT PROPERTY MODAL
+========================================================= -->
+
+<div
+    id="expiredAgentPropertyModal"
+    class="fixed inset-0 z-[9999] hidden">
+
+    <div
+        class="absolute inset-0 bg-black/60"
+        onclick="closeExpiredAgentPropertyModal()">
+    </div>
+
+
+    <div
+        class="relative flex items-center justify-center w-full h-full p-3">
+
+        <div
+            class="bg-white w-full max-w-6xl h-[94vh] rounded-2xl shadow-xl flex flex-col overflow-hidden">
+
+
+            <!-- =================================================
+                 HEADER
+            ================================================== -->
+
+            <div class="flex items-center justify-between px-5 py-3 border-b">
+
+                <div>
+
+                    <h2 class="text-xl font-bold text-gray-800">
+                        Edit Expired Property
+                    </h2>
+
+                    <p class="text-xs text-gray-500">
+                        Update Expired Agent Property Details
+                    </p>
+
+                </div>
+
+
+                <button
+                    type="button"
+                    onclick="closeExpiredAgentPropertyModal()"
+                    class="h-9 w-9 rounded-lg bg-gray-100 hover:bg-red-500 hover:text-white">
+
+                    <i class="fa-solid fa-xmark"></i>
+
+                </button>
+
+            </div>
+
+
+
+            <!-- =================================================
+                 SCROLLING BODY
+            ================================================== -->
+
+            <div class="flex-1 overflow-y-auto bg-gray-50 p-4">
+
+                <form
+                    id="expiredAgentPropertyForm"
+                    method="POST"
+                    enctype="multipart/form-data">
+
+                    {% csrf_token %}
+
+                    <input
+                        type="hidden"
+                        id="expiredPropertyId"
+                        name="property_id">
+
+
+
+                    <!-- =================================================
+                         CATEGORY / SUBCATEGORY / PURPOSE
+                    ================================================== -->
+
+                    <div class="bg-white border rounded-xl p-4 mb-4">
+
+                        <h3 class="font-semibold text-base mb-3">
+                            Property Category
+                        </h3>
+
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+
+
+                            <div>
+
+                                <label class="label">
+                                    Category *
+                                </label>
+
+                                <select
+                                    id="expiredCategorySelect"
+                                    name="category_id"
+                                    class="input w-full"
+                                    required>
+
+                                    <option value="">
+                                        Select Category
+                                    </option>
+
+                                    {% for category in categories %}
+
+                                    <option value="{{ category.id }}">
+                                        {{ category.name }}
+                                    </option>
+
+                                    {% endfor %}
+
+                                </select>
+
+                            </div>
+
+
+
+                            <div>
+
+                                <label class="label">
+                                    Subcategory *
+                                </label>
+
+                                <select
+                                    id="expiredSubcategorySelect"
+                                    name="subcategory_id"
+                                    class="input w-full"
+                                    required>
+
+                                    <option value="">
+                                        Select Subcategory
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+
+
+                            <div>
+
+                                <label class="label">
+                                    Purpose *
+                                </label>
+
+                                <select
+                                    id="expiredPurposeSelect"
+                                    name="purpose_id"
+                                    class="input w-full"
+                                    required>
+
+                                    <option value="">
+                                        Select Purpose
+                                    </option>
+
+                                    {% for purpose in purposes %}
+
+                                    <option value="{{ purpose.id }}">
+                                        {{ purpose.name }}
+                                    </option>
+
+                                    {% endfor %}
+
+                                </select>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- =================================================
+                         DYNAMIC FIELDS
+                    ================================================== -->
+
+                    <div class="bg-white border rounded-xl p-4 mb-4">
+
+                        <div class="flex items-center justify-between mb-3">
+
+                            <h3 class="font-semibold text-base">
+                                Dynamic Fields
+                            </h3>
+
+                            <span
+                                id="expiredDynamicLoading"
+                                class="text-xs text-gray-400">
+                            </span>
+
+                        </div>
+
+
+                        <div
+                            id="expiredDynamicFieldsContainer"
+                            class="grid grid-cols-1 md:grid-cols-3 gap-3">
+
+                            <div class="col-span-full text-sm text-gray-400">
+                                Select a subcategory to load fields.
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- =================================================
+                         BASIC DETAILS
+                    ================================================== -->
+
+                    <div class="bg-white border rounded-xl p-4 mb-4">
+
+                        <h3 class="font-semibold text-base mb-3">
+                            Basic Details
+                        </h3>
+
+
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+
+
+                            <div>
+
+                                <label class="label">
+                                    Label *
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="expiredLabel"
+                                    name="label"
+                                    class="input w-full"
+                                    required>
+
+                            </div>
+
+
+
+                            <div>
+
+                                <label class="label">
+                                    Land Area
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="expiredLandArea"
+                                    name="land_area"
+                                    class="input w-full">
+
+                            </div>
+
+
+
+                            <div>
+
+                                <label class="label">
+                                    Square Feet
+                                </label>
+
+                                <input
+                                    type="number"
+                                    step="any"
+                                    id="expiredSqFt"
+                                    name="sq_ft"
+                                    class="input w-full">
+
+                            </div>
+
+
+
+                            <div>
+
+                                <label class="label">
+                                    Duration Days
+                                </label>
+
+                                <input
+                                    type="number"
+                                    min="0"
+                                    id="expiredDurationDays"
+                                    name="duration_days"
+                                    class="input w-full">
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- =================================================
+                         PRICE
+                    ================================================== -->
+
+                    <div class="bg-white border rounded-xl p-4 mb-4">
+
+                        <h3 class="font-semibold text-base mb-3">
+                            Price Details
+                        </h3>
+
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+
+
+                            <div>
+
+                                <label class="label">
+                                    Price *
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="expiredPrice"
+                                    name="price"
+                                    class="input w-full"
+                                    required>
+
+                            </div>
+
+
+
+                            <div>
+
+                                <label class="label">
+                                    Per Price
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="expiredPerPrice"
+                                    name="perprice"
+                                    class="input w-full">
+
+                            </div>
+
+
+
+                            <div>
+
+                                <label class="label">
+                                    Deposit
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="expiredDeposit"
+                                    name="deposit"
+                                    class="input w-full">
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- =================================================
+                         DESCRIPTION
+                    ================================================== -->
+
+                    <div class="bg-white border rounded-xl p-4 mb-4">
+
+                        <label class="label">
+                            Description *
+                        </label>
+
+                        <textarea
+                            id="expiredDescription"
+                            name="description"
+                            class="input w-full h-28"
+                            required></textarea>
+
+                    </div>
+
+
+
+                    <!-- =================================================
+                         IMAGES
+                    ================================================== -->
+
+                    <div class="bg-white border rounded-xl p-4 mb-4">
+
+                        <div class="flex items-center justify-between mb-3">
+
+                            <h3 class="font-semibold">
+                                Property Images
+                            </h3>
+
+                            <span class="text-xs text-gray-500">
+                                Existing Images
+                            </span>
+
+                        </div>
+
+
+                        <!-- EXISTING -->
+
+                        <div
+                            id="expiredExistingImages"
+                            class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-5">
+
+                            <div class="col-span-full text-center text-gray-400 py-5">
+                                No existing images.
+                            </div>
+
+                        </div>
+
+
+                        <!-- NEW -->
+
+                        <div>
+
+                            <label class="label">
+                                Add New Images
+                            </label>
+
+                            <input
+                                type="file"
+                                id="expiredNewImages"
+                                name="new_images"
+                                accept="image/*"
+                                multiple
+                                class="input w-full">
+
+                            <p class="text-xs text-gray-500 mt-1">
+                                You can select multiple images.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- =================================================
+                         AMENITIES
+                    ================================================== -->
+
+                    <div class="bg-white border rounded-xl p-4 mb-4">
+
+                        <h3 class="font-semibold text-base mb-3">
+                            Amenities
+                        </h3>
+
+
+                        <input
+                            type="text"
+                            id="expiredAmenitiesDisplay"
+                            class="input w-full cursor-pointer"
+                            readonly
+                            placeholder="Select Amenities"
+                            onclick="openExpiredAmenityModal()">
+
+
+                        <div id="expiredAmenitiesHidden"></div>
+
+                    </div>
+
+
+
+                    <!-- =================================================
+                         AMENITY MODAL
+                    ================================================== -->
+
+                    <div
+                        id="expiredAmenityModal"
+                        class="fixed inset-0 z-[10000] hidden items-center justify-center">
+
+                        <div
+                            class="absolute inset-0 bg-black/60"
+                            onclick="closeExpiredAmenityModal()">
+                        </div>
+
+
+                        <div
+                            class="relative bg-white rounded-xl shadow-xl w-[95%] max-w-3xl max-h-[80vh] overflow-hidden">
+
+                            <div class="flex items-center justify-between border-b px-5 py-3">
+
+                                <h3 class="font-bold">
+                                    Select Amenities
+                                </h3>
+
+
+                                <button
+                                    type="button"
+                                    onclick="closeExpiredAmenityModal()"
+                                    class="h-8 w-8 rounded-lg hover:bg-red-500 hover:text-white">
+
+                                    <i class="fa-solid fa-xmark"></i>
+
+                                </button>
+
+                            </div>
+
+
+                            <div class="p-4 overflow-y-auto">
+
+                                <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+
+                                    {% for amenity in amenities %}
+
+                                    <button
+                                        type="button"
+                                        class="expiredAmenityBtn border rounded-lg p-2 text-sm bg-white hover:bg-lime-500 hover:text-white"
+                                        data-id="{{ amenity.id }}"
+                                        data-name="{{ amenity.name }}"
+                                        onclick="toggleExpiredAmenity(this)">
+
+                                        {{ amenity.name }}
+
+                                    </button>
+
+                                    {% endfor %}
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="border-t p-3 flex justify-end">
+
+                                <button
+                                    type="button"
+                                    onclick="applyExpiredAmenities()"
+                                    class="px-5 py-2 rounded-lg bg-lime-500 text-white">
+
+                                    Apply
+
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- =================================================
+                         AGENT / OWNER
+                    ================================================== -->
+
+                    <div class="bg-white border rounded-xl p-4 mb-4">
+
+                        <h3 class="font-semibold text-base mb-3">
+                            Owner Details
+                        </h3>
+
+
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+
+
+                            <div>
+
+                                <label class="label">
+                                    Agent *
+                                </label>
+
+                                <select
+                                    id="expiredAgent"
+                                    name="agent_id"
+                                    class="input w-full"
+                                    required>
+
+                                    <option value="">
+                                        Select Agent
+                                    </option>
+
+                                    {% for agent in agents %}
+
+                                    <option value="{{ agent.id }}">
+                                        {{ agent.username }}
+                                    </option>
+
+                                    {% endfor %}
+
+                                </select>
+
+                            </div>
+
+
+
+                            <div>
+
+                                <label class="label">
+                                    Owner Name
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="expiredOwner"
+                                    name="owner"
+                                    class="input w-full">
+
+                            </div>
+
+
+
+                            <div>
+
+                                <label class="label">
+                                    Phone *
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="expiredPhone"
+                                    name="phone"
+                                    class="input w-full"
+                                    required>
+
+                            </div>
+
+
+
+                            <div>
+
+                                <label class="label">
+                                    WhatsApp *
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="expiredWhatsapp"
+                                    name="whatsapp"
+                                    class="input w-full"
+                                    required>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- =================================================
+                         LOCATION
+                    ================================================== -->
+
+                    <div class="bg-white border rounded-xl p-4 mb-4">
+
+                        <h3 class="font-semibold text-base mb-3">
+                            Location Details
+                        </h3>
+
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+
+
+                            <div>
+
+                                <label class="label">
+                                    City *
+                                </label>
+
+                                <input
+                                    id="expiredCity"
+                                    name="city"
+                                    class="input w-full"
+                                    required>
+
+                            </div>
+
+
+
+                            <div>
+
+                                <label class="label">
+                                    District *
+                                </label>
+
+                                <input
+                                    id="expiredDistrict"
+                                    name="district"
+                                    class="input w-full"
+                                    required>
+
+                            </div>
+
+
+
+                            <div>
+
+                                <label class="label">
+                                    State *
+                                </label>
+
+                                <input
+                                    id="expiredState"
+                                    name="state"
+                                    class="input w-full"
+                                    required>
+
+                            </div>
+
+
+
+                            <div>
+
+                                <label class="label">
+                                    Taluk
+                                </label>
+
+                                <input
+                                    id="expiredTaluk"
+                                    name="taluk"
+                                    class="input w-full">
+
+                            </div>
+
+
+
+                            <div>
+
+                                <label class="label">
+                                    Village
+                                </label>
+
+                                <input
+                                    id="expiredVillage"
+                                    name="village"
+                                    class="input w-full">
+
+                            </div>
+
+
+
+                            <div>
+
+                                <label class="label">
+                                    Pincode *
+                                </label>
+
+                                <input
+                                    id="expiredPincode"
+                                    name="pincode"
+                                    class="input w-full"
+                                    required>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- =================================================
+                         GOOGLE LOCATION
+                    ================================================== -->
+
+                    <div class="bg-white border rounded-xl p-4 mb-4">
+
+                        <label class="label">
+                            Google Location
+                        </label>
+
+                        <input
+                            id="expiredLocation"
+                            name="location"
+                            class="input w-full"
+                            placeholder="Google Map URL">
+
+                    </div>
+
+
+
+                    <!-- =================================================
+                         NOTES
+                    ================================================== -->
+
+                    <div class="bg-white border rounded-xl p-4 mb-4">
+
+                        <label class="label">
+                            Notes
+                        </label>
+
+                        <textarea
+                            id="expiredNotes"
+                            name="notes"
+                            class="input w-full h-24"></textarea>
+
+                    </div>
+
+
+
+                    <!-- =================================================
+                         STATUS
+                    ================================================== -->
+
+                    <div class="bg-white border rounded-xl p-4 mb-4">
+
+                        <h3 class="font-semibold text-base mb-3">
+                            Property Status
+                        </h3>
+
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+
+
+                            <label class="flex justify-between items-center border rounded-lg p-3">
+
+                                <span>
+                                    Featured Property
+                                </span>
+
+                                <input
+                                    type="checkbox"
+                                    id="expiredFeatured"
+                                    name="is_featured"
+                                    class="w-5 h-5">
+
+                            </label>
+
+
+
+                            <label class="flex justify-between items-center border rounded-lg p-3">
+
+                                <span>
+                                    Paid Property
+                                </span>
+
+                                <input
+                                    type="checkbox"
+                                    id="expiredPaid"
+                                    name="paid"
+                                    class="w-5 h-5">
+
+                            </label>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- =================================================
+                         SELLING POINTS
+                    ================================================== -->
+
+                    <div class="bg-white border rounded-xl p-4 mb-4">
+
+                        <div class="flex items-center justify-between mb-3">
+
+                            <h3 class="font-semibold">
+                                Selling Points
+                            </h3>
+
+
+                            <button
+                                type="button"
+                                onclick="addExpiredKeyPoint()"
+                                class="px-3 py-2 rounded-lg bg-lime-500 text-white">
+
+                                <i class="fa-solid fa-plus"></i>
+
+                            </button>
+
+                        </div>
+
+
+                        <div
+                            id="expiredKeyPointsContainer"
+                            class="space-y-2">
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- =================================================
+                         LANDMARKS
+                    ================================================== -->
+
+                    <div class="bg-white border rounded-xl p-4 mb-4">
+
+                        <div class="flex items-center justify-between mb-3">
+
+                            <h3 class="font-semibold">
+                                Landmarks
+                            </h3>
+
+
+                            <button
+                                type="button"
+                                onclick="addExpiredLandmark()"
+                                class="px-3 py-2 rounded-lg bg-lime-500 text-white">
+
+                                <i class="fa-solid fa-plus"></i>
+
+                            </button>
+
+                        </div>
+
+
+                        <div
+                            id="expiredLandmarkContainer"
+                            class="space-y-3">
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- =================================================
+                         FOOTER
+                    ================================================== -->
+
+                    <div class="sticky bottom-0 bg-white border-t px-5 py-3">
+
+                        <div class="flex justify-end gap-3">
+
+                            <button
+                                type="button"
+                                onclick="closeExpiredAgentPropertyModal()"
+                                class="px-6 py-2 rounded-lg border hover:bg-gray-100">
+
+                                Cancel
+
+                            </button>
+
+
+                            <button
+                                type="submit"
+                                id="expiredUpdateButton"
+                                class="px-6 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">
+
+                                <i class="fa-solid fa-floppy-disk mr-2"></i>
+
+                                Update Property
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<!-- =========================================================
+     RESTORE MODAL
+========================================================= -->
+
+<div
+    id="restoreExpiredPropertyModal"
+    class="fixed inset-0 z-[10001] hidden items-center justify-center">
+
+    <div
+        class="absolute inset-0 bg-black/60"
+        onclick="closeRestoreExpiredPropertyModal()">
+    </div>
+
+
+    <div class="relative bg-white rounded-2xl shadow-xl w-[95%] max-w-md p-6">
+
+        <div class="flex items-center gap-3 mb-4">
+
+            <div class="h-11 w-11 rounded-full bg-lime-100 text-lime-600 flex items-center justify-center">
+
+                <i class="fa-solid fa-rotate-left"></i>
+
+            </div>
+
+
+            <div>
+
+                <h3 class="text-lg font-bold text-gray-800">
+                    Restore Property
+                </h3>
+
+                <p class="text-sm text-gray-500">
+                    Restore this property to active properties?
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="flex justify-end gap-3">
+
+            <button
+                type="button"
+                onclick="closeRestoreExpiredPropertyModal()"
+                class="px-5 py-2 rounded-lg border">
+
+                Cancel
+
+            </button>
+
+
+            <button
+                type="button"
+                id="restoreExpiredPropertyButton"
+                onclick="restoreExpiredProperty()"
+                class="px-5 py-2 rounded-lg bg-lime-500 text-white">
+
+                <i class="fa-solid fa-rotate-left mr-1"></i>
+                Restore
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<!-- =========================================================
+     DELETE MODAL
+========================================================= -->
+
+<div
+    id="deleteExpiredPropertyModal"
+    class="fixed inset-0 z-[10001] hidden items-center justify-center">
+
+    <div
+        class="absolute inset-0 bg-black/60"
+        onclick="closeDeleteExpiredPropertyModal()">
+    </div>
+
+
+    <div class="relative bg-white rounded-2xl shadow-xl w-[95%] max-w-md p-6">
+
+        <div class="flex items-center gap-3 mb-4">
+
+            <div class="h-11 w-11 rounded-full bg-red-100 text-red-600 flex items-center justify-center">
+
+                <i class="fa-solid fa-trash"></i>
+
+            </div>
+
+
+            <div>
+
+                <h3 class="text-lg font-bold text-gray-800">
+                    Delete Property
+                </h3>
+
+                <p class="text-sm text-gray-500">
+                    This action cannot be undone.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="flex justify-end gap-3">
+
+            <button
+                type="button"
+                onclick="closeDeleteExpiredPropertyModal()"
+                class="px-5 py-2 rounded-lg border">
+
+                Cancel
+
+            </button>
+
+
+            <button
+                type="button"
+                id="deleteExpiredPropertyButton"
+                onclick="deleteExpiredProperty()"
+                class="px-5 py-2 rounded-lg bg-red-600 text-white">
+
+                <i class="fa-solid fa-trash mr-1"></i>
+                Delete
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<!-- =========================================================
+     JAVASCRIPT
+========================================================= -->
+
+<script>
+
+"use strict";
+
+
+/* =========================================================
+   URLS
+========================================================= */
+
+const EXPIRED_EMPTY_UUID =
+    "00000000-0000-0000-0000-000000000000";
+
+
+const EXPIRED_DETAIL_URL =
+    "{% url 'expired_agent_property_detail' property_id='00000000-0000-0000-0000-000000000000' %}";
+
+
+const EXPIRED_EDIT_URL =
+    "{% url 'edit_expired_agent_property' property_id='00000000-0000-0000-0000-000000000000' %}";
+
+
+const EXPIRED_RESTORE_URL =
+    "{% url 'restore_expired_agent_property' property_id='00000000-0000-0000-0000-000000000000' %}";
+
+
+const EXPIRED_DELETE_URL =
+    "{% url 'delete_expired_agent_property' property_id='00000000-0000-0000-0000-000000000000' %}";
+
+
+const EXPIRED_SUBCATEGORY_URL =
+    "/admin_panel/get-subcategories/";
+
+
+const EXPIRED_DYNAMIC_FIELDS_URL =
+    "/admin_panel/get-subcategory-fields/";
+
+
+
+/* =========================================================
+   STATE
+========================================================= */
+
+let expiredSelectedAmenities = [];
+
+let expiredDeletedImages = [];
+
+let expiredCurrentProperty = null;
+
+let expiredRestorePropertyId = null;
+
+let expiredDeletePropertyId = null;
+
+let expiredCategoryRequestId = 0;
+
+let expiredDynamicRequestId = 0;
+
+let expiredPageInitialized = false;
+
+
+
+/* =========================================================
+   HELPERS
+========================================================= */
+
+function expiredElement(id) {
+
+    return document.getElementById(id);
+
+}
+
+
+function expiredUrl(template, id) {
+
+    return template.replace(
+        EXPIRED_EMPTY_UUID,
+        String(id)
+    );
+
+}
+
+
+function setExpiredValue(id, value) {
+
+    const element = expiredElement(id);
+
+    if (!element) {
+        return;
+    }
+
+    element.value =
+        value === null ||
+        value === undefined
+            ? ""
+            : value;
+
+}
+
+
+function setExpiredSelectValue(id, value) {
+
+    const element = expiredElement(id);
+
+    if (!element) {
+        return;
+    }
+
+    element.value =
+        value === null ||
+        value === undefined
+            ? ""
+            : String(value);
+
+}
+
+
+function getExpiredCSRFToken() {
+
+    const form =
+        expiredElement(
+            "expiredAgentPropertyForm"
+        );
+
+    if (form) {
+
+        const input =
+            form.querySelector(
+                'input[name="csrfmiddlewaretoken"]'
+            );
+
+        if (input && input.value) {
+
+            return input.value;
+
+        }
+
+    }
+
+
+    const cookies =
+        document.cookie.split(";");
+
+
+    for (const cookie of cookies) {
+
+        const parts =
+            cookie.trim().split("=");
+
+        if (parts[0] === "csrftoken") {
+
+            return decodeURIComponent(
+                parts.slice(1).join("=")
+            );
+
+        }
+
+    }
+
+
+    return "";
+
+}
+
+
+
+function escapeExpiredHtml(value) {
+
+    if (
+        value === null ||
+        value === undefined
+    ) {
+        return "";
+    }
+
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+}
+
+
+
+/* =========================================================
+   OPEN EDIT MODAL
+========================================================= */
+
+function openExpiredAgentPropertyModal(propertyId) {
+
+    const modal =
+        expiredElement(
+            "expiredAgentPropertyModal"
+        );
+
+    const form =
+        expiredElement(
+            "expiredAgentPropertyForm"
+        );
+
+
+    if (!modal || !form) {
+
+        console.error(
+            "Expired property modal/form not found."
+        );
+
+        return;
+
+    }
+
+
+    form.reset();
+
+
+    expiredSelectedAmenities = [];
+
+    expiredDeletedImages = [];
+
+    expiredCurrentProperty = null;
+
+
+    expiredCategoryRequestId++;
+
+    expiredDynamicRequestId++;
+
+
+    clearExpiredImages();
+
+    clearExpiredAmenities();
+
+    clearExpiredKeyPoints();
+
+    clearExpiredLandmarks();
+
+    clearExpiredDynamicFields();
+
+    clearExpiredSubcategory();
+
+
+    setExpiredValue(
+        "expiredPropertyId",
+        propertyId
+    );
+
+
+    modal.classList.remove("hidden");
+
+    document.body.classList.add(
+        "overflow-hidden"
+    );
+
+
+    loadExpiredAgentProperty(
+        propertyId
+    );
+
+}
+
+
+
+/* =========================================================
+   CLOSE EDIT MODAL
+========================================================= */
+
+function closeExpiredAgentPropertyModal() {
+
+    const modal =
+        expiredElement(
+            "expiredAgentPropertyModal"
+        );
+
+    if (!modal) {
+        return;
+    }
+
+
+    closeExpiredAmenityModal();
+
+
+    modal.classList.add("hidden");
+
+
+    document.body.classList.remove(
+        "overflow-hidden"
+    );
+
+}
+
+
+
+/* =========================================================
+   LOAD PROPERTY
+========================================================= */
+
+async function loadExpiredAgentProperty(propertyId) {
+
+    const url =
+        expiredUrl(
+            EXPIRED_DETAIL_URL,
+            propertyId
+        );
+
+
+    console.log(
+        "LOADING EXPIRED PROPERTY:",
+        url
+    );
+
+
+    try {
+
+        const response =
+            await fetch(
+                url,
+                {
+                    method: "GET",
+
+                    headers: {
+                        "X-Requested-With":
+                            "XMLHttpRequest",
+
+                        "Accept":
+                            "application/json"
+                    },
+
+                    credentials:
+                        "same-origin"
+                }
+            );
+
+
+        const text =
+            await response.text();
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "HTTP " +
+                response.status +
+                ": " +
+                text
+            );
+
+        }
+
+
+        let property;
+
+        try {
+
+            property =
+                JSON.parse(text);
+
+        } catch (error) {
+
+            console.error(
+                "INVALID PROPERTY JSON:",
+                text
+            );
+
+            throw new Error(
+                "Server returned invalid JSON."
+            );
+
+        }
+
+
+        console.log(
+            "EXPIRED PROPERTY DATA:",
+            property
+        );
+
+
+        expiredCurrentProperty =
+            property;
+
+
+        await populateExpiredPropertyForm(
+            property
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "LOAD PROPERTY ERROR:",
+            error
+        );
+
+
+        alert(
+            "Unable to load expired property.\n\n" +
+            error.message
+        );
+
+    }
+
+}
+
+
+
+/* =========================================================
+   POPULATE PROPERTY
+========================================================= */
+
+async function populateExpiredPropertyForm(property) {
+
+    if (!property) {
+        return;
+    }
+
+
+    /* -----------------------------------------------------
+       BASIC
+    ----------------------------------------------------- */
+
+    setExpiredValue(
+        "expiredPropertyId",
+        property.id
+    );
+
+
+    setExpiredValue(
+        "expiredLabel",
+        property.label
+    );
+
+
+    setExpiredValue(
+        "expiredLandArea",
+        property.land_area
+    );
+
+
+    setExpiredValue(
+        "expiredSqFt",
+        property.sq_ft
+    );
+
+
+    setExpiredValue(
+        "expiredDurationDays",
+        property.duration_days
+    );
+
+
+    setExpiredValue(
+        "expiredPrice",
+        property.price
+    );
+
+
+    setExpiredValue(
+        "expiredPerPrice",
+        property.perprice
+    );
+
+
+    setExpiredValue(
+        "expiredDeposit",
+        property.deposit
+    );
+
+
+    setExpiredValue(
+        "expiredDescription",
+        property.description
+    );
+
+
+    /* -----------------------------------------------------
+       OWNER
+    ----------------------------------------------------- */
+
+    setExpiredValue(
+        "expiredOwner",
+        property.owner
+    );
+
+
+    setExpiredValue(
+        "expiredPhone",
+        property.phone
+    );
+
+
+    setExpiredValue(
+        "expiredWhatsapp",
+        property.whatsapp
+    );
+
+
+    /* -----------------------------------------------------
+       LOCATION
+    ----------------------------------------------------- */
+
+    setExpiredValue(
+        "expiredCity",
+        property.city
+    );
+
+
+    setExpiredValue(
+        "expiredDistrict",
+        property.district
+    );
+
+
+    setExpiredValue(
+        "expiredState",
+        property.state
+    );
+
+
+    setExpiredValue(
+        "expiredTaluk",
+        property.taluk
+    );
+
+
+    setExpiredValue(
+        "expiredVillage",
+        property.village
+    );
+
+
+    setExpiredValue(
+        "expiredPincode",
+        property.pincode
+    );
+
+
+    setExpiredValue(
+        "expiredLocation",
+        property.location
+    );
+
+
+    setExpiredValue(
+        "expiredNotes",
+        property.notes
+    );
+
+
+    /* -----------------------------------------------------
+       CHECKBOXES
+    ----------------------------------------------------- */
+
+    const featured =
+        expiredElement(
+            "expiredFeatured"
+        );
+
+
+    if (featured) {
+
+        featured.checked =
+            Boolean(property.is_featured);
+
+    }
+
+
+    const paid =
+        expiredElement(
+            "expiredPaid"
+        );
+
+
+    if (paid) {
+
+        paid.checked =
+            Boolean(property.paid);
+
+    }
+
+
+    /* -----------------------------------------------------
+       CATEGORY
+    ----------------------------------------------------- */
+
+    setExpiredSelectValue(
+        "expiredCategorySelect",
+        property.category_id ||
+        property.category?.id ||
+        ""
+    );
+
+
+    /* -----------------------------------------------------
+       PURPOSE
+    ----------------------------------------------------- */
+
+    setExpiredSelectValue(
+        "expiredPurposeSelect",
+        property.purpose_id ||
+        property.purpose?.id ||
+        ""
+    );
+
+
+    /* -----------------------------------------------------
+       AGENT
+    ----------------------------------------------------- */
+
+    const agentId =
+        property.agent_id ||
+        property.agent?.id ||
+        property.agent?.pk ||
+        "";
+
+
+    setExpiredSelectValue(
+        "expiredAgent",
+        agentId
+    );
+
+
+    /* -----------------------------------------------------
+       AMENITIES
+    ----------------------------------------------------- */
+
+    renderExpiredAmenities(
+        property.amenities || []
+    );
+
+
+    /* -----------------------------------------------------
+       EXISTING IMAGES
+    ----------------------------------------------------- */
+
+    renderExpiredExistingImages(
+        property.images ||
+        property.existing_images ||
+        []
+    );
+
+
+    /* -----------------------------------------------------
+       SELLING POINTS
+    ----------------------------------------------------- */
+
+    renderExpiredSellingPoints(
+        property.selling_points ||
+        []
+    );
+
+
+    /* -----------------------------------------------------
+       LANDMARKS
+    ----------------------------------------------------- */
+
+    renderExpiredLandmarks(
+        property.landmarks ||
+        []
+    );
+
+
+    /* -----------------------------------------------------
+       CATEGORY -> SUBCATEGORY -> DYNAMIC
+    ----------------------------------------------------- */
+
+    clearExpiredSubcategory();
+
+    clearExpiredDynamicFields();
+
+
+    const categoryId =
+        property.category_id ||
+        property.category?.id;
+
+
+    const subcategoryId =
+        property.subcategory_id ||
+        property.subcategory?.id;
+
+
+    const dynamicValues =
+        property.dynamic_fields ||
+        property.field_values ||
+        [];
+
+
+    if (categoryId) {
+
+        await loadExpiredSubcategories(
+            categoryId,
+            subcategoryId,
+            dynamicValues
+        );
+
+    }
+
+}
+
+
+
+/* =========================================================
+   CATEGORY CHANGE
+========================================================= */
+
+function initializeExpiredCategory() {
+
+    const select =
+        expiredElement(
+            "expiredCategorySelect"
+        );
+
+
+    if (!select) {
+        return;
+    }
+
+
+    if (
+        select.dataset.initialized ===
+        "true"
+    ) {
+        return;
+    }
+
+
+    select.dataset.initialized =
+        "true";
+
+
+    select.addEventListener(
+        "change",
+        async function() {
+
+            const categoryId =
+                this.value;
+
+
+            expiredCategoryRequestId++;
+
+            expiredDynamicRequestId++;
+
+
+            clearExpiredSubcategory();
+
+            clearExpiredDynamicFields();
+
+
+            if (!categoryId) {
+                return;
+            }
+
+
+            await loadExpiredSubcategories(
+                categoryId
+            );
+
+        }
+    );
+
+}
+
+
+
+/* =========================================================
+   LOAD SUBCATEGORIES
+========================================================= */
+
+async function loadExpiredSubcategories(
+    categoryId,
+    selectedSubcategory = null,
+    dynamicValues = {}
+) {
+
+    const select =
+        expiredElement(
+            "expiredSubcategorySelect"
+        );
+
+
+    if (!select) {
+        return;
+    }
+
+
+    const requestId =
+        ++expiredCategoryRequestId;
+
+
+    select.innerHTML = `
+        <option value="">
+            Loading Subcategories...
+        </option>
+    `;
+
+
+    const url =
+        EXPIRED_SUBCATEGORY_URL +
+        encodeURIComponent(categoryId) +
+        "/";
+
+
+    console.log(
+        "GET SUBCATEGORIES:",
+        url
+    );
+
+
+    try {
+
+        const response =
+            await fetch(
+                url,
+                {
+                    method: "GET",
+
+                    headers: {
+                        "X-Requested-With":
+                            "XMLHttpRequest",
+
+                        "Accept":
+                            "application/json"
+                    },
+
+                    credentials:
+                        "same-origin"
+                }
+            );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "HTTP " +
+                response.status
+            );
+
+        }
+
+
+        const data =
+            await response.json();
+
+
+        if (
+            requestId !==
+            expiredCategoryRequestId
+        ) {
+            return;
+        }
+
+
+        const list =
+            Array.isArray(data)
+                ? data
+                : (
+                    data.subcategories ||
+                    data.results ||
+                    []
+                );
+
+
+        select.innerHTML = `
+            <option value="">
+                Select Subcategory
+            </option>
+        `;
+
+
+        list.forEach(item => {
+
+            if (!item) {
+                return;
+            }
+
+
+            const option =
+                document.createElement(
+                    "option"
+                );
+
+
+            option.value =
+                item.id ||
+                item.pk;
+
+
+            option.textContent =
+                item.name ||
+                item.title ||
+                "";
+
+
+            select.appendChild(
+                option
+            );
+
+        });
+
+
+        /* -------------------------------------------------
+           Existing property
+        ------------------------------------------------- */
+
+        if (
+            selectedSubcategory !== null &&
+            selectedSubcategory !== undefined &&
+            selectedSubcategory !== ""
+        ) {
+
+            const matchingOption =
+                Array.from(
+                    select.options
+                ).find(
+                    option =>
+                        String(option.value) ===
+                        String(selectedSubcategory)
+                );
+
+
+            if (matchingOption) {
+
+                select.value =
+                    String(
+                        selectedSubcategory
+                    );
+
+
+                await loadExpiredDynamicFields(
+                    selectedSubcategory,
+                    normalizeExpiredDynamicValues(
+                        dynamicValues
+                    )
+                );
+
+            } else {
+
+                console.warn(
+                    "Existing subcategory not found:",
+                    selectedSubcategory
+                );
+
+
+                clearExpiredDynamicFields();
+
+            }
+
+        } else {
+
+            clearExpiredDynamicFields();
+
+        }
+
+
+    } catch (error) {
+
+        console.error(
+            "SUBCATEGORY ERROR:",
+            error
+        );
+
+
+        if (
+            requestId !==
+            expiredCategoryRequestId
+        ) {
+            return;
+        }
+
+
+        select.innerHTML = `
+            <option value="">
+                Unable to load subcategories
+            </option>
+        `;
+
+
+        clearExpiredDynamicFields();
+
+    }
+
+}
+
+
+
+/* =========================================================
+   SUBCATEGORY CHANGE
+========================================================= */
+
+function initializeExpiredSubcategory() {
+
+    const select =
+        expiredElement(
+            "expiredSubcategorySelect"
+        );
+
+
+    if (!select) {
+        return;
+    }
+
+
+    if (
+        select.dataset.initialized ===
+        "true"
+    ) {
+        return;
+    }
+
+
+    select.dataset.initialized =
+        "true";
+
+
+    select.addEventListener(
+        "change",
+        async function() {
+
+            const subcategoryId =
+                this.value;
+
+
+            expiredDynamicRequestId++;
+
+
+            clearExpiredDynamicFields();
+
+
+            if (!subcategoryId) {
+                return;
+            }
+
+
+            await loadExpiredDynamicFields(
+                subcategoryId,
+                {}
+            );
+
+        }
+    );
+
+}
+
+
+
+/* =========================================================
+   NORMALIZE DYNAMIC VALUES
+========================================================= */
+
+function normalizeExpiredDynamicValues(values) {
+
+    if (
+        values === null ||
+        values === undefined
+    ) {
+        return {};
+    }
+
+
+    if (typeof values === "string") {
+
+        try {
+
+            values =
+                JSON.parse(values);
+
+        } catch (error) {
+
+            return {};
+
+        }
+
+    }
+
+
+    /* -----------------------------------------------
+       Object:
+       {
+           field_1: "10"
+       }
+    ------------------------------------------------ */
+
+    if (
+        typeof values === "object" &&
+        !Array.isArray(values)
+    ) {
+
+        return values;
+
+    }
+
+
+    /* -----------------------------------------------
+       List:
+       [
+          {
+             field_id: 1,
+             value: "10"
+          }
+       ]
+    ------------------------------------------------ */
+
+    if (Array.isArray(values)) {
+
+        const result = {};
+
+
+        values.forEach(item => {
+
+            if (!item) {
+                return;
+            }
+
+
+            const fieldId =
+                item.field_id ??
+                item.fieldId ??
+                item.id ??
+                item.field?.id;
+
+
+            if (
+                fieldId === null ||
+                fieldId === undefined
+            ) {
+                return;
+            }
+
+
+            let value =
+                item.value;
+
+
+            if (
+                value === null ||
+                value === undefined
+            ) {
+                value = "";
+            }
+
+
+            result[
+                "field_" + fieldId
+            ] = value;
+
+        });
+
+
+        return result;
+
+    }
+
+
+    return {};
+
+}
+
+
+
+/* =========================================================
+   LOAD DYNAMIC FIELDS
+========================================================= */
+
+async function loadExpiredDynamicFields(
+    subcategoryId,
+    values = {}
+) {
+
+    const container =
+        expiredElement(
+            "expiredDynamicFieldsContainer"
+        );
+
+
+    if (!container) {
+        return;
+    }
+
+
+    const loading =
+        expiredElement(
+            "expiredDynamicLoading"
+        );
+
+
+    const requestId =
+        ++expiredDynamicRequestId;
+
+
+    container.innerHTML = `
+        <div class="col-span-full text-center py-6 text-gray-500">
+
+            <i class="fa-solid fa-spinner fa-spin mr-2"></i>
+
+            Loading dynamic fields...
+
+        </div>
+    `;
+
+
+    if (loading) {
+        loading.textContent =
+            "Loading...";
+    }
+
+
+    const url =
+        EXPIRED_DYNAMIC_FIELDS_URL +
+        encodeURIComponent(subcategoryId) +
+        "/";
+
+
+    console.log(
+        "GET DYNAMIC FIELDS:",
+        url
+    );
+
+
+    try {
+
+        const response =
+            await fetch(
+                url,
+                {
+                    method: "GET",
+
+                    headers: {
+                        "X-Requested-With":
+                            "XMLHttpRequest",
+
+                        "Accept":
+                            "application/json"
+                    },
+
+                    credentials:
+                        "same-origin"
+                }
+            );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "HTTP " +
+                response.status
+            );
+
+        }
+
+
+        const data =
+            await response.json();
+
+
+        if (
+            requestId !==
+            expiredDynamicRequestId
+        ) {
+            return;
+        }
+
+
+        const fields =
+            Array.isArray(data)
+                ? data
+                : (
+                    data.fields ||
+                    data.results ||
+                    []
+                );
+
+
+        renderExpiredDynamicFields(
+            fields,
+            normalizeExpiredDynamicValues(
+                values
+            )
+        );
+
+
+        if (loading) {
+            loading.textContent = "";
+        }
+
+
+    } catch (error) {
+
+        console.error(
+            "DYNAMIC FIELD ERROR:",
+            error
+        );
+
+
+        if (
+            requestId !==
+            expiredDynamicRequestId
+        ) {
+            return;
+        }
+
+
+        container.innerHTML = `
+            <div class="col-span-full text-red-500">
+                Failed to load dynamic fields.
+            </div>
+        `;
+
+
+        if (loading) {
+            loading.textContent = "";
+        }
+
+    }
+
+}
+
+
+
+/* =========================================================
+   RENDER DYNAMIC FIELDS
+========================================================= */
+
+function renderExpiredDynamicFields(
+    fields,
+    values = {}
+) {
+
+    const container =
+        expiredElement(
+            "expiredDynamicFieldsContainer"
+        );
+
+
+    if (!container) {
+        return;
+    }
+
+
+    container.innerHTML = "";
+
+
+    if (
+        !Array.isArray(fields) ||
+        fields.length === 0
+    ) {
+
+        container.innerHTML = `
+            <div class="col-span-full text-gray-500">
+                No dynamic fields available.
+            </div>
+        `;
+
+        return;
+    }
+
+
+    fields.forEach(field => {
+
+        if (
+            !field ||
+            (!field.id && !field.pk)
+        ) {
+            return;
+        }
+
+
+        const fieldId =
+            field.id ||
+            field.pk;
+
+
+        const fieldName =
+            "field_" + fieldId;
+
+
+        const oldValue =
+            values[fieldName] ??
+            field.value ??
+            "";
+
+
+        const fieldType =
+            String(
+                field.type ||
+                "text"
+            ).toLowerCase();
+
+
+        let html = "";
+
+
+        /* ---------------------------------------------
+           TEXT
+        ---------------------------------------------- */
+
+        if (
+            fieldType === "text" ||
+            fieldType === "textarea"
+        ) {
+
+            html = `
+
+                <textarea
+                    name="${fieldName}"
+                    class="input w-full"
+                    rows="3"
+                    placeholder="${escapeExpiredHtml(field.name || "")}"
+                >${escapeExpiredHtml(oldValue)}</textarea>
+
+            `;
+
+        }
+
+
+        /* ---------------------------------------------
+           NUMBER
+        ---------------------------------------------- */
+
+        else if (
+            fieldType === "number" ||
+            fieldType === "countable"
+        ) {
+
+            html = `
+
+                <input
+                    type="number"
+                    name="${fieldName}"
+                    value="${escapeExpiredHtml(oldValue)}"
+                    class="input w-full"
+                    placeholder="${escapeExpiredHtml(field.name || "")}">
+
+            `;
+
+        }
+
+
+        /* ---------------------------------------------
+           BOOLEAN
+        ---------------------------------------------- */
+
+        else if (
+            fieldType === "boolean"
+        ) {
+
+            const normalized =
+                String(oldValue)
+                    .toLowerCase()
+                    .trim();
+
+
+            const checked =
+                normalized === "yes" ||
+                normalized === "true" ||
+                normalized === "1" ||
+                normalized === "on";
+
+
+            html = `
+
+                <label class="flex items-center gap-2">
+
+                    <input
+                        type="checkbox"
+                        name="${fieldName}"
+                        value="Yes"
+                        ${checked ? "checked" : ""}>
+
+                    <span>
+                        Yes
+                    </span>
+
+                </label>
+
+            `;
+
+        }
+
+
+        /* ---------------------------------------------
+           SELECT
+        ---------------------------------------------- */
+
+        else if (
+            fieldType === "select"
+        ) {
+
+            let options = `
+                <option value="">
+                    Select
+                </option>
+            `;
+
+
+            const fieldOptions =
+                Array.isArray(field.options)
+                    ? field.options
+                    : [];
+
+
+            fieldOptions.forEach(option => {
+
+                const optionValue =
+                    typeof option === "object"
+                        ? (
+                            option.value ??
+                            option.name ??
+                            ""
+                        )
+                        : option;
+
+
+                const selected =
+                    String(oldValue) ===
+                    String(optionValue)
+                        ? "selected"
+                        : "";
+
+
+                options += `
+
+                    <option
+                        value="${escapeExpiredHtml(optionValue)}"
+                        ${selected}>
+
+                        ${escapeExpiredHtml(optionValue)}
+
+                    </option>
+
+                `;
+
+            });
+
+
+            html = `
+
+                <select
+                    name="${fieldName}"
+                    class="input w-full">
+
+                    ${options}
+
+                </select>
+
+            `;
+
+        }
+
+
+        /* ---------------------------------------------
+           MULTI SELECT
+        ---------------------------------------------- */
+
+        else if (
+            fieldType === "multi_select"
+        ) {
+
+            const selected =
+                normalizeExpiredMultiValue(
+                    oldValue
+                );
+
+
+            let rows = "";
+
+
+            const fieldOptions =
+                Array.isArray(field.options)
+                    ? field.options
+                    : [];
+
+
+            fieldOptions.forEach(option => {
+
+                const optionName =
+                    typeof option === "object"
+                        ? (
+                            option.name ??
+                            option.value ??
+                            ""
+                        )
+                        : option;
+
+
+                const found =
+                    selected.find(
+                        item =>
+                            String(item.option) ===
+                            String(optionName)
+                    );
+
+
+                const value =
+                    found
+                        ? found.value
+                        : "";
+
+
+                rows += `
+
+                    <div class="flex items-center gap-3 mb-2">
+
+                        <div class="flex-1">
+                            ${escapeExpiredHtml(optionName)}
+                        </div>
+
+                        <input
+                            type="number"
+                            min="0"
+                            value="${escapeExpiredHtml(value)}"
+                            class="multi-count input w-24"
+                            data-option="${escapeExpiredHtml(optionName)}">
+
+                    </div>
+
+                `;
+
+            });
+
+
+            html = `
+
+                <div>
+
+                    ${rows}
+
+                    <input
+                        type="hidden"
+                        name="${fieldName}"
+                        class="multi-json">
+
+                </div>
+
+            `;
+
+        }
+
+
+        /* ---------------------------------------------
+           DEFAULT
+        ---------------------------------------------- */
+
+        else {
+
+            html = `
+
+                <input
+                    type="text"
+                    name="${fieldName}"
+                    value="${escapeExpiredHtml(oldValue)}"
+                    class="input w-full"
+                    placeholder="${escapeExpiredHtml(field.name || "")}">
+
+            `;
+
+        }
+
+
+        const wrapper =
+            document.createElement(
+                "div"
+            );
+
+
+        wrapper.className =
+            "border rounded-xl p-3 bg-gray-50";
+
+
+        wrapper.innerHTML = `
+
+            <label class="font-semibold block mb-2">
+
+                ${escapeExpiredHtml(
+                    field.name ||
+                    field.label ||
+                    "Field"
+                )}
+
+            </label>
+
+            ${html}
+
+        `;
+
+
+        container.appendChild(
+            wrapper
+        );
+
+    });
+
+
+    initializeExpiredMultiSelects();
+
+}
+
+
+
+/* =========================================================
+   MULTI VALUE NORMALIZATION
+========================================================= */
+
+function normalizeExpiredMultiValue(value) {
+
+    if (!value) {
+        return [];
+    }
+
+
+    if (Array.isArray(value)) {
+
+        return value.map(item => {
+
+            if (
+                typeof item === "string"
+            ) {
+
+                return {
+                    option: item,
+                    value: "1"
+                };
+
+            }
+
+
+            return {
+
+                option:
+                    item.option ??
+                    item.name ??
+                    "",
+
+                value:
+                    item.value ??
+                    ""
+
+            };
+
+        });
+
+    }
+
+
+    if (typeof value === "string") {
+
+        try {
+
+            const parsed =
+                JSON.parse(value);
+
+
+            if (Array.isArray(parsed)) {
+
+                return normalizeExpiredMultiValue(
+                    parsed
+                );
+
+            }
+
+        } catch (error) {
+
+            return [];
+
+        }
+
+    }
+
+
+    return [];
+
+}
+
+
+
+/* =========================================================
+   MULTI SELECT JSON
+========================================================= */
+
+function initializeExpiredMultiSelects() {
+
+    const container =
+        expiredElement(
+            "expiredDynamicFieldsContainer"
+        );
+
+
+    if (!container) {
+        return;
+    }
+
+
+    container
+        .querySelectorAll(
+            ".multi-json"
+        )
+        .forEach(hidden => {
+
+            const parent =
+                hidden.parentElement;
+
+
+            if (!parent) {
+                return;
+            }
+
+
+            const inputs =
+                parent.querySelectorAll(
+                    ".multi-count"
+                );
+
+
+            function updateJSON() {
+
+                const result = [];
+
+
+                inputs.forEach(input => {
+
+                    if (
+                        input.value !== ""
+                    ) {
+
+                        result.push({
+
+                            option:
+                                input.dataset.option,
+
+                            value:
+                                input.value
+
+                        });
+
+                    }
+
+                });
+
+
+                hidden.value =
+                    JSON.stringify(
+                        result
+                    );
+
+            }
+
+
+            inputs.forEach(input => {
+
+                input.addEventListener(
+                    "input",
+                    updateJSON
+                );
+
+
+                input.addEventListener(
+                    "change",
+                    updateJSON
+                );
+
+            });
+
+
+            updateJSON();
+
+        });
+
+}
+
+
+
+/* =========================================================
+   COLLECT DYNAMIC FIELDS
+========================================================= */
+
+function collectExpiredDynamicFields() {
+
+    const container =
+        expiredElement(
+            "expiredDynamicFieldsContainer"
+        );
+
+
+    const result = [];
+
+
+    if (!container) {
+        return result;
+    }
+
+
+    const elements =
+        container.querySelectorAll(
+            "input[name^='field_'], select[name^='field_'], textarea[name^='field_']"
+        );
+
+
+    elements.forEach(element => {
+
+        const name =
+            element.name;
+
+
+        if (!name) {
+            return;
+        }
+
+
+        const fieldId =
+            name.replace(
+                "field_",
+                ""
+            );
+
+
+        if (!fieldId) {
+            return;
+        }
+
+
+        let value;
+
+
+        if (
+            element.type === "checkbox"
+        ) {
+
+            value =
+                element.checked
+                    ? "Yes"
+                    : "No";
+
+        } else {
+
+            value =
+                element.value;
+
+        }
+
+
+        if (
+            value === null ||
+            value === undefined
+        ) {
+
+            value = "";
+
+        }
+
+
+        result.push({
+
+            field_id:
+                parseInt(
+                    fieldId,
+                    10
+                ),
+
+            value:
+                value
+
+        });
+
+    });
+
+
+    return result;
+
+}
+
+
+
+/* =========================================================
+   CLEAR DYNAMIC
+========================================================= */
+
+function clearExpiredDynamicFields() {
+
+    const container =
+        expiredElement(
+            "expiredDynamicFieldsContainer"
+        );
+
+
+    if (container) {
+
+        container.innerHTML = `
+            <div class="col-span-full text-gray-400">
+                Select a subcategory to load fields.
+            </div>
+        `;
+
+    }
+
+}
+
+
+
+/* =========================================================
+   CLEAR SUBCATEGORY
+========================================================= */
+
+function clearExpiredSubcategory() {
+
+    const select =
+        expiredElement(
+            "expiredSubcategorySelect"
+        );
+
+
+    if (select) {
+
+        select.innerHTML = `
+            <option value="">
+                Select Subcategory
+            </option>
+        `;
+
+    }
+
+}
+
+
+
+/* =========================================================
+   IMAGES
+========================================================= */
+
+function renderExpiredExistingImages(images) {
+
+    const container =
+        expiredElement(
+            "expiredExistingImages"
+        );
+
+
+    if (!container) {
+        return;
+    }
+
+
+    container.innerHTML = "";
+
+
+    if (
+        !Array.isArray(images) ||
+        images.length === 0
+    ) {
+
+        container.innerHTML = `
+            <div class="col-span-full text-center text-gray-400 py-5">
+                No existing images.
+            </div>
+        `;
+
+        return;
+    }
+
+
+    images.forEach(image => {
+
+        if (!image) {
+            return;
+        }
+
+
+        const imageId =
+            image.id ??
+            image.pk;
+
+
+        const imageUrl =
+            image.url ||
+            image.image ||
+            image.image_url ||
+            image.image?.url ||
+            "";
+
+
+        if (!imageUrl) {
+            return;
+        }
+
+
+        const card =
+            document.createElement(
+                "div"
+            );
+
+
+        card.className =
+            "relative group";
+
+
+        const img =
+            document.createElement(
+                "img"
+            );
+
+
+        img.src =
+            imageUrl;
+
+
+        img.alt =
+            "Property image";
+
+
+        img.className =
+            "h-28 w-full object-cover rounded-xl border";
+
+
+        const button =
+            document.createElement(
+                "button"
+            );
+
+
+        button.type =
+            "button";
+
+
+        button.className =
+            "absolute top-2 right-2 bg-red-600 text-white rounded-full w-8 h-8";
+
+
+        button.innerHTML =
+            '<i class="fa-solid fa-xmark"></i>';
+
+
+        button.addEventListener(
+            "click",
+            function() {
+
+                if (
+                    imageId !==
+                    null &&
+                    imageId !==
+                    undefined
+                ) {
+
+                    const id =
+                        String(
+                            imageId
+                        );
+
+
+                    if (
+                        !expiredDeletedImages.includes(
+                            id
+                        )
+                    ) {
+
+                        expiredDeletedImages.push(
+                            id
+                        );
+
+                    }
+
+                }
+
+
+                card.remove();
+
+            }
+        );
+
+
+        card.appendChild(img);
+
+        card.appendChild(button);
+
+        container.appendChild(card);
+
+    });
+
+}
+
+
+
+function clearExpiredImages() {
+
+    const container =
+        expiredElement(
+            "expiredExistingImages"
+        );
+
+
+    if (container) {
+
+        container.innerHTML = "";
+
+    }
+
+
+    expiredDeletedImages = [];
+
+}
+
+
+
+/* =========================================================
+   AMENITIES
+========================================================= */
+
+function renderExpiredAmenities(amenities) {
+
+    expiredSelectedAmenities = [];
+
+
+    document
+        .querySelectorAll(
+            ".expiredAmenityBtn"
+        )
+        .forEach(button => {
+
+            button.classList.remove(
+                "bg-lime-500",
+                "text-white"
+            );
+
+
+            button.classList.add(
+                "bg-white"
+            );
+
+        });
+
+
+    if (!Array.isArray(amenities)) {
+
+        amenities = [];
+
+    }
+
+
+    amenities.forEach(amenity => {
+
+        const id =
+            typeof amenity === "object"
+                ? (
+                    amenity.id ??
+                    amenity.pk
+                )
+                : amenity;
+
+
+        if (
+            id === null ||
+            id === undefined
+        ) {
+
+            return;
+
+        }
+
+
+        const idString =
+            String(id);
+
+
+        if (
+            !expiredSelectedAmenities.includes(
+                idString
+            )
+        ) {
+
+            expiredSelectedAmenities.push(
+                idString
+            );
+
+        }
+
+
+        const buttons =
+            document.querySelectorAll(
+                ".expiredAmenityBtn"
+            );
+
+
+        buttons.forEach(button => {
+
+            if (
+                String(
+                    button.dataset.id
+                ) ===
+                idString
+            ) {
+
+                button.classList.remove(
+                    "bg-white"
+                );
+
+
+                button.classList.add(
+                    "bg-lime-500",
+                    "text-white"
+                );
+
+            }
+
+        });
+
+    });
+
+
+    updateExpiredAmenityHidden();
+
+    updateExpiredAmenityDisplay();
+
+}
+
+
+
+function openExpiredAmenityModal() {
+
+    const modal =
+        expiredElement(
+            "expiredAmenityModal"
+        );
+
+
+    if (!modal) {
+        return;
+    }
+
+
+    modal.classList.remove(
+        "hidden"
+    );
+
+
+    modal.classList.add(
+        "flex"
+    );
+
+}
+
+
+
+function closeExpiredAmenityModal() {
+
+    const modal =
+        expiredElement(
+            "expiredAmenityModal"
+        );
+
+
+    if (!modal) {
+        return;
+    }
+
+
+    modal.classList.add(
+        "hidden"
+    );
+
+
+    modal.classList.remove(
+        "flex"
+    );
+
+}
+
+
+
+function toggleExpiredAmenity(button) {
+
+    if (!button) {
+        return;
+    }
+
+
+    const id =
+        String(
+            button.dataset.id
+        );
+
+
+    const index =
+        expiredSelectedAmenities.indexOf(
+            id
+        );
+
+
+    if (index !== -1) {
+
+        expiredSelectedAmenities.splice(
+            index,
+            1
+        );
+
+
+        button.classList.remove(
+            "bg-lime-500",
+            "text-white"
+        );
+
+
+        button.classList.add(
+            "bg-white"
+        );
+
+    } else {
+
+        expiredSelectedAmenities.push(
+            id
+        );
+
+
+        button.classList.remove(
+            "bg-white"
+        );
+
+
+        button.classList.add(
+            "bg-lime-500",
+            "text-white"
+        );
+
+    }
+
+
+    updateExpiredAmenityHidden();
+
+    updateExpiredAmenityDisplay();
+
+}
+
+
+
+function applyExpiredAmenities() {
+
+    updateExpiredAmenityHidden();
+
+    updateExpiredAmenityDisplay();
+
+    closeExpiredAmenityModal();
+
+}
+
+
+
+function updateExpiredAmenityHidden() {
+
+    const container =
+        expiredElement(
+            "expiredAmenitiesHidden"
+        );
+
+
+    if (!container) {
+        return;
+    }
+
+
+    container.innerHTML = "";
+
+
+    expiredSelectedAmenities.forEach(id => {
+
+        const input =
+            document.createElement(
+                "input"
+            );
+
+
+        input.type =
+            "hidden";
+
+
+        input.name =
+            "amenities";
+
+
+        input.value =
+            id;
+
+
+        container.appendChild(
+            input
+        );
+
+    });
+
+}
+
+
+
+function updateExpiredAmenityDisplay() {
+
+    const display =
+        expiredElement(
+            "expiredAmenitiesDisplay"
+        );
+
+
+    if (!display) {
+        return;
+    }
+
+
+    const names = [];
+
+
+    document
+        .querySelectorAll(
+            ".expiredAmenityBtn"
+        )
+        .forEach(button => {
+
+            const id =
+                String(
+                    button.dataset.id
+                );
+
+
+            if (
+                expiredSelectedAmenities.includes(
+                    id
+                )
+            ) {
+
+                const name =
+                    button.dataset.name ||
+                    button.textContent.trim();
+
+
+                if (name) {
+
+                    names.push(
+                        name
+                    );
+
+                }
+
+            }
+
+        });
+
+
+    display.value =
+        names.join(", ");
+
+}
+
+
+
+function clearExpiredAmenities() {
+
+    expiredSelectedAmenities = [];
+
+
+    const display =
+        expiredElement(
+            "expiredAmenitiesDisplay"
+        );
+
+
+    if (display) {
+
+        display.value = "";
+
+    }
+
+
+    const hidden =
+        expiredElement(
+            "expiredAmenitiesHidden"
+        );
+
+
+    if (hidden) {
+
+        hidden.innerHTML = "";
+
+    }
+
+
+    document
+        .querySelectorAll(
+            ".expiredAmenityBtn"
+        )
+        .forEach(button => {
+
+            button.classList.remove(
+                "bg-lime-500",
+                "text-white"
+            );
+
+
+            button.classList.add(
+                "bg-white"
+            );
+
+        });
+
+}
+
+
+
+/* =========================================================
+   SELLING POINTS
+========================================================= */
+
+function renderExpiredSellingPoints(points) {
+
+    clearExpiredKeyPoints();
+
+
+    if (!Array.isArray(points)) {
+        return;
+    }
+
+
+    points.forEach(item => {
+
+        let value = "";
+
+
+        if (
+            typeof item === "object" &&
+            item !== null
+        ) {
+
+            value =
+                item.point ??
+                item.name ??
+                item.value ??
+                "";
+
+        } else {
+
+            value =
+                item ??
+                "";
+
+        }
+
+
+        addExpiredKeyPoint(
+            value
+        );
+
+    });
+
+}
+
+
+
+function addExpiredKeyPoint(
+    value = ""
+) {
+
+    const container =
+        expiredElement(
+            "expiredKeyPointsContainer"
+        );
+
+
+    if (!container) {
+        return;
+    }
+
+
+    const row =
+        document.createElement(
+            "div"
+        );
+
+
+    row.className =
+        "flex gap-2";
+
+
+    const input =
+        document.createElement(
+            "input"
+        );
+
+
+    input.type =
+        "text";
+
+
+    input.className =
+        "input flex-1";
+
+
+    input.value =
+        value;
+
+
+    input.dataset.sellingPoint =
+        "true";
+
+
+    const remove =
+        document.createElement(
+            "button"
+        );
+
+
+    remove.type =
+        "button";
+
+
+    remove.className =
+        "bg-red-500 text-white px-3 rounded-lg";
+
+
+    remove.innerHTML =
+        '<i class="fa-solid fa-trash"></i>';
+
+
+    remove.addEventListener(
+        "click",
+        () => row.remove()
+    );
+
+
+    row.appendChild(input);
+
+    row.appendChild(remove);
+
+    container.appendChild(row);
+
+}
+
+
+
+function clearExpiredKeyPoints() {
+
+    const container =
+        expiredElement(
+            "expiredKeyPointsContainer"
+        );
+
+
+    if (container) {
+
+        container.innerHTML = "";
+
+    }
+
+}
+
+
+
+function collectExpiredSellingPoints() {
+
+    const result = [];
+
+
+    document
+        .querySelectorAll(
+            "#expiredKeyPointsContainer [data-selling-point='true']"
+        )
+        .forEach(input => {
+
+            const value =
+                input.value.trim();
+
+
+            if (value) {
+
+                result.push(
+                    value
+                );
+
+            }
+
+        });
+
+
+    return result;
+
+}
+
+
+
+/* =========================================================
+   LANDMARKS
+========================================================= */
+
+function renderExpiredLandmarks(landmarks) {
+
+    clearExpiredLandmarks();
+
+
+    if (!Array.isArray(landmarks)) {
+        return;
+    }
+
+
+    landmarks.forEach(item => {
+
+        if (
+            typeof item === "string"
+        ) {
+
+            addExpiredLandmark(
+                item,
+                ""
+            );
+
+            return;
+
+        }
+
+
+        if (
+            !item ||
+            typeof item !== "object"
+        ) {
+            return;
+        }
+
+
+        addExpiredLandmark(
+
+            item.name ??
+            item.landmark ??
+            "",
+
+            item.distance ??
+            ""
+
+        );
+
+    });
+
+}
+
+
+
+function addExpiredLandmark(
+    name = "",
+    distance = ""
+) {
+
+    const container =
+        expiredElement(
+            "expiredLandmarkContainer"
+        );
+
+
+    if (!container) {
+        return;
+    }
+
+
+    const row =
+        document.createElement(
+            "div"
+        );
+
+
+    row.className =
+        "grid grid-cols-1 md:grid-cols-3 gap-3";
+
+
+    const nameInput =
+        document.createElement(
+            "input"
+        );
+
+
+    nameInput.className =
+        "input";
+
+
+    nameInput.value =
+        name;
+
+
+    nameInput.placeholder =
+        "Landmark";
+
+
+    nameInput.dataset.landmarkName =
+        "true";
+
+
+    const distanceInput =
+        document.createElement(
+            "input"
+        );
+
+
+    distanceInput.className =
+        "input";
+
+
+    distanceInput.value =
+        distance;
+
+
+    distanceInput.placeholder =
+        "Distance";
+
+
+    distanceInput.dataset.landmarkDistance =
+        "true";
+
+
+    const remove =
+        document.createElement(
+            "button"
+        );
+
+
+    remove.type =
+        "button";
+
+
+    remove.className =
+        "bg-red-500 text-white rounded-lg";
+
+
+    remove.textContent =
+        "Remove";
+
+
+    remove.addEventListener(
+        "click",
+        () => row.remove()
+    );
+
+
+    row.appendChild(
+        nameInput
+    );
+
+
+    row.appendChild(
+        distanceInput
+    );
+
+
+    row.appendChild(
+        remove
+    );
+
+
+    container.appendChild(
+        row
+    );
+
+}
+
+
+
+function clearExpiredLandmarks() {
+
+    const container =
+        expiredElement(
+            "expiredLandmarkContainer"
+        );
+
+
+    if (container) {
+
+        container.innerHTML = "";
+
+    }
+
+}
+
+
+
+function collectExpiredLandmarks() {
+
+    const result = [];
+
+
+    const container =
+        expiredElement(
+            "expiredLandmarkContainer"
+        );
+
+
+    if (!container) {
+        return result;
+    }
+
+
+    Array.from(
+        container.children
+    ).forEach(row => {
+
+        const nameInput =
+            row.querySelector(
+                "[data-landmark-name='true']"
+            );
+
+
+        const distanceInput =
+            row.querySelector(
+                "[data-landmark-distance='true']"
+            );
+
+
+        if (!nameInput) {
+            return;
+        }
+
+
+        const name =
+            nameInput.value.trim();
+
+
+        if (!name) {
+            return;
+        }
+
+
+        result.push({
+
+            name:
+                name,
+
+            distance:
+                distanceInput
+                    ? distanceInput.value
+                    : ""
+
+        });
+
+    });
+
+
+    return result;
+
+}
+
+
+
+/* =========================================================
+   COLLECT PROPERTY DATA
+========================================================= */
+
+function collectExpiredPropertyData() {
+
+    const data = {
+
+        id:
+            expiredElement(
+                "expiredPropertyId"
+            )?.value || "",
+
+
+        label:
+            expiredElement(
+                "expiredLabel"
+            )?.value || "",
+
+
+        land_area:
+            expiredElement(
+                "expiredLandArea"
+            )?.value || "",
+
+
+        sq_ft:
+            expiredElement(
+                "expiredSqFt"
+            )?.value || "",
+
+
+        duration_days:
+            expiredElement(
+                "expiredDurationDays"
+            )?.value || "",
+
+
+        price:
+            expiredElement(
+                "expiredPrice"
+            )?.value || "",
+
+
+        perprice:
+            expiredElement(
+                "expiredPerPrice"
+            )?.value || "",
+
+
+        deposit:
+            expiredElement(
+                "expiredDeposit"
+            )?.value || "",
+
+
+        description:
+            expiredElement(
+                "expiredDescription"
+            )?.value || "",
+
+
+        owner:
+            expiredElement(
+                "expiredOwner"
+            )?.value || "",
+
+
+        phone:
+            expiredElement(
+                "expiredPhone"
+            )?.value || "",
+
+
+        whatsapp:
+            expiredElement(
+                "expiredWhatsapp"
+            )?.value || "",
+
+
+        agent_id:
+            expiredElement(
+                "expiredAgent"
+            )?.value || "",
+
+
+        city:
+            expiredElement(
+                "expiredCity"
+            )?.value || "",
+
+
+        district:
+            expiredElement(
+                "expiredDistrict"
+            )?.value || "",
+
+
+        state:
+            expiredElement(
+                "expiredState"
+            )?.value || "",
+
+
+        taluk:
+            expiredElement(
+                "expiredTaluk"
+            )?.value || "",
+
+
+        village:
+            expiredElement(
+                "expiredVillage"
+            )?.value || "",
+
+
+        pincode:
+            expiredElement(
+                "expiredPincode"
+            )?.value || "",
+
+
+        location:
+            expiredElement(
+                "expiredLocation"
+            )?.value || "",
+
+
+        notes:
+            expiredElement(
+                "expiredNotes"
+            )?.value || "",
+
+
+        paid:
+            Boolean(
+                expiredElement(
+                    "expiredPaid"
+                )?.checked
+            ),
+
+
+        is_featured:
+            Boolean(
+                expiredElement(
+                    "expiredFeatured"
+                )?.checked
+            ),
+
+
+        category_id:
+            expiredElement(
+                "expiredCategorySelect"
+            )?.value || "",
+
+
+        subcategory_id:
+            expiredElement(
+                "expiredSubcategorySelect"
+            )?.value || "",
+
+
+        purpose_id:
+            expiredElement(
+                "expiredPurposeSelect"
+            )?.value || "",
+
+
+        agent_id:
+            expiredElement(
+                "expiredAgent"
+            )?.value || "",
+
+
+        amenities:
+            expiredSelectedAmenities.map(
+                id => parseInt(id, 10)
+            ).filter(
+                id => !Number.isNaN(id)
+            ),
+
+
+        dynamic_fields:
+            collectExpiredDynamicFields(),
+
+
+        selling_points:
+            collectExpiredSellingPoints(),
+
+
+        landmarks:
+            collectExpiredLandmarks(),
+
+
+        deleted_images:
+            [...new Set(
+                expiredDeletedImages
+            )]
+
+    };
+
+
+    return data;
+
+}
+
+
+
+/* =========================================================
+   VALIDATE
+========================================================= */
+
+function validateExpiredPropertyData(data) {
+
+    if (!data.id) {
+
+        return {
+            valid: false,
+            message: "Property ID is missing."
+        };
+
+    }
+
+
+    if (!data.category_id) {
+
+        return {
+            valid: false,
+            message: "Please select a category."
+        };
+
+    }
+
+
+    if (!data.subcategory_id) {
+
+        return {
+            valid: false,
+            message: "Please select a subcategory."
+        };
+
+    }
+
+
+    if (!data.purpose_id) {
+
+        return {
+            valid: false,
+            message: "Please select a purpose."
+        };
+
+    }
+
+
+    if (!data.agent_id) {
+
+        return {
+            valid: false,
+            message: "Please select an agent."
+        };
+
+    }
+
+
+    return {
+        valid: true,
+        message: ""
+    };
+
+}
+
+
+
+/* =========================================================
+   SUBMIT UPDATE
+========================================================= */
+
+function initializeExpiredForm() {
+
+    const form =
+        expiredElement(
+            "expiredAgentPropertyForm"
+        );
+
+
+    if (!form) {
+        return;
+    }
+
+
+    if (
+        form.dataset.initialized ===
+        "true"
+    ) {
+        return;
+    }
+
+
+    form.dataset.initialized =
+        "true";
+
+
+    form.addEventListener(
+        "submit",
+        async function(event) {
+
+            event.preventDefault();
+
+            event.stopPropagation();
+
+
+            const propertyId =
+                expiredElement(
+                    "expiredPropertyId"
+                )?.value;
+
+
+            if (!propertyId) {
+
+                alert(
+                    "Property ID is missing."
+                );
+
+                return;
+
+            }
+
+
+            const data =
+                collectExpiredPropertyData();
+
+
+            const validation =
+                validateExpiredPropertyData(
+                    data
+                );
+
+
+            if (!validation.valid) {
+
+                alert(
+                    validation.message
+                );
+
+                return;
+
+            }
+
+
+            console.log(
+                "EXPIRED UPDATE DATA:",
+                data
+            );
+
+
+            /* ---------------------------------------------
+               FORM DATA
+            ---------------------------------------------- */
+
+            const formData =
+                new FormData();
+
+
+            /* ---------------------------------------------
+               NORMAL FIELDS
+            ---------------------------------------------- */
+
+            formData.append(
+                "property_id",
+                data.id
+            );
+
+
+            formData.append(
+                "label",
+                data.label
+            );
+
+
+            formData.append(
+                "land_area",
+                data.land_area
+            );
+
+
+            formData.append(
+                "sq_ft",
+                data.sq_ft
+            );
+
+
+            formData.append(
+                "duration_days",
+                data.duration_days
+            );
+
+
+            formData.append(
+                "price",
+                data.price
+            );
+
+
+            formData.append(
+                "perprice",
+                data.perprice
+            );
+
+
+            formData.append(
+                "deposit",
+                data.deposit
+            );
+
+
+            formData.append(
+                "description",
+                data.description
+            );
+
+
+            formData.append(
+                "owner",
+                data.owner
+            );
+
+
+            formData.append(
+                "phone",
+                data.phone
+            );
+
+
+            formData.append(
+                "whatsapp",
+                data.whatsapp
+            );
+
+
+            formData.append(
+                "agent_id",
+                data.agent_id
+            );
+
+
+            formData.append(
+                "city",
+                data.city
+            );
+
+
+            formData.append(
+                "district",
+                data.district
+            );
+
+
+            formData.append(
+                "state",
+                data.state
+            );
+
+
+            formData.append(
+                "taluk",
+                data.taluk
+            );
+
+
+            formData.append(
+                "village",
+                data.village
+            );
+
+
+            formData.append(
+                "pincode",
+                data.pincode
+            );
+
+
+            formData.append(
+                "location",
+                data.location
+            );
+
+
+            formData.append(
+                "notes",
+                data.notes
+            );
+
+
+            formData.append(
+                "category_id",
+                data.category_id
+            );
+
+
+            formData.append(
+                "subcategory_id",
+                data.subcategory_id
+            );
+
+
+            formData.append(
+                "purpose_id",
+                data.purpose_id
+            );
+
+
+            formData.append(
+                "paid",
+                data.paid
+                    ? "true"
+                    : "false"
+            );
+
+
+            formData.append(
+                "is_featured",
+                data.is_featured
+                    ? "true"
+                    : "false"
+            );
+
+
+            /* ---------------------------------------------
+               JSON FIELDS
+            ---------------------------------------------- */
+
+            formData.append(
+                "amenities",
+                JSON.stringify(
+                    data.amenities
+                )
+            );
+
+
+            formData.append(
+                "dynamic_fields",
+                JSON.stringify(
+                    data.dynamic_fields
+                )
+            );
+
+
+            formData.append(
+                "selling_points",
+                JSON.stringify(
+                    data.selling_points
+                )
+            );
+
+
+            formData.append(
+                "landmarks",
+                JSON.stringify(
+                    data.landmarks
+                )
+            );
+
+
+            formData.append(
+                "deleted_images",
+                JSON.stringify(
+                    data.deleted_images
+                )
+            );
+
+
+            /* ---------------------------------------------
+               NEW IMAGES
+            ---------------------------------------------- */
+
+            const imageInput =
+                expiredElement(
+                    "expiredNewImages"
+                );
+
+
+            if (
+                imageInput &&
+                imageInput.files
+            ) {
+
+                Array.from(
+                    imageInput.files
+                ).forEach(file => {
+
+                    formData.append(
+                        "new_images",
+                        file
+                    );
+
+                });
+
+            }
+
+
+            /* ---------------------------------------------
+               BUTTON
+            ---------------------------------------------- */
+
+            const button =
+                expiredElement(
+                    "expiredUpdateButton"
+                );
+
+
+            const originalHTML =
+                button
+                    ? button.innerHTML
+                    : "";
+
+
+            if (button) {
+
+                button.disabled =
+                    true;
+
+
+                button.innerHTML = `
+                    <i class="fa-solid fa-spinner fa-spin mr-2"></i>
+                    Updating...
+                `;
+
+            }
+
+
+            const url =
+                expiredUrl(
+                    EXPIRED_EDIT_URL,
+                    propertyId
+                );
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        url,
+                        {
+
+                            method:
+                                "POST",
+
+                            headers: {
+
+                                "X-CSRFToken":
+                                    getExpiredCSRFToken(),
+
+                                "X-Requested-With":
+                                    "XMLHttpRequest",
+
+                                "Accept":
+                                    "application/json"
+
+                            },
+
+                            credentials:
+                                "same-origin",
+
+                            body:
+                                formData
+
+                        }
+                    );
+
+
+                const text =
+                    await response.text();
+
+
+                console.log(
+                    "UPDATE STATUS:",
+                    response.status
+                );
+
+
+                console.log(
+                    "UPDATE RESPONSE:",
+                    text
+                );
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        "HTTP " +
+                        response.status +
+                        ": " +
+                        text
+                    );
+
+                }
+
+
+                let result;
+
+
+                try {
+
+                    result =
+                        JSON.parse(text);
+
+                } catch (error) {
+
+                    throw new Error(
+                        "Server returned invalid JSON."
+                    );
+
+                }
+
+
+                if (
+                    result.success !==
+                    true
+                ) {
+
+                    throw new Error(
+                        result.message ||
+                        result.error ||
+                        "Property update failed."
+                    );
+
+                }
+
+
+                alert(
+                    result.message ||
+                    "Expired property updated successfully."
+                );
+
+
+                closeExpiredAgentPropertyModal();
+
+
+                window.location.reload();
+
+
+            } catch (error) {
+
+                console.error(
+                    "EXPIRED PROPERTY UPDATE ERROR:",
+                    error
+                );
+
+
+                alert(
+                    "Unable to update property.\n\n" +
+                    error.message
+                );
+
+
+                if (button) {
+
+                    button.disabled =
+                        false;
+
+
+                    button.innerHTML =
+                        originalHTML;
+
+                }
+
+            }
+
+        }
+    );
+
+}
+
+
+
+/* =========================================================
+   RESTORE
+========================================================= */
+
+function openRestoreExpiredPropertyModal(
+    propertyId
+) {
+
+    expiredRestorePropertyId =
+        propertyId;
+
+
+    const modal =
+        expiredElement(
+            "restoreExpiredPropertyModal"
+        );
+
+
+    if (!modal) {
+        return;
+    }
+
+
+    modal.classList.remove(
+        "hidden"
+    );
+
+
+    modal.classList.add(
+        "flex"
+    );
+
+}
+
+
+
+function closeRestoreExpiredPropertyModal() {
+
+    const modal =
+        expiredElement(
+            "restoreExpiredPropertyModal"
+        );
+
+
+    if (!modal) {
+        return;
+    }
+
+
+    modal.classList.add(
+        "hidden"
+    );
+
+
+    modal.classList.remove(
+        "flex"
+    );
+
+
+    expiredRestorePropertyId =
+        null;
+
+}
+
+
+
+async function restoreExpiredProperty() {
+
+    if (!expiredRestorePropertyId) {
+
+        alert(
+            "Property ID is missing."
+        );
+
+        return;
+
+    }
+
+
+    const button =
+        expiredElement(
+            "restoreExpiredPropertyButton"
+        );
+
+
+    if (button) {
+
+        button.disabled =
+            true;
+
+
+        button.innerHTML = `
+            <i class="fa-solid fa-spinner fa-spin mr-1"></i>
+            Restoring...
+        `;
+
+    }
+
+
+    const url =
+        expiredUrl(
+            EXPIRED_RESTORE_URL,
+            expiredRestorePropertyId
+        );
+
+
+    try {
+
+        const response =
+            await fetch(
+                url,
+                {
+
+                    method:
+                        "POST",
+
+                    headers: {
+
+                        "X-CSRFToken":
+                            getExpiredCSRFToken(),
+
+                        "X-Requested-With":
+                            "XMLHttpRequest",
+
+                        "Accept":
+                            "application/json"
+
+                    },
+
+                    credentials:
+                        "same-origin"
+
+                }
+            );
+
+
+        const result =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                result.message ||
+                "Restore failed."
+            );
+
+        }
+
+
+        if (!result.success) {
+
+            throw new Error(
+                result.message ||
+                "Restore failed."
+            );
+
+        }
+
+
+        alert(
+            result.message ||
+            "Property restored successfully."
+        );
+
+
+        closeRestoreExpiredPropertyModal();
+
+
+        window.location.reload();
+
+
+    } catch (error) {
+
+        console.error(
+            "RESTORE ERROR:",
+            error
+        );
+
+
+        alert(
+            "Unable to restore property.\n\n" +
+            error.message
+        );
+
+
+        if (button) {
+
+            button.disabled =
+                false;
+
+
+            button.innerHTML = `
+                <i class="fa-solid fa-rotate-left mr-1"></i>
+                Restore
+            `;
+
+        }
+
+    }
+
+}
+
+
+
+/* =========================================================
+   DELETE
+========================================================= */
+
+function openDeleteExpiredPropertyModal(
+    propertyId
+) {
+
+    expiredDeletePropertyId =
+        propertyId;
+
+
+    const modal =
+        expiredElement(
+            "deleteExpiredPropertyModal"
+        );
+
+
+    if (!modal) {
+        return;
+    }
+
+
+    modal.classList.remove(
+        "hidden"
+    );
+
+
+    modal.classList.add(
+        "flex"
+    );
+
+}
+
+
+
+function closeDeleteExpiredPropertyModal() {
+
+    const modal =
+        expiredElement(
+            "deleteExpiredPropertyModal"
+        );
+
+
+    if (!modal) {
+        return;
+    }
+
+
+    modal.classList.add(
+        "hidden"
+    );
+
+
+    modal.classList.remove(
+        "flex"
+    );
+
+
+    expiredDeletePropertyId =
+        null;
+
+}
+
+
+
+async function deleteExpiredProperty() {
+
+    if (!expiredDeletePropertyId) {
+
+        alert(
+            "Property ID is missing."
+        );
+
+        return;
+
+    }
+
+
+    const button =
+        expiredElement(
+            "deleteExpiredPropertyButton"
+        );
+
+
+    if (button) {
+
+        button.disabled =
+            true;
+
+
+        button.innerHTML = `
+            <i class="fa-solid fa-spinner fa-spin mr-1"></i>
+            Deleting...
+        `;
+
+    }
+
+
+    const url =
+        expiredUrl(
+            EXPIRED_DELETE_URL,
+            expiredDeletePropertyId
+        );
+
+
+    try {
+
+        const response =
+            await fetch(
+                url,
+                {
+
+                    method:
+                        "POST",
+
+                    headers: {
+
+                        "X-CSRFToken":
+                            getExpiredCSRFToken(),
+
+                        "X-Requested-With":
+                            "XMLHttpRequest",
+
+                        "Accept":
+                            "application/json"
+
+                    },
+
+                    credentials:
+                        "same-origin"
+
+                }
+            );
+
+
+        const result =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                result.message ||
+                "Delete failed."
+            );
+
+        }
+
+
+        if (!result.success) {
+
+            throw new Error(
+                result.message ||
+                "Delete failed."
+            );
+
+        }
+
+
+        alert(
+            result.message ||
+            "Expired property deleted successfully."
+        );
+
+
+        closeDeleteExpiredPropertyModal();
+
+
+        window.location.reload();
+
+
+    } catch (error) {
+
+        console.error(
+            "DELETE ERROR:",
+            error
+        );
+
+
+        alert(
+            "Unable to delete property.\n\n" +
+            error.message
+        );
+
+
+        if (button) {
+
+            button.disabled =
+                false;
+
+
+            button.innerHTML = `
+                <i class="fa-solid fa-trash mr-1"></i>
+                Delete
+            `;
+
+        }
+
+    }
+
+}
+
+
+
+/* =========================================================
+   ESCAPE KEY
+========================================================= */
+
+document.addEventListener(
+    "keydown",
+    function(event) {
+
+        if (
+            event.key !==
+            "Escape"
+        ) {
+            return;
+        }
+
+
+        const amenity =
+            expiredElement(
+                "expiredAmenityModal"
+            );
+
+
+        if (
+            amenity &&
+            !amenity.classList.contains(
+                "hidden"
+            )
+        ) {
+
+            closeExpiredAmenityModal();
+
+            return;
+
+        }
+
+
+        closeExpiredAgentPropertyModal();
+
+        closeRestoreExpiredPropertyModal();
+
+        closeDeleteExpiredPropertyModal();
+
+    }
+);
+
+
+
+/* =========================================================
+   INITIALIZE
+========================================================= */
+
+function initializeExpiredAgentPropertyPage() {
+
+    if (expiredPageInitialized) {
+        return;
+    }
+
+
+    expiredPageInitialized =
+        true;
+
+
+    console.log(
+        "======================================"
+    );
+
+
+    console.log(
+        "EXPIRED AGENT PROPERTY PAGE READY"
+    );
+
+
+    console.log(
+        "AMENITY BUTTONS:",
+        document.querySelectorAll(
+            ".expiredAmenityBtn"
+        ).length
+    );
+
+
+    console.log(
+        "======================================"
+    );
+
+
+    initializeExpiredCategory();
+
+    initializeExpiredSubcategory();
+
+    initializeExpiredForm();
+
+}
+
+
+
+/* =========================================================
+   DOM READY
+========================================================= */
+
+if (
+    document.readyState ===
+    "loading"
+) {
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        initializeExpiredAgentPropertyPage
+    );
+
+} else {
+
+    initializeExpiredAgentPropertyPage();
+
+}
+
+</script>
+
+{% endblock %}
+<style>
+/* Final action layout */
+.expired-agent-actions {
+    display:flex !important;
+    flex-wrap:nowrap !important;
+    align-items:center !important;
+    justify-content:center !important;
+    gap:8px !important;
+    width:100%;
+}
+.expired-agent-action {
+    width:42px !important;
+    height:42px !important;
+    min-width:42px !important;
+    flex:0 0 42px !important;
+    display:inline-flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    padding:0 !important;
+    border-radius:14px !important;
+    font-size:14px !important;
+}
+.expired-agent-action.edit {
+    color:#65a62f !important;
+    background:#f6fbf1 !important;
+    border:1px solid #cfe5b9 !important;
+}
+.expired-agent-action.restore {
+    color:#4f8fc9 !important;
+    background:#f2f8fd !important;
+    border:1px solid #c5ddf2 !important;
+}
+.expired-agent-action.delete {
+    color:#ef4444 !important;
+    background:#fff5f5 !important;
+    border:1px solid #fecaca !important;
+}
+.expired-agent-action.edit:hover { background:#edf8e5 !important; }
+.expired-agent-action.restore:hover { background:#e8f3fc !important; }
+.expired-agent-action.delete:hover { background:#fff0f0 !important; }
+
+/* Keep Actions column wide enough for all 3 buttons */
+.expired-agent-table th:last-child,
+.expired-agent-table td:last-child {
+    min-width:170px;
+    width:170px;
+}
+</style>

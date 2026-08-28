@@ -3,7 +3,7 @@ from django import forms
 
 from django import forms
 from .models import *
-
+from developer.models import *
 
 
 AGENT_TYPE_CHOICES = [

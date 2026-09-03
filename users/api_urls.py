@@ -31,6 +31,7 @@ urlpatterns = [
     path("premium/change-password/", PremiumPasswordChangeAPIView.as_view()),
 
     path('google-login/', GoogleLoginView.as_view(), name='google_login'),
+    path('facebook-login/', FacebookLoginAPI.as_view(), name='facebook_login'),
 
     # ✅ Featured Properties (PATH METHOD)
     path(
@@ -49,7 +50,7 @@ urlpatterns = [
 
     path("user/change-password/",UserChangePasswordAPI.as_view()),
     path("userlogin/", UserLoginAPI.as_view(), name="user-login"),
-    path("auth/facebook/login/", FacebookLoginAPI.as_view()),
+    # path("auth/facebook/login/", FacebookLoginAPI.as_view()),
 
     path("profile/", UserProfileView.as_view()),
     path("profile/image/", UserProfileImageUpdateView.as_view()),

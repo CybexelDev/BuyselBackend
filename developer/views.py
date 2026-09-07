@@ -3630,28 +3630,26 @@ def edit_agent(request, pk):
     return redirect("admin_agents")
 
 
-@never_cache
-@user_passes_test(superuser_required, login_url="superuser_login_view")
-@require_POST
-def delete_agent(request, pk):
-
-    agent = get_object_or_404(AgentUserProfile, pk=pk)
-
-    agent.delete()
-
-    messages.success(request, "Agent deleted successfully")
-
-    return redirect("admin_agents")
-
-
 # @never_cache
 # @user_passes_test(superuser_required, login_url="superuser_login_view")
 # @require_POST
 # def delete_agent(request, pk):
+
 #     agent = get_object_or_404(AgentUserProfile, pk=pk)
+
 #     agent.delete()
-#     messages.success(request, "🗑️ Agent deleted successfully!")
+
+#     messages.success(request, "Agent deleted successfully")
+
 #     return redirect("admin_agents")
+
+
+
+def delete_agent(request, pk):
+    agent = get_object_or_404(AgentUserProfile, pk=pk)
+    agent.delete()
+    messages.success(request, "🗑️ Agent deleted successfully!")
+    return redirect("admin_agents")
 
 
 @never_cache

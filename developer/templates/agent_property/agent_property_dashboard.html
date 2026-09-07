@@ -2,505 +2,2229 @@
 
 {% block content %}
 
+<style>
+    :root {
+        --agent-green: #8bc83f;
+        --agent-green-dark: #659d28;
+        --agent-green-soft: #eef8e7;
+        --agent-border: #dce8d2;
+        --agent-text: #34402f;
+    }
+
+    /* =========================================================
+       HERO
+    ========================================================= */
+
+    .agent-property-hero {
+        position: relative;
+        overflow: hidden;
+        min-height: 180px;
+        padding: 30px;
+        border-radius: 24px;
+        color: #fff;
+        background: linear-gradient(135deg, #8bc83f 0%, #659d28 100%);
+        box-shadow: 0 18px 40px rgba(75, 112, 35, .18);
+    }
+
+    .agent-property-hero::after {
+        content: "";
+        position: absolute;
+        width: 260px;
+        height: 260px;
+        right: -90px;
+        top: -120px;
+        border-radius: 50%;
+        background: rgba(255,255,255,.08);
+    }
+
+    .agent-property-hero-inner {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 25px;
+    }
+
+    .agent-property-hero-copy {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .agent-property-hero-icon {
+        display: grid;
+        width: 64px;
+        height: 64px;
+        flex: 0 0 auto;
+        place-items: center;
+        border: 1px solid rgba(255,255,255,.35);
+        border-radius: 20px;
+        color: #fff;
+        background: rgba(255,255,255,.17);
+        box-shadow: 0 13px 26px rgba(67,101,31,.17);
+        font-size: 23px;
+        backdrop-filter: blur(10px);
+    }
+
+    .agent-property-eyebrow {
+        display: block;
+        margin-bottom: 6px;
+        color: rgba(255,255,255,.76);
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: .16em;
+        text-transform: uppercase;
+    }
+
+    .agent-property-hero h1 {
+        margin: 0;
+        color: #fff;
+        font-size: clamp(29px, 3vw, 38px);
+        font-weight: 700;
+        line-height: 1.05;
+        letter-spacing: -.04em;
+    }
+
+    .agent-property-hero p {
+        margin: 8px 0 0;
+        color: rgba(255,255,255,.84);
+        font-size: 12px;
+        line-height: 1.6;
+    }
+
+    .agent-property-hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+
+    .agent-property-add-btn {
+        display: inline-flex;
+        min-height: 46px;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+        padding: 0 18px;
+        border: 1px solid rgba(255,255,255,.55);
+        border-radius: 14px;
+        color: #527c2c;
+        background: rgba(255,255,255,.96);
+        box-shadow: 0 12px 25px rgba(58,88,28,.15);
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: .2s ease;
+    }
+
+    .agent-property-add-btn:hover {
+        transform: translateY(-2px);
+        background: #fff;
+    }
+
+
+    /* =========================================================
+       SUMMARY CARDS
+    ========================================================= */
+
+    .agent-property-stats {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 14px;
+        margin-top: 20px;
+    }
+
+    .agent-property-stat {
+        position: relative;
+        overflow: hidden;
+        min-height: 112px;
+        padding: 18px;
+        border: 1px solid var(--agent-border);
+        border-radius: 19px;
+        background: #fff;
+        box-shadow: 0 12px 30px rgba(49,70,36,.07);
+        transition: .2s ease;
+    }
+
+    .agent-property-stat:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 16px 35px rgba(49,70,36,.11);
+    }
+
+    .agent-property-stat::after {
+        content: "";
+        position: absolute;
+        top: -38px;
+        right: -34px;
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: rgba(139,200,63,.06);
+    }
+
+    .agent-property-stat-top {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .agent-property-stat-icon {
+        display: grid;
+        width: 38px;
+        height: 38px;
+        place-items: center;
+        border-radius: 12px;
+        font-size: 14px;
+    }
+
+    .stat-total .agent-property-stat-icon {
+        color: var(--agent-green-dark);
+        background: var(--agent-green-soft);
+    }
+
+    .stat-active .agent-property-stat-icon {
+        color: #499024;
+        background: #eef8e7;
+    }
+
+    .stat-expired .agent-property-stat-icon {
+        color: #cc5656;
+        background: #fff0f0;
+    }
+
+    .stat-pending .agent-property-stat-icon {
+        color: #bd8011;
+        background: #fff7df;
+    }
+
+    .stat-rejected .agent-property-stat-icon {
+        color: #7657bb;
+        background: #f3efff;
+    }
+
+    .agent-property-stat-label {
+        position: relative;
+        z-index: 2;
+        margin-top: 14px;
+        color: #7d8878;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+    }
+
+    .agent-property-stat-value {
+        position: relative;
+        z-index: 2;
+        margin-top: 3px;
+        color: #34402f;
+        font-size: 25px;
+        font-weight: 800;
+        line-height: 1;
+    }
+
+
+    /* =========================================================
+       FILTER
+    ========================================================= */
+
+    .agent-property-filter-card {
+        margin-top: 20px;
+        padding: 17px;
+        border: 1px solid var(--agent-border);
+        border-radius: 20px;
+        background: #fff;
+        box-shadow: 0 12px 30px rgba(49,70,36,.06);
+    }
+
+    .agent-property-tabs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #edf1e9;
+    }
+
+    .agent-property-tab {
+        display: inline-flex;
+        min-height: 34px;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        padding: 0 12px;
+        border: 1px solid #dce6d6;
+        border-radius: 999px;
+        color: #71806a;
+        background: #fafcf9;
+        font-size: 10.5px;
+        font-weight: 700;
+        text-decoration: none;
+        transition: .2s ease;
+    }
+
+    .agent-property-tab:hover,
+    .agent-property-tab.active {
+        border-color: #b7d79c;
+        color: #5e922e;
+        background: #eef7e7;
+    }
+
+    .agent-property-tab-count {
+        display: grid;
+        min-width: 20px;
+        height: 20px;
+        place-items: center;
+        padding: 0 5px;
+        border-radius: 999px;
+        background: rgba(139,200,63,.14);
+        font-size: 9px;
+    }
+
+    .agent-property-filter-form {
+        display: grid;
+        grid-template-columns: minmax(240px,1.5fr) minmax(190px,.8fr) auto;
+        gap: 10px;
+        padding-top: 15px;
+    }
+
+    .agent-property-input-wrap {
+        position: relative;
+    }
+
+    .agent-property-input-wrap i {
+        position: absolute;
+        top: 50%;
+        left: 14px;
+        color: #94a08f;
+        font-size: 12px;
+        transform: translateY(-50%);
+        pointer-events: none;
+    }
+
+    .agent-property-input,
+    .agent-property-select {
+        width: 100%;
+        height: 42px;
+        border: 1px solid #dce6d6;
+        border-radius: 12px;
+        outline: none;
+        color: #475342;
+        background: #fbfdf9;
+        font-size: 12px;
+        transition: .2s ease;
+    }
+
+    .agent-property-input {
+        padding: 0 14px 0 38px;
+    }
+
+    .agent-property-select {
+        padding: 0 12px;
+    }
+
+    .agent-property-input:focus,
+    .agent-property-select:focus {
+        border-color: #a9cf89;
+        background: #fff;
+        box-shadow: 0 0 0 4px rgba(139,200,63,.10);
+    }
+
+    .agent-property-filter-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    .agent-property-filter-btn,
+    .agent-property-reset-btn {
+        display: inline-flex;
+        height: 42px;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        padding: 0 15px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 700;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .agent-property-filter-btn {
+        border: 1px solid #7dbd43;
+        color: #fff;
+        background: #7dbd43;
+    }
+
+    .agent-property-reset-btn {
+        border: 1px solid #dce6d6;
+        color: #74806f;
+        background: #fff;
+    }
+
+
+    /* =========================================================
+       TABLE CARD
+    ========================================================= */
+
+    .agent-property-card {
+        margin-top: 20px;
+        overflow: hidden;
+        border: 1px solid var(--agent-border);
+        border-radius: 24px;
+        background: #fff;
+        box-shadow:
+            0 18px 46px rgba(49,70,36,.09),
+            0 4px 12px rgba(49,70,36,.04);
+    }
+
+    .agent-property-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        padding: 19px 22px;
+        border-bottom: 1px solid #e7ede2;
+        background:
+            radial-gradient(circle at 94% 0%, rgba(139,200,63,.08), transparent 28%),
+            linear-gradient(180deg,#fff,#fbfdf9);
+    }
+
+    .agent-property-card-header h2 {
+        margin: 0;
+        color: #303d2a;
+        font-size: 18px;
+        font-weight: 700;
+    }
+
+    .agent-property-card-header p {
+        margin: 4px 0 0;
+        color: #8a9384;
+        font-size: 11px;
+    }
+
+    .agent-property-count {
+        display: inline-flex;
+        min-height: 34px;
+        align-items: center;
+        gap: 8px;
+        padding: 0 12px;
+        border: 1px solid #d5e8c4;
+        border-radius: 999px;
+        color: #5f8e31;
+        background: #f1f8ea;
+        font-size: 11px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .agent-property-count span {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--agent-green);
+        box-shadow: 0 0 0 4px rgba(139,200,63,.12);
+    }
+
+
+    /* =========================================================
+       TABLE
+    ========================================================= */
+
+    .agent-property-table-scroll {
+        position: relative;
+        width: 100%;
+        max-height: 620px;
+        overflow: auto;
+        scrollbar-width: thin;
+        scrollbar-color: #9fba89 transparent;
+        overscroll-behavior: contain;
+    }
+
+    .agent-property-table-scroll::-webkit-scrollbar {
+        width: 9px;
+        height: 9px;
+    }
+
+    .agent-property-table-scroll::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .agent-property-table-scroll::-webkit-scrollbar-thumb {
+        border: 2px solid transparent;
+        border-radius: 999px;
+        background: #9fba89;
+        background-clip: padding-box;
+    }
+
+    .agent-property-table {
+        width: 100%;
+        min-width: 2050px;
+        border-collapse: separate;
+        border-spacing: 0;
+        table-layout: fixed;
+    }
+
+    .agent-property-table thead th {
+        position: sticky;
+        top: 0;
+        z-index: 30;
+        height: 50px;
+        padding: 0 15px;
+        border-bottom: 1px solid #dbe7d3;
+        color: #61705a;
+        background: #f2f7ee;
+        box-shadow: 0 2px 0 rgba(219,231,211,.95);
+        font-size: 10.5px;
+        font-weight: 700;
+        letter-spacing: .08em;
+        text-align: left;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    .agent-property-table tbody tr {
+        background: #fff;
+        transition: .2s ease;
+    }
+
+    .agent-property-table tbody tr:nth-child(even) {
+        background: #fcfdfb;
+    }
+
+    .agent-property-table tbody tr:hover {
+        background: #f7fbf3;
+        box-shadow: inset 3px 0 0 var(--agent-green);
+    }
+
+    .agent-property-table tbody td {
+        height: 88px;
+        padding: 13px 15px;
+        border-bottom: 1px solid #edf1e9;
+        color: #4f5a4a;
+        background: inherit;
+        font-size: 12px;
+        line-height: 1.45;
+        vertical-align: middle;
+        overflow-wrap: anywhere;
+    }
+
+    .agent-property-code {
+        color: #3d4b38;
+        font-weight: 700;
+    }
+
+    .agent-property-image {
+        display: block;
+        width: 76px;
+        height: 56px;
+        border: 1px solid #dce5d7;
+        border-radius: 12px;
+        object-fit: cover;
+        box-shadow: 0 6px 14px rgba(49,70,36,.08);
+    }
+
+    .agent-property-image-empty {
+        display: grid;
+        width: 76px;
+        height: 56px;
+        place-items: center;
+        border: 1px dashed #d8e3d1;
+        border-radius: 12px;
+        color: #a8b2a2;
+        background: #f7faf5;
+    }
+
+    .agent-property-main {
+        display: flex;
+        min-width: 0;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .agent-property-main strong {
+        color: #34412f;
+        font-size: 13px;
+    }
+
+    .agent-property-main small {
+        overflow: hidden;
+        color: #8a9585;
+        font-size: 10.5px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .agent-property-agent {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+    }
+
+    .agent-property-agent-avatar {
+        display: grid;
+        width: 34px;
+        height: 34px;
+        flex: 0 0 auto;
+        place-items: center;
+        border-radius: 11px;
+        color: #659d28;
+        background: #eef7e7;
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+    }
+
+    .agent-property-agent-info {
+        min-width: 0;
+    }
+
+    .agent-property-agent-info strong {
+        display: block;
+        overflow: hidden;
+        max-width: 130px;
+        color: #44503f;
+        font-size: 11.5px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .agent-property-agent-info small {
+        color: #8c9688;
+        font-size: 10px;
+        text-transform: capitalize;
+    }
+
+    .agent-property-price {
+        color: #4f9228;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+
+    /* =========================================================
+       BADGES
+    ========================================================= */
+
+    .agent-property-badge {
+        display: inline-flex;
+        min-height: 28px;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 0 10px;
+        border-radius: 999px;
+        font-size: 10px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .badge-pending {
+        border: 1px solid #f0d69a;
+        color: #a9700b;
+        background: #fff7df;
+    }
+
+    .badge-active {
+        border: 1px solid #c8e2b2;
+        color: #588f2e;
+        background: #eff8e8;
+    }
+
+    .badge-expired {
+        border: 1px solid #f0c4c4;
+        color: #c55656;
+        background: #fff0f0;
+    }
+
+    .badge-rejected {
+        border: 1px solid #d8cdef;
+        color: #7556b5;
+        background: #f4f0ff;
+    }
+
+    .agent-property-badge-paid,
+    .agent-property-badge-featured {
+        border: 1px solid #d4e7c4;
+        color: #5f8e31;
+        background: #eff7e8;
+    }
+
+    .agent-property-badge-unpaid {
+        border: 1px solid #efd0d0;
+        color: #c86464;
+        background: #fff1f1;
+    }
+
+    .agent-property-badge-normal {
+        border: 1px solid #dde3d9;
+        color: #7c8678;
+        background: #f4f6f2;
+    }
+
+
+    /* =========================================================
+       DATE
+    ========================================================= */
+
+    .agent-property-date {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+    }
+
+    .agent-property-date strong {
+        color: #4b5746;
+        font-size: 11.5px;
+    }
+
+    .agent-property-date small {
+        color: #8e988a;
+        font-size: 10px;
+    }
+
+
+    /* =========================================================
+       EXPIRY
+    ========================================================= */
+
+    .expiry-remaining {
+        display: inline-flex;
+        min-height: 27px;
+        align-items: center;
+        gap: 6px;
+        padding: 0 9px;
+        border-radius: 999px;
+        font-size: 9.5px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .expiry-safe {
+        color: #598f31;
+        background: #eff8e8;
+    }
+
+    .expiry-warning {
+        color: #a96e0d;
+        background: #fff5d8;
+    }
+
+    .expiry-danger {
+        color: #c35353;
+        background: #fff0f0;
+    }
+
+    .expiry-none {
+        color: #7d8779;
+        background: #f2f4f0;
+    }
+
+
+    /* =========================================================
+       ACTIONS
+    ========================================================= */
+
+    .agent-property-actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+    }
+
+    .agent-action-btn {
+        display: inline-grid;
+        width: 34px;
+        height: 34px;
+        place-items: center;
+        border-radius: 10px;
+        font-size: 12px;
+        text-decoration: none;
+        transition: .2s ease;
+        cursor: pointer;
+    }
+
+    .action-view {
+        border: 1px solid #cbdceb;
+        color: #4d91c6;
+        background: #eef6fc;
+    }
+
+    .action-edit {
+        border: 1px solid #c9e2b3;
+        color: #61a72c;
+        background: #f1f9e9;
+    }
+
+    .action-delete {
+        border: 1px solid #f2c3c3;
+        color: #e35b5b;
+        background: #fff1f1;
+    }
+
+    .agent-action-btn:hover {
+        color: #fff;
+        transform: translateY(-2px);
+    }
+
+    .action-view:hover {
+        border-color: #4d91c6;
+        background: #4d91c6;
+    }
+
+    .action-edit:hover {
+        border-color: #72bd35;
+        background: #72bd35;
+    }
+
+    .action-delete:hover {
+        border-color: #ef5b5b;
+        background: #ef5b5b;
+    }
+
+
+    /* =========================================================
+       EMPTY
+    ========================================================= */
+
+    .agent-property-empty td {
+        height: 190px !important;
+        text-align: center;
+        color: #899183 !important;
+    }
+
+
+    /* =========================================================
+       PAGINATION
+    ========================================================= */
+
+    .agent-property-pagination {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 17px 20px;
+        border-top: 1px solid #edf1e9;
+        background: #fbfdf9;
+    }
+
+    .agent-property-pagination-info {
+        color: #838e7e;
+        font-size: 10.5px;
+    }
+
+    .agent-property-pagination-links {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .agent-property-page-link {
+        display: inline-grid;
+        min-width: 34px;
+        height: 34px;
+        place-items: center;
+        padding: 0 9px;
+        border: 1px solid #dce6d6;
+        border-radius: 10px;
+        color: #6e7c68;
+        background: #fff;
+        font-size: 10.5px;
+        font-weight: 700;
+        text-decoration: none;
+    }
+
+    .agent-property-page-link.active,
+    .agent-property-page-link:hover {
+        border-color: #80bd49;
+        color: #fff;
+        background: #80bd49;
+    }
+
+
+    /* =========================================================
+       TOAST
+    ========================================================= */
+
+    .agent-toast-container {
+        position: fixed;
+        right: 22px;
+        bottom: 22px;
+        z-index: 12000;
+        display: flex;
+        width: min(380px,calc(100vw - 32px));
+        flex-direction: column;
+        gap: 10px;
+        pointer-events: none;
+    }
+
+    .agent-toast {
+        position: relative;
+        display: grid;
+        grid-template-columns: 42px minmax(0,1fr) 32px;
+        align-items: center;
+        gap: 11px;
+        overflow: hidden;
+        min-height: 68px;
+        padding: 12px 12px 12px 13px;
+        border: 1px solid #dce8d2;
+        border-radius: 16px;
+        background: rgba(255,255,255,.98);
+        box-shadow: 0 18px 46px rgba(38,54,29,.18);
+        backdrop-filter: blur(12px);
+        pointer-events: auto;
+        animation: agentToastIn .3s ease both;
+    }
+
+    .agent-toast.is-hiding {
+        animation: agentToastOut .25s ease both;
+    }
+
+    @keyframes agentToastIn {
+        from {
+            opacity: 0;
+            transform: translateX(24px) scale(.98);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0) scale(1);
+        }
+    }
+
+    @keyframes agentToastOut {
+        from {
+            opacity: 1;
+            transform: translateX(0) scale(1);
+        }
+        to {
+            opacity: 0;
+            transform: translateX(30px) scale(.97);
+        }
+    }
+
+    .agent-toast::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        height: 3px;
+        background: currentColor;
+        transform-origin: left;
+        animation: agentToastProgress 4.5s linear forwards;
+    }
+
+    @keyframes agentToastProgress {
+        from {
+            transform: scaleX(1);
+        }
+        to {
+            transform: scaleX(0);
+        }
+    }
+
+    .agent-toast-icon {
+        display: grid;
+        width: 42px;
+        height: 42px;
+        place-items: center;
+        border-radius: 13px;
+        font-size: 15px;
+    }
+
+    .agent-toast-copy {
+        min-width: 0;
+    }
+
+    .agent-toast-title {
+        display: block;
+        margin-bottom: 3px;
+        color: #34402f;
+        font-size: 12px;
+        font-weight: 800;
+    }
+
+    .agent-toast-message {
+        color: #768170;
+        font-size: 10.5px;
+        line-height: 1.5;
+        overflow-wrap: anywhere;
+    }
+
+    .agent-toast-close {
+        display: grid;
+        width: 30px;
+        height: 30px;
+        place-items: center;
+        border: 0;
+        border-radius: 9px;
+        color: #929c8d;
+        background: transparent;
+        cursor: pointer;
+    }
+
+    .agent-toast-close:hover {
+        color: #4c5847;
+        background: #f1f5ee;
+    }
+
+    .agent-toast-success {
+        color: #69a936;
+        border-color: #cfe4bc;
+    }
+
+    .agent-toast-success .agent-toast-icon {
+        color: #5e9a2e;
+        background: #eef8e7;
+    }
+
+    .agent-toast-error,
+    .agent-toast-danger {
+        color: #e05b5b;
+        border-color: #efcaca;
+    }
+
+    .agent-toast-error .agent-toast-icon,
+    .agent-toast-danger .agent-toast-icon {
+        color: #d95555;
+        background: #fff0f0;
+    }
+
+    .agent-toast-warning {
+        color: #d89b23;
+        border-color: #eed9a6;
+    }
+
+    .agent-toast-warning .agent-toast-icon {
+        color: #bd8011;
+        background: #fff7df;
+    }
+
+    .agent-toast-info {
+        color: #4d91c6;
+        border-color: #cbdceb;
+    }
+
+    .agent-toast-info .agent-toast-icon {
+        color: #4d91c6;
+        background: #eef6fc;
+    }
+
+
+    /* =========================================================
+       RESPONSIVE
+    ========================================================= */
+
+    @media (max-width: 1180px) {
+        .agent-property-stats {
+            grid-template-columns: repeat(3,minmax(0,1fr));
+        }
+    }
+
+    @media (max-width: 820px) {
+        .agent-property-filter-form {
+            grid-template-columns: 1fr;
+        }
+
+        .agent-property-filter-actions {
+            width: 100%;
+        }
+
+        .agent-property-filter-btn,
+        .agent-property-reset-btn {
+            flex: 1;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .agent-property-hero-inner {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .agent-property-hero {
+            padding: 21px;
+            border-radius: 20px;
+        }
+
+        .agent-property-hero-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 16px;
+        }
+
+        .agent-property-hero-actions {
+            width: 100%;
+            justify-content: stretch;
+        }
+
+        .agent-property-add-btn {
+            flex: 1;
+        }
+
+        .agent-property-stats {
+            grid-template-columns: repeat(2,minmax(0,1fr));
+        }
+
+        .agent-property-card {
+            border-radius: 18px;
+        }
+
+        .agent-property-card-header {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .agent-property-pagination {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .agent-property-stats {
+            grid-template-columns: 1fr;
+        }
+
+        .agent-property-hero-copy {
+            align-items: flex-start;
+        }
+    }
+</style>
+
+
 <div class="space-y-6">
 
 
-<!-- HEADER -->
+    <!-- =====================================================
+         HERO
+    ====================================================== -->
 
-<section class="rounded-3xl bg-gradient-to-r from-lime-500 to-green-600 p-8 text-white shadow">
+    <section class="agent-property-hero">
 
-<div class="flex flex-col justify-between gap-5 md:flex-row md:items-center">
+        <div class="agent-property-hero-inner">
 
+            <div class="agent-property-hero-copy">
 
-<div>
+                <div class="agent-property-hero-icon">
+                    <i class="fa-solid fa-building"></i>
+                </div>
 
-<div class="flex items-center gap-3">
+                <div>
 
-<div class="grid h-14 w-14 place-items-center rounded-2xl bg-white/20">
+                    <span class="agent-property-eyebrow">
+                        Property Administration
+                    </span>
 
-<i class="fa-solid fa-building text-2xl"></i>
+                    <h1>
+                        Agent Properties
+                    </h1>
 
-</div>
+                    <p>
+                        Manage, review and maintain all agent property listings
+                        from one professional workspace.
+                    </p>
 
+                </div>
 
-<div>
+            </div>
 
-<h1 class="text-3xl font-bold">
-Agent Properties
-</h1>
 
-<p class="text-sm text-white/80">
-Manage all agent property listings
-</p>
+            <div class="agent-property-hero-actions">
 
-</div>
+                <button
+                    type="button"
+                    onclick="openAddPropertyModal()"
+                    class="agent-property-add-btn">
 
-</div>
+                    <i class="fa-solid fa-plus"></i>
 
-</div>
+                    Add Property
 
+                </button>
 
+            </div>
 
-<button
-onclick="openAddPropertyModal()"
-class="rounded-xl bg-white px-6 py-3 font-semibold text-green-700 shadow hover:bg-gray-100">
+        </div>
 
-<i class="fa-solid fa-plus mr-2"></i>
+    </section>
 
-Add Property
 
-</button>
+    <!-- =====================================================
+         SUMMARY CARDS
+    ====================================================== -->
 
+    <section class="agent-property-stats">
 
-</div>
+        <article class="agent-property-stat stat-total">
 
-</section>
+            <div class="agent-property-stat-top">
 
+                <div class="agent-property-stat-icon">
+                    <i class="fa-solid fa-layer-group"></i>
+                </div>
 
+            </div>
 
+            <div class="agent-property-stat-label">
+                Total Properties
+            </div>
 
+            <div class="agent-property-stat-value">
+                {{ total_count|default:0 }}
+            </div>
 
-<!-- TABLE -->
+        </article>
 
-<section class="rounded-3xl bg-white shadow">
 
+        <article class="agent-property-stat stat-active">
 
-<div class="overflow-x-auto">
+            <div class="agent-property-stat-top">
 
+                <div class="agent-property-stat-icon">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
 
-<table class="min-w-[1700px] w-full">
+            </div>
 
+            <div class="agent-property-stat-label">
+                Active
+            </div>
 
-<thead class="bg-gray-100">
+            <div class="agent-property-stat-value">
+                {{ active_count|default:0 }}
+            </div>
 
+        </article>
 
-<tr class="text-left text-sm font-semibold text-gray-700">
 
+        <article class="agent-property-stat stat-expired">
 
-<th class="px-5 py-4">
-Property Code
-</th>
+            <div class="agent-property-stat-top">
 
+                <div class="agent-property-stat-icon">
+                    <i class="fa-solid fa-hourglass-end"></i>
+                </div>
 
-<th class="px-5 py-4">
-Image
-</th>
+            </div>
 
+            <div class="agent-property-stat-label">
+                Expired
+            </div>
 
-<th class="px-5 py-4">
-Category
-</th>
+            <div class="agent-property-stat-value">
+                {{ expired_count|default:0 }}
+            </div>
 
+        </article>
 
-<th class="px-5 py-4">
-Purpose
-</th>
 
+        <article class="agent-property-stat stat-pending">
 
-<th class="px-5 py-4">
-Label
-</th>
+            <div class="agent-property-stat-top">
 
+                <div class="agent-property-stat-icon">
+                    <i class="fa-regular fa-clock"></i>
+                </div>
 
-<th class="px-5 py-4">
-Sq.Ft
-</th>
+            </div>
 
+            <div class="agent-property-stat-label">
+                Pending
+            </div>
 
-<th class="px-5 py-4">
-City
-</th>
+            <div class="agent-property-stat-value">
+                {{ pending_count|default:0 }}
+            </div>
 
+        </article>
 
-<th class="px-5 py-4">
-Taluk
-</th>
 
+        <article class="agent-property-stat stat-rejected">
 
-<th class="px-5 py-4">
-Village
-</th>
+            <div class="agent-property-stat-top">
 
+                <div class="agent-property-stat-icon">
+                    <i class="fa-solid fa-ban"></i>
+                </div>
 
-<th class="px-5 py-4">
-District
-</th>
+            </div>
 
+            <div class="agent-property-stat-label">
+                Rejected
+            </div>
 
-<th class="px-5 py-4">
-State
-</th>
+            <div class="agent-property-stat-value">
+                {{ rejected_count|default:0 }}
+            </div>
 
+        </article>
 
-<th class="px-5 py-4">
-Price
-</th>
+    </section>
 
 
-<th class="px-5 py-4">
-Owner
-</th>
+    <!-- =====================================================
+         FILTERS
+    ====================================================== -->
 
+    <section class="agent-property-filter-card">
 
-<th class="px-5 py-4">
-Phone
-</th>
+        <nav class="agent-property-tabs">
 
+            <a
+                href="?status=all{% if search %}&search={{ search|urlencode }}{% endif %}{% if agent_filter %}&agent={{ agent_filter }}{% endif %}"
+                class="agent-property-tab {% if status_filter == 'all' %}active{% endif %}">
 
-<th class="px-5 py-4">
-Payment
-</th>
+                All
 
+                <span class="agent-property-tab-count">
+                    {{ total_count|default:0 }}
+                </span>
 
-<th class="px-5 py-4">
-Added By
-</th>
+            </a>
 
 
-<th class="px-5 py-4">
-Featured
-</th>
+            <a
+                href="?status=active{% if search %}&search={{ search|urlencode }}{% endif %}{% if agent_filter %}&agent={{ agent_filter }}{% endif %}"
+                class="agent-property-tab {% if status_filter == 'active' %}active{% endif %}">
 
+                Active
 
-<th class="px-5 py-4">
-Created
-</th>
+                <span class="agent-property-tab-count">
+                    {{ active_count|default:0 }}
+                </span>
 
+            </a>
 
-<th class="px-5 py-4">
-Actions
-</th>
 
+            <a
+                href="?status=pending{% if search %}&search={{ search|urlencode }}{% endif %}{% if agent_filter %}&agent={{ agent_filter }}{% endif %}"
+                class="agent-property-tab {% if status_filter == 'pending' %}active{% endif %}">
 
-</tr>
+                Pending
 
+                <span class="agent-property-tab-count">
+                    {{ pending_count|default:0 }}
+                </span>
 
-</thead>
+            </a>
 
 
+            <a
+                href="?status=expired{% if search %}&search={{ search|urlencode }}{% endif %}{% if agent_filter %}&agent={{ agent_filter }}{% endif %}"
+                class="agent-property-tab {% if status_filter == 'expired' %}active{% endif %}">
 
+                Expired
 
+                <span class="agent-property-tab-count">
+                    {{ expired_count|default:0 }}
+                </span>
 
-<tbody class="divide-y">
+            </a>
 
 
+            <a
+                href="?status=rejected{% if search %}&search={{ search|urlencode }}{% endif %}{% if agent_filter %}&agent={{ agent_filter }}{% endif %}"
+                class="agent-property-tab {% if status_filter == 'rejected' %}active{% endif %}">
 
-{% for property in properties %}
+                Rejected
 
+                <span class="agent-property-tab-count">
+                    {{ rejected_count|default:0 }}
+                </span>
 
-<tr class="text-sm text-gray-700">
+            </a>
 
+        </nav>
 
 
-<td class="px-5 py-4 font-semibold">
+        <form
+            method="get"
+            class="agent-property-filter-form">
 
-{{property.property_hash_id|default:"-"}}
+            <input
+                type="hidden"
+                name="status"
+                value="{{ status_filter|default:'all' }}">
 
-</td>
 
+            <div class="agent-property-input-wrap">
 
+                <i class="fa-solid fa-magnifying-glass"></i>
 
+                <input
+                    type="search"
+                    name="search"
+                    value="{{ search }}"
+                    class="agent-property-input"
+                    placeholder="Search property code, label, agent, city...">
 
-<td class="px-5 py-4">
+            </div>
 
 
-{% if property.image %}
+            <select
+                name="agent"
+                class="agent-property-select">
 
-<img
-src="{{property.image.url}}"
-class="h-14 w-14 rounded-xl object-cover">
+                <option value="">
+                    All Agents
+                </option>
 
+                {% for agent in agents %}
 
-{% else %}
+                    <option
+                        value="{{ agent.id }}"
+                        {% if agent_filter|stringformat:"s" == agent.id|stringformat:"s" %}
+                            selected
+                        {% endif %}>
 
-<div class="grid h-14 w-14 place-items-center rounded-xl bg-gray-100">
+                        {{ agent.username }} — {{ agent.agent_type|title }}
 
-<i class="fa-solid fa-image text-gray-400"></i>
+                    </option>
 
-</div>
+                {% endfor %}
 
-{% endif %}
+            </select>
 
 
-</td>
+            <div class="agent-property-filter-actions">
 
+                <button
+                    type="submit"
+                    class="agent-property-filter-btn">
 
+                    <i class="fa-solid fa-filter"></i>
 
+                    Filter
 
+                </button>
 
-<td class="px-5 py-4">
 
-{{property.category.name}}
+                <a
+                    href="{% url 'agent_property_dashboard' %}"
+                    class="agent-property-reset-btn">
 
-</td>
+                    <i class="fa-solid fa-rotate-left"></i>
 
+                    Reset
 
+                </a>
 
-<td class="px-5 py-4">
+            </div>
 
-{{property.purpose.name}}
+        </form>
 
-</td>
+    </section>
 
 
+    <!-- =====================================================
+         PROPERTY TABLE
+    ====================================================== -->
 
+    <section class="agent-property-card">
 
-<td class="px-5 py-4 font-medium">
 
-{{property.label}}
+        <div class="agent-property-card-header">
 
-</td>
+            <div>
 
+                <h2>
+                    Property Listings
+                </h2>
 
+                <p>
+                    Complete agent property inventory, payment,
+                    approval and expiry details.
+                </p>
 
+            </div>
 
-<td class="px-5 py-4">
 
-{{property.sq_ft|default:"-"}}
+            <div class="agent-property-count">
 
-</td>
+                <span></span>
 
+                {{ page_obj.paginator.count|default:0 }}
 
+                Properties
 
+            </div>
 
-<td class="px-5 py-4">
+        </div>
 
-{{property.city}}
 
-</td>
+        <div class="agent-property-table-scroll">
 
+            <table class="agent-property-table">
 
 
+                <thead>
 
-<td class="px-5 py-4">
+                    <tr>
 
-{{property.taluk|default:"-"}}
+                        <th style="width:145px;">
+                            Property Code
+                        </th>
 
-</td>
+                        <th style="width:105px;">
+                            Image
+                        </th>
 
+                        <th style="width:195px;">
+                            Property
+                        </th>
 
+                        <th style="width:180px;">
+                            Agent
+                        </th>
 
+                        <th style="width:130px;">
+                            Category
+                        </th>
 
-<td class="px-5 py-4">
+                        <th style="width:105px;">
+                            Purpose
+                        </th>
 
-{{property.village|default:"-"}}
+                        <th style="width:105px;">
+                            Sq.Ft
+                        </th>
 
-</td>
+                        <th style="width:125px;">
+                            Price
+                        </th>
 
+                        <th style="width:150px;">
+                            City
+                        </th>
 
+                        <th style="width:130px;">
+                            Taluk
+                        </th>
 
+                        <th style="width:130px;">
+                            Village
+                        </th>
 
-<td class="px-5 py-4">
+                        <th style="width:130px;">
+                            District
+                        </th>
 
-{{property.district}}
+                        <th style="width:130px;">
+                            State
+                        </th>
 
-</td>
+                        <th style="width:115px;">
+                            Status
+                        </th>
 
+                        <th style="width:120px;">
+                            Payment
+                        </th>
 
+                        <th style="width:120px;">
+                            Featured
+                        </th>
 
+                        <th style="width:150px;">
+                            Owner
+                        </th>
 
-<td class="px-5 py-4">
+                        <th style="width:140px;">
+                            Phone
+                        </th>
 
-{{property.state|default:"-"}}
+                        <th style="width:145px;">
+                            Approved
+                        </th>
 
-</td>
+                        <th style="width:155px;">
+                            Expiry Date
+                        </th>
 
+                        <th style="width:150px;">
+                            Remaining
+                        </th>
 
+                        <th style="width:135px;">
+                            Created
+                        </th>
 
+                        <th style="width:150px;text-align:center;">
+                            Actions
+                        </th>
 
-<td class="px-5 py-4">
+                    </tr>
 
-₹{{property.price}}
+                </thead>
 
-</td>
 
+                <tbody>
 
 
+                    {% for property in properties %}
 
-<td class="px-5 py-4">
+                    <tr>
 
-{{property.owner|default:"-"}}
 
-</td>
+                        <!-- PROPERTY CODE -->
 
+                        <td>
 
+                            <span class="agent-property-code">
+                                {{ property.property_hash_id|default:"-" }}
+                            </span>
 
+                        </td>
 
-<td class="px-5 py-4">
 
-{{property.phone|default:"-"}}
+                        <!-- IMAGE -->
 
-</td>
+                        <td>
 
+                            {% with first_image=property.images.first %}
 
+                                {% if first_image and first_image.image %}
 
+                                    <img
+                                        src="{{ first_image.image.url }}"
+                                        alt="{{ property.label|default:'Property' }}"
+                                        class="agent-property-image"
+                                        loading="lazy">
 
-<td class="px-5 py-4">
+                                {% elif property.image %}
 
+                                    <img
+                                        src="{{ property.image.url }}"
+                                        alt="{{ property.label|default:'Property' }}"
+                                        class="agent-property-image"
+                                        loading="lazy">
 
-{% if property.paid %}
+                                {% else %}
 
+                                    <div class="agent-property-image-empty">
 
-<span class="rounded-full bg-green-100 px-3 py-1 text-xs text-green-700">
+                                        <i class="fa-regular fa-image"></i>
 
-Paid
+                                    </div>
 
-</span>
+                                {% endif %}
 
+                            {% endwith %}
 
-{% else %}
+                        </td>
 
 
-<span class="rounded-full bg-red-100 px-3 py-1 text-xs text-red-700">
+                        <!-- PROPERTY -->
 
-Unpaid
+                        <td>
 
-</span>
+                            <div class="agent-property-main">
 
+                                <strong>
+                                    {{ property.label|default:"Untitled Property" }}
+                                </strong>
 
-{% endif %}
+                                <small>
+                                    {{ property.city|default:"-" }},
+                                    {{ property.district|default:"-" }}
+                                </small>
 
+                            </div>
 
-</td>
+                        </td>
 
 
+                        <!-- AGENT -->
 
+                        <td>
 
+                            <div class="agent-property-agent">
 
-<td class="px-5 py-4">
+                                <div class="agent-property-agent-avatar">
 
-{{property.agent.username|default:"-"}}
+                                    {{ property.agent.username|slice:":2"|default:"AG" }}
 
-</td>
+                                </div>
 
+                                <div class="agent-property-agent-info">
 
+                                    <strong>
+                                        {{ property.agent.username|default:"-" }}
+                                    </strong>
 
+                                    <small>
+                                        {{ property.agent.agent_type|default:"basic" }}
+                                    </small>
 
+                                </div>
 
-<td class="px-5 py-4">
+                            </div>
 
+                        </td>
 
-{% if property.is_featured %}
 
+                        <!-- CATEGORY -->
 
-<span class="text-green-600 font-semibold">
+                        <td>
+                            {{ property.category.name|default:"-" }}
+                        </td>
 
-Featured
 
-</span>
+                        <!-- PURPOSE -->
 
+                        <td>
+                            {{ property.purpose.name|default:"-" }}
+                        </td>
 
-{% else %}
 
+                        <!-- SQ FT -->
 
-<span class="text-gray-400">
+                        <td>
+                            {{ property.sq_ft|default:"-" }}
+                        </td>
 
-Normal
 
-</span>
+                        <!-- PRICE -->
 
+                        <td>
 
-{% endif %}
+                            <span class="agent-property-price">
 
+                                ₹{{ property.price|default:"0" }}
 
-</td>
+                            </span>
 
+                        </td>
 
 
+                        <!-- CITY -->
 
+                        <td>
+                            {{ property.city|default:"-" }}
+                        </td>
 
-<td class="px-5 py-4">
 
-{{property.created_at|date:"d M Y"}}
+                        <!-- TALUK -->
 
-</td>
+                        <td>
+                            {{ property.taluk|default:"-" }}
+                        </td>
 
 
+                        <!-- VILLAGE -->
 
+                        <td>
+                            {{ property.village|default:"-" }}
+                        </td>
 
 
-<td class="px-5 py-4">
+                        <!-- DISTRICT -->
 
+                        <td>
+                            {{ property.district|default:"-" }}
+                        </td>
 
-<div class="flex gap-2">
 
+                        <!-- STATE -->
 
+                        <td>
+                            {{ property.state|default:"-" }}
+                        </td>
 
-<button
-onclick="openEditPropertyModal('{{property.id}}')"
-class="rounded-lg bg-blue-500 px-3 py-2 text-white hover:bg-blue-600">
 
-<i class="fa-solid fa-pen"></i>
+                        <!-- STATUS -->
 
-</button>
+                        <td>
+
+                            {% if property.status == "pending" %}
+
+                                <span class="agent-property-badge badge-pending">
+
+                                    <i class="fa-regular fa-clock"></i>
+
+                                    Pending
+
+                                </span>
+
+                            {% elif property.status == "active" %}
+
+                                <span class="agent-property-badge badge-active">
+
+                                    <i class="fa-solid fa-circle-check"></i>
+
+                                    Active
+
+                                </span>
+
+                            {% elif property.status == "expired" %}
+
+                                <span class="agent-property-badge badge-expired">
+
+                                    <i class="fa-solid fa-hourglass-end"></i>
+
+                                    Expired
+
+                                </span>
+
+                            {% elif property.status == "rejected" %}
+
+                                <span class="agent-property-badge badge-rejected">
+
+                                    <i class="fa-solid fa-ban"></i>
+
+                                    Rejected
+
+                                </span>
+
+                            {% else %}
+
+                                <span class="agent-property-badge agent-property-badge-normal">
+
+                                    {{ property.status|title|default:"-" }}
+
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <!-- PAYMENT -->
+
+                        <td>
+
+                            {% if property.paid %}
+
+                                <span class="agent-property-badge agent-property-badge-paid">
+                                    Paid
+                                </span>
+
+                            {% else %}
+
+                                <span class="agent-property-badge agent-property-badge-unpaid">
+                                    Unpaid
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <!-- FEATURED -->
+
+                        <td>
+
+                            {% if property.is_featured %}
+
+                                <span class="agent-property-badge agent-property-badge-featured">
+
+                                    Featured
+
+                                </span>
+
+                            {% else %}
+
+                                <span class="agent-property-badge agent-property-badge-normal">
+
+                                    Normal
+
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <!-- OWNER -->
+
+                        <td>
+
+                            {{ property.owner|default:"-" }}
+
+                        </td>
+
+
+                        <!-- PHONE -->
+
+                        <td>
+
+                            {{ property.phone|default:"-" }}
+
+                        </td>
+
+
+                        <!-- APPROVED -->
+
+                        <td>
+
+                            <div class="agent-property-date">
+
+                                {% if property.approved_at %}
+
+                                    <strong>
+                                        {{ property.approved_at|date:"d M Y" }}
+                                    </strong>
+
+                                    <small>
+                                        {{ property.approved_at|date:"h:i A" }}
+                                    </small>
+
+                                {% else %}
+
+                                    <strong>-</strong>
+
+                                    <small>
+                                        Not approved
+                                    </small>
+
+                                {% endif %}
+
+                            </div>
+
+                        </td>
+
+
+                        <!-- EXPIRY -->
+
+                        <td>
+
+                            <div class="agent-property-date">
+
+                                {% if property.expiry_date %}
+
+                                    <strong>
+                                        {{ property.expiry_date|date:"d M Y" }}
+                                    </strong>
+
+                                    <small>
+                                        {{ property.expiry_date|date:"h:i A" }}
+                                    </small>
+
+                                {% else %}
+
+                                    <strong>-</strong>
+
+                                    <small>
+                                        No expiry date
+                                    </small>
+
+                                {% endif %}
+
+                            </div>
+
+                        </td>
+
+
+                        <!-- REMAINING -->
+
+                        <td>
+
+                            <span
+                                class="expiry-remaining expiry-none js-expiry-remaining"
+                                data-expiry="{% if property.expiry_date %}{{ property.expiry_date|date:'c' }}{% endif %}"
+                                data-status="{{ property.status }}">
+
+                                Calculating...
+
+                            </span>
+
+                        </td>
+
+
+                        <!-- CREATED -->
+
+                        <td>
+
+                            <div class="agent-property-date">
+
+                                <strong>
+                                    {{ property.created_at|date:"d M Y" }}
+                                </strong>
+
+                                <small>
+                                    {{ property.created_at|date:"h:i A" }}
+                                </small>
+
+                            </div>
+
+                        </td>
+
+
+                        <!-- ACTIONS -->
+
+                        <td style="text-align:center;">
+
+                            <div class="agent-property-actions">
+
+
+                                <!-- VIEW -->
+
+                                <button
+                                    type="button"
+                                    onclick="openViewPropertyModal('{{ property.id }}')"
+                                    class="agent-action-btn action-view"
+                                    title="View property">
+
+                                    <i class="fa-regular fa-eye"></i>
+
+                                </button>
+
+
+                                <!-- EDIT -->
 
                                 <button
                                     type="button"
                                     onclick="openEditPropertyModal('{{ property.id }}')"
                                     class="agent-action-btn action-edit"
                                     title="Edit property">
-                                    <i class="fa-solid fa-pen-to-square"></i>
+
+<i class="fa-solid fa-pen-to-square"></i>
                                 </button>
 
-                                
-                
+
+                                <!-- DELETE -->
 
                                 <button
                                     type="button"
                                     onclick="openDeletePropertyModal('{{ property.id }}')"
                                     class="agent-action-btn action-delete"
                                     title="Delete property">
+
                                     <i class="fa-regular fa-trash-can"></i>
+
                                 </button>
 
+
+                            </div>
+
+                        </td>
+
+
+                    </tr>
+
+
+                    {% empty %}
+
+                    <tr class="agent-property-empty">
+
+                        <td colspan="23">
+
+                            <i class="fa-regular fa-folder-open text-2xl"></i>
+
+                            <div class="mt-3">
+                                No agent properties found
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        <!-- =====================================================
+             PAGINATION
+        ====================================================== -->
+
+        {% if page_obj and page_obj.paginator.num_pages > 1 %}
+
+        <div class="agent-property-pagination">
+
+
+            <div class="agent-property-pagination-info">
+
+                Showing
+                {{ page_obj.start_index }}
+                –
+                {{ page_obj.end_index }}
+
+                of
+
+                {{ page_obj.paginator.count }}
+
+                properties
+
+            </div>
+
+
+            <div class="agent-property-pagination-links">
+
+
+                {% if page_obj.has_previous %}
+
+                    <a
+                        href="?page={{ page_obj.previous_page_number }}&status={{ status_filter }}{% if search %}&search={{ search|urlencode }}{% endif %}{% if agent_filter %}&agent={{ agent_filter }}{% endif %}"
+                        class="agent-property-page-link"
+                        title="Previous page">
+
+                        <i class="fa-solid fa-chevron-left"></i>
+
+                    </a>
+
+                {% endif %}
+
+
+                {% for page_number in page_obj.paginator.page_range %}
+
+                    {% if page_number == page_obj.number %}
+
+                        <span class="agent-property-page-link active">
+
+                            {{ page_number }}
+
+                        </span>
+
+                    {% elif page_number >= page_obj.number|add:"-2" and page_number <= page_obj.number|add:"2" %}
+
+                        <a
+                            href="?page={{ page_number }}&status={{ status_filter }}{% if search %}&search={{ search|urlencode }}{% endif %}{% if agent_filter %}&agent={{ agent_filter }}{% endif %}"
+                            class="agent-property-page-link">
+
+                            {{ page_number }}
+
+                        </a>
+
+                    {% endif %}
+
+                {% endfor %}
+
+
+                {% if page_obj.has_next %}
+
+                    <a
+                        href="?page={{ page_obj.next_page_number }}&status={{ status_filter }}{% if search %}&search={{ search|urlencode }}{% endif %}{% if agent_filter %}&agent={{ agent_filter }}{% endif %}"
+                        class="agent-property-page-link"
+                        title="Next page">
+
+                        <i class="fa-solid fa-chevron-right"></i>
+
+                    </a>
+
+                {% endif %}
+
+
+            </div>
+
+        </div>
+
+        {% endif %}
+
+
+    </section>
+
+
 </div>
 
 
-</td>
+<!-- =========================================================
+     TOAST NOTIFICATIONS
+========================================================== -->
+
+{% if messages %}
+
+<div
+    id="agentToastContainer"
+    class="agent-toast-container"
+    aria-live="polite"
+    aria-atomic="true">
+
+    {% for message in messages %}
+
+    <div
+        class="agent-toast agent-toast-{{ message.tags|default:'info' }}"
+        role="alert"
+        data-toast>
+
+        <div class="agent-toast-icon">
+
+            {% if "success" in message.tags %}
+
+                <i class="fa-solid fa-check"></i>
+
+            {% elif "error" in message.tags or "danger" in message.tags %}
+
+                <i class="fa-solid fa-xmark"></i>
+
+            {% elif "warning" in message.tags %}
+
+                <i class="fa-solid fa-triangle-exclamation"></i>
+
+            {% else %}
+
+                <i class="fa-solid fa-circle-info"></i>
+
+            {% endif %}
+
+        </div>
 
 
+        <div class="agent-toast-copy">
 
-</tr>
+            <span class="agent-toast-title">
 
+                {% if "success" in message.tags %}
 
+                    Success
 
-{% empty %}
+                {% elif "error" in message.tags or "danger" in message.tags %}
 
+                    Error
 
-<tr>
+                {% elif "warning" in message.tags %}
 
-<td colspan="19"
-class="py-10 text-center text-gray-500">
+                    Warning
 
-No properties found
+                {% else %}
 
-</td>
+                    Information
 
-</tr>
+                {% endif %}
 
-
-{% endfor %}
-
-
-
-</tbody>
+            </span>
 
 
-</table>
+            <div class="agent-toast-message">
 
+                {{ message }}
+
+            </div>
+
+        </div>
+
+
+        <button
+            type="button"
+            class="agent-toast-close"
+            onclick="closeAgentToast(this)"
+            aria-label="Close notification">
+
+            <i class="fa-solid fa-xmark"></i>
+
+        </button>
+
+    </div>
+
+    {% endfor %}
 
 </div>
 
-
-</section>
-
+{% endif %}
 
 
-</div>
-
-
-
-
+<!-- =========================================================
+     MODALS
+========================================================== -->
 
 {% include "agent_property/add_property_modal.html" %}
 
@@ -508,6 +2232,185 @@ No properties found
 
 {% include "agent_property/delete_property_modal.html" %}
 
+
+<script>
+
+    /* =========================================================
+       EXPIRY COUNTDOWN
+    ========================================================= */
+
+    function updateExpiryRemaining() {
+
+        const elements = document.querySelectorAll(
+            ".js-expiry-remaining"
+        );
+
+        const now = new Date();
+
+        elements.forEach(function(element) {
+
+            const expiry = element.dataset.expiry;
+            const status = element.dataset.status;
+
+            if (!expiry) {
+
+                element.className =
+                    "expiry-remaining expiry-none js-expiry-remaining";
+
+                element.textContent = "No expiry";
+
+                return;
+            }
+
+            const expiryDate = new Date(expiry);
+            const difference = expiryDate - now;
+
+            if (difference <= 0) {
+
+                element.className =
+                    "expiry-remaining expiry-danger js-expiry-remaining";
+
+                element.innerHTML =
+                    '<i class="fa-solid fa-circle-exclamation"></i> Expired';
+
+                return;
+            }
+
+
+            const totalMinutes =
+                Math.floor(difference / (1000 * 60));
+
+            const days =
+                Math.floor(totalMinutes / (60 * 24));
+
+            const hours =
+                Math.floor(
+                    (totalMinutes % (60 * 24)) / 60
+                );
+
+            const minutes =
+                totalMinutes % 60;
+
+
+            let text = "";
+
+            if (days > 0) {
+
+                text =
+                    days +
+                    " day" +
+                    (days !== 1 ? "s" : "") +
+                    " left";
+
+            } else if (hours > 0) {
+
+                text =
+                    hours +
+                    " hour" +
+                    (hours !== 1 ? "s" : "") +
+                    " left";
+
+            } else {
+
+                text =
+                    minutes +
+                    " min" +
+                    (minutes !== 1 ? "s" : "") +
+                    " left";
+            }
+
+
+            if (days <= 3) {
+
+                element.className =
+                    "expiry-remaining expiry-danger js-expiry-remaining";
+
+            } else if (days <= 7) {
+
+                element.className =
+                    "expiry-remaining expiry-warning js-expiry-remaining";
+
+            } else {
+
+                element.className =
+                    "expiry-remaining expiry-safe js-expiry-remaining";
+            }
+
+
+            element.innerHTML =
+                '<i class="fa-regular fa-clock"></i> ' +
+                text;
+
+        });
+
+    }
+
+
+    updateExpiryRemaining();
+
+    setInterval(
+        updateExpiryRemaining,
+        60000
+    );
+
+
+    /* =========================================================
+       TOAST
+    ========================================================= */
+
+    function closeAgentToast(button) {
+
+        const toast =
+            button.closest("[data-toast]");
+
+        if (!toast) {
+            return;
+        }
+
+        toast.classList.add("is-hiding");
+
+        setTimeout(function() {
+
+            toast.remove();
+
+        }, 250);
+
+    }
+
+
+    document.querySelectorAll(
+        "[data-toast]"
+    ).forEach(function(toast) {
+
+        setTimeout(function() {
+
+            if (
+                toast &&
+                document.body.contains(toast)
+            ) {
+
+                toast.classList.add("is-hiding");
+
+                setTimeout(function() {
+
+                    if (
+                        toast &&
+                        document.body.contains(toast)
+                    ) {
+
+                        toast.remove();
+
+                    }
+
+                }, 250);
+
+            }
+
+        }, 4500);
+
+    });
+
+</script>
 
 
 {% endblock %}

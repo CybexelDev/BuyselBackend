@@ -1065,7 +1065,7 @@ TYPOGRAPHY SYSTEM
                             {% endif %}
                         </td>
 
-                        <td class="profile-name">{{ p.user.name }}</td>
+                       <td class="profile-name">{{ p.full_name }}</td>
                         <td class="profile-email">{{ p.user.email }}</td>
                         <td>{{ p.username }}</td>
                         <td>{{ p.mobile|default:"-" }}</td>
@@ -1347,7 +1347,6 @@ TYPOGRAPHY SYSTEM
                     Cancel
                 </button>
 
-                <button type="submit" id="updateProfileButton" class="profile-update-btn">
                 <button type="submit" id="updateProfileButton" class="profile-update-btn">
                     <i class="fa-solid fa-check"></i>
                     Update Profile

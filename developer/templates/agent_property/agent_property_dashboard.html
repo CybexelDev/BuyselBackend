@@ -434,19 +434,24 @@ class="rounded-lg bg-blue-500 px-3 py-2 text-white hover:bg-blue-600">
 
 </button>
 
+                                <button
+                                    type="button"
+                                    onclick="openEditPropertyModal('{{ property.id }}')"
+                                    class="agent-action-btn action-edit"
+                                    title="Edit property">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </button>
 
+                                
+                
 
-
-
-<button
-onclick="openDeletePropertyModal('{{property.id}}')"
-class="rounded-lg bg-red-500 px-3 py-2 text-white hover:bg-red-600">
-
-<i class="fa-solid fa-trash"></i>
-
-</button>
-
-
+                                <button
+                                    type="button"
+                                    onclick="openDeletePropertyModal('{{ property.id }}')"
+                                    class="agent-action-btn action-delete"
+                                    title="Delete property">
+                                    <i class="fa-regular fa-trash-can"></i>
+                                </button>
 
 </div>
 

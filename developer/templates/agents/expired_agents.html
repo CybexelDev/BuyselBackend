@@ -1,679 +1,1004 @@
 {% extends "base3.html" %}
 {% load static %}
 
-{% block title %}Pending Agent Registrations - Buysel Admin{% endblock %}
+{% block title %}Expired Agents - Buysel Admin{% endblock %}
 
 {% block extra_css %}
 <style>
     /* =========================================================
-   BUYSEL DASHBOARD TYPOGRAPHY SYSTEM — TYPOGRAPHY ONLY
+   EXPIRED AGENTS
+   SAME DESIGN SYSTEM AS PENDING AGENTS
 ========================================================= */
-    .pending-agent-page {
-        --type-weight-regular: 400;
-        --type-weight-semibold: 600;
-        --type-weight-bold: 700;
 
-        font-weight: var(--type-weight-regular);
+    .expired-agent-page {
+        --ear-green: #8bc83f;
+        --ear-green-dark: #659d28;
+        --ear-green-soft: #f2f9e8;
+        --ear-border: #dce8d2;
+        --ear-text: #273221;
+        --ear-muted: #7d8876;
+        --ear-danger: #ef5350;
+
+        font-weight: 400;
         font-synthesis: none;
         text-rendering: optimizeLegibility;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
-    }
 
-    .pending-agent-page h1,
-    .pending-agent-page h2,
-    .pending-agent-page h3 {
-        font-weight: var(--type-weight-bold) !important;
-    }
-
-    .pending-agent-page p,
-    .pending-agent-page td,
-    .pending-agent-page small {
-        font-weight: var(--type-weight-regular) !important;
-    }
-
-    .pending-agent-page th,
-    .pending-agent-page button,
-    .pending-agent-page .pending-agent-eyebrow,
-    .pending-agent-page .pending-agent-count span,
-    .pending-agent-page .pending-agent-badge {
-        font-weight: var(--type-weight-semibold) !important;
-    }
-
-    .pending-agent-page strong,
-    .pending-agent-page .pending-agent-name {
-        font-weight: var(--type-weight-semibold) !important;
-    }
-
-    :root {
-        --pa-green: #8bc83f;
-        --pa-green-dark: #659d28;
-        --pa-green-soft: #f2f9e8;
-        --pa-border: #dce8d2;
-        --pa-text: #273221;
-        --pa-muted: #7e8978;
-        --pa-danger: #ef5350;
-        --pa-danger-soft: #fff2f2;
-    }
-
-    .pending-agent-page {
         width: 100%;
-        min-width: 0
+        min-width: 0;
     }
 
-    .pending-agent-hero {
+    .expired-agent-page h1,
+    .expired-agent-page h2,
+    .expired-agent-page h3 {
+        font-weight: 700 !important;
+    }
+
+    .expired-agent-page p,
+    .expired-agent-page td,
+    .expired-agent-page small {
+        font-weight: 400 !important;
+    }
+
+    .expired-agent-page th,
+    .expired-agent-page .expired-agent-eyebrow,
+    .expired-agent-page .expired-agent-count span,
+    .expired-agent-page .expired-agent-type,
+    .expired-agent-page .expired-agent-status {
+        font-weight: 600 !important;
+    }
+
+    .expired-agent-page strong,
+    .expired-agent-page .expired-agent-name,
+    .expired-agent-page .expired-agent-email {
+        font-weight: 600 !important;
+    }
+
+
+    /* =========================================================
+   HERO
+========================================================= */
+
+    .expired-agent-hero {
         position: relative;
+
         display: flex;
+
         min-height: 150px;
+
         align-items: center;
         justify-content: space-between;
+
         gap: 24px;
+
         overflow: hidden;
+
         padding: 30px 32px;
+
         border: 1px solid rgba(101, 157, 40, .16);
+
         border-radius: 26px;
-        background: radial-gradient(circle at 92% -30%, rgba(255, 255, 255, .20), transparent 35%), linear-gradient(135deg, #8bc83f 0%, #80bf35 52%, #6aa82b 100%);
-        box-shadow: 0 18px 42px rgba(72, 106, 39, .16), inset 0 1px 0 rgba(255, 255, 255, .18)
+
+        background:
+            radial-gradient(circle at 92% -30%,
+                rgba(255, 255, 255, .20),
+                transparent 35%),
+            linear-gradient(135deg,
+                #8bc83f 0%,
+                #80bf35 52%,
+                #6aa82b 100%);
+
+        box-shadow:
+            0 18px 42px rgba(72, 106, 39, .16),
+            inset 0 1px 0 rgba(255, 255, 255, .18);
     }
 
-    .pending-agent-hero::before,
-    .pending-agent-hero::after {
+
+    /* decorative circles */
+
+    .expired-agent-hero::before,
+    .expired-agent-hero::after {
         content: "";
+
         position: absolute;
+
         border-radius: 50%;
-        pointer-events: none
+
+        pointer-events: none;
     }
 
-    .pending-agent-hero::before {
+    .expired-agent-hero::before {
         top: -120px;
         right: 130px;
+
         width: 270px;
         height: 270px;
-        background: rgba(255, 255, 255, .06)
+
+        background: rgba(255, 255, 255, .06);
     }
 
-    .pending-agent-hero::after {
+    .expired-agent-hero::after {
         right: -80px;
         bottom: -145px;
+
         width: 290px;
         height: 290px;
-        background: rgba(255, 255, 255, .08)
+
+        background: rgba(255, 255, 255, .08);
     }
 
-    .pending-agent-hero-copy,
-    .pending-agent-hero-status {
+
+    /* =========================================================
+   HERO COPY
+========================================================= */
+
+    .expired-agent-hero-copy {
         position: relative;
-        z-index: 2
-    }
 
-    .pending-agent-hero-copy {
+        z-index: 2;
+
         display: flex;
+
         align-items: center;
-        gap: 18px
+
+        gap: 18px;
     }
 
-    .pending-agent-hero-icon {
+
+    /* =========================================================
+   HERO ICON
+========================================================= */
+
+    .expired-agent-hero-icon {
         display: grid;
+
         width: 62px;
         height: 62px;
+
         flex: 0 0 auto;
+
         place-items: center;
+
         border: 1px solid rgba(255, 255, 255, .28);
+
         border-radius: 19px;
+
         color: #fff;
+
         background: rgba(255, 255, 255, .17);
-        box-shadow: 0 12px 24px rgba(67, 101, 31, .18);
+
+        box-shadow:
+            inset 0 0 0 1px rgba(255, 255, 255, .08),
+            0 12px 24px rgba(67, 101, 31, .18);
+
         font-size: 22px;
-        backdrop-filter: blur(10px)
+
+        backdrop-filter: blur(10px);
     }
 
-    .pending-agent-eyebrow {
+
+    /* =========================================================
+   EYEBROW
+========================================================= */
+
+    .expired-agent-eyebrow {
         display: block;
+
         margin-bottom: 7px;
+
         color: rgba(255, 255, 255, .76);
+
         font-size: 9px;
+
         font-weight: 600;
+
         letter-spacing: .18em;
-        text-transform: uppercase
+
+        text-transform: uppercase;
     }
 
-    .pending-agent-hero h1 {
+
+    /* =========================================================
+   HERO TITLE
+========================================================= */
+
+    .expired-agent-hero h1 {
         margin: 0;
+
         color: #fff;
+
         font-size: clamp(28px, 3vw, 38px);
+
         font-weight: 700;
+
         line-height: 1.05;
-        letter-spacing: -.045em
+
+        letter-spacing: -.045em;
     }
 
-    .pending-agent-hero p {
+
+    /* =========================================================
+   HERO DESCRIPTION
+========================================================= */
+
+    .expired-agent-hero p {
         max-width: 760px;
+
         margin: 9px 0 0;
+
         color: rgba(255, 255, 255, .82);
+
         font-size: 12px;
-        line-height: 1.65
+
+        line-height: 1.65;
     }
 
-    .pending-agent-hero-status {
+
+    /* =========================================================
+   HERO STATUS
+========================================================= */
+
+    .expired-agent-hero-status {
+        position: relative;
+
+        z-index: 2;
+
         display: flex;
-        min-width: 170px;
+
+        min-width: 165px;
+
         align-items: center;
+
         gap: 11px;
+
         padding: 12px 16px;
+
         border: 1px solid rgba(255, 255, 255, .42);
+
         border-radius: 15px;
+
         background: rgba(255, 255, 255, .95);
-        box-shadow: 0 10px 24px rgba(58, 88, 28, .15)
+
+        box-shadow:
+            0 10px 24px rgba(58, 88, 28, .15);
     }
 
-    .pending-agent-status-dot {
+
+    /* red expired dot */
+
+    .expired-agent-status-dot {
         width: 9px;
         height: 9px;
+
+        flex: 0 0 9px;
+
         border-radius: 50%;
-        background: #f5b63c;
-        box-shadow: 0 0 0 5px rgba(245, 182, 60, .14)
+
+        background: var(--ear-danger);
+
+        box-shadow:
+            0 0 0 5px rgba(239, 83, 80, .14);
     }
 
-    .pending-agent-hero-status small,
-    .pending-agent-hero-status strong {
-        display: block
+
+    .expired-agent-hero-status small,
+    .expired-agent-hero-status strong {
+        display: block;
     }
 
-    .pending-agent-hero-status small {
+
+    .expired-agent-hero-status small {
         color: #8d9887;
+
         font-size: 9px;
+
         font-weight: 600;
+
         letter-spacing: .08em;
-        text-transform: uppercase
+
+        text-transform: uppercase;
     }
 
-    .pending-agent-hero-status strong {
+
+    .expired-agent-hero-status strong {
         margin-top: 2px;
+
         color: #4e653c;
-        font-size: 15px
+
+        font-size: 15px;
     }
 
-    .pending-agent-card {
-        overflow: hidden;
+
+    /* =========================================================
+   TABLE CARD
+========================================================= */
+
+    .expired-agent-card {
         margin-top: 22px;
-        border: 1px solid var(--pa-border);
+
+        overflow: hidden;
+
+        border: 1px solid var(--ear-border);
+
         border-radius: 22px;
+
         background: #fff;
-        box-shadow: 0 14px 32px rgba(49, 70, 36, .065), 0 2px 7px rgba(49, 70, 36, .03)
+
+        box-shadow:
+            0 14px 32px rgba(49, 70, 36, .065),
+            0 2px 7px rgba(49, 70, 36, .03);
     }
 
-    .pending-agent-card-header {
+
+    /* =========================================================
+   CARD HEADER
+========================================================= */
+
+    .expired-agent-card-header {
         display: flex;
+
         align-items: center;
+
         justify-content: space-between;
+
         gap: 16px;
+
         padding: 18px 20px;
+
         border-bottom: 1px solid #e7ede2;
-        background: linear-gradient(180deg, #fff, #fcfdfb)
+
+        background:
+            linear-gradient(180deg,
+                #fff,
+                #fcfdfb);
     }
 
-    .pending-agent-card-title {
+
+    .expired-agent-card-title {
         display: flex;
+
         align-items: center;
-        gap: 12px
+
+        gap: 12px;
     }
 
-    .pending-agent-card-icon {
+
+    /* =========================================================
+   CARD ICON
+========================================================= */
+
+    .expired-agent-card-icon {
         display: grid;
+
         width: 43px;
         height: 43px;
+
         place-items: center;
+
         border: 1px solid #dfead6;
+
         border-radius: 12px;
-        color: var(--pa-green-dark);
-        background: var(--pa-green-soft)
+
+        color: var(--ear-green-dark);
+
+        background: var(--ear-green-soft);
     }
 
-    .pending-agent-card-header h2 {
+
+    /* =========================================================
+   CARD TITLE
+========================================================= */
+
+    .expired-agent-card-header h2 {
         margin: 0;
-        color: var(--pa-text);
+
+        color: var(--ear-text);
+
         font-size: 18px;
-        font-weight: 700
+
+        font-weight: 700;
     }
 
-    .pending-agent-card-header p {
+
+    .expired-agent-card-header p {
         margin: 4px 0 0;
+
         color: #899286;
-        font-size: 10px
+
+        font-size: 11px;
     }
 
-    .pending-agent-count {
-        min-width: 108px;
-        padding: 8px 12px;
+
+    /* =========================================================
+   COUNT
+========================================================= */
+
+    .expired-agent-count {
+        min-width: 112px;
+
+        padding: 9px 13px;
+
         border: 1px solid #dce8d2;
+
         border-radius: 12px;
+
         color: #587143;
-        background: #f8fbf5
+
+        background: #f8fbf5;
     }
 
-    .pending-agent-count span,
-    .pending-agent-count strong {
-        display: block
+
+    .expired-agent-count span,
+    .expired-agent-count strong {
+        display: block;
     }
 
-    .pending-agent-count span {
+
+    .expired-agent-count span {
         font-size: 8px;
+
         font-weight: 600;
-        letter-spacing: .09em;
-        text-transform: uppercase
-    }
 
-    .pending-agent-count strong {
-        margin-top: 2px;
-        font-size: 15px
-    }
+        letter-spacing: .1em;
 
-    .pending-agent-table-wrap {
-        overflow-x: auto
-    }
-
-    .pending-agent-table {
-        width: 100%;
-        min-width: 980px;
-        border-collapse: separate;
-        border-spacing: 0;
-        font-size: 11px
-    }
-
-    .pending-agent-table thead {
-        position: sticky;
-        top: 0;
-        z-index: 4
-    }
-
-    .pending-agent-table th {
-        padding: 13px 15px;
-        border-bottom: 1px solid #dfe8d9;
-        color: #5f6c58;
-        background: #eef6e9;
-        font-size: 10.5px;
-        font-weight: 600;
-        letter-spacing: .075em;
-        text-align: left;
         text-transform: uppercase;
-        white-space: nowrap
     }
 
-    .pending-agent-table td {
+
+    .expired-agent-count strong {
+        margin-top: 2px;
+
+        font-size: 16px;
+    }
+
+
+    /* =========================================================
+   TABLE WRAPPER
+========================================================= */
+
+    .expired-agent-table-wrap {
+        overflow-x: auto;
+
+        scrollbar-width: thin;
+
+        scrollbar-color: #a8bf92 transparent;
+    }
+
+
+    /* =========================================================
+   TABLE
+========================================================= */
+
+    .expired-agent-table {
+        width: 100%;
+
+        min-width: 1050px;
+
+        border-collapse: separate;
+
+        border-spacing: 0;
+
+        font-size: 11px;
+    }
+
+
+    /* =========================================================
+   TABLE HEADER
+========================================================= */
+
+    .expired-agent-table thead {
+        position: sticky;
+
+        top: 0;
+
+        z-index: 5;
+    }
+
+
+    .expired-agent-table th {
+        padding: 13px 15px;
+
+        border-bottom: 1px solid #dfe8d9;
+
+        color: #5f6c58;
+
+        background: #eef6e9;
+
+        font-size: 10.5px;
+
+        font-weight: 600;
+
+        letter-spacing: .075em;
+
+        text-align: left;
+
+        text-transform: uppercase;
+
+        white-space: nowrap;
+    }
+
+
+    /* =========================================================
+   TABLE BODY
+========================================================= */
+
+    .expired-agent-table td {
         padding: 15px;
+
         border-bottom: 1px solid #edf1e9;
+
         color: #535e4e;
+
         vertical-align: middle;
+
+        white-space: nowrap;
+
         font-size: 13px;
     }
 
-    .pending-agent-table tbody tr:nth-child(even) {
-        background: #fcfdfb
+
+    .expired-agent-table tbody tr:nth-child(even) {
+        background: #fcfdfb;
     }
 
-    .pending-agent-table tbody tr:hover {
+
+    .expired-agent-table tbody tr:hover {
         background: #f3f9ee;
-        box-shadow: inset 3px 0 0 var(--pa-green)
+
+        box-shadow:
+            inset 3px 0 0 var(--ear-green);
     }
 
-    .pending-agent-name {
+
+    .expired-agent-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+
+    /* =========================================================
+   AGENT IMAGE
+========================================================= */
+
+    .expired-agent-image {
+        width: 44px;
+        height: 44px;
+
+        object-fit: cover;
+
+        border: 2px solid #edf4e8;
+
+        border-radius: 12px;
+
+        background: #f5f8f3;
+    }
+
+
+    .expired-agent-placeholder {
+        display: grid;
+
+        width: 44px;
+        height: 44px;
+
+        place-items: center;
+
+        border: 1px solid #dfead6;
+
+        border-radius: 12px;
+
+        color: #8db66d;
+
+        background: #f0f7eb;
+
+        font-size: 16px;
+    }
+
+
+    /* =========================================================
+   AGENT NAME
+========================================================= */
+
+    .expired-agent-name {
         color: #34402f;
-        font-weight: 600
+
+        font-weight: 600;
     }
 
-    .pending-agent-email {
-        color: #667162
-    }
 
-    .pending-agent-phone {
-        white-space: nowrap
-    }
+    /* agent code */
 
-    .pending-agent-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        min-height: 28px;
-        padding: 5px 10px;
-        border-radius: 999px;
+    .expired-agent-code {
+        margin-top: 3px;
+
+        color: #9ba49a;
+
         font-size: 9px;
-        font-weight: 600;
-        text-transform: capitalize;
-        white-space: nowrap
     }
 
-    .pending-agent-badge.type {
-        border: 1px solid #d9e8cc;
-        color: #5f7d48;
-        background: #f3f9ed
+
+    /* =========================================================
+   EMAIL
+========================================================= */
+
+    .expired-agent-email {
+        color: var(--ear-green-dark);
+
+        font-weight: 700;
     }
 
-    .pending-agent-badge.plan {
-        border: 1px solid #d8e2ef;
-        color: #4f6e95;
-        background: #f3f7fc
-    }
 
-    .pending-agent-actions {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        flex-wrap: wrap
-    }
+    /* =========================================================
+   PHONE
+========================================================= */
 
-    .pending-agent-action-btn {
-        display: inline-flex;
-        min-height: 38px;
-        align-items: center;
-        justify-content: center;
-        gap: 7px;
-        padding: 8px 12px;
-        border-radius: 11px;
+    .expired-agent-phone {
+        margin-top: 4px;
+
+        color: #929c90;
+
         font-size: 10px;
+    }
+
+
+    .expired-agent-phone i {
+        margin-right: 4px;
+    }
+
+
+    /* =========================================================
+   CITY
+========================================================= */
+
+    .expired-agent-city i {
+        margin-right: 6px;
+
+        color: var(--ear-green-dark);
+    }
+
+
+    /* =========================================================
+   TYPE
+========================================================= */
+
+    .expired-agent-type {
+        display: inline-flex;
+
+        min-height: 28px;
+
+        align-items: center;
+
+        gap: 5px;
+
+        padding: 5px 10px;
+
+        border: 1px solid #dce8d2;
+
+        border-radius: 999px;
+
+        color: #56713f;
+
+        background: #f5faef;
+
+        font-size: 10px;
+
         font-weight: 600;
-        cursor: pointer;
-        transition: .2s ease
+
+        text-transform: capitalize;
     }
 
-    .pending-agent-action-btn:hover {
-        transform: translateY(-1px)
+
+    /* premium */
+
+    .expired-agent-type.premium {
+        color: #7655c2;
+
+        background: #f5efff;
+
+        border-color: #e4d8f7;
     }
 
-    .pending-agent-action-btn.approve {
-        border: 1px solid #cfe3b9;
-        color: #5e9f2f;
-        background: #f2f9e9
+
+    /* elite */
+
+    .expired-agent-type.elite {
+        color: #629a31;
+
+        background: #edf8e6;
+
+        border-color: #d7eacb;
     }
 
-    .pending-agent-action-btn.reject {
-        border: 1px solid #f2c6c6;
-        color: #ef5350;
-        background: var(--pa-danger-soft)
+
+    /* =========================================================
+   EXPIRED DATE
+========================================================= */
+
+    .expired-agent-date {
+        display: inline-flex;
+
+        align-items: center;
+
+        gap: 6px;
+
+        color: #626c78;
+
+        font-size: 11px;
     }
 
-    .pending-agent-empty {
-        padding: 60px 20px !important;
+
+    .expired-agent-date i {
+        color: #8994a0;
+    }
+
+
+    /* =========================================================
+   STATUS
+========================================================= */
+
+    .expired-agent-status {
+        display: inline-flex;
+
+        min-height: 28px;
+
+        align-items: center;
+
+        gap: 7px;
+
+        padding: 5px 10px;
+
+        border: 1px solid #f0caca;
+
+        border-radius: 999px;
+
+        color: #d44f4f;
+
+        background: #fff2f2;
+
+        font-size: 10px;
+
+        font-weight: 600;
+    }
+
+
+    .expired-agent-status-dot {
+        width: 7px;
+        height: 7px;
+
+        border-radius: 50%;
+
+        background: var(--ear-danger);
+    }
+
+
+    /* =========================================================
+   EMPTY STATE
+========================================================= */
+
+    .expired-agent-empty {
+        padding: 56px 20px !important;
+
+        color: #98a291 !important;
+
         text-align: center;
-        color: #98a291 !important
     }
 
-    .pending-agent-empty i {
+
+    .expired-agent-empty i {
         display: block;
-        margin-bottom: 12px;
-        color: #b3c5a6;
-        font-size: 30px
+
+        margin-bottom: 10px;
+
+        color: #b5c2ae;
+
+        font-size: 28px;
     }
 
-    @media(max-width:700px) {
-        .pending-agent-hero {
+
+    /* =========================================================
+   RESPONSIVE
+========================================================= */
+
+    @media (max-width: 700px) {
+
+        .expired-agent-hero {
             min-height: auto;
+
             padding: 20px;
-            border-radius: 20px
+
+            border-radius: 20px;
         }
 
-        .pending-agent-hero-status,
-        .pending-agent-count {
-            display: none
+        .expired-agent-hero-status {
+            display: none;
         }
 
-        .pending-agent-card-header {
-            padding: 16px
+        .expired-agent-card-header {
+            align-items: flex-start;
+        }
+
+        .expired-agent-count {
+            display: none;
+        }
+    }
+
+
+    @media (max-width: 500px) {
+
+        .expired-agent-hero-copy {
+            gap: 13px;
+        }
+
+        .expired-agent-hero-icon {
+            width: 55px;
+            height: 55px;
+
+            border-radius: 17px;
+
+            font-size: 19px;
+        }
+
+        .expired-agent-hero h1 {
+            font-size: 28px;
+        }
+
+        .expired-agent-hero p {
+            font-size: 11px;
         }
     }
 </style>
 {% endblock %}
 
 
-
 {% block content %}
 
-<div class="max-w-7xl mx-auto px-6 py-8">
+<div class="expired-agent-page">
 
-    <!-- ========================= -->
-    <!-- Hero Section -->
-    <!-- ========================= -->
 
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
+    <!-- =====================================================
+         HERO
+    ====================================================== -->
 
-        <div class="flex items-center justify-between flex-wrap gap-6">
+    <section class="expired-agent-hero">
 
-            <div class="flex items-center gap-5">
+        <div class="expired-agent-hero-copy">
 
-                <div class="w-16 h-16 rounded-xl bg-red-100 flex items-center justify-center">
+            <div class="expired-agent-hero-icon">
+                <i class="fa-solid fa-user-clock"></i>
+            </div>
 
-                    <i class="fa-solid fa-user-clock text-3xl text-red-600"></i>
+            <div>
 
+                <span class="expired-agent-eyebrow">
+                    SUBSCRIPTION MANAGEMENT
+                </span>
+
+                <h1>
+                    Expired Agents
+                </h1>
+
+                <p>
+                    View and manage all agents whose subscriptions have expired.
+                    Review expired agent accounts and their subscription details.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- STATUS -->
+
+        <div class="expired-agent-hero-status">
+
+            <span class="expired-agent-status-dot"></span>
+
+            <div>
+
+                <small>
+                    Subscription Status
+                </small>
+
+                <strong>
+                    Expired
+                </strong>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =====================================================
+         EXPIRED AGENT CARD
+    ====================================================== -->
+
+    <section class="expired-agent-card">
+
+
+        <!-- =================================================
+             CARD HEADER
+        ================================================== -->
+
+        <div class="expired-agent-card-header">
+
+            <div class="expired-agent-card-title">
+
+                <div class="expired-agent-card-icon">
+                    <i class="fa-solid fa-user-clock"></i>
                 </div>
 
                 <div>
 
-                    <h1 class="text-3xl font-bold text-gray-800">
-                        Expired Agents
-                    </h1>
+                    <h2>
+                        Expired Agent List
+                    </h2>
 
-                    <p class="text-gray-500 mt-1">
-                        View and manage all agents whose subscriptions have expired.
+                    <p>
+                        Agents with expired subscriptions
                     </p>
 
                 </div>
 
             </div>
 
-            <div>
 
-                <span class="px-4 py-2 rounded-full bg-red-100 text-red-700 font-semibold">
-                    {{ total_expired }} Expired Agents
+            <!-- COUNT -->
+
+            <div class="expired-agent-count">
+
+                <span>
+                    Records
                 </span>
 
-            </div>
-
-        </div>
-
-    </div>
-
-    <!-- ========================= -->
-    <!-- Statistics -->
-    <!-- ========================= -->
-
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-
-        <div class="bg-white rounded-xl shadow border p-6">
-
-            <h4 class="text-gray-500 text-sm">
-                Total Expired
-            </h4>
-
-            <h2 class="text-3xl font-bold mt-2 text-red-600">
-                {{ total_expired }}
-            </h2>
-
-        </div>
-
-        <div class="bg-white rounded-xl shadow border p-6">
-
-            <h4 class="text-gray-500 text-sm">
-                Expired Today
-            </h4>
-
-            <h2 class="text-3xl font-bold mt-2 text-blue-600">
-                {{ expired_today }}
-            </h2>
-
-        </div>
-
-        <div class="bg-white rounded-xl shadow border p-6">
-
-            <h4 class="text-gray-500 text-sm">
-                Premium Agents
-            </h4>
-
-            <h2 class="text-3xl font-bold mt-2 text-purple-600">
-                {{ premium_count }}
-            </h2>
-
-        </div>
-
-        <div class="bg-white rounded-xl shadow border p-6">
-
-            <h4 class="text-gray-500 text-sm">
-                Elite Agents
-            </h4>
-
-            <h2 class="text-3xl font-bold mt-2 text-green-600">
-                {{ elite_count }}
-            </h2>
-
-        </div>
-
-    </div>
-
-    <!-- ========================= -->
-    <!-- Search & Filter -->
-    <!-- ========================= -->
-
-    <div class="bg-white rounded-xl shadow border p-6 mb-8">
-
-        <form method="GET">
-
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-
-                <!-- Search -->
-
-                <div>
-
-                    <input
-                        type="text"
-                        name="search"
-                        value="{{ search }}"
-                        placeholder="Search Agent..."
-                        class="w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-400">
-
-                </div>
-
-                <!-- Agent Type -->
-
-                <div>
-
-                    <select
-                        name="agent_type"
-                        class="w-full border rounded-lg px-4 py-3">
-
-                        <option value="">
-                            All Agent Types
-                        </option>
-
-                        <option value="basic"
-                            {% if agent_type == "basic" %}selected{% endif %}>
-                            Basic
-                        </option>
-
-                        <option value="premium"
-                            {% if agent_type == "premium" %}selected{% endif %}>
-                            Premium
-                        </option>
-
-                        <option value="elite"
-                            {% if agent_type == "elite" %}selected{% endif %}>
-                            Elite
-                        </option>
-
-                    </select>
-
-                </div>
-
-                <!-- Date Filter -->
-
-                <div>
-
-                    <select
-                        name="date"
-                        class="w-full border rounded-lg px-4 py-3">
-
-                        <option value="">
-                            All Dates
-                        </option>
-
-                        <option value="today"
-                            {% if date_filter == "today" %}selected{% endif %}>
-                            Today
-                        </option>
-
-                        <option value="month"
-                            {% if date_filter == "month" %}selected{% endif %}>
-                            This Month
-                        </option>
-
-                    </select>
-
-                </div>
-
-                <!-- Buttons -->
-
-                <div class="flex gap-3">
-
-                    <button
-                        type="submit"
-                        class="flex-1 bg-red-600 text-white rounded-lg py-3 hover:bg-red-700">
-
-                        Search
-
-                    </button>
-
-                    <a
-                        href="{% url 'expired_agents_dashboard' %}"
-                        class="flex-1 text-center border rounded-lg py-3 hover:bg-gray-100">
-
-                        Reset
-
-                    </a>
-
-                </div>
+                <strong>
+                    {{ expired_agents|length }}
+                </strong>
 
             </div>
 
-        </form>
+        </div>
 
-    </div>
 
-    <!-- ========================= -->
-    <!-- Table -->
-    <!-- ========================= -->
 
-    <div class="bg-white rounded-xl shadow border overflow-hidden">
+        <!-- =================================================
+             TABLE
+        ================================================== -->
 
-        <div class="overflow-x-auto">
+        <div class="expired-agent-table-wrap">
 
-            <table class="min-w-full">
+            <table class="expired-agent-table">
 
-                <thead class="bg-gray-100">
+                <thead>
 
                     <tr>
 
-                        <th class="px-6 py-4 text-left">
+                        <th>
                             Image
                         </th>
 
-                        <th class="px-6 py-4 text-left">
+                        <th>
                             Agent
                         </th>
 
-                        <th class="px-6 py-4 text-left">
+                        <th>
                             Contact
                         </th>
 
-                        <th class="px-6 py-4 text-left">
+                        <th>
                             City
                         </th>
 
-                        <th class="px-6 py-4 text-left">
+                        <th>
                             Type
                         </th>
 
-                        <th class="px-6 py-4 text-left">
+                        <th>
                             Expired On
                         </th>
 
-                        <th class="px-6 py-4 text-left">
+                        <th>
                             Status
                         </th>
 
@@ -681,87 +1006,192 @@
 
                 </thead>
 
+
                 <tbody>
 
-                {% for item in expired_agents %}
 
-                    <tr class="border-t hover:bg-gray-50">
+                    {% for item in expired_agents %}
 
-                        <td class="px-6 py-4">
+                    <tr>
+
+
+                        <!-- =================================
+                             IMAGE
+                        ================================== -->
+
+                        <td>
 
                             {% if item.agent.profile_image %}
 
-                            <img
-                                src="{{ item.agent.profile_image.url }}"
-                                class="w-12 h-12 rounded-full object-cover">
+                            <img src="{{ item.agent.profile_image.url }}" class="expired-agent-image"
+                                alt="{{ item.agent.username }}">
+
+                            {% elif item.agent.avatar_url %}
+
+                            <img src="{{ item.agent.avatar_url }}" class="expired-agent-image"
+                                alt="{{ item.agent.username }}">
 
                             {% else %}
 
-                            <img
-                                src="{{ item.agent.avatar_url }}"
-                                class="w-12 h-12 rounded-full object-cover">
+                            <div class="expired-agent-placeholder">
+
+                                <i class="fa-solid fa-user"></i>
+
+                            </div>
 
                             {% endif %}
 
                         </td>
 
-                        <td class="px-6 py-4">
 
-                            <div class="font-semibold">
+
+                        <!-- =================================
+                             AGENT
+                        ================================== -->
+
+                        <td>
+
+                            <div class="expired-agent-name">
 
                                 {{ item.agent.username }}
 
                             </div>
 
-                            <div class="text-sm text-gray-500">
+
+                            {% if item.agent.agent_code %}
+
+                            <div class="expired-agent-code">
 
                                 {{ item.agent.agent_code }}
 
                             </div>
 
+                            {% endif %}
+
                         </td>
 
-                        <td class="px-6 py-4">
 
-                            <div>
+
+                        <!-- =================================
+                             CONTACT
+                        ================================== -->
+
+                        <td>
+
+                            <div class="expired-agent-email">
 
                                 {{ item.agent.email }}
 
                             </div>
 
-                            <div class="text-sm text-gray-500">
+
+                            {% if item.agent.phone_number %}
+
+                            <div class="expired-agent-phone">
+
+                                <i class="fa-solid fa-phone"></i>
 
                                 {{ item.agent.phone_number }}
 
                             </div>
 
-                        </td>
-
-                        <td class="px-6 py-4">
-
-                            {{ item.agent.city }}
+                            {% endif %}
 
                         </td>
 
-                        <td class="px-6 py-4">
 
-                            <span class="px-3 py-1 rounded-full bg-blue-100 text-blue-700">
 
-                                {{ item.agent.get_agent_type_display }}
+                        <!-- =================================
+                             CITY
+                        ================================== -->
+
+                        <td>
+
+                            <span class="expired-agent-city">
+
+                                <i class="fa-solid fa-location-dot"></i>
+
+                                {{ item.agent.city }}
 
                             </span>
 
                         </td>
 
-                        <td class="px-6 py-4">
 
-                            {{ item.expired_on|date:"d M Y" }}
+
+                        <!-- =================================
+                             TYPE
+                        ================================== -->
+
+                        <td>
+
+
+                            {% if item.agent.agent_type == "premium" %}
+
+                            <span class="expired-agent-type premium">
+
+                                <i class="fa-solid fa-crown"></i>
+
+                                {{ item.agent.get_agent_type_display }}
+
+                            </span>
+
+
+                            {% elif item.agent.agent_type == "elite" %}
+
+                            <span class="expired-agent-type elite">
+
+                                <i class="fa-solid fa-gem"></i>
+
+                                {{ item.agent.get_agent_type_display }}
+
+                            </span>
+
+
+                            {% else %}
+
+                            <span class="expired-agent-type">
+
+                                <i class="fa-solid fa-user"></i>
+
+                                {{ item.agent.get_agent_type_display }}
+
+                            </span>
+
+                            {% endif %}
+
 
                         </td>
 
-                        <td class="px-6 py-4">
 
-                            <span class="px-3 py-1 rounded-full bg-red-100 text-red-700">
+
+                        <!-- =================================
+                             EXPIRED DATE
+                        ================================== -->
+
+                        <td>
+
+                            <span class="expired-agent-date">
+
+                                <i class="fa-regular fa-calendar"></i>
+
+                                {{ item.expired_on|date:"d M Y" }}
+
+                            </span>
+
+                        </td>
+
+
+
+                        <!-- =================================
+                             STATUS
+                        ================================== -->
+
+                        <td>
+
+                            <span class="expired-agent-status">
+
+                                <span class="expired-agent-status-dot"></span>
 
                                 Expired
 
@@ -769,21 +1199,32 @@
 
                         </td>
 
+
                     </tr>
 
-                {% empty %}
+
+                    {% empty %}
+
+
+                    <!-- =================================
+                         EMPTY STATE
+                    ================================== -->
 
                     <tr>
 
-                        <td colspan="7" class="text-center py-10 text-gray-500">
+                        <td colspan="7" class="expired-agent-empty">
 
-                            No expired agents found.
+                            <i class="fa-regular fa-folder-open"></i>
+
+                            No expired agents.
 
                         </td>
 
                     </tr>
 
-                {% endfor %}
+
+                    {% endfor %}
+
 
                 </tbody>
 
@@ -791,41 +1232,8 @@
 
         </div>
 
-    </div>
+    </section>
 
 </div>
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-
-    const searchInput = document.querySelector('input[name="search"]');
-    const agentType = document.querySelector('select[name="agent_type"]');
-    const dateFilter = document.querySelector('select[name="date"]');
-    const form = document.querySelector("form");
-
-    // Auto submit when filter changes
-    if (agentType) {
-        agentType.addEventListener("change", function () {
-            form.submit();
-        });
-    }
-
-    if (dateFilter) {
-        dateFilter.addEventListener("change", function () {
-            form.submit();
-        });
-    }
-
-    // Submit when Enter is pressed in search
-    if (searchInput) {
-        searchInput.addEventListener("keypress", function (e) {
-            if (e.key === "Enter") {
-                e.preventDefault();
-                form.submit();
-            }
-        });
-    }
-
-});
-</script>
 
 {% endblock %}

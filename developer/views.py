@@ -1962,7 +1962,8 @@ def add_property(request):
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 
-
+@never_cache
+@user_passes_test(superuser_required, login_url="superuser_login_view")
 def get_property(request, property_id):
 
     property_obj = get_object_or_404(
@@ -2060,7 +2061,8 @@ from django.http import JsonResponse
 #         safe=False
 #     )
 
-
+@never_cache
+@user_passes_test(superuser_required, login_url="superuser_login_view")
 def get_subcategories(request, category_id):
 
     print("Category ID:", category_id)
@@ -3547,6 +3549,7 @@ def edit_premium(request, pk):
 
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
+@require_POST
 def delete_premium(request, pk):
     premium = get_object_or_404(Premium, pk=pk)
     premium.delete()
@@ -3629,6 +3632,7 @@ def edit_agent(request, pk):
 
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
+@require_POST
 def delete_agent(request, pk):
 
     agent = get_object_or_404(AgentUserProfile, pk=pk)
@@ -3640,13 +3644,14 @@ def delete_agent(request, pk):
     return redirect("admin_agents")
 
 
-@never_cache
-@user_passes_test(superuser_required, login_url="superuser_login_view")
-def delete_agent(request, pk):
-    agent = get_object_or_404(AgentUserProfile, pk=pk)
-    agent.delete()
-    messages.success(request, "🗑️ Agent deleted successfully!")
-    return redirect("admin_agents")
+# @never_cache
+# @user_passes_test(superuser_required, login_url="superuser_login_view")
+# @require_POST
+# def delete_agent(request, pk):
+#     agent = get_object_or_404(AgentUserProfile, pk=pk)
+#     agent.delete()
+#     messages.success(request, "🗑️ Agent deleted successfully!")
+#     return redirect("admin_agents")
 
 
 @never_cache
@@ -3664,6 +3669,7 @@ def admin_contact(request):
 
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
+@require_POST
 def delete_contact(request, pk):
     contact = get_object_or_404(Contact, pk=pk)
     contact.delete()
@@ -3686,6 +3692,7 @@ def admin_message(request):
 
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
+@require_POST
 def delete_message(request, pk):
     message = get_object_or_404(Inbox, pk=pk)
     message.delete()
@@ -3804,6 +3811,7 @@ def admin_property_list(request):
 
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
+@require_POST
 def delete_property_list(request, pk):
     property_list = get_object_or_404(Propertylist, pk=pk)
     property_list.delete()
@@ -3825,6 +3833,7 @@ def admin_request(request):
 
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
+@require_POST
 def delete_requestforms(request, pk):
     requestforms = get_object_or_404(Request, pk=pk)
     requestforms.delete()
@@ -5035,6 +5044,7 @@ def expire_premium(request):
 
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
+@require_POST
 def delete_premium_expire(request, pk):
     premium = get_object_or_404(ExpiredPremium, pk=pk)
     premium.delete()
@@ -5069,6 +5079,7 @@ def edit_expireagent(request, pk):
 
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
+@require_POST
 def delete_agents_expire(request, pk):
     premium = get_object_or_404(ExpireAgents, pk=pk)
     premium.delete()
@@ -5097,7 +5108,8 @@ def delete_agents_expire(request, pk):
 #     return JsonResponse({'results': results})
 #
 
-
+@never_cache
+@user_passes_test(superuser_required, login_url="superuser_login_view")
 def property_live_search(request):
     query = request.GET.get("q", "").strip()
     results = []
@@ -6621,7 +6633,8 @@ from .models import (
     Category,
 )
 
-
+@never_cache
+@user_passes_test(superuser_required, login_url="superuser_login_view")
 def plans(request):
 
     success = None
@@ -7522,14 +7535,78 @@ def pending_agent_register_api(request):
         }
     )
 
+# old code 
+# def pending_agents_list_view(request):
+#     pending_agents = PendingAgentRegistration.objects.filter(status="pending")
+#     return render(
+#         request, "agents/pending_agents.html", {"pending_agents": pending_agents}
+#     )
 
+
+# @require_POST
+# def approve_agent(request, agent_id):
+#     pending = get_object_or_404(PendingAgentRegistration, id=agent_id)
+
+#     # Generate username
+#     base_username = pending.email.split("@")[0]
+#     username = base_username
+#     counter = 1
+
+#     while AgentUserProfile.objects.filter(username=username).exists():
+#         username = f"{base_username}{counter}"
+#         counter += 1
+
+#     # Create agent
+#     agent = AgentUserProfile.objects.create(
+#         username=username,
+#         email=pending.email,
+#         phone_number=pending.phone_number,
+#         whatsapp_number=pending.phone_number,
+#         city=pending.city,
+#         pin_code=int(pending.pin_code) if pending.pin_code else 0,
+#         address=pending.address,
+#         agent_type=pending.agent_type,
+#         is_agent=True,
+#         password=pending.password,
+#     )
+
+#     # ✅ FIXED PLAN LOGIC
+#     if pending.agent_type == "premium" and pending.premium_plan:
+#         agent.activate_premium_plan(pending.premium_plan)
+
+#     elif pending.agent_type == "elite" and pending.elite_plan:
+#         agent.activate_elite_plan(pending.elite_plan)
+
+#     # Delete pending
+#     pending.delete()
+
+#     messages.success(request, f"{agent.username} approved successfully.")
+#     return redirect("pending_agents_list")
+
+
+# @require_http_methods(["POST"])
+# def reject_agent(request, agent_id):
+#     agent_request = get_object_or_404(PendingAgentRegistration, id=agent_id)
+#     agent_request.status = "rejected"
+#     agent_request.save()
+
+#     messages.info(request, f"{agent_request.full_name} has been rejected.")
+#     return redirect("pending_agents_list")
+
+
+@never_cache
+@user_passes_test(superuser_required, login_url="superuser_login_view")
 def pending_agents_list_view(request):
     pending_agents = PendingAgentRegistration.objects.filter(status="pending")
     return render(
-        request, "agents/pending_agents.html", {"pending_agents": pending_agents}
+        request,
+        "agents/pending_agents.html",
+        {"pending_agents": pending_agents}
     )
 
 
+@never_cache
+@user_passes_test(superuser_required, login_url="superuser_login_view")
 @require_POST
 def approve_agent(request, agent_id):
     pending = get_object_or_404(PendingAgentRegistration, id=agent_id)
@@ -7557,7 +7634,7 @@ def approve_agent(request, agent_id):
         password=pending.password,
     )
 
-    # ✅ FIXED PLAN LOGIC
+    # Plan logic
     if pending.agent_type == "premium" and pending.premium_plan:
         agent.activate_premium_plan(pending.premium_plan)
 
@@ -7571,13 +7648,22 @@ def approve_agent(request, agent_id):
     return redirect("pending_agents_list")
 
 
-@require_http_methods(["POST"])
+@never_cache
+@user_passes_test(superuser_required, login_url="superuser_login_view")
+@require_POST
 def reject_agent(request, agent_id):
-    agent_request = get_object_or_404(PendingAgentRegistration, id=agent_id)
+    agent_request = get_object_or_404(
+        PendingAgentRegistration,
+        id=agent_id
+    )
+
     agent_request.status = "rejected"
     agent_request.save()
 
-    messages.info(request, f"{agent_request.full_name} has been rejected.")
+    messages.info(
+        request,
+        f"{agent_request.full_name} has been rejected."
+    )
     return redirect("pending_agents_list")
 
 
@@ -7760,7 +7846,8 @@ def reject_agent(request, agent_id):
 #         "heroes": heroes
 #     })
 
-
+@never_cache
+@user_passes_test(superuser_required, login_url="superuser_login_view")
 def testimonial_admin_view(request):
 
     if request.method == "POST":
@@ -7786,12 +7873,16 @@ def testimonial_admin_view(request):
     )
 
 
+@never_cache
+@user_passes_test(superuser_required, login_url="superuser_login_view")
+@require_POST
 def delete_testimonial(request, id):
     testimonial = get_object_or_404(Testimonial, id=id)
     testimonial.delete()
     return redirect("testimonial")
 
-
+@never_cache
+@user_passes_test(superuser_required, login_url="superuser_login_view")
 def edit_testimonial(request, id):
     testimonial = get_object_or_404(Testimonial, id=id)
     users = UserCreate.objects.all()
@@ -8210,15 +8301,15 @@ def package_dashboard(request):
 # DELETE PACKAGE
 # =====================================================
 
-
+@never_cache
+@user_passes_test(superuser_required, login_url="superuser_login_view")
+@require_POST
 def delete_package(request, type, id):
 
     if type == "ad":
-
         package = get_object_or_404(AdvertisementPackage, id=id)
 
     elif type == "reel":
-
         package = get_object_or_404(ReelPackage, id=id)
 
     else:
@@ -8275,7 +8366,8 @@ from django.contrib import messages
 from .forms import PendingAgentRegistrationForm
 from .models import PendingAgentRegistration
 
-
+@never_cache
+@user_passes_test(superuser_required, login_url="superuser_login_view")
 def agent_registration(request):
 
     if request.method == "POST":
@@ -8366,7 +8458,8 @@ from django.contrib import messages
 from .models import Blog
 from .forms import BlogForm
 
-
+@never_cache
+@user_passes_test(superuser_required, login_url="superuser_login_view")
 def edit_blog(request, id):
 
     blog = get_object_or_404(Blog, id=id)
@@ -8418,7 +8511,8 @@ from django.shortcuts import render
 from .models import BannerAd, SliderAd
 from .forms import BannerAdForm, SliderAdForm
 
-
+@never_cache
+@user_passes_test(superuser_required, login_url="superuser_login_view")
 def ads_dashboard(request):
 
     context = {
@@ -8457,7 +8551,9 @@ def ads_dashboard(request):
 from django.shortcuts import redirect
 from django.contrib import messages
 
-
+@never_cache
+@user_passes_test(superuser_required, login_url="superuser_login_view")
+@require_POST
 def add_banner(request):
 
     if request.method == "POST":
@@ -8496,7 +8592,9 @@ def add_banner(request):
 
 from django.shortcuts import get_object_or_404
 
-
+@never_cache
+@user_passes_test(superuser_required, login_url="superuser_login_view")
+@require_POST
 def edit_banner(request, id):
 
     banner = get_object_or_404(BannerAd, id=id)
@@ -8517,7 +8615,9 @@ def edit_banner(request, id):
 
     return redirect("ads_dashboard")
 
-
+@never_cache
+@user_passes_test(superuser_required, login_url="superuser_login_view")
+@require_POST
 def delete_banner(request, id):
 
     banner = get_object_or_404(BannerAd, id=id)
@@ -8528,7 +8628,9 @@ def delete_banner(request, id):
 
     return redirect("ads_dashboard")
 
-
+@never_cache
+@user_passes_test(superuser_required, login_url="superuser_login_view")
+@require_POST
 def add_slider(request):
 
     if request.method == "POST":
@@ -8547,7 +8649,9 @@ def add_slider(request):
 
     return redirect("ads_dashboard")
 
-
+@never_cache
+@user_passes_test(superuser_required, login_url="superuser_login_view")
+@require_POST
 def edit_slider(request, id):
 
     slider = get_object_or_404(SliderAd, id=id)
@@ -8568,7 +8672,9 @@ def edit_slider(request, id):
 
     return redirect("ads_dashboard")
 
-
+@never_cache
+@user_passes_test(superuser_required, login_url="superuser_login_view")
+@require_POST
 def delete_slider(request, id):
 
     slider = get_object_or_404(SliderAd, id=id)
@@ -8599,6 +8705,8 @@ from .models import (
 
 
 # @login_required
+@never_cache
+@user_passes_test(superuser_required, login_url="superuser_login_view")
 def advertisement_notifications(request):
 
     advertisement_requests = AdvertisementRequestNotification.objects.select_related(
@@ -8766,7 +8874,9 @@ def advertisement_notifications(request):
 
 
 # @login_required
-# @require_POST
+@never_cache
+@user_passes_test(superuser_required, login_url="superuser_login_view")
+@require_POST
 def mark_notification_read(request, request_type, id):
 
     if request_type == "advertisement":
@@ -8799,6 +8909,8 @@ def mark_notification_read(request, request_type, id):
 
 # @login_required
 # @require_POST
+@never_cache
+@user_passes_test(superuser_required, login_url="superuser_login_view")
 def update_status(request, request_type, id):
 
     status = request.POST.get("status")
@@ -8864,6 +8976,8 @@ def update_status(request, request_type, id):
 
 
 # @login_required
+@never_cache
+@user_passes_test(superuser_required, login_url="superuser_login_view")
 def notification_detail(request, request_type, id):
 
     if request_type == "advertisement":
@@ -8895,7 +9009,8 @@ def notification_detail(request, request_type, id):
         },
     )
 
-
+@never_cache
+@user_passes_test(superuser_required, login_url="superuser_login_view")
 def subscription_dashboard(request):
 
     payments = (
@@ -8941,7 +9056,8 @@ def subscription_dashboard(request):
         context,
     )
 
-
+@never_cache
+@user_passes_test(superuser_required, login_url="superuser_login_view")
 def expired_agents_dashboard(request):
 
     expired_agents = ExpireAgents.objects.select_related("agent").order_by(
@@ -9027,7 +9143,8 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 
 
-@login_required
+@never_cache
+@user_passes_test(superuser_required, login_url="superuser_login_view")
 def agent_property_dashboard(request):
 
     search = request.GET.get("search", "")
@@ -9089,8 +9206,8 @@ def agent_property_dashboard(request):
         context,
     )
 
-
-# @login_required
+@never_cache
+@user_passes_test(superuser_required, login_url="superuser_login_view")
 def agent_property_detail(request, id):
 
     property_obj = get_object_or_404(
@@ -9114,23 +9231,37 @@ def agent_property_detail(request, id):
     return render(request, "agent_property/agent_property_detail.html", context)
 
 
-# @login_required
-from django.shortcuts import get_object_or_404, redirect
-from django.contrib import messages
+# # @login_required
+# from django.shortcuts import get_object_or_404, redirect
+# from django.contrib import messages
 
 
+# def delete_agent_property(request, id):
+
+#     property_obj = get_object_or_404(AgentProperty, id=id)
+
+#     if request.method != "POST":
+#         return redirect("agent_property/agent_property_dashboard")
+
+#     property_obj.delete()
+
+#     messages.success(request, "Property deleted successfully.")
+
+#     return redirect("agent_property/agent_property_dashboard")
+#added by mehreena
+@never_cache
+@user_passes_test(superuser_required, login_url="superuser_login_view")
+@require_POST
 def delete_agent_property(request, id):
 
     property_obj = get_object_or_404(AgentProperty, id=id)
-
-    if request.method != "POST":
-        return redirect("agent_property/agent_property_dashboard")
 
     property_obj.delete()
 
     messages.success(request, "Property deleted successfully.")
 
     return redirect("agent_property/agent_property_dashboard")
+
 
 
 import json
@@ -9338,6 +9469,9 @@ import json
 
 
 # new code added by mehreena
+@never_cache
+@user_passes_test(superuser_required, login_url="superuser_login_view")
+@require_POST
 def add_agent_property(request):
 
     # -------------------------------------------------
@@ -9558,7 +9692,8 @@ def add_agent_property(request):
 
         return redirect("agent_property_dashboard")
 
-
+@never_cache
+@user_passes_test(superuser_required, login_url="superuser_login_view")
 @require_http_methods(["GET"])
 def get_agent_property(request, id):
 
@@ -9810,9 +9945,10 @@ def get_agent_property(request, id):
 #     return redirect("agent_property/agent_property_dashboard")
 
 
-@require_http_methods(["POST"])
+@never_cache
+@user_passes_test(superuser_required, login_url="superuser_login_view")
+@require_POST
 def edit_agent_property(request, id):
-
     property = get_object_or_404(AgentProperty, id=id)
 
     try:
@@ -10083,7 +10219,8 @@ from developer.models import (
 
 import json
 
-
+@never_cache
+@user_passes_test(superuser_required, login_url="superuser_login_view")
 @require_http_methods(["GET", "POST", "DELETE"])
 def expired_property_edit_delete(request, id):
     print("ID received:", id)
@@ -10592,6 +10729,7 @@ from developer.models import (
 
 
 @login_required
+@user_passes_test(superuser_required, login_url="superuser_login_view")
 @require_POST
 def restore_expired_property(request, id):
     """
@@ -10829,7 +10967,8 @@ def restore_expired_property(request, id):
             status=500,
         )
 
-
+@never_cache
+@user_passes_test(superuser_required, login_url="superuser_login_view")
 def expired_agent_properties(request):
 
     properties = (
@@ -10867,7 +11006,8 @@ def expired_agent_properties(request):
         },
     )
 
-
+@never_cache
+@user_passes_test(superuser_required, login_url="superuser_login_view")
 def expired_agent_property_detail(request, property_id):
 
     property_obj = get_object_or_404(
@@ -11662,7 +11802,9 @@ def expired_agent_property_detail(request, property_id):
 #         }
 #     )
 
-
+@never_cache
+@user_passes_test(superuser_required, login_url="superuser_login_view")
+@require_POST
 @transaction.atomic
 def edit_expired_agent_property(request, property_id):
 
@@ -12305,7 +12447,9 @@ def edit_expired_agent_property(request, property_id):
         }
     )
 
-
+@never_cache
+@user_passes_test(superuser_required, login_url="superuser_login_view")
+@require_POST
 @transaction.atomic
 def restore_expired_agent_property(request, property_id):
 

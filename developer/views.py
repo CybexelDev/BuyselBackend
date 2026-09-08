@@ -21,7 +21,7 @@ from decimal import Decimal
 from .models import AdminNotification
 
 from django.http import JsonResponse
-
+from collections import defaultdict
 from django.db.models import Count
 from django.db.models import Q, CharField
 from django.db.models.functions import Cast
@@ -213,14 +213,56 @@ def Dashboard(request):
 
     total_active = Property.objects.count()
     total_expired = ExpiredProperty.objects.count()
-    total_all = total_active + total_expired
+    total_agent_active = AgentProperty.objects.count()
+    total_agent_expired = ExpiredAgentProperty.objects.count()
 
-    active_by_purpose = (
+    # ALL PROPERTIES IN THE SYSTEM
+    total_all = (
+        total_active
+        + total_expired
+        + total_agent_active
+        + total_agent_expired
+    )
+
+    
+
+    # active_by_purpose = (
+    #     Property.objects
+    #     .values("purpose__name")
+    #     .annotate(total=Count("id"))
+    #     .order_by("purpose__name")
+    # )
+    # ===========================
+    # ACTIVE PROPERTY COUNTS BY PURPOSE
+    # NORMAL + AGENT
+    # ===========================
+
+    active_by_purpose_map = defaultdict(int)
+
+    # Normal active properties
+    for item in (
         Property.objects
         .values("purpose__name")
         .annotate(total=Count("id"))
-        .order_by("purpose__name")
-    )
+    ):
+        active_by_purpose_map[item["purpose__name"]] += item["total"]
+
+    # Agent active properties
+    for item in (
+        AgentProperty.objects
+        .values("purpose__name")
+        .annotate(total=Count("id"))
+    ):
+        active_by_purpose_map[item["purpose__name"]] += item["total"]
+
+    # Convert to template-friendly list
+    active_by_purpose = [
+        {
+            "purpose__name": purpose,
+            "total": total,
+        }
+        for purpose, total in sorted(active_by_purpose_map.items())
+    ]
 
     # ===========================
     # AGENT PROPERTY REPORT
@@ -335,6 +377,9 @@ def Dashboard(request):
     context = {
         "total_active": total_active,
         "total_expired": total_expired,
+        "total_agent_active": total_agent_active,
+        "total_agent_expired": total_agent_expired,
+
         "total_all": total_all,
         "active_by_purpose": active_by_purpose,
         "all_purposes": all_purposes,

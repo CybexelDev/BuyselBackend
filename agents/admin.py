@@ -8,6 +8,7 @@ from . models import *
 admin.site.register(Inbox)
 
 admin.site.register(AgentProperty)
+
 admin.site.register(PendingAgentRegistration)
 
 admin.site.register(AgentPropertyFieldValue)

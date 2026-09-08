@@ -2697,6 +2697,7 @@ class AgentPropertySerializer(serializers.ModelSerializer):
         #         )
 
         #     })
+        
         cleaned_selling_points = [
 
             str(sp).strip()

@@ -9645,8 +9645,13 @@ def add_agent_property(request):
         # Your AgentProperty model uses duration_days.
         # There is NO expiry_date/status field in the model.
 
-        if not property_obj.duration_days:
-            property_obj.duration_days = 30
+        duration_days = request.POST.get("duration_days")
+
+        if duration_days:
+            property_obj.duration_days = int(duration_days)
+
+        # if not property_obj.duration_days:
+        #     property_obj.duration_days = 30
 
         # -------------------------------------------------
         # VALIDATE INSTANCE
@@ -9663,6 +9668,11 @@ def add_agent_property(request):
         print(
             "PROPERTY CREATED:",
             property_obj.id
+        )
+
+        print(
+            "SAVED DURATION DAYS:",
+            property_obj.duration_days
         )
 
         # =================================================

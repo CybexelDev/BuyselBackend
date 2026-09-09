@@ -11,6 +11,10 @@ import re
 from django.db.models import Avg, Count
 import hashids
 from django.core.exceptions import ValidationError as DjangoValidationError
+from cloudinary.utils import cloudinary_url
+from django.utils import timezone
+import pytz
+import json
 
 class PropertySerializer(serializers.ModelSerializer):
 
@@ -59,8 +63,7 @@ class PropertySerializer(serializers.ModelSerializer):
 
         return images
 
-    from rest_framework import serializers
-    from .models import Premium
+    
 
     class PremiumLoginSerializer(serializers.Serializer):
 
@@ -263,9 +266,6 @@ class AgentFormSerializer(serializers.ModelSerializer):
 
         return None
 
-from rest_framework import serializers
-from django.contrib.auth.hashers import make_password
-from users.models import UserCreate
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -390,12 +390,6 @@ class AgentNotificationSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-
-
-from cloudinary.utils import cloudinary_url
-from rest_framework import serializers
-from cloudinary.utils import cloudinary_url
-from .models import UserProfile
 
 
 class UserProfileSerializer(
@@ -754,17 +748,6 @@ class AgentLoginSerializer(serializers.Serializer):
 
         data["user"] = user
         return data
-
-from django.core.exceptions import ValidationError as DjangoValidationError
-
-from rest_framework import serializers
-
-from .models import (
-    PendingAgentRegistration,
-    PremiumPlan,
-    ElitePlan,
-    AgentUserProfile,
-)
 
 
 # class PendingAgentRegistrationSerializer(
@@ -2697,6 +2680,7 @@ class AgentPropertySerializer(serializers.ModelSerializer):
         #         )
 
         #     })
+
         cleaned_selling_points = [
 
             str(sp).strip()
@@ -3828,15 +3812,6 @@ class WishlistSerializer(serializers.ModelSerializer):
 
 
 
-from rest_framework import serializers
-import json
-
-from .models import (
-    Property,
-    PropertyFeature,
-)
-
-
 class PropertyDetailSerializer(serializers.ModelSerializer):
 
     # =====================================================
@@ -4584,9 +4559,6 @@ class BlogListSerializer(serializers.ModelSerializer):
         return None
     
 
-from rest_framework import serializers
-from .models import Blog
-
 
 class SingleBlogSerializer(serializers.ModelSerializer):
     card_paragraph = serializers.SerializerMethodField()
@@ -4834,9 +4806,6 @@ class BannerAdSerializer(serializers.ModelSerializer):
         return None
 
 
-from rest_framework import serializers
-import json
-
 class AgentDetailSerializer(serializers.ModelSerializer):
     # agent_id = serializers.CharField(source='agent_code', read_only=True)
     plan_name = serializers.SerializerMethodField()
@@ -5071,9 +5040,7 @@ class EnquiryDetailSerializer(serializers.ModelSerializer):
 
         return image
     
-from rest_framework import serializers
-from django.utils import timezone
-import pytz
+
 
 class RecentEnquirySerializer(serializers.ModelSerializer):
 
@@ -5179,8 +5146,7 @@ class RecentAgentEnquirySerializer(serializers.ModelSerializer):
             "%B %d, %Y %I:%M %p"
         )
 
-    
-from rest_framework import serializers
+
 
 class CombinedPropertyListSerializer(serializers.Serializer):
 
@@ -5909,20 +5875,6 @@ class CombinedPropertyListSerializer(serializers.Serializer):
 #         )
 
 
-import json
-
-from rest_framework import serializers
-
-from developer.models import (
-    Property,
-    PropertyImage,
-    PropertyFeature,
-    Category,
-    Subcategory,
-    Purpose,
-    Amenities,
-    SubcategoryField
-)
 
 
 class UserPropertySerializer(serializers.ModelSerializer):

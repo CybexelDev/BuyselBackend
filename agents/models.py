@@ -1120,6 +1120,14 @@ class AgentProperty(models.Model):
         blank=True
     )
 
+    property_code = models.CharField(
+        max_length=50,
+        unique=True,
+        null=True,
+        blank=True,
+        db_index=True
+    )
+
     category = models.ForeignKey(
         "developer.Category",
         on_delete=models.CASCADE,
@@ -1374,6 +1382,11 @@ class AgentProperty(models.Model):
 
         is_new = self._state.adding
 
+        if is_new and not self.property_code:
+            self.property_code = (
+                f"AGP-{uuid.uuid4().hex[:10].upper()}"
+            )
+
         self.full_clean()
 
         super().save(*args, **kwargs)
@@ -1552,6 +1565,8 @@ class AgentProperty(models.Model):
             agent=self.agent,
 
             property_hash_id=self.property_hash_id,
+            property_code=self.property_code,
+
 
             category=self.category,
 
@@ -1799,6 +1814,15 @@ class ExpiredAgentProperty(models.Model):
         null=True,
         blank=True
     )
+
+    property_code = models.CharField(
+        max_length=50,
+        unique=True,
+        null=True,
+        blank=True,
+        db_index=True
+    )
+
 
     category = models.ForeignKey(
         "developer.Category",

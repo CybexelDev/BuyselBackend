@@ -21,7 +21,7 @@ from decimal import Decimal
 from .models import AdminNotification
 
 from django.http import JsonResponse
-
+from collections import defaultdict
 from django.db.models import Count
 from django.db.models import Q, CharField
 from django.db.models.functions import Cast
@@ -213,14 +213,56 @@ def Dashboard(request):
 
     total_active = Property.objects.count()
     total_expired = ExpiredProperty.objects.count()
-    total_all = total_active + total_expired
+    total_agent_active = AgentProperty.objects.count()
+    total_agent_expired = ExpiredAgentProperty.objects.count()
 
-    active_by_purpose = (
+    # ALL PROPERTIES IN THE SYSTEM
+    total_all = (
+        total_active
+        + total_expired
+        + total_agent_active
+        + total_agent_expired
+    )
+
+    
+
+    # active_by_purpose = (
+    #     Property.objects
+    #     .values("purpose__name")
+    #     .annotate(total=Count("id"))
+    #     .order_by("purpose__name")
+    # )
+    # ===========================
+    # ACTIVE PROPERTY COUNTS BY PURPOSE
+    # NORMAL + AGENT
+    # ===========================
+
+    active_by_purpose_map = defaultdict(int)
+
+    # Normal active properties
+    for item in (
         Property.objects
         .values("purpose__name")
         .annotate(total=Count("id"))
-        .order_by("purpose__name")
-    )
+    ):
+        active_by_purpose_map[item["purpose__name"]] += item["total"]
+
+    # Agent active properties
+    for item in (
+        AgentProperty.objects
+        .values("purpose__name")
+        .annotate(total=Count("id"))
+    ):
+        active_by_purpose_map[item["purpose__name"]] += item["total"]
+
+    # Convert to template-friendly list
+    active_by_purpose = [
+        {
+            "purpose__name": purpose,
+            "total": total,
+        }
+        for purpose, total in sorted(active_by_purpose_map.items())
+    ]
 
     # ===========================
     # AGENT PROPERTY REPORT
@@ -335,6 +377,9 @@ def Dashboard(request):
     context = {
         "total_active": total_active,
         "total_expired": total_expired,
+        "total_agent_active": total_agent_active,
+        "total_agent_expired": total_agent_expired,
+
         "total_all": total_all,
         "active_by_purpose": active_by_purpose,
         "all_purposes": all_purposes,
@@ -9465,118 +9510,195 @@ import json
 #         },
 #     )
 
+from django.contrib import messages
+from django.contrib.auth.decorators import user_passes_test
+from django.db import transaction
+from django.shortcuts import redirect
+from django.utils import timezone
+from django.views.decorators.cache import never_cache
+from django.views.decorators.http import require_POST
 
-# new code added by mehreena
+import json
+import traceback
+
+
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 @require_POST
+@transaction.atomic
 def add_agent_property(request):
 
-    # -------------------------------------------------
-    # ONLY POST ALLOWED
-    # -------------------------------------------------
-    if request.method != "POST":
-        return redirect("agent_property_dashboard")
-
-    form = AgentPropertyForm(request.POST, request.FILES)
-
     print("\n========== ADD AGENT PROPERTY ==========")
+
+    # -------------------------------------------------
+    # DEBUG POST DATA
+    # -------------------------------------------------
 
     for key in request.POST:
         print(key, "=", request.POST.getlist(key))
 
     print("FILES =", request.FILES)
+
+    # -------------------------------------------------
+    # FORM
+    # -------------------------------------------------
+
+    form = AgentPropertyForm(
+        request.POST,
+        request.FILES
+    )
+
     print("FORM VALID =", form.is_valid())
 
     if not form.is_valid():
 
         print("FORM ERRORS =", form.errors)
 
-        messages.error(request, "Please correct the property details.")
+        messages.error(
+            request,
+            "Please correct the property details."
+        )
 
         return redirect("agent_property_dashboard")
 
     try:
 
-        # -------------------------------------------------
+        # =================================================
         # AGENT
-        # -------------------------------------------------
+        # =================================================
 
         agent_id = request.POST.get("agent")
 
-        if not agent_id:
+        agent = None
 
-            messages.error(request, "Please select an agent.")
+        if agent_id:
 
-            return redirect("agent_property_dashboard")
+            try:
 
-        agent = AgentUserProfile.objects.get(id=agent_id)
+                agent = AgentUserProfile.objects.get(
+                    id=agent_id
+                )
+
+            except AgentUserProfile.DoesNotExist:
+
+                messages.error(
+                    request,
+                    "Selected agent was not found."
+                )
+
+                return redirect(
+                    "agent_property_dashboard"
+                )
+
+        # =================================================
+        # CREATE PROPERTY INSTANCE
+        # =================================================
+
+        property_obj = form.save(
+            commit=False
+        )
 
         # -------------------------------------------------
-        # CREATE PROPERTY
+        # OPTIONAL AGENT
         # -------------------------------------------------
-
-        property_obj = form.save(commit=False)
 
         property_obj.agent = agent
 
-        # Admin-created property
+        # -------------------------------------------------
+        # ADMIN CREATED PROPERTY
+        # -------------------------------------------------
+
+        # No subscription is required for an admin-created
+        # property.
+
         property_obj.subscription = None
 
-        property_obj.paid = request.POST.get("paid") == "on"
-
-        property_obj.is_featured = request.POST.get("is_featured") == "on"
-
-        property_obj.notes = request.POST.get("notes", "")
-
-        # Direct admin add = ACTIVE
-        property_obj.status = AgentProperty.STATUS_ACTIVE
-
-        property_obj.approved_at = timezone.now()
-
-        property_obj.expired_at = None
-
-        property_obj.expiry_reason = ""
-
         # -------------------------------------------------
-        # EXPIRY
+        # PAID
         # -------------------------------------------------
 
-        if agent.plan_expiry_date:
-
-            property_obj.expiry_date = agent.plan_expiry_date
-
-        else:
-
-            property_obj.expiry_date = None
+        property_obj.paid = (
+            request.POST.get("paid") == "on"
+        )
 
         # -------------------------------------------------
+        # FEATURED
+        # -------------------------------------------------
+
+        property_obj.is_featured = (
+            request.POST.get("is_featured") == "on"
+        )
+
+        # -------------------------------------------------
+        # NOTES
+        # -------------------------------------------------
+
+        property_obj.notes = request.POST.get(
+            "notes",
+            ""
+        ).strip()
+
+        # -------------------------------------------------
+        # DEFAULT DURATION
+        # -------------------------------------------------
+
+        # Your AgentProperty model uses duration_days.
+        # There is NO expiry_date/status field in the model.
+
+        if not property_obj.duration_days:
+            property_obj.duration_days = 30
+
+        # -------------------------------------------------
+        # VALIDATE INSTANCE
+        # -------------------------------------------------
+
+        property_obj.full_clean()
+
+        # =================================================
         # SAVE PROPERTY
-        # -------------------------------------------------
+        # =================================================
 
         property_obj.save()
 
-        # -------------------------------------------------
-        # AMENITIES
-        # -------------------------------------------------
+        print(
+            "PROPERTY CREATED:",
+            property_obj.id
+        )
 
-        amenity_ids = request.POST.getlist("amenities")
+        # =================================================
+        # AMENITIES
+        # =================================================
+
+        amenity_ids = request.POST.getlist(
+            "amenities"
+        )
 
         if amenity_ids:
 
-            property_obj.amenities.set(Amenities.objects.filter(id__in=amenity_ids))
+            property_obj.amenities.set(
+                Amenities.objects.filter(
+                    id__in=amenity_ids
+                )
+            )
 
-        # -------------------------------------------------
+        # =================================================
         # IMAGES
-        # -------------------------------------------------
+        # =================================================
 
-        for image in request.FILES.getlist("images"):
+        images = request.FILES.getlist(
+            "images"
+        )
 
-            AgentPropertyImage.objects.create(property=property_obj, image=image)
+        for image in images:
 
-        # -------------------------------------------------
+            AgentPropertyImage.objects.create(
+                property=property_obj,
+                image=image
+            )
+
+        # =================================================
         # DYNAMIC FIELDS
-        # -------------------------------------------------
+        # =================================================
 
         if property_obj.subcategory:
 
@@ -9588,10 +9710,15 @@ def add_agent_property(request):
 
                 field_name = f"field_{field.id}"
 
+                # -----------------------------------------
                 # MULTI SELECT
+                # -----------------------------------------
+
                 if field.field_type == "multi_select":
 
-                    raw = request.POST.get(field_name)
+                    raw = request.POST.get(
+                        field_name
+                    )
 
                     if not raw:
                         continue
@@ -9600,56 +9727,95 @@ def add_agent_property(request):
 
                         values = json.loads(raw)
 
-                    except Exception:
+                    except (TypeError, ValueError):
 
                         values = []
 
-                    AgentPropertyFieldValue.objects.create(
-                        property=property_obj, field=field, value=json.dumps(values)
-                    )
+                    # Avoid creating empty values
 
+                    if values:
+
+                        AgentPropertyFieldValue.objects.create(
+                            property=property_obj,
+                            field=field,
+                            value=json.dumps(values)
+                        )
+
+                # -----------------------------------------
                 # BOOLEAN
+                # -----------------------------------------
+
                 elif field.field_type == "boolean":
+
+                    value = (
+                        "1"
+                        if request.POST.get(
+                            field_name
+                        ) == "on"
+                        else "0"
+                    )
 
                     AgentPropertyFieldValue.objects.create(
                         property=property_obj,
                         field=field,
-                        value=("1" if request.POST.get(field_name) == "on" else "0"),
+                        value=value
                     )
 
-                # NORMAL
+                # -----------------------------------------
+                # NORMAL FIELD
+                # -----------------------------------------
+
                 else:
 
-                    value = request.POST.get(field_name)
+                    value = request.POST.get(
+                        field_name
+                    )
+
+                    if value is None:
+                        continue
+
+                    value = value.strip()
 
                     if not value:
                         continue
 
                     AgentPropertyFieldValue.objects.create(
-                        property=property_obj, field=field, value=value
+                        property=property_obj,
+                        field=field,
+                        value=value
                     )
 
-        # -------------------------------------------------
+        # =================================================
         # SELLING POINTS
-        # -------------------------------------------------
+        # =================================================
 
-        for point in request.POST.getlist("selling_points"):
+        selling_points = request.POST.getlist(
+            "selling_points"
+        )
+
+        for point in selling_points:
 
             point = point.strip()
 
-            if point:
+            if not point:
+                continue
 
-                AgentPropertySellingPoint.objects.create(
-                    property=property_obj, point=point
-                )
+            AgentPropertySellingPoint.objects.create(
+                property=property_obj,
+                point=point
+            )
 
-        # -------------------------------------------------
+        # =================================================
         # LANDMARKS
-        # -------------------------------------------------
+        # =================================================
 
-        names = request.POST.getlist("landmark_name")
+        names = request.POST.getlist(
+            "landmark_name"
+        )
 
-        distances = request.POST.getlist("landmark_distance")
+        distances = request.POST.getlist(
+            "landmark_distance"
+        )
 
         for index, name in enumerate(names):
 
@@ -9658,37 +9824,275 @@ def add_agent_property(request):
             if not name:
                 continue
 
+            distance = ""
+
+            if index < len(distances):
+                distance = distances[index].strip()
+
             AgentPropertyLandmark.objects.create(
                 property=property_obj,
                 name=name,
-                distance=(distances[index] if index < len(distances) else ""),
+                distance=distance
             )
 
-        # -------------------------------------------------
+        # =================================================
         # SUCCESS
-        # -------------------------------------------------
+        # =================================================
 
-        messages.success(request, "Agent property added successfully.")
+        messages.success(
+            request,
+            "Agent property added successfully."
+        )
 
-        print("PROPERTY CREATED:", property_obj.id)
+        print(
+            "========== PROPERTY ADD SUCCESS =========="
+        )
 
-        return redirect("agent_property_dashboard")
-
-    except AgentUserProfile.DoesNotExist:
-
-        messages.error(request, "Selected agent was not found.")
-
-        return redirect("agent_property_dashboard")
+        return redirect(
+            "agent_property_dashboard"
+        )
 
     except Exception as e:
 
-        import traceback
+        # Because the view is wrapped with
+        # transaction.atomic, database changes made
+        # before the exception will be rolled back.
 
         traceback.print_exc()
 
-        messages.error(request, f"Unable to add property: {str(e)}")
+        messages.error(
+            request,
+            f"Unable to add property: {str(e)}"
+        )
 
-        return redirect("agent_property_dashboard")
+        return redirect(
+            "agent_property_dashboard"
+        )
+
+
+# new code added by mehreena
+# @never_cache
+# @user_passes_test(superuser_required, login_url="superuser_login_view")
+# @require_POST
+# def add_agent_property(request):
+
+#     # -------------------------------------------------
+#     # ONLY POST ALLOWED
+#     # -------------------------------------------------
+#     if request.method != "POST":
+#         return redirect("agent_property_dashboard")
+
+#     form = AgentPropertyForm(request.POST, request.FILES)
+
+#     print("\n========== ADD AGENT PROPERTY ==========")
+
+#     for key in request.POST:
+#         print(key, "=", request.POST.getlist(key))
+
+#     print("FILES =", request.FILES)
+#     print("FORM VALID =", form.is_valid())
+
+#     if not form.is_valid():
+
+#         print("FORM ERRORS =", form.errors)
+
+#         messages.error(request, "Please correct the property details.")
+
+#         return redirect("agent_property_dashboard")
+
+#     try:
+
+#         # -------------------------------------------------
+#         # AGENT
+#         # -------------------------------------------------
+
+#         agent_id = request.POST.get("agent")
+
+#         if not agent_id:
+
+#             messages.error(request, "Please select an agent.")
+
+#             return redirect("agent_property_dashboard")
+
+#         agent = AgentUserProfile.objects.get(id=agent_id)
+
+#         # -------------------------------------------------
+#         # CREATE PROPERTY
+#         # -------------------------------------------------
+
+#         property_obj = form.save(commit=False)
+
+#         property_obj.agent = agent
+
+#         # Admin-created property
+#         property_obj.subscription = None
+
+#         property_obj.paid = request.POST.get("paid") == "on"
+
+#         property_obj.is_featured = request.POST.get("is_featured") == "on"
+
+#         property_obj.notes = request.POST.get("notes", "")
+
+#         # Direct admin add = ACTIVE
+#         property_obj.status = AgentProperty.STATUS_ACTIVE
+
+#         property_obj.approved_at = timezone.now()
+
+#         property_obj.expired_at = None
+
+#         property_obj.expiry_reason = ""
+
+#         # -------------------------------------------------
+#         # EXPIRY
+#         # -------------------------------------------------
+
+#         if agent.plan_expiry_date:
+
+#             property_obj.expiry_date = agent.plan_expiry_date
+
+#         else:
+
+#             property_obj.expiry_date = None
+
+#         # -------------------------------------------------
+#         # SAVE PROPERTY
+#         # -------------------------------------------------
+
+#         property_obj.save()
+
+#         # -------------------------------------------------
+#         # AMENITIES
+#         # -------------------------------------------------
+
+#         amenity_ids = request.POST.getlist("amenities")
+
+#         if amenity_ids:
+
+#             property_obj.amenities.set(Amenities.objects.filter(id__in=amenity_ids))
+
+#         # -------------------------------------------------
+#         # IMAGES
+#         # -------------------------------------------------
+
+#         for image in request.FILES.getlist("images"):
+
+#             AgentPropertyImage.objects.create(property=property_obj, image=image)
+
+#         # -------------------------------------------------
+#         # DYNAMIC FIELDS
+#         # -------------------------------------------------
+
+#         if property_obj.subcategory:
+
+#             fields = SubcategoryField.objects.filter(
+#                 subcategory=property_obj.subcategory
+#             )
+
+#             for field in fields:
+
+#                 field_name = f"field_{field.id}"
+
+#                 # MULTI SELECT
+#                 if field.field_type == "multi_select":
+
+#                     raw = request.POST.get(field_name)
+
+#                     if not raw:
+#                         continue
+
+#                     try:
+
+#                         values = json.loads(raw)
+
+#                     except Exception:
+
+#                         values = []
+
+#                     AgentPropertyFieldValue.objects.create(
+#                         property=property_obj, field=field, value=json.dumps(values)
+#                     )
+
+#                 # BOOLEAN
+#                 elif field.field_type == "boolean":
+
+#                     AgentPropertyFieldValue.objects.create(
+#                         property=property_obj,
+#                         field=field,
+#                         value=("1" if request.POST.get(field_name) == "on" else "0"),
+#                     )
+
+#                 # NORMAL
+#                 else:
+
+#                     value = request.POST.get(field_name)
+
+#                     if not value:
+#                         continue
+
+#                     AgentPropertyFieldValue.objects.create(
+#                         property=property_obj, field=field, value=value
+#                     )
+
+#         # -------------------------------------------------
+#         # SELLING POINTS
+#         # -------------------------------------------------
+
+#         for point in request.POST.getlist("selling_points"):
+
+#             point = point.strip()
+
+#             if point:
+
+#                 AgentPropertySellingPoint.objects.create(
+#                     property=property_obj, point=point
+#                 )
+
+#         # -------------------------------------------------
+#         # LANDMARKS
+#         # -------------------------------------------------
+
+#         names = request.POST.getlist("landmark_name")
+
+#         distances = request.POST.getlist("landmark_distance")
+
+#         for index, name in enumerate(names):
+
+#             name = name.strip()
+
+#             if not name:
+#                 continue
+
+#             AgentPropertyLandmark.objects.create(
+#                 property=property_obj,
+#                 name=name,
+#                 distance=(distances[index] if index < len(distances) else ""),
+#             )
+
+#         # -------------------------------------------------
+#         # SUCCESS
+#         # -------------------------------------------------
+
+#         messages.success(request, "Agent property added successfully.")
+
+#         print("PROPERTY CREATED:", property_obj.id)
+
+#         return redirect("agent_property_dashboard")
+
+#     except AgentUserProfile.DoesNotExist:
+
+#         messages.error(request, "Selected agent was not found.")
+
+#         return redirect("agent_property_dashboard")
+
+#     except Exception as e:
+
+#         import traceback
+
+#         traceback.print_exc()
+
+#         messages.error(request, f"Unable to add property: {str(e)}")
+
+#         return redirect("agent_property_dashboard")
 
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")

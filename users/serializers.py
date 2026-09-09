@@ -4706,8 +4706,19 @@ class UserProfileUpdateSerializer(serializers.Serializer):
 
     full_name = serializers.CharField(required=False, allow_blank=True)
     email = serializers.EmailField(required=False)
-    mobile = serializers.CharField(required=False, allow_blank=True)
-    alternate_mobile = serializers.CharField(required=False, allow_blank=True)
+    # mobile = serializers.CharField(required=False, allow_blank=True)
+    # alternate_mobile = serializers.CharField(required=False, allow_blank=True)
+    mobile = serializers.RegexField(
+    regex=r'^[6-9]\d{9}$',
+    required=False,
+    allow_blank=True
+    )
+
+    alternate_mobile = serializers.RegexField(
+        regex=r'^[6-9]\d{9}$',
+        required=False,
+        allow_blank=True
+    )
     city = serializers.CharField(required=False, allow_blank=True)
 
     def update(self, user, validated_data):

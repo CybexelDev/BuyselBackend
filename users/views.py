@@ -6309,6 +6309,42 @@ class ToggleReviewLikeAPIView(APIView):
             "total_likes": review.likes.count()
         })
 
+# class AgentListFrontendAPIView(APIView):
+#     permission_classes = [AllowAny]
+#     authentication_classes = []
+
+#     def get(self, request):
+#         agent_type = request.GET.get("type")  # all / Agent / PremiumAgent / EliteAgent
+
+#         agents = AgentUserProfile.objects.filter(is_active=True)
+
+#         # Mapping frontend → DB values
+#         type_mapping = {
+#             "Agent": "basic",
+#             "PremiumAgent": "premium",
+#             "EliteAgent": "elite"
+#         }
+
+#         if agent_type and agent_type != "all":
+#             mapped_type = type_mapping.get(agent_type)
+
+#             if mapped_type:
+#                 agents = agents.filter(agent_type=mapped_type)
+#             else:
+#                 return Response(
+#                     {"error": "Invalid agent type"},
+#                     status=400
+#                 )
+
+#         serializer = AgentListFrontendSerializer(agents, many=True)
+#         return Response(serializer.data)
+
+from django.db.models import Case, When, Value, IntegerField
+from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+
+
 class AgentListFrontendAPIView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
@@ -6336,7 +6372,19 @@ class AgentListFrontendAPIView(APIView):
                     status=400
                 )
 
+        # Elite → Premium → Basic
+        agents = agents.annotate(
+            agent_priority=Case(
+                When(agent_type="elite", then=Value(1)),
+                When(agent_type="premium", then=Value(2)),
+                When(agent_type="basic", then=Value(3)),
+                default=Value(4),
+                output_field=IntegerField(),
+            )
+        ).order_by("agent_priority")
+
         serializer = AgentListFrontendSerializer(agents, many=True)
+
         return Response(serializer.data)
 
 class AgentReviewListAPIView(APIView):

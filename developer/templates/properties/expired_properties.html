@@ -1277,11 +1277,114 @@ span.flatpickr-weekday {
         margin: 1px !important;
     }
 }
+
+/* =========================================================
+   EXPIRED PROPERTY TOAST
+========================================================= */
+
+#expiredToastContainer {
+    position: fixed !important;
+    top: 20px !important;
+    right: 25px !important;
+    bottom: auto !important;
+    left: auto !important;
+
+    z-index: 9999999 !important;
+
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+    width: 380px;
+    max-width: calc(100vw - 40px);
+
+    pointer-events: none;
+}
+
+.ep-toast {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 14px 16px;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+    border: 1px solid #e5e7eb;
+    pointer-events: auto;
+
+    opacity: 0;
+    transform: translateY(-15px);
+    transition: all 0.25s ease;
+}
+
+.ep-toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.ep-toast.hide {
+    opacity: 0;
+    transform: translateY(-15px);
+}
+
+.ep-toast-icon {
+    width: 38px;
+    height: 38px;
+    min-width: 38px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ep-toast-content {
+    flex: 1;
+}
+
+.ep-toast-title {
+    margin: 0 0 3px;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.ep-toast-message {
+    margin: 0;
+    font-size: 13px;
+    color: #6b7280;
+}
+
+.ep-toast-close {
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.ep-toast-progress {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 3px;
+    width: 100%;
+    animation: expiredToastProgress var(--toast-duration) linear forwards;
+}
+
+@keyframes expiredToastProgress {
+    from {
+        width: 100%;
+    }
+    to {
+        width: 0;
+    }
+}
 </style>
 
 {% endblock %}
 
 {% block content %}
+<div id="expiredToastContainer"></div>
 <div class="expired-property-page">
 
     <section class="expired-hero">
@@ -1530,14 +1633,15 @@ span.flatpickr-weekday {
 
                                 <!-- Delete -->
                                 <button
-                                    type="button"
-                                    class="expired-delete-btn"
-                                    onclick="deleteExpiredProperty('{{ property.id }}')"
-                                    title="Delete Property">
+    type="button"
+    class="expired-delete-btn js-delete-expired-property"
+    data-delete-url="/admin_panel/expired-property/{{ property.id }}/"
+    data-property-name="{{ property.label }}"
+    title="Delete Property">
 
-                                    <i class="fa-regular fa-trash-can"></i>
+    <i class="fa-regular fa-trash-can"></i>
 
-                                </button>
+</button>
 
                             </div>
                         </td>
@@ -3617,7 +3721,9 @@ async function openEditExpiredModal(propertyId) {
 
         if (!result.status) {
 
-            alert("Unable to load property.");
+            // alert("Unable to load property.");
+
+            showExpiredToast("Unable to load property.", "error");
 
             return;
         }
@@ -3800,7 +3906,8 @@ loadExpiredExistingAmenities(p.amenities || []);
 
         console.error(err);
 
-        alert("Unable to load property.");
+        // alert("Unable to load property.");
+        showExpiredToast("Unable to load property.", "error");  
 
     }
 
@@ -3928,38 +4035,74 @@ function escapeHtml(text) {
 //     }
 
 // }
-async function loadExpiredProperty(id) {
+// async function loadExpiredProperty(id) {
 
+//     console.log("Loading property", id);
+
+//     try {
+
+//         const response = await fetch(`/admin_panel/expired-property/${id}/`);
+
+//         const data = await response.json();
+
+//         console.log("API Response:", data);
+
+//         if (!data.status) {
+
+//             alert("Unable to load property.");
+
+//             return;
+//         }
+
+//         console.log("Calling fillExpiredPropertyForm()");
+
+//         fillExpiredPropertyForm(data.property);
+
+//     }
+
+//     catch (err) {
+
+//         console.error(err);
+
+//     }
+
+// }
+
+
+async function loadExpiredProperty(id) {
     console.log("Loading property", id);
 
     try {
-
-        const response = await fetch(`/admin_panel/expired-property/${id}/`);
+        const response = await fetch(
+            `/admin_panel/expired-property/${id}/`
+        );
 
         const data = await response.json();
 
         console.log("API Response:", data);
 
         if (!data.status) {
-
-            alert("Unable to load property.");
-
+            showExpiredToast(
+                data.message || "Unable to load property.",
+                "error"
+            );
             return;
         }
 
         console.log("Calling fillExpiredPropertyForm()");
 
         fillExpiredPropertyForm(data.property);
-
     }
-
     catch (err) {
-
         console.error(err);
 
+        showExpiredToast(
+            "Failed to load property.",
+            "error"
+        );
     }
-
 }
+
 /*---------------------------------------------------------
  Fill Form
 ---------------------------------------------------------*/
@@ -6123,7 +6266,10 @@ document
 
             if (data.status) {
 
-                alert(data.message);
+                showExpiredToast(
+    data.message || "Property updated successfully.",
+    "update"
+);
 
                 closeExpiredEditModal();
 
@@ -6142,10 +6288,10 @@ document
 
             } else {
 
-                alert(
-                    data.message ||
-                    "Update failed."
-                );
+                showExpiredToast(
+    data.message || "Update failed.",
+    "error"
+);
 
             }
 
@@ -6155,9 +6301,10 @@ document
 
             console.error(error);
 
-            alert(
-                "Something went wrong."
-            );
+           showExpiredToast(
+    "Something went wrong.",
+    "error"
+);
 
         }
 
@@ -6181,12 +6328,7 @@ document
                     "expiredPropertyId"
                 ).value;
 
-            if (
-                !confirm(
-                    "Restore this property?"
-                )
-            )
-                return;
+        
 
             try {
 
@@ -6211,8 +6353,10 @@ document
 
                 if (data.status) {
 
-                    alert(data.message);
-
+showExpiredToast(
+    data.message || "Property restored successfully.",
+    "success"
+);
                     closeExpiredEditModal();
 
                     if (
@@ -6230,10 +6374,10 @@ document
 
                 } else {
 
-                    alert(
-                        data.message ||
-                        "Restore failed."
-                    );
+                   showExpiredToast(
+    data.message || "Restore failed.",
+    "error"
+);
 
                 }
 
@@ -6243,74 +6387,16 @@ document
 
                 console.error(error);
 
-                alert(
-                    "Unable to restore property."
-                );
+                showExpiredToast(
+    "Unable to restore property.",
+    "error"
+);
 
             }
 
         }
     );
 
-
-/* ===========================================================
-   DELETE PROPERTY (OPTIONAL)
-===========================================================*/
-
-async function deleteExpiredProperty(id) {
-
-    if (
-        !confirm(
-            "Delete this expired property?"
-        )
-    )
-        return;
-
-    try {
-
-        const response =
-            await fetch(
-                `/admin_panel/expired-property/${id}/`,
-                {
-                    method: "DELETE",
-
-                    headers: {
-                        "X-CSRFToken": csrftoken
-                    }
-                }
-            );
-
-        const data =
-            await response.json();
-
-        if (data.status) {
-
-            alert(data.message);
-
-            if (
-                typeof loadExpiredProperties ===
-                "function"
-            ) {
-
-                loadExpiredProperties();
-
-            } else {
-
-                location.reload();
-
-            }
-
-        }
-
-    }
-
-    catch (error) {
-
-        console.error(error);
-
-    }
-
-}
 
 
 /* ===========================================================
@@ -6370,10 +6456,13 @@ flatpickr("#endDate", {
 
 <script src="{% static 'js/admin_scripts.js' %}"></script>
 
-<!-- 
 <script>
-    const expiredToastContainer =
-        document.getElementById("expiredToastContainer");
+   const expiredToastContainer =
+    document.getElementById("expiredToastContainer");
+
+if (expiredToastContainer && expiredToastContainer.parentElement !== document.body) {
+    document.body.appendChild(expiredToastContainer);
+}
 
     function showExpiredToast(message, type = "info", duration = 4000) {
         if (!expiredToastContainer || !message) return;
@@ -6667,8 +6756,7 @@ flatpickr("#endDate", {
         });
 
         const editForm =
-            document.getElementById("editPropertyForm");
-
+document.getElementById("editExpiredPropertyForm");
         editForm?.addEventListener("submit", function () {
             showExpiredToast(
                 "Updating expired property...",

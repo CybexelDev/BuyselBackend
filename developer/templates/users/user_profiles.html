@@ -973,20 +973,6 @@ TYPOGRAPHY SYSTEM
 {% endif %}
 
 
-<!-- TAILWIND-STYLE TOAST CONTAINER -->
-<div id="profileToastContainer" class="profile-toast-container" aria-live="polite" aria-atomic="true"></div>
-
-{% if messages %}
-    <div id="djangoProfileMessages" class="hidden">
-        {% for message in messages %}
-            <div
-                data-toast-message="{{ message|escapejs }}"
-                data-toast-tag="{{ message.tags|default:'info' }}"
-            ></div>
-        {% endfor %}
-    </div>
-{% endif %}
-
 <div class="profile-page">
 
     <section class="profile-hero">

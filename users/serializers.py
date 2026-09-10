@@ -2433,11 +2433,11 @@ class ElitePlanSerializer(serializers.ModelSerializer):
 
     def get_total_property_listings(self, obj):
         count = obj.total_property_listings
-        return f"{count} property" if count == 1 else f"{count} total property listings"
+        return f"{count} total property listings" 
 
     def get_featured_listings_limit(self, obj):
         count = obj.featured_listings_limit
-        return f"{count} property" if count == 1 else f"{count} featured property listings"
+        return f"{count} featured property listings" 
 
 
 
@@ -2489,9 +2489,9 @@ class AgentPropertySerializer(serializers.ModelSerializer):
     images = serializers.SerializerMethodField()
     image = serializers.SerializerMethodField()
     amenities = serializers.SerializerMethodField()
-    # selling_points = serializers.SerializerMethodField()
-    # landmarks = serializers.SerializerMethodField()
-    # features = serializers.SerializerMethodField()
+    selling_points = serializers.SerializerMethodField()
+    landmarks = serializers.SerializerMethodField()
+    features = serializers.SerializerMethodField()
 
     # =========================================
     # INPUT FIELDS
@@ -7133,6 +7133,49 @@ class UserPropertySerializer(serializers.ModelSerializer):
 
         return []
 
+    # def get_features(self, obj):
+
+    #     data = []
+
+    #     for f in obj.property_features.select_related("field"):
+
+    #         try:
+    #             value = json.loads(f.value)
+
+    #         except Exception:
+
+    #             value = {
+    #                 "value": f.value
+    #             }
+
+    #         feature_name = (
+    #             value.get("option")
+    #             if value.get("option")
+    #             else f.field.field_name
+    #         )
+
+    #         feature_value = value.get("value")
+
+    #         if feature_value is None:
+    #             feature_value = ""
+
+    #         data.append({
+
+    #             "name": feature_name,
+
+    #             "value": str(feature_value),
+
+    #             "icon": (
+    #                 f.field.icon.url
+    #                 if f.field.icon
+    #                 else None
+    #             )
+    #         })
+
+    #     return data
+
+    
+    
     def get_features(self, obj):
 
         data = []
@@ -7148,16 +7191,51 @@ class UserPropertySerializer(serializers.ModelSerializer):
                     "value": f.value
                 }
 
+            # =================================================
+            # FEATURE NAME
+            # =================================================
+
             feature_name = (
                 value.get("option")
                 if value.get("option")
                 else f.field.field_name
             )
 
+            # =================================================
+            # FEATURE VALUE
+            # =================================================
+
             feature_value = value.get("value")
 
             if feature_value is None:
                 feature_value = ""
+
+            # =================================================
+            # FEATURE ICON
+            # =================================================
+
+            icon_url = None
+
+            option_name = value.get("option")
+
+            if option_name:
+
+                option_obj = FieldOption.objects.filter(
+                    field=f.field,
+                    name__iexact=str(option_name).strip()
+                ).first()
+
+                if option_obj and option_obj.icon:
+
+                    icon_url = option_obj.icon.url
+
+            elif f.field.icon:
+
+                icon_url = f.field.icon.url
+
+            # =================================================
+            # OUTPUT
+            # =================================================
 
             data.append({
 
@@ -7165,14 +7243,14 @@ class UserPropertySerializer(serializers.ModelSerializer):
 
                 "value": str(feature_value),
 
-                "icon": (
-                    f.field.icon.url
-                    if f.field.icon
-                    else None
-                )
+                "icon": icon_url
             })
 
         return data
+
+
+
+
 
     def get_images(self, obj):
 

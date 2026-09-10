@@ -2450,9 +2450,9 @@ class AgentPropertySerializer(serializers.ModelSerializer):
     images = serializers.SerializerMethodField()
     image = serializers.SerializerMethodField()
     amenities = serializers.SerializerMethodField()
-    selling_points = serializers.SerializerMethodField()
-    landmarks = serializers.SerializerMethodField()
-    features = serializers.SerializerMethodField()
+    # selling_points = serializers.SerializerMethodField()
+    # landmarks = serializers.SerializerMethodField()
+    # features = serializers.SerializerMethodField()
 
     # =========================================
     # INPUT FIELDS
@@ -2697,15 +2697,15 @@ class AgentPropertySerializer(serializers.ModelSerializer):
             if str(sp).strip()
         ]
 
-        if not cleaned_selling_points:
+        # if not cleaned_selling_points:
 
-            raise serializers.ValidationError({
+        #     raise serializers.ValidationError({
 
-                "selling_points": (
-                    "Selling points cannot be empty."
-                )
+        #         "selling_points": (
+        #             "Selling points cannot be empty."
+        #         )
 
-            })
+        #     })
 
         # =========================================
         # LANDMARKS VALIDATION
@@ -2731,15 +2731,15 @@ class AgentPropertySerializer(serializers.ModelSerializer):
         )
 
         # Empty list check
-        if not landmarks_list:
+        # if not landmarks_list:
 
-            raise serializers.ValidationError({
+        #     raise serializers.ValidationError({
 
-                "landmarks": (
-                    "Landmarks cannot be empty."
-                )
+        #         "landmarks": (
+        #             "Landmarks cannot be empty."
+        #         )
 
-            })
+        #     })
 
         # Validate each landmark
         cleaned_landmarks = []
@@ -2771,15 +2771,15 @@ class AgentPropertySerializer(serializers.ModelSerializer):
             })
 
         # Final validation
-        if not cleaned_landmarks:
+        # if not cleaned_landmarks:
 
-            raise serializers.ValidationError({
+        #     raise serializers.ValidationError({
 
-                "landmarks": (
-                    "Valid landmarks are required."
-                )
+        #         "landmarks": (
+        #             "Valid landmarks are required."
+        #         )
 
-            })
+        #     })
 
         # Save cleaned data back
         self.context["landmarks_list"] = cleaned_landmarks
@@ -2802,15 +2802,15 @@ class AgentPropertySerializer(serializers.ModelSerializer):
             []
         )
 
-        if not field_values:
+        # if not field_values:
 
-            raise serializers.ValidationError({
+        #     raise serializers.ValidationError({
 
-                "features": (
-                    "Features cannot be empty."
-                )
+        #         "features": (
+        #             "Features cannot be empty."
+        #         )
 
-            })
+        #     })
 
         # =========================================
         # AMENITIES VALIDATION
@@ -2821,15 +2821,15 @@ class AgentPropertySerializer(serializers.ModelSerializer):
             []
         )
 
-        if not amenities_list:
+        # if not amenities_list:
 
-            raise serializers.ValidationError({
+        #     raise serializers.ValidationError({
 
-                "amenities": (
-                    "Amenities cannot be empty."
-                )
+        #         "amenities": (
+        #             "Amenities cannot be empty."
+        #         )
 
-            })
+        #     })
 
         purpose_obj = None
 

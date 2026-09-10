@@ -1231,6 +1231,7 @@ class AgentProperty(models.Model):
     )
 
     pincode = models.CharField(
+        null=True,blank=True,
         max_length=50,
         validators=[validate_pincode]
     )

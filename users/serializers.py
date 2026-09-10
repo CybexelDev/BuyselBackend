@@ -493,22 +493,48 @@ class UserProfileSerializer(
 
         return None
 
-    
-class AmenitiesSerializer(serializers.ModelSerializer):
+#old code     
+# class AmenitiesSerializer(serializers.ModelSerializer):
 
+#     icon = serializers.SerializerMethodField()
+
+#     class Meta:
+#         model = Amenities
+#         fields = ["id", "name", "icon"]
+
+#     def get_icon(self, obj):
+#         if obj.icon:
+#             return obj.icon.url
+#         return None
+
+
+# added by mehreena
+class AmenitiesSerializer(serializers.ModelSerializer):
     icon = serializers.SerializerMethodField()
 
     class Meta:
         model = Amenities
         fields = ["id", "name", "icon"]
 
+    def validate_name(self, value):
+        value = value.strip()
+
+        if not value:
+            raise serializers.ValidationError(
+                "Name cannot be blank or spaces."
+            )
+
+        if Amenities.objects.filter(name__iexact=value).exists():
+            raise serializers.ValidationError(
+                "An amenity with this name already exists."
+            )
+
+        return value
+
     def get_icon(self, obj):
         if obj.icon:
             return obj.icon.url
         return None
-
-
-
 
 class InboxSerializer(serializers.ModelSerializer):
     class Meta:

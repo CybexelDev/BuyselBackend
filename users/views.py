@@ -7600,7 +7600,8 @@ class AllPlansAPIView(APIView):
                 })
 
 
-            property_count = Property.objects.filter(user=user.user).count()
+            # property_count = Property.objects.filter(user=user.user).count()
+            property_count = user.total_property_used or 0
             active_subscriptions = UserPlanSubscription.objects.filter(
                 user=user.user,
                 is_active=True
@@ -10627,10 +10628,16 @@ class MyActivityView(APIView):
             email=user.email
         ).first()
 
+        user_profile = UserProfile.objects.filter( user=user ).first()
+
+        properties_listed_count = ( user_profile.total_property_used if user_profile and user_profile.total_property_used is not None else 0 )
+
         # ✅ Properties listed
-        properties_listed_count = Property.objects.filter(
-            user=user_add
-        ).count() if user_add else 0
+        # properties_listed_count = Property.objects.filter(
+        #     user=user_add
+        # ).count() if user_add else 0
+
+        # properties_listed_count = ( user_profile.total_property_used if user_profile else 0 )
 
         # ✅ Viewed properties
         viewed_properties_count = PropertyView.objects.filter(

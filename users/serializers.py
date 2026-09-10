@@ -2390,16 +2390,55 @@ class AgentPlanSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+
+
 class PremiumPlanSerializer(serializers.ModelSerializer):
+
+    validity = serializers.SerializerMethodField()
+    total_listing = serializers.SerializerMethodField()
+    residential_limit = serializers.SerializerMethodField()
+    commercial_limit = serializers.SerializerMethodField()
+
     class Meta:
         model = PremiumPlan
-        fields = '__all__'
+        fields = "__all__"
+
+    def get_validity(self, obj):
+        return f"{obj.validity} days"
+
+    def get_total_listing(self, obj):
+        return f"{obj.total_listing} total listings"
+
+    def get_residential_limit(self, obj):
+        return f"{obj.residential_limit} residential listings"
+
+    def get_commercial_limit(self, obj):
+        return f"{obj.commercial_limit} commercial listings"
+
+
 
 
 class ElitePlanSerializer(serializers.ModelSerializer):
+
+    plan_validity_days = serializers.SerializerMethodField()
+    total_property_listings = serializers.SerializerMethodField()
+    featured_listings_limit = serializers.SerializerMethodField()
+
     class Meta:
         model = ElitePlan
-        fields = '__all__'
+        fields = "__all__"
+
+    def get_plan_validity_days(self, obj):
+        return f"{obj.plan_validity_days} days"
+
+    def get_total_property_listings(self, obj):
+        count = obj.total_property_listings
+        return f"{count} property" if count == 1 else f"{count} total property listings"
+
+    def get_featured_listings_limit(self, obj):
+        count = obj.featured_listings_limit
+        return f"{count} property" if count == 1 else f"{count} featured property listings"
+
 
 
 class CurrentPlanSerializer(serializers.Serializer):

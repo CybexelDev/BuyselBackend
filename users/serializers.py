@@ -5148,123 +5148,324 @@ class RecentAgentEnquirySerializer(serializers.ModelSerializer):
 
 
 
+# class CombinedPropertyListSerializer(serializers.Serializer):
+
+#     id=serializers.SerializerMethodField()
+#     property_type=serializers.SerializerMethodField()
+
+#     label=serializers.SerializerMethodField()
+#     city=serializers.SerializerMethodField()
+#     perprice=serializers.SerializerMethodField()
+#     price=serializers.SerializerMethodField()
+#     sq_ft=serializers.SerializerMethodField()
+#     land_area=serializers.SerializerMethodField()
+
+#     owner=serializers.SerializerMethodField()
+
+#     whatsapp=serializers.SerializerMethodField()
+#     phone=serializers.SerializerMethodField()
+
+#     location=serializers.SerializerMethodField()
+
+#     images=serializers.SerializerMethodField()
+
+#     is_wishlisted=serializers.SerializerMethodField()
+
+
+#     def get_id(self,obj):
+#         return str(obj.id)
+
+
+#     def get_property_type(self,obj):
+#         if isinstance(obj,Property):
+#             return "user"
+#         return "agent"
+
+
+#     def get_label(self,obj):
+#         return obj.label
+
+
+#     def get_city(self,obj):
+#         return obj.city
+
+
+#     def get_perprice(self,obj):
+#         return obj.perprice
+
+
+#     def get_price(self,obj):
+#         return obj.price
+
+
+#     def get_sq_ft(self,obj):
+#         return str(obj.sq_ft) if obj.sq_ft else None
+
+
+#     def get_land_area(self,obj):
+#         return obj.land_area
+
+
+#     # def get_owner(self,obj):
+
+#     #     if isinstance(obj,Property):
+#     #         return (
+#     #             obj.owner.name
+#     #             if obj.owner else None
+#     #         )
+
+#     #     return (
+#     #         obj.owner
+#     #         or obj.agent.name
+#     #     )
+
+#     def get_owner(self, obj):
+
+#         # # USER PROPERTY
+#         # if isinstance(obj, Property):
+#         #     return obj.user if obj.user else None
+
+#         if isinstance(obj, Property):
+
+#             # manual owner name
+#             if obj.owner:
+#                 return obj.owner
+
+#             # fallback to user
+#             if obj.user:
+
+#                 # most correct case
+#                 if hasattr(obj.user, "name"):
+#                     return obj.user.name
+
+#                 # fallback cases
+#                 if hasattr(obj.user, "full_name"):
+#                     return obj.user.full_name
+
+#                 if hasattr(obj.user, "username"):
+#                     return obj.user.username
+
+#                 if hasattr(obj.user, "email"):
+#                     return obj.user.email
+
+#             return None
+
+#         # AGENT PROPERTY
+#         if isinstance(obj, AgentProperty):
+
+#             # if manual owner string exists
+#             if obj.owner:
+#                 return obj.owner
+
+#             # fallback to agent
+#             if obj.agent:
+
+#                 # most correct case
+#                 if hasattr(obj.agent, "user") and obj.agent.user:
+#                     return obj.agent.user.name
+
+#                 # fallback cases (safe)
+#                 if hasattr(obj.agent, "full_name"):
+#                     return obj.agent.full_name
+
+#                 if hasattr(obj.agent, "username"):
+#                     return obj.agent.username
+
+#             return None
+
+
+#     def get_whatsapp(self,obj):
+#         return obj.whatsapp
+
+
+#     def get_phone(self,obj):
+#         return obj.phone
+
+
+#     def get_location(self,obj):
+#         return obj.location
+
+
+#     # IMPORTANT FIX
+#     def get_images(self,obj):
+
+#         request=self.context.get(
+#             "request"
+#         )
+
+#         urls=[]
+
+
+#         # USER PROPERTY MULTIPLE IMAGES
+#         if isinstance(obj,Property):
+
+#             if hasattr(obj,"images"):
+#                 for img in obj.images.all()[:2]:
+#                     if img.image:
+#                         url=img.image.url
+
+#                         if request:
+#                             url=request.build_absolute_uri(url)
+
+#                         urls.append(url)
+
+
+#         # AGENT PROPERTY SINGLE IMAGE
+#         elif isinstance(obj,AgentProperty):
+
+#             if obj.image:
+#                 url=obj.image.url
+
+#                 if request:
+#                     url=request.build_absolute_uri(url)
+
+#                 urls.append(url)
+
+
+#         return urls
+#     def get_is_wishlisted(self, obj):
+
+#         wishlist_ids = self.context.get(
+#             "wishlist_ids",
+#             set()
+#         )
+
+#         # compare UUIDs now
+#         return str(obj.id) in wishlist_ids
+
+
 class CombinedPropertyListSerializer(serializers.Serializer):
 
-    id=serializers.SerializerMethodField()
-    property_type=serializers.SerializerMethodField()
+    id = serializers.SerializerMethodField()
+    property_type = serializers.SerializerMethodField()
 
-    label=serializers.SerializerMethodField()
-    city=serializers.SerializerMethodField()
-    perprice=serializers.SerializerMethodField()
-    price=serializers.SerializerMethodField()
-    sq_ft=serializers.SerializerMethodField()
-    land_area=serializers.SerializerMethodField()
+    label = serializers.SerializerMethodField()
+    city = serializers.SerializerMethodField()
+    perprice = serializers.SerializerMethodField()
+    price = serializers.SerializerMethodField()
+    sq_ft = serializers.SerializerMethodField()
+    land_area = serializers.SerializerMethodField()
 
-    owner=serializers.SerializerMethodField()
+    owner = serializers.SerializerMethodField()
 
-    whatsapp=serializers.SerializerMethodField()
-    phone=serializers.SerializerMethodField()
+    whatsapp = serializers.SerializerMethodField()
+    phone = serializers.SerializerMethodField()
 
-    location=serializers.SerializerMethodField()
+    location = serializers.SerializerMethodField()
 
-    images=serializers.SerializerMethodField()
+    images = serializers.SerializerMethodField()
 
-    is_wishlisted=serializers.SerializerMethodField()
+    is_wishlisted = serializers.SerializerMethodField()
 
+    # =========================================================
+    # ID
+    # =========================================================
 
-    def get_id(self,obj):
+    def get_id(self, obj):
         return str(obj.id)
 
+    # =========================================================
+    # PROPERTY TYPE
+    # =========================================================
 
-    def get_property_type(self,obj):
-        if isinstance(obj,Property):
+    def get_property_type(self, obj):
+
+        if isinstance(obj, Property):
             return "user"
-        return "agent"
 
+        if isinstance(obj, AgentProperty):
+            return "agent"
 
-    def get_label(self,obj):
+        return None
+
+    # =========================================================
+    # BASIC DETAILS
+    # =========================================================
+
+    def get_label(self, obj):
         return obj.label
 
-
-    def get_city(self,obj):
+    def get_city(self, obj):
         return obj.city
 
-
-    def get_perprice(self,obj):
+    def get_perprice(self, obj):
         return obj.perprice
 
-
-    def get_price(self,obj):
+    def get_price(self, obj):
         return obj.price
 
+    def get_sq_ft(self, obj):
 
-    def get_sq_ft(self,obj):
-        return str(obj.sq_ft) if obj.sq_ft else None
+        if obj.sq_ft is not None:
+            return str(obj.sq_ft)
 
+        return None
 
-    def get_land_area(self,obj):
+    def get_land_area(self, obj):
         return obj.land_area
 
-
-    # def get_owner(self,obj):
-
-    #     if isinstance(obj,Property):
-    #         return (
-    #             obj.owner.name
-    #             if obj.owner else None
-    #         )
-
-    #     return (
-    #         obj.owner
-    #         or obj.agent.name
-    #     )
+    # =========================================================
+    # OWNER
+    # =========================================================
 
     def get_owner(self, obj):
 
-        # # USER PROPERTY
-        # if isinstance(obj, Property):
-        #     return obj.user if obj.user else None
+        # =====================================================
+        # USER PROPERTY
+        # =====================================================
 
         if isinstance(obj, Property):
 
-            # manual owner name
+            # Manual owner name
             if obj.owner:
                 return obj.owner
 
-            # fallback to user
+            # Fallback to user
             if obj.user:
 
-                # most correct case
-                if hasattr(obj.user, "name"):
+                if hasattr(obj.user, "name") and obj.user.name:
                     return obj.user.name
 
-                # fallback cases
-                if hasattr(obj.user, "full_name"):
+                if hasattr(obj.user, "full_name") and obj.user.full_name:
                     return obj.user.full_name
 
-                if hasattr(obj.user, "username"):
+                if hasattr(obj.user, "username") and obj.user.username:
                     return obj.user.username
 
-                if hasattr(obj.user, "email"):
+                if hasattr(obj.user, "email") and obj.user.email:
                     return obj.user.email
 
             return None
 
+        # =====================================================
         # AGENT PROPERTY
+        # =====================================================
+
         if isinstance(obj, AgentProperty):
 
-            # if manual owner string exists
+            # Manual owner name
             if obj.owner:
                 return obj.owner
 
-            # fallback to agent
+            # Fallback to agent
             if obj.agent:
 
-                # most correct case
+                # Agent linked user
                 if hasattr(obj.agent, "user") and obj.agent.user:
-                    return obj.agent.user.name
 
-                # fallback cases (safe)
+                    if hasattr(obj.agent.user, "name"):
+                        return obj.agent.user.name
+
+                    if hasattr(obj.agent.user, "full_name"):
+                        return obj.agent.user.full_name
+
+                    if hasattr(obj.agent.user, "username"):
+                        return obj.agent.user.username
+
+                    if hasattr(obj.agent.user, "email"):
+                        return obj.agent.user.email
+
+                # Agent profile name
                 if hasattr(obj.agent, "full_name"):
                     return obj.agent.full_name
 
@@ -5273,56 +5474,121 @@ class CombinedPropertyListSerializer(serializers.Serializer):
 
             return None
 
+        return None
 
-    def get_whatsapp(self,obj):
+    # =========================================================
+    # CONTACT
+    # =========================================================
+
+    def get_whatsapp(self, obj):
         return obj.whatsapp
 
-
-    def get_phone(self,obj):
+    def get_phone(self, obj):
         return obj.phone
 
+    # =========================================================
+    # LOCATION
+    # =========================================================
 
-    def get_location(self,obj):
+    def get_location(self, obj):
         return obj.location
 
+    # =========================================================
+    # IMAGES
+    # =========================================================
+    #
+    # USER PROPERTY:
+    #
+    #     PropertyImage
+    #
+    # AGENT PROPERTY:
+    #
+    #     AgentProperty.image          -> main image
+    #     AgentPropertyImage           -> multiple images
+    #
+    # =========================================================
 
-    # IMPORTANT FIX
-    def get_images(self,obj):
+    def get_images(self, obj):
 
-        request=self.context.get(
-            "request"
-        )
+        request = self.context.get("request")
 
-        urls=[]
+        urls = []
+        seen_urls = set()
 
+        # =====================================================
+        # HELPER
+        # =====================================================
 
-        # USER PROPERTY MULTIPLE IMAGES
-        if isinstance(obj,Property):
+        def add_image(image_field):
 
-            if hasattr(obj,"images"):
-                for img in obj.images.all()[:2]:
-                    if img.image:
-                        url=img.image.url
+            if not image_field:
+                return
 
-                        if request:
-                            url=request.build_absolute_uri(url)
+            try:
 
-                        urls.append(url)
+                url = image_field.url
 
+            except Exception:
 
-        # AGENT PROPERTY SINGLE IMAGE
-        elif isinstance(obj,AgentProperty):
+                return
 
-            if obj.image:
-                url=obj.image.url
+            if not url:
+                return
 
-                if request:
-                    url=request.build_absolute_uri(url)
+            # Build absolute URL
+            if request:
+                url = request.build_absolute_uri(url)
 
+            # Prevent duplicate image URLs
+            if url not in seen_urls:
+
+                seen_urls.add(url)
                 urls.append(url)
 
+        # =====================================================
+        # USER PROPERTY
+        # =====================================================
+
+        if isinstance(obj, Property):
+
+            # Property has multiple images
+            if hasattr(obj, "images"):
+
+                for img in obj.images.all()[:2]:
+
+                    if img.image:
+                        add_image(img.image)
+
+        # =====================================================
+        # AGENT PROPERTY
+        # =====================================================
+
+        elif isinstance(obj, AgentProperty):
+
+            # -------------------------------------------------
+            # 1. MAIN AGENT PROPERTY IMAGE
+            # -------------------------------------------------
+
+            if obj.image:
+                add_image(obj.image)
+
+            # -------------------------------------------------
+            # 2. MULTIPLE AGENT PROPERTY IMAGES
+            # -------------------------------------------------
+
+            if hasattr(obj, "images"):
+
+                for img in obj.images.all()[:2]:
+
+                    if img.image:
+                        add_image(img.image)
 
         return urls
+
+    # =========================================================
+    # WISHLIST
+    # =========================================================
+
     def get_is_wishlisted(self, obj):
 
         wishlist_ids = self.context.get(
@@ -5330,8 +5596,8 @@ class CombinedPropertyListSerializer(serializers.Serializer):
             set()
         )
 
-        # compare UUIDs now
         return str(obj.id) in wishlist_ids
+
     
 
 # class UserPropertySerializer(serializers.ModelSerializer):

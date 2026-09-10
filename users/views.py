@@ -11118,6 +11118,144 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 
 
+# class PropertySearchAPIView(APIView):
+
+#     authentication_classes = []
+#     permission_classes = [AllowAny]
+
+#     def get(self, request):
+
+#         raw_input = request.query_params.get(
+#             "label",
+#             ""
+#         ).strip().lower()
+
+#         user_properties = Property.objects.select_related(
+#             "user",
+#             "category",
+#             "purpose"
+#         ).prefetch_related("images")
+
+#         agent_properties = AgentProperty.objects.select_related(
+#             "agent",
+#             "category",
+#             "purpose"
+#         ).prefetch_related("images")
+
+
+#         price_prefix = None
+#         text_parts = []
+
+#         if raw_input:
+#             for part in raw_input.split():
+
+#                 if part.isdigit():
+#                     price_prefix = part
+#                 else:
+#                     text_parts.append(part)
+
+#         search_text = " ".join(text_parts)
+
+
+#         if search_text:
+
+#             user_properties = user_properties.filter(
+#                 Q(label__istartswith=search_text) |
+#                 Q(city__istartswith=search_text) |
+#                 Q(district__istartswith=search_text)
+#             )
+
+#             agent_properties = agent_properties.filter(
+#                 Q(label__istartswith=search_text) |
+#                 Q(city__istartswith=search_text) |
+#                 Q(district__istartswith=search_text)
+#             )
+
+
+#         if price_prefix:
+
+#             user_properties = user_properties.filter(
+#                 price__startswith=price_prefix
+#             )
+
+#             agent_properties = agent_properties.filter(
+#                 price__startswith=price_prefix
+#             )
+
+
+#         combined = list(
+#             chain(
+#                 user_properties,
+#                 agent_properties
+#             )
+#         )
+
+
+#         combined.sort(
+#             key=lambda x: x.created_at,
+#             reverse=True
+#         )
+
+
+#         # -------------------------
+#         # WISHLIST UUIDS
+#         # -------------------------
+#         wishlist_ids = set()
+
+#         auth = request.headers.get("Authorization")
+
+#         if auth:
+#             try:
+#                 token = auth.split()[1]
+
+#                 decoded = jwt.decode(
+#                     token,
+#                     settings.SECRET_KEY,
+#                     algorithms=["HS256"]
+#                 )
+
+#                 user_id = decoded.get("user_id")
+
+#                 wishlist_ids = set(
+#                     str(x)
+#                     for x in Wishlist.objects.filter(
+#                         user_id=user_id
+#                     ).values_list(
+#                         "property_uuid",
+#                         flat=True
+#                     )
+#                 )
+
+#             except Exception:
+#                 pass
+
+
+#         serializer = CombinedPropertyListSerializer(
+#             combined,
+#             many=True,
+#             context={
+#                 "request": request,
+#                 "wishlist_ids": wishlist_ids
+#             }
+#         )
+
+
+#         return Response({
+#             "count": len(combined),
+#             "data": serializer.data
+#         })
+
+
+import re
+from itertools import chain
+import jwt
+from django.conf import settings
+from django.db.models import Q
+from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+
+
 class PropertySearchAPIView(APIView):
 
     authentication_classes = []
@@ -11129,6 +11267,10 @@ class PropertySearchAPIView(APIView):
             "label",
             ""
         ).strip().lower()
+
+        # =====================================================
+        # BASE QUERYSETS
+        # =====================================================
 
         user_properties = Property.objects.select_related(
             "user",
@@ -11142,35 +11284,47 @@ class PropertySearchAPIView(APIView):
             "purpose"
         ).prefetch_related("images")
 
+        # =====================================================
+        # SPLIT SEARCH INPUT
+        # =====================================================
 
+        search_words = []
         price_prefix = None
-        text_parts = []
 
         if raw_input:
+
             for part in raw_input.split():
 
+                # Numeric input = price search
                 if part.isdigit():
+
                     price_prefix = part
+
                 else:
-                    text_parts.append(part)
 
-        search_text = " ".join(text_parts)
+                    search_words.append(part)
 
+        for word in search_words:
 
-        if search_text:
+            escaped_word = re.escape(word)
+
+            word_prefix_regex = rf"(^|\W){escaped_word}"
 
             user_properties = user_properties.filter(
-                Q(label__istartswith=search_text) |
-                Q(city__istartswith=search_text) |
-                Q(district__istartswith=search_text)
+                Q(label__iregex=word_prefix_regex) |
+                Q(city__iregex=word_prefix_regex) |
+                Q(district__iregex=word_prefix_regex)
             )
 
             agent_properties = agent_properties.filter(
-                Q(label__istartswith=search_text) |
-                Q(city__istartswith=search_text) |
-                Q(district__istartswith=search_text)
+                Q(label__iregex=word_prefix_regex) |
+                Q(city__iregex=word_prefix_regex) |
+                Q(district__iregex=word_prefix_regex)
             )
 
+        # =====================================================
+        # PRICE FILTER
+        # =====================================================
 
         if price_prefix:
 
@@ -11182,6 +11336,9 @@ class PropertySearchAPIView(APIView):
                 price__startswith=price_prefix
             )
 
+        # =====================================================
+        # COMBINE USER + AGENT PROPERTIES
+        # =====================================================
 
         combined = list(
             chain(
@@ -11190,45 +11347,59 @@ class PropertySearchAPIView(APIView):
             )
         )
 
+        # =====================================================
+        # SORT BY CREATED DATE
+        # =====================================================
 
         combined.sort(
             key=lambda x: x.created_at,
             reverse=True
         )
 
-
-        # -------------------------
+        # =====================================================
         # WISHLIST UUIDS
-        # -------------------------
+        # =====================================================
+
         wishlist_ids = set()
 
         auth = request.headers.get("Authorization")
 
         if auth:
+
             try:
-                token = auth.split()[1]
 
-                decoded = jwt.decode(
-                    token,
-                    settings.SECRET_KEY,
-                    algorithms=["HS256"]
-                )
+                token_parts = auth.split()
 
-                user_id = decoded.get("user_id")
+                if len(token_parts) >= 2:
 
-                wishlist_ids = set(
-                    str(x)
-                    for x in Wishlist.objects.filter(
-                        user_id=user_id
-                    ).values_list(
-                        "property_uuid",
-                        flat=True
+                    token = token_parts[1]
+
+                    decoded = jwt.decode(
+                        token,
+                        settings.SECRET_KEY,
+                        algorithms=["HS256"]
                     )
-                )
+
+                    user_id = decoded.get("user_id")
+
+                    if user_id:
+
+                        wishlist_ids = set(
+                            str(x)
+                            for x in Wishlist.objects.filter(
+                                user_id=user_id
+                            ).values_list(
+                                "property_uuid",
+                                flat=True
+                            )
+                        )
 
             except Exception:
                 pass
 
+        # =====================================================
+        # SERIALIZER
+        # =====================================================
 
         serializer = CombinedPropertyListSerializer(
             combined,
@@ -11239,6 +11410,9 @@ class PropertySearchAPIView(APIView):
             }
         )
 
+        # =====================================================
+        # RESPONSE
+        # =====================================================
 
         return Response({
             "count": len(combined),

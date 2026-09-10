@@ -10621,16 +10621,24 @@ class MyActivityView(APIView):
             property_enquiries_count +
             agent_property_enquiries_count
         )
-
-
-        # ✅ MATCH UserAdd USING EMAIL (NO RELATION NEEDED)
-        user_add = UserCreate.objects.filter(
-            email=user.email
-        ).first()
-
         user_profile = UserProfile.objects.filter( user=user ).first()
 
-        properties_listed_count = ( user_profile.total_property_used if user_profile and user_profile.total_property_used is not None else 0 )
+        if user_profile:  
+            properties_listed_count = ( user_profile.total_property_used if user_profile.total_property_used is not None else 0 ) 
+        else: 
+            user_add = UserCreate.objects.filter( email=user.email ).first() 
+            if user_add: 
+                properties_listed_count = Property.objects.filter( user=user_add ).count() 
+            else: 
+                properties_listed_count = 0
+        # ✅ MATCH UserAdd USING EMAIL (NO RELATION NEEDED)
+        # user_add = UserCreate.objects.filter(
+        #     email=user.email
+        # ).first()
+
+        # user_profile = UserProfile.objects.filter( user=user ).first()
+
+        # properties_listed_count = ( user_profile.total_property_used if user_profile and user_profile.total_property_used is not None else 0 )
 
         # ✅ Properties listed
         # properties_listed_count = Property.objects.filter(

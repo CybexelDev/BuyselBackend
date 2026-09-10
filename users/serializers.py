@@ -2474,6 +2474,12 @@ class AgentPropertySerializer(serializers.ModelSerializer):
         allow_blank=True
     )
 
+    pincode = serializers.CharField(
+        required=False,
+        allow_null=True,
+        allow_blank=True
+    )
+
     class Meta:
         model = AgentProperty
 
@@ -2551,12 +2557,13 @@ class AgentPropertySerializer(serializers.ModelSerializer):
             "subcategory",
             "purpose",
             "description",
-            "sq_ft",
+            # "sq_ft",
+            # "pincode",
             "whatsapp",
             "phone",
             "state",
             "district",
-            "pincode",
+            "city",
             "phone"
 
         ]
@@ -6184,6 +6191,7 @@ class UserPropertySerializer(serializers.ModelSerializer):
         allow_blank=False
     )
 
+
     # =====================================================
     # OPTIONAL FIELDS
     # =====================================================
@@ -6216,12 +6224,12 @@ class UserPropertySerializer(serializers.ModelSerializer):
         blank=True,
         null=True
     )
-    district = models.CharField(
-        max_length=255,
-        blank=True,
-        null=True,
-        validators=[validate_safe_text]
-    )
+    # district = models.CharField(
+    #     max_length=255,
+    #     blank=True,
+    #     null=True,
+    #     validators=[validate_safe_text]
+    # )
 
     class Meta:
 
@@ -6308,6 +6316,10 @@ class UserPropertySerializer(serializers.ModelSerializer):
             "category",
             "subcategory",
             "purpose",
+            "city",
+            "district",
+            "state",
+            "label",
         ]
 
         for field in required_fields:

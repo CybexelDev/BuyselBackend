@@ -2899,6 +2899,7 @@ class Property(models.Model):
     )
 
     pincode=models.CharField(
+        null=True,blank=True,
         max_length=10,
         validators=[validate_pincode]
     )

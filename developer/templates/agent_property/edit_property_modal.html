@@ -550,6 +550,46 @@ OWNER DETAILS
 
 </div>
 
+<div class="bg-white border rounded-xl p-4 mb-4">
+
+    <h3 class="font-semibold text-base mb-3">
+        Staff Details
+    </h3>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+
+        <!-- Added By -->
+        <div>
+            <label class="label">
+                Added By
+            </label>
+
+            <input
+                type="text"
+                id="editAddedBy"
+                name="added_by"
+                class="input w-full"
+                maxlength="255">
+        </div>
+
+        <!-- Marketing Staff -->
+        <div>
+            <label class="label">
+                Marketing Staff
+            </label>
+
+            <input
+                type="text"
+                id="editMarketStaff"
+                name="market_staff"
+                class="input w-full"
+                maxlength="255">
+        </div>
+
+    </div>
+
+</div>
+
 <!-- ============================
 LOCATION DETAILS
 ============================= -->
@@ -633,14 +673,14 @@ LOCATION DETAILS
         <div>
 
             <label class="label">
-                Pincode *
+                Pincode 
             </label>
 
             <input
                 id="editPincode"
                 name="pincode"
                 class="input w-full"
-                required>
+                >
 
         </div>
 
@@ -1010,6 +1050,11 @@ function populateEditForm(property) {
     document.getElementById("editLocation").value = property.location || "";
 
     document.getElementById("editNotes").value = property.notes || "";
+    document.getElementById("editAddedBy").value =
+        property.added_by || "";
+
+    document.getElementById("editMarketStaff").value =
+        property.market_staff || "";
 
     document.getElementById("editFeatured").checked = property.is_featured;
 

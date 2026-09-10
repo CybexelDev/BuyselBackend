@@ -579,7 +579,7 @@
 
 
                                 <label class="label">
-                                    Agent (Optional)
+                                    Agent *
                                 </label>
 
 
@@ -685,6 +685,52 @@
 
                     </div>
 
+                    
+<div class="bg-white border rounded-xl p-4">
+
+    <h3 class="font-semibold text-base mb-3">
+        Staff Details
+    </h3>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+
+        <!-- Added By -->
+        <div>
+
+            <label class="label">
+                Added By
+            </label>
+
+            <input
+                type="text"
+                name="added_by"
+                class="input w-full"
+                maxlength="255"
+            >
+
+        </div>
+
+        <!-- Market Staff -->
+        <div>
+
+            <label class="label">
+                Market Staff
+            </label>
+
+            <input
+                type="text"
+                name="market_staff"
+                class="input w-full"
+                maxlength="255"
+            >
+
+        </div>
+
+    </div>
+
+</div>
+
+
 
                     <!-- ================================================= -->
                     <!-- LOCATION -->
@@ -783,11 +829,11 @@
                             <div>
 
                                 <label class="label">
-                                    Pincode *
+                                    Pincode 
                                 </label>
 
 
-                                <input name="pincode" class="input w-full" required>
+                                <input name="pincode" class="input w-full">
 
                             </div>
 
@@ -819,7 +865,7 @@
                         </label>
 
 
-                        <input name="location" class="input w-full" placeholder="Google Map URL" required>
+                        <input name="location" class="input w-full" placeholder="Google Map URL">
 
 
                     </div>

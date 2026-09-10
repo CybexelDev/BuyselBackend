@@ -9638,6 +9638,20 @@ def add_agent_property(request):
             ""
         ).strip()
 
+        property_obj.added_by = request.POST.get(
+            "added_by",
+            ""
+        ).strip()
+
+        # -------------------------------------------------
+        # MARKET STAFF
+        # -------------------------------------------------
+
+        property_obj.market_staff = request.POST.get(
+            "market_staff",
+            ""
+        ).strip()
+
         # -------------------------------------------------
         # DEFAULT DURATION
         # -------------------------------------------------
@@ -10175,6 +10189,8 @@ def get_agent_property(request, id):
             "pincode": property.pincode or "",
             "location": property.location or "",
             "notes": property.notes or "",
+            "added_by": property.added_by or "",
+            "market_staff": property.market_staff or "",
             "paid": property.paid,
             "is_featured": property.is_featured,
             "agent": str(property.agent.id) if property.agent else "",
@@ -10468,6 +10484,25 @@ def edit_agent_property(request, id):
             # ==========================================
 
             property.notes = request.POST.get("notes", "")
+            property.added_by = (
+                request.POST.get(
+                    "added_by",
+                    ""
+                ).strip()
+                or None
+            )
+
+            # ==========================================
+            # MARKET STAFF
+            # ==========================================
+
+            property.market_staff = (
+                request.POST.get(
+                    "market_staff",
+                    ""
+                ).strip()
+                or None
+            )
 
             # ==========================================
             # STATUS
@@ -11468,6 +11503,8 @@ def expired_agent_property_detail(request, property_id):
         "paid": property_obj.paid,
         "is_featured": property_obj.is_featured,
         "notes": property_obj.notes,
+        "added_by": property_obj.added_by or "",
+        "market_staff": property_obj.market_staff or "",
         "duration_days": property_obj.duration_days,
         "image": (property_obj.image.url if property_obj.image else None),
         "screenshot": (
@@ -12382,6 +12419,8 @@ def edit_expired_agent_property(request, property_id):
         "village",
         "state",
         "notes",
+        "added_by",
+        "market_staff",
     ]
 
     for field_name in string_fields:
@@ -12936,6 +12975,8 @@ def restore_expired_agent_property(request, property_id):
         paid=expired.paid,
         is_featured=expired.is_featured,
         notes=expired.notes,
+        added_by=expired.added_by,
+        market_staff=expired.market_staff,
         subscription=expired.subscription,
         # IMPORTANT
         #

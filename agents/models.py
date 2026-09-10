@@ -1278,6 +1278,20 @@ class AgentProperty(models.Model):
 
     paid = models.BooleanField(default=False)
 
+    added_by=models.CharField(
+            max_length=255,
+            blank=True,
+            null=True,
+            validators=[validate_safe_text]
+        )
+    
+    market_staff=models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        validators=[validate_safe_text]
+    )
+
     is_featured = models.BooleanField(default=False)
 
     notes = models.CharField(
@@ -1309,47 +1323,51 @@ class AgentProperty(models.Model):
         auto_now_add=True
     )
 
+    updated_at=models.DateTimeField(
+            auto_now=True
+        )
+
     # ============================================================
     # VALIDATION
     # ============================================================
 
     def clean(self):
 
-        purpose_name = ""
+        # purpose_name = ""
 
-        if self.purpose:
-            purpose_name = self.purpose.name.lower().strip()
+        # if self.purpose:
+        #     purpose_name = self.purpose.name.lower().strip()
 
-        if purpose_name == "sale":
+        # if purpose_name == "sale":
 
-            if not self.price:
-                raise ValidationError({
-                    "price": "Price is required for sale"
-                })
+        #     if not self.price:
+        #         raise ValidationError({
+        #             "price": "Price is required for sale"
+        #         })
 
-            if not self.perprice:
-                raise ValidationError({
-                    "perprice": "Per price is required for sale"
-                })
+        #     if not self.perprice:
+        #         raise ValidationError({
+        #             "perprice": "Per price is required for sale"
+        #         })
 
-        elif purpose_name == "rent":
+        # elif purpose_name == "rent":
 
-            if not self.price:
-                raise ValidationError({
-                    "price": "Rent amount is required"
-                })
+        #     if not self.price:
+        #         raise ValidationError({
+        #             "price": "Rent amount is required"
+        #         })
 
-            if not self.deposit:
-                raise ValidationError({
-                    "deposit": "Deposit is required for rent"
-                })
+        #     if not self.deposit:
+        #         raise ValidationError({
+        #             "deposit": "Deposit is required for rent"
+        #         })
 
-        elif purpose_name == "lease":
+        # elif purpose_name == "lease":
 
-            if not self.price:
-                raise ValidationError({
-                    "price": "Price is required for lease"
-                })
+        #     if not self.price:
+        #         raise ValidationError({
+        #             "price": "Price is required for lease"
+        #         })
 
         # ========================================================
         # DURATION VALIDATION
@@ -1620,6 +1638,8 @@ class AgentProperty(models.Model):
             is_featured=self.is_featured,
 
             notes=self.notes,
+            added_by=self.added_by,
+            market_staff=self.market_staff,
 
             subscription=self.subscription,
 
@@ -1928,6 +1948,8 @@ class ExpiredAgentProperty(models.Model):
     )
 
     pincode = models.CharField(
+        blank=True,
+        null=True,
         max_length=50,
         validators=[validate_pincode]
     )
@@ -1987,6 +2009,20 @@ class ExpiredAgentProperty(models.Model):
         validators=[validate_safe_message]
     )
 
+    added_by=models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        validators=[validate_safe_text]
+    )
+        
+    market_staff=models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        validators=[validate_safe_text]
+    )
+
     subscription = models.ForeignKey(
         "developer.Subscription",
         on_delete=models.SET_NULL,
@@ -2005,55 +2041,56 @@ class ExpiredAgentProperty(models.Model):
         auto_now_add=True
     )
 
-    def clean(self):
 
-        purpose_name = ""
+    # def clean(self):
 
-        if self.purpose:
-            purpose_name = self.purpose.name.lower().strip()
+        # purpose_name = ""
 
-        # =========================
-        # SALE
-        # =========================
+        # if self.purpose:
+        #     purpose_name = self.purpose.name.lower().strip()
 
-        if purpose_name == "sale":
+        # # =========================
+        # # SALE
+        # # =========================
 
-            if not self.price:
-                raise ValidationError({
-                    "price": "Price is required for sale"
-                })
+        # if purpose_name == "sale":
 
-            if not self.perprice:
-                raise ValidationError({
-                    "perprice": "Per price is required for sale"
-                })
+        #     if not self.price:
+        #         raise ValidationError({
+        #             "price": "Price is required for sale"
+        #         })
 
-        # =========================
-        # RENT
-        # =========================
+        #     if not self.perprice:
+        #         raise ValidationError({
+        #             "perprice": "Per price is required for sale"
+        #         })
 
-        elif purpose_name == "rent":
+        # # =========================
+        # # RENT
+        # # =========================
 
-            if not self.price:
-                raise ValidationError({
-                    "price": "Rent amount is required"
-                })
+        # elif purpose_name == "rent":
 
-            if not self.deposit:
-                raise ValidationError({
-                    "deposit": "Deposit is required for rent"
-                })
+        #     if not self.price:
+        #         raise ValidationError({
+        #             "price": "Rent amount is required"
+        #         })
 
-        # =========================
-        # LEASE
-        # =========================
+        #     if not self.deposit:
+        #         raise ValidationError({
+        #             "deposit": "Deposit is required for rent"
+        #         })
 
-        elif purpose_name == "lease":
+        # # =========================
+        # # LEASE
+        # # =========================
 
-            if not self.price:
-                raise ValidationError({
-                    "price": "Price is required for lease"
-                })
+        # elif purpose_name == "lease":
+
+        #     if not self.price:
+        #         raise ValidationError({
+        #             "price": "Price is required for lease"
+        #         })
 
     def __str__(self):
         return f"{self.label} - {self.city}"

@@ -17838,14 +17838,42 @@ class VerifyPaymentAPIView(APIView):
             payment.payment_status = "success"
             payment.paid_at = timezone.now()
             payment.save()
-            # ==========================================
-            # REEL PURCHASE NOTIFICATION
-            # ==========================================
 
             if payment.plan_type in [
                 "short_reel",
                 "cinematic_reel"
             ]:
+
+                # =========================================================
+                # REEL PACKAGE
+                # =========================================================
+
+                reel_package = payment.reel_package
+
+                # ---------------------------------------------------------
+                # Get reel package details
+                # ---------------------------------------------------------
+
+                if reel_package:
+
+                    plan_name = reel_package.name
+
+                    plan_price = reel_package.price_per_day
+
+                    plan_validity = ""
+
+                else:
+
+                    plan_name = ""
+
+                    plan_price = payment.amount
+
+                    plan_validity = ""
+
+
+                # =========================================================
+                # CREATE REEL PURCHASE NOTIFICATION
+                # =========================================================
 
                 ReelPurchaseNotification.objects.create(
 
@@ -17854,7 +17882,11 @@ class VerifyPaymentAPIView(APIView):
                     message=(
                         f"{payment.agent.username} "
                         f"purchased "
-                        f"{payment.reel_package.name}"
+                        f"{reel_package.name}"
+                        if reel_package
+                        else
+                        f"{payment.agent.username} "
+                        f"purchased a reel package"
                     ),
 
                     notification_type="reel_purchase",
@@ -17863,36 +17895,139 @@ class VerifyPaymentAPIView(APIView):
 
                     agent=payment.agent
                 )
-                plan_details = self.get_plan_details(payment)
 
-                return Response({
 
-                    "status": True,
+                # =========================================================
+                # PAYMENT RESPONSE
+                # =========================================================
 
-                    "message": "Payment verified successfully. Our team will contact you shortly to discuss your reel requirements.",
+                return Response(
+                    {
+                        "status": True,
 
-                    "payment": {
+                        "message": (
+                            "Payment verified successfully. "
+                            "Our team will contact you shortly "
+                            "to discuss your reel requirements."
+                        ),
 
-                        "payment_db_id": str(payment.id),
+                        "payment": {
 
-                        "paid_by": payment.agent.username,
+                            # -------------------------------------------------
+                            # Payment ID
+                            # -------------------------------------------------
 
-                        "paid_email": payment.agent.email,
+                            "payment_db_id": str(
+                                payment.id
+                            ),
 
-                        "plan_type": payment.plan_type,
+                            # -------------------------------------------------
+                            # Agent details
+                            # -------------------------------------------------
 
-                        "plan_name": plan_details["name"],
+                            "paid_by": (
+                                payment.agent.username
+                                if payment.agent
+                                else ""
+                            ),
 
-                        "plan_price": plan_details["price"],
+                            "paid_email": (
+                                payment.agent.email
+                                if payment.agent
+                                else ""
+                            ),
 
-                        "payment_status": payment.payment_status,
+                            # -------------------------------------------------
+                            # Plan details
+                            # -------------------------------------------------
 
-                        "paid_at": payment.paid_at,
+                            "plan_type": payment.plan_type,
 
-                        "created_at": payment.created_at,
-                    }
+                            "plan_name": plan_name,
 
-                }, status=200)
+                            "plan_validity": plan_validity,
+
+                            # -------------------------------------------------
+                            # Payment amount
+                            # -------------------------------------------------
+
+                            "plan_price": plan_price,
+
+                            "amount_paid": str(
+                                payment.amount
+                            ),
+
+                            # -------------------------------------------------
+                            # Payment status
+                            # -------------------------------------------------
+
+                            "payment_status": (
+                                payment.payment_status
+                            ),
+
+                            "paid_at": payment.paid_at,
+
+                            "created_at": payment.created_at
+                        }
+                    },
+
+                    status=status.HTTP_200_OK
+                )
+            # ==========================================
+            # REEL PURCHASE NOTIFICATION
+            # ==========================================
+
+            # if payment.plan_type in [
+            #     "short_reel",
+            #     "cinematic_reel"
+            # ]:
+
+            #     ReelPurchaseNotification.objects.create(
+
+            #         title="New Reel Package Purchased",
+
+            #         message=(
+            #             f"{payment.agent.username} "
+            #             f"purchased "
+            #             f"{payment.reel_package.name}"
+            #         ),
+
+            #         notification_type="reel_purchase",
+
+            #         payment=payment,
+
+            #         agent=payment.agent
+            #     )
+            #     plan_details = self.get_plan_details(payment)
+
+            #     return Response({
+
+            #         "status": True,
+
+            #         "message": "Payment verified successfully. Our team will contact you shortly to discuss your reel requirements.",
+
+            #         "payment": {
+
+            #             "payment_db_id": str(payment.id),
+
+            #             "paid_by": payment.agent.username,
+
+            #             "paid_email": payment.agent.email,
+
+            #             "plan_type": payment.plan_type,
+
+            #             "plan_name": plan_details["name"],
+
+            #             "plan_price": plan_details["price"],
+
+            #             "payment_status": payment.payment_status,
+
+            #             "paid_at": payment.paid_at,
+
+            #             "created_at": payment.created_at,
+            #         }
+
+            #     }, status=200)
             # =================================================
             # SINGLE PROPERTY PAYMENT
             # =================================================

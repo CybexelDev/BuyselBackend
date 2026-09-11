@@ -60,10 +60,160 @@
 
                 <!-- Navbar actions -->
                 <div class="ml-auto flex shrink-0 items-center gap-1 sm:gap-1.5">
-                    <button type="button" title="Notifications" aria-label="Notifications" class="relative grid h-9 w-9 place-items-center rounded-xl text-slate-500 transition duration-200 hover:bg-[#f2f9e8] hover:text-[#659d28] focus:outline-none focus:ring-4 focus:ring-[#8bc83f]/10 sm:h-10 sm:w-10">
-                        <i class="fa-regular fa-bell text-[14px]"></i>
-                        <span class="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-[#8bc83f] ring-2 ring-white"></span>
-                    </button>
+                    <!-- Notifications -->
+<div class="relative" id="notificationWrapper">
+
+    <button
+        type="button"
+        id="notificationButton"
+        title="Notifications"
+        aria-label="Notifications"
+        aria-expanded="false"
+        class="relative grid h-9 w-9 place-items-center rounded-xl text-slate-500 transition duration-200 hover:bg-[#f2f9e8] hover:text-[#659d28] focus:outline-none focus:ring-4 focus:ring-[#8bc83f]/10 sm:h-10 sm:w-10"
+    >
+        <i class="fa-regular fa-bell text-[14px]"></i>
+
+        <!-- Unread badge -->
+        <span
+    id="notificationBadge"
+    class="absolute -right-0.5 -top-0.5 {% if unread_count == 0 %}hidden{% else %}flex{% endif %} min-w-[17px] h-[17px] items-center justify-center rounded-full bg-[#ef4444] px-1 text-[9px] font-bold text-white ring-2 ring-white"
+>
+    {{ unread_count }}
+</span>
+    </button>
+
+    <!-- Notification dropdown -->
+    <div
+        id="notificationDropdown"
+        class="absolute right-0 top-[calc(100%+12px)] z-[100] hidden w-[340px] max-w-[calc(100vw-24px)] overflow-hidden rounded-2xl border border-[#dfe8d7] bg-[#f7f9f4] shadow-[0_24px_60px_rgba(15,23,42,0.18)]"
+    >
+
+        <!-- Header -->
+        <div class="flex items-center justify-between border-b border-[#e3eadf] bg-white/80 px-4 py-3">
+            <div>
+                <p class="text-sm font-bold text-[#26371f]">
+                    Notifications
+                </p>
+                <p class="mt-0.5 text-[10px] text-slate-400">
+                    Recent system activity
+                </p>
+            </div>
+
+            <button
+                type="button"
+                id="markAllNotificationsRead"
+                class="text-[10px] font-semibold text-[#659d28] transition hover:text-[#355f16]"
+            >
+                Mark all read
+            </button>
+        </div>
+
+        <!-- Notification list -->
+        <div
+            id="notificationList"
+            class="max-h-[360px] overflow-y-auto"
+        >
+
+     <div id="notificationList" class="max-h-[360px] overflow-y-auto">
+
+    {% if notifications %}
+
+        {% for notification in notifications %}
+
+        <div
+            class="border-b border-[#e3eadf] px-4 py-3 transition hover:bg-white"
+            data-notification-id="{{ notification.id }}"
+        >
+
+            <div class="flex items-start gap-3">
+
+                <!-- Icon -->
+                <span
+                    class="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-xl
+                    {% if notification.is_read %}
+                        bg-[#eef3ea] text-slate-400
+                    {% else %}
+                        bg-[#eaf5dc] text-[#659d28]
+                    {% endif %}"
+                >
+                    {% if notification.type == "advertisement" %}
+                        <i class="fa-solid fa-bullhorn text-xs"></i>
+                    {% else %}
+                        <i class="fa-solid fa-clapperboard text-xs"></i>
+                    {% endif %}
+                </span>
+
+                <!-- Content -->
+                <div class="min-w-0 flex-1">
+
+                    <div class="flex items-start justify-between gap-2">
+
+                        <p class="text-xs font-bold text-[#26371f]">
+                            {{ notification.title }}
+                        </p>
+
+                        {% if not notification.is_read %}
+                            <span
+                                class="mt-1 h-2 w-2 shrink-0 rounded-full bg-[#7bc832]"
+                            ></span>
+                        {% endif %}
+
+                    </div>
+
+                    <p class="mt-1 text-[11px] leading-4 text-slate-500">
+                        {{ notification.message }}
+                    </p>
+
+                    <p class="mt-1.5 text-[9px] text-slate-400">
+                        {{ notification.created_at|date:"d M Y, h:i A" }}
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    {% else %}
+
+        <!-- Empty state -->
+        <div
+            id="notificationEmpty"
+            class="px-5 py-10 text-center"
+        >
+            <span
+                class="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-[#eaf5dc] text-[#659d28]"
+            >
+                <i class="fa-regular fa-bell-slash"></i>
+            </span>
+
+            <p class="mt-3 text-sm font-semibold text-[#46583e]">
+                No notifications
+            </p>
+
+            <p class="mt-1 text-xs text-slate-400">
+                New activity will appear here.
+            </p>
+        </div>
+
+    {% endif %}
+
+</div>
+
+        </div>
+
+        <!-- Footer -->
+        <div class="border-t border-[#e3eadf] bg-white/70 px-4 py-2.5 text-center">
+            <span class="text-[10px] font-medium text-slate-400">
+                Buysel Admin Activity
+            </span>
+        </div>
+
+    </div>
+</div>
+                    
 
 
                     <div class="mx-1 hidden h-7 w-px bg-slate-200 sm:block"></div>
@@ -1011,6 +1161,85 @@ document.addEventListener("DOMContentLoaded", function () {
     } else {
         startAnimation();
     }
+});
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const notificationButton = document.getElementById("notificationButton");
+    const notificationDropdown = document.getElementById("notificationDropdown");
+    const notificationWrapper = document.getElementById("notificationWrapper");
+    const markAllReadButton = document.getElementById("markAllNotificationsRead");
+
+    if (!notificationButton || !notificationDropdown) {
+        return;
+    }
+
+    // =====================================================
+    // OPEN / CLOSE NOTIFICATION DROPDOWN
+    // =====================================================
+
+    notificationButton.addEventListener("click", function (event) {
+        event.stopPropagation();
+
+        const isHidden = notificationDropdown.classList.contains("hidden");
+
+        if (isHidden) {
+            notificationDropdown.classList.remove("hidden");
+            notificationButton.setAttribute("aria-expanded", "true");
+        } else {
+            notificationDropdown.classList.add("hidden");
+            notificationButton.setAttribute("aria-expanded", "false");
+        }
+    });
+
+
+    // =====================================================
+    // CLICK OUTSIDE → CLOSE DROPDOWN
+    // =====================================================
+
+    document.addEventListener("click", function (event) {
+
+        if (
+            notificationWrapper &&
+            !notificationWrapper.contains(event.target)
+        ) {
+            notificationDropdown.classList.add("hidden");
+            notificationButton.setAttribute("aria-expanded", "false");
+        }
+
+    });
+
+
+    // =====================================================
+    // MARK ALL AS READ
+    // =====================================================
+
+    if (markAllReadButton) {
+
+        markAllReadButton.addEventListener("click", function (event) {
+
+            event.stopPropagation();
+
+            const badge = document.getElementById("notificationBadge");
+
+            if (badge) {
+                badge.textContent = "0";
+                badge.classList.add("hidden");
+                badge.classList.remove("flex");
+            }
+
+            const notificationItems =
+                document.querySelectorAll("[data-notification-item]");
+
+            notificationItems.forEach(function (item) {
+                item.classList.remove("bg-[#eef7e5]");
+            });
+
+        });
+
+    }
+
 });
 </script>
 

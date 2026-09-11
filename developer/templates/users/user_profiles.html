@@ -973,20 +973,6 @@ TYPOGRAPHY SYSTEM
 {% endif %}
 
 
-<!-- TAILWIND-STYLE TOAST CONTAINER -->
-<div id="profileToastContainer" class="profile-toast-container" aria-live="polite" aria-atomic="true"></div>
-
-{% if messages %}
-    <div id="djangoProfileMessages" class="hidden">
-        {% for message in messages %}
-            <div
-                data-toast-message="{{ message|escapejs }}"
-                data-toast-tag="{{ message.tags|default:'info' }}"
-            ></div>
-        {% endfor %}
-    </div>
-{% endif %}
-
 <div class="profile-page">
 
     <section class="profile-hero">
@@ -1065,7 +1051,7 @@ TYPOGRAPHY SYSTEM
                             {% endif %}
                         </td>
 
-                        <td class="profile-name">{{ p.user.name }}</td>
+                       <td class="profile-name">{{ p.full_name }}</td>
                         <td class="profile-email">{{ p.user.email }}</td>
                         <td>{{ p.username }}</td>
                         <td>{{ p.mobile|default:"-" }}</td>
@@ -1347,7 +1333,6 @@ TYPOGRAPHY SYSTEM
                     Cancel
                 </button>
 
-                <button type="submit" id="updateProfileButton" class="profile-update-btn">
                 <button type="submit" id="updateProfileButton" class="profile-update-btn">
                     <i class="fa-solid fa-check"></i>
                     Update Profile

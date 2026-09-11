@@ -8556,6 +8556,14 @@ class AgentPropertyAPIView(APIView):
                 update_fields=["used_listings"]
             )
 
+            agent.total_property_used = (
+                agent.total_property_used or 0
+            ) + 1
+
+            agent.save(
+                update_fields=["total_property_used"]
+            )
+
         # property_obj = serializer.save(
         #     subscription=selected_subscription,
         #     paid = True
@@ -9386,7 +9394,8 @@ class DashboardAPIView(APIView):
 
         agent_properties = AgentProperty.objects.filter(agent=user)
 
-        total_properties = agent_properties.count()
+        # total_properties = agent_properties.count()
+        total_properties = user.total_property_used or 0
 
         # enquiries_qs = AgentPropertyEnquiry.objects.filter(
         #     agent_property__agent=user

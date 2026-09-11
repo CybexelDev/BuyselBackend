@@ -85,6 +85,10 @@ class AgentUserProfile(models.Model):
     facebook = models.URLField(null=True, blank=True)
     website = models.URLField(null=True, blank=True)
 
+    total_property_used = models.PositiveIntegerField(
+        default=0
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
     agent_code = models.CharField(max_length=20, unique=True, blank=True, null=True)
 

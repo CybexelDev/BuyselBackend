@@ -6714,22 +6714,117 @@ if (expiredToastContainer && expiredToastContainer.parentElement !== document.bo
             document.body.appendChild(deleteForm);
         }
 
-        document.addEventListener("click", function (event) {
-            const deleteButton =
-                event.target.closest(
-                    ".js-delete-expired-property"
+        // document.addEventListener("click", function (event) {
+        //     const deleteButton =
+        //         event.target.closest(
+        //             ".js-delete-expired-property"
+        //         );
+
+        //     if (!deleteButton) return;
+
+        //     event.preventDefault();
+        //     event.stopPropagation();
+
+        //     openDeleteExpiredPropertyModal(
+        //         deleteButton.dataset.deleteUrl,
+        //         deleteButton.dataset.propertyName
+        //     );
+        // });
+
+        
+document.addEventListener("click", function (event) {
+
+    const deleteButton = event.target.closest(
+        ".js-delete-expired-property"
+    );
+
+    if (!deleteButton) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    const deleteUrl = deleteButton.dataset.deleteUrl;
+    const propertyName = deleteButton.dataset.propertyName;
+
+    const confirmed = confirm(
+        `Are you sure you want to delete "${propertyName}"?`
+    );
+
+    if (!confirmed) return;
+
+    fetch(deleteUrl, {
+        method: "DELETE",
+        headers: {
+            "X-CSRFToken": getCookie("csrftoken"),
+            "X-Requested-With": "XMLHttpRequest"
+        }
+    })
+    .then(response => {
+
+        if (!response.ok) {
+            throw new Error(
+                `Delete failed. Status: ${response.status}`
+            );
+        }
+
+        return response.json();
+    })
+    .then(data => {
+
+        if (data.status === true) {
+
+            alert(data.message);
+
+            // Reload page after successful delete
+            window.location.reload();
+
+        } else {
+
+            alert(
+                data.message ||
+                "Unable to delete property."
+            );
+        }
+    })
+    .catch(error => {
+
+        console.error("DELETE ERROR:", error);
+
+        alert(
+            "Something went wrong while deleting the property."
+        );
+    });
+});
+
+
+// Get Django CSRF token
+function getCookie(name) {
+
+    let cookieValue = null;
+
+    if (document.cookie && document.cookie !== "") {
+
+        const cookies = document.cookie.split(";");
+
+        for (let i = 0; i < cookies.length; i++) {
+
+            const cookie = cookies[i].trim();
+
+            if (cookie.substring(0, name.length + 1) === name + "=") {
+
+                cookieValue = decodeURIComponent(
+                    cookie.substring(name.length + 1)
                 );
 
-            if (!deleteButton) return;
+                break;
+            }
+        }
+    }
 
-            event.preventDefault();
-            event.stopPropagation();
+    return cookieValue;
+}
 
-            openDeleteExpiredPropertyModal(
-                deleteButton.dataset.deleteUrl,
-                deleteButton.dataset.propertyName
-            );
-        });
+
 
         document
             .getElementById(

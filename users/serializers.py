@@ -2433,11 +2433,11 @@ class ElitePlanSerializer(serializers.ModelSerializer):
 
     def get_total_property_listings(self, obj):
         count = obj.total_property_listings
-        return f"{count} total property listings" 
+        return f"{count} total property listing" if count == 1 else f"{count} total property listings"
 
     def get_featured_listings_limit(self, obj):
         count = obj.featured_listings_limit
-        return f"{count} featured property listings" 
+        return f"{count} featured property listing" if count == 1 else f"{count} featured property listings"
 
 
 

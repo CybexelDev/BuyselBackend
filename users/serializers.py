@@ -3505,29 +3505,341 @@ class AgentPropertySerializer(serializers.ModelSerializer):
     #         }
     #         for k, v in result.items()
     #     ]
+    # def get_features(self, obj):
+
+    #     result = {}
+
+    #     request = self.context.get("request")
+
+    #     for fv in obj.field_values.select_related("field"):
+
+    #         field = fv.field
+
+    #         try:
+
+    #             data = json.loads(fv.value)
+
+    #             option = data.get("option")
+    #             count = data.get("count", 0)
+
+    #             if option:
+
+    #                 option_obj = FieldOption.objects.filter(
+    #                     field=field,
+    #                     name__iexact=option
+    #                 ).first()
+
+    #                 option_icon = None
+
+    #                 if option_obj and option_obj.icon:
+
+    #                     try:
+
+    #                         option_icon = (
+    #                             request.build_absolute_uri(
+    #                                 option_obj.icon.url
+    #                             )
+    #                             if request
+    #                             else option_obj.icon.url
+    #                         )
+
+    #                     except Exception:
+
+    #                         option_icon = option_obj.icon.url
+
+    #                 result[option] = {
+    #                     "value": count,
+    #                     "icon": option_icon
+    #                 }
+
+    #                 continue
+
+    #         except Exception:
+    #             pass
+
+    #         if field.field_name.lower() == "flat furnishings":
+    #             continue
+
+    #         if field.icon:
+
+    #             try:
+
+    #                 icon = (
+    #                     request.build_absolute_uri(
+    #                         field.icon.url
+    #                     )
+    #                     if request
+    #                     else field.icon.url
+    #                 )
+
+    #             except Exception:
+
+    #                 icon = field.icon.url
+
+    #         else:
+
+    #             icon = None
+
+    #         if field.field_type == "countable":
+
+    #             try:
+    #                 value = int(fv.value)
+
+    #             except Exception:
+    #                 value = 0
+
+    #         else:
+    #             value = fv.value
+
+    #         result[field.field_name] = {
+    #             "value": value,
+    #             "icon": icon
+    #         }
+
+    #     return [
+    #         {
+    #             "name": key,
+    #             "value": value["value"],
+    #             "icon": value["icon"]
+    #         }
+    #         for key, value in result.items()
+    #     ]
+
     def get_features(self, obj):
 
         result = {}
 
         request = self.context.get("request")
 
-        for fv in obj.field_values.select_related("field"):
+        # ============================================================
+        # SUPPORT BOTH Property AND AgentProperty
+        # ============================================================
+
+        if hasattr(obj, "property_features"):
+
+            feature_values = obj.property_features.select_related(
+                "field"
+            ).prefetch_related(
+                "field__options"
+            )
+
+        elif hasattr(obj, "field_values"):
+
+            feature_values = obj.field_values.select_related(
+                "field"
+            ).prefetch_related(
+                "field__options"
+            )
+
+        else:
+
+            feature_values = []
+
+
+        # ============================================================
+        # PROCESS ALL FEATURES
+        # ============================================================
+
+        for fv in feature_values:
 
             field = fv.field
+
+            # --------------------------------------------------------
+            # Safely decode JSON
+            # --------------------------------------------------------
 
             try:
 
                 data = json.loads(fv.value)
 
+            except Exception:
+
+                data = None
+
+
+            # ========================================================
+            # CASE 1:
+            #
+            # value contains a LIST
+            #
+            # Example:
+            #
+            # [
+            #   {"option": "sleeping area", "value": "2"},
+            #   {"option": "parking", "value": "1"},
+            #   {"option": "outdoor area", "value": "3"}
+            # ]
+            # ========================================================
+
+            if isinstance(data, list):
+
+                for item in data:
+
+                    if not isinstance(item, dict):
+                        continue
+
+                    option = item.get("option")
+
+                    # Support both "value" and old "count"
+                    value = item.get("value")
+
+                    if value is None:
+                        value = item.get("count", "")
+
+
+                    # ------------------------------------------------
+                    # OPTION EXISTS
+                    #
+                    # Use FieldOption.icon
+                    # ------------------------------------------------
+
+                    if option:
+
+                        option = str(option).strip()
+
+                        option_obj = None
+
+                        # First use prefetched options
+                        for option_item in field.options.all():
+
+                            if (
+                                option_item.name
+                                and option_item.name.strip().lower()
+                                == option.lower()
+                            ):
+
+                                option_obj = option_item
+                                break
+
+
+                        option_icon = None
+
+                        if option_obj and option_obj.icon:
+
+                            try:
+
+                                option_icon = (
+                                    request.build_absolute_uri(
+                                        option_obj.icon.url
+                                    )
+                                    if request
+                                    else option_obj.icon.url
+                                )
+
+                            except Exception:
+
+                                option_icon = option_obj.icon.url
+
+
+                        result[option] = {
+                            "value": value,
+                            "icon": option_icon
+                        }
+
+                        continue
+
+
+                    # ------------------------------------------------
+                    # NO OPTION
+                    #
+                    # Use SubcategoryField.icon
+                    # ------------------------------------------------
+
+                    if field.icon:
+
+                        try:
+
+                            icon = (
+                                request.build_absolute_uri(
+                                    field.icon.url
+                                )
+                                if request
+                                else field.icon.url
+                            )
+
+                        except Exception:
+
+                            icon = field.icon.url
+
+                    else:
+
+                        icon = None
+
+
+                    # ------------------------------------------------
+                    # Countable field
+                    # ------------------------------------------------
+
+                    if field.field_type == "countable":
+
+                        try:
+
+                            value = int(value)
+
+                        except Exception:
+
+                            value = 0
+
+
+                    result[field.field_name] = {
+                        "value": value,
+                        "icon": icon
+                    }
+
+
+                # Finished processing this FieldValue
+                continue
+
+
+            # ========================================================
+            # CASE 2:
+            #
+            # value contains a DICTIONARY
+            #
+            # Example:
+            #
+            # {"option": "Bed", "value": 1}
+            #
+            # OR
+            #
+            # {"option": "Bed", "count": 1}
+            # ========================================================
+
+            if isinstance(data, dict):
+
                 option = data.get("option")
-                count = data.get("count", 0)
+
+                # Support value
+                value = data.get("value")
+
+                # Support old count format
+                if value is None:
+
+                    value = data.get("count", None)
+
+
+                # ----------------------------------------------------
+                # OPTION EXISTS
+                # ----------------------------------------------------
 
                 if option:
 
-                    option_obj = FieldOption.objects.filter(
-                        field=field,
-                        name__iexact=option
-                    ).first()
+                    option = str(option).strip()
+
+                    option_obj = None
+
+                    # Use prefetched FieldOptions
+                    for option_item in field.options.all():
+
+                        if (
+                            option_item.name
+                            and option_item.name.strip().lower()
+                            == option.lower()
+                        ):
+
+                            option_obj = option_item
+                            break
+
 
                     option_icon = None
 
@@ -3547,18 +3859,98 @@ class AgentPropertySerializer(serializers.ModelSerializer):
 
                             option_icon = option_obj.icon.url
 
+
                     result[option] = {
-                        "value": count,
+                        "value": (
+                            value
+                            if value is not None
+                            else ""
+                        ),
                         "icon": option_icon
                     }
 
                     continue
 
-            except Exception:
-                pass
+
+                # ----------------------------------------------------
+                # NO OPTION
+                #
+                # Use SubcategoryField.icon
+                # ----------------------------------------------------
+
+                if field.field_name.lower() == "flat furnishings":
+
+                    continue
+
+
+                if field.icon:
+
+                    try:
+
+                        icon = (
+                            request.build_absolute_uri(
+                                field.icon.url
+                            )
+                            if request
+                            else field.icon.url
+                        )
+
+                    except Exception:
+
+                        icon = field.icon.url
+
+                else:
+
+                    icon = None
+
+
+                # ----------------------------------------------------
+                # Countable field
+                # ----------------------------------------------------
+
+                if field.field_type == "countable":
+
+                    try:
+
+                        value = int(
+                            value
+                            if value is not None
+                            else 0
+                        )
+
+                    except Exception:
+
+                        value = 0
+
+                else:
+
+                    if value is None:
+
+                        value = ""
+
+
+                result[field.field_name] = {
+                    "value": value,
+                    "icon": icon
+                }
+
+                continue
+
+
+            # ========================================================
+            # CASE 3:
+            #
+            # Old/plain value which is NOT JSON
+            #
+            # Example:
+            #
+            # "4BHK"
+            # ========================================================
 
             if field.field_name.lower() == "flat furnishings":
+
                 continue
+
 
             if field.icon:
 
@@ -3580,21 +3972,35 @@ class AgentPropertySerializer(serializers.ModelSerializer):
 
                 icon = None
 
+
+            # --------------------------------------------------------
+            # Countable field
+            # --------------------------------------------------------
+
             if field.field_type == "countable":
 
                 try:
+
                     value = int(fv.value)
 
                 except Exception:
+
                     value = 0
 
             else:
+
                 value = fv.value
+
 
             result[field.field_name] = {
                 "value": value,
                 "icon": icon
             }
+
+
+        # ============================================================
+        # FINAL RESPONSE
+        # ============================================================
 
         return [
             {
@@ -3604,7 +4010,6 @@ class AgentPropertySerializer(serializers.ModelSerializer):
             }
             for key, value in result.items()
         ]
-
     # =====================================================
     # OTHER FIELDS
     # =====================================================

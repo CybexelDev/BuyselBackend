@@ -1514,6 +1514,80 @@ from .models import Property, Wishlist, UserCreate
 from .serializers import PropertyCardSerializer
 
 
+# class FeaturedPropertyViewSet(viewsets.ModelViewSet):
+
+#     serializer_class = PropertyCardSerializer
+#     permission_classes = [AllowAny]
+#     authentication_classes = []
+#     http_method_names = ["get"]
+
+#     # ===============================
+#     # QUERYSET
+#     # ===============================
+#     def get_queryset(self):
+#         return Property.objects.filter(
+#             is_featured=True
+#         ).prefetch_related(
+#             "images",
+#             "category",
+#             "purpose"
+#         )
+
+#     # ===============================
+#     # USER
+#     # ===============================
+#     def get_user(self):
+#         auth_header = self.request.headers.get("Authorization")
+
+#         if not auth_header:
+#             return None
+
+#         try:
+#             token = auth_header.split(" ")[1]
+
+#             decoded = jwt.decode(
+#                 token,
+#                 settings.SECRET_KEY,
+#                 algorithms=["HS256"]
+#             )
+
+#             user_id = decoded.get("user_id")
+
+#             if not user_id:
+#                 return None
+
+#             # 🔥 SAFE UUID HANDLING
+#             try:
+#                 user_id = uuid.UUID(str(user_id))
+#             except:
+#                 return None
+
+#             return UserCreate.objects.filter(id=user_id).first()
+
+#         except Exception as e:
+#             print("Auth Error:", str(e))
+#             return None
+
+#     # ===============================
+#     # CONTEXT (WISHLIST FIX)
+#     # ===============================
+#     def get_serializer_context(self):
+#         context = super().get_serializer_context()
+
+#         user = self.get_user()
+#         wishlist_ids = set()
+
+#         if user:
+#             wishlist_ids = Wishlist.objects.filter(user=user).values_list(
+#                 "property_uuid", flat=True
+#             )
+
+#             # 🔥 IMPORTANT: convert UUID → string
+#             wishlist_ids = {str(i) for i in wishlist_ids}
+
+#         context["wishlist_ids"] = wishlist_ids
+#         return context
+
 class FeaturedPropertyViewSet(viewsets.ModelViewSet):
 
     serializer_class = PropertyCardSerializer
@@ -1525,6 +1599,7 @@ class FeaturedPropertyViewSet(viewsets.ModelViewSet):
     # QUERYSET
     # ===============================
     def get_queryset(self):
+
         return Property.objects.filter(
             is_featured=True
         ).prefetch_related(
@@ -1537,12 +1612,16 @@ class FeaturedPropertyViewSet(viewsets.ModelViewSet):
     # USER
     # ===============================
     def get_user(self):
-        auth_header = self.request.headers.get("Authorization")
+
+        auth_header = self.request.headers.get(
+            "Authorization"
+        )
 
         if not auth_header:
             return None
 
         try:
+
             token = auth_header.split(" ")[1]
 
             decoded = jwt.decode(
@@ -1556,37 +1635,124 @@ class FeaturedPropertyViewSet(viewsets.ModelViewSet):
             if not user_id:
                 return None
 
-            # 🔥 SAFE UUID HANDLING
+            # SAFE UUID HANDLING
             try:
-                user_id = uuid.UUID(str(user_id))
-            except:
+
+                user_id = uuid.UUID(
+                    str(user_id)
+                )
+
+            except Exception:
+
                 return None
 
-            return UserCreate.objects.filter(id=user_id).first()
+            return UserCreate.objects.filter(
+                id=user_id
+            ).first()
 
         except Exception as e:
-            print("Auth Error:", str(e))
+
+            print(
+                "Auth Error:",
+                str(e)
+            )
+
             return None
 
     # ===============================
     # CONTEXT (WISHLIST FIX)
     # ===============================
     def get_serializer_context(self):
+
         context = super().get_serializer_context()
 
         user = self.get_user()
+
         wishlist_ids = set()
 
         if user:
-            wishlist_ids = Wishlist.objects.filter(user=user).values_list(
-                "property_uuid", flat=True
+
+            wishlist_ids = Wishlist.objects.filter(
+                user=user
+            ).values_list(
+                "property_uuid",
+                flat=True
             )
 
-            # 🔥 IMPORTANT: convert UUID → string
-            wishlist_ids = {str(i) for i in wishlist_ids}
+            # UUID -> STRING
+            wishlist_ids = {
+                str(i)
+                for i in wishlist_ids
+            }
 
         context["wishlist_ids"] = wishlist_ids
+
         return context
+
+    # ===============================
+    # LIST
+    # ===============================
+    def list(self, request, *args, **kwargs):
+
+        context = self.get_serializer_context()
+
+        # ===============================
+        # FEATURED USER PROPERTIES
+        # ===============================
+        user_properties = Property.objects.filter(
+            is_featured=True
+        ).prefetch_related(
+            "images",
+            "category",
+            "purpose"
+        )
+
+        # ===============================
+        # FEATURED AGENT PROPERTIES
+        # ===============================
+        agent_properties = AgentProperty.objects.filter(
+            is_featured=True
+        ).prefetch_related(
+            "images",
+            "category",
+            "purpose"
+        )
+
+        # ===============================
+        # USER PROPERTY DATA
+        # ===============================
+        user_data = PropertyCardSerializer(
+            user_properties,
+            many=True,
+            context=context
+        ).data
+
+        # ===============================
+        # AGENT PROPERTY DATA
+        # ===============================
+        agent_data = AgentPropertyCardSerializer(
+            agent_properties,
+            many=True,
+            context=context
+        ).data
+
+        # ===============================
+        # COMBINE BOTH
+        # ===============================
+        featured_data = (
+            user_data +
+            agent_data
+        )
+
+        # ===============================
+        # RESPONSE
+        # ===============================
+        return Response(
+            featured_data,
+            status=status.HTTP_200_OK
+        )
+
+        
 
 class AgentFormView(APIView):
 

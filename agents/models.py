@@ -1158,6 +1158,8 @@ class AgentProperty(models.Model):
     )
 
     land_area = models.CharField(
+        blank=True,
+        null=True,
         max_length=255,
         validators=[validate_safe_text]
     )

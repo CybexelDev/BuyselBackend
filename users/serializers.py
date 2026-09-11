@@ -4139,6 +4139,50 @@ class PropertyCardSerializer(serializers.ModelSerializer):
         return str(obj.pk) in wishlist_ids
 
 
+class AgentPropertyCardSerializer(serializers.ModelSerializer):
+
+    id = serializers.UUIDField(source="pk", read_only=True)
+    owner = serializers.SerializerMethodField()
+    images = serializers.SerializerMethodField()
+    is_wishlisted = serializers.SerializerMethodField()
+
+    class Meta:
+        model = AgentProperty
+        fields = [
+            "id",
+            "label",
+            "city",
+            "perprice",
+            "price",
+            "sq_ft",
+            "land_area",
+            "owner",
+            "whatsapp",
+            "phone",
+            "location",
+            "images",
+            "is_wishlisted"
+        ]
+
+    def get_owner(self, obj):
+        return obj.owner or ""
+
+    def get_images(self, obj):
+        return [
+            img.image.url
+            for img in obj.images.all()[:2]
+            if img.image
+        ]
+
+    def get_is_wishlisted(self, obj):
+        wishlist_ids = self.context.get(
+            "wishlist_ids",
+            set()
+        )
+
+        return str(obj.pk) in wishlist_ids
+
+
 
 class WishlistSerializer(serializers.ModelSerializer):
 

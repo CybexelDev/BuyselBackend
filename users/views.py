@@ -1752,7 +1752,7 @@ class FeaturedPropertyViewSet(viewsets.ModelViewSet):
             status=status.HTTP_200_OK
         )
 
-        
+
 
 class AgentFormView(APIView):
 
@@ -15563,6 +15563,50 @@ class UserPropertyDetailAPIView(APIView):
         }, status=status.HTTP_200_OK)
 
 
+# class AgentContactMessageCreateAPIView(APIView):
+
+#     authentication_classes = [AgentJWTAuthentication]
+#     permission_classes = [IsAuthenticated]
+
+#     def post(self, request):
+
+#         name = request.data.get("name")
+#         message = request.data.get("message")
+
+#         if not name:
+#             return Response({
+#                 "error": "name is required"
+#             }, status=400)
+
+#         if not message:
+#             return Response({
+#                 "error": "message is required"
+#             }, status=400)
+
+#         contact_message = AgentContactMessage.objects.create(
+#             agent=request.user,
+#             name=name,
+#             message=message
+#         )
+
+#         serializer = AgentContactMessageSerializer(
+#             contact_message
+#         )
+
+#         return Response({
+
+#             "status": True,
+#             "message": "Message sent successfully",
+
+#             "data": serializer.data
+
+#         })
+
+from django.core.exceptions import ValidationError
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+
 class AgentContactMessageCreateAPIView(APIView):
 
     authentication_classes = [AgentJWTAuthentication]
@@ -15573,22 +15617,61 @@ class AgentContactMessageCreateAPIView(APIView):
         name = request.data.get("name")
         message = request.data.get("message")
 
+        # ===============================
+        # REQUIRED VALIDATION
+        # ===============================
         if not name:
             return Response({
-                "error": "name is required"
+                "message": "name is required"
             }, status=400)
 
         if not message:
             return Response({
-                "error": "message is required"
+                "message": "message is required"
             }, status=400)
 
-        contact_message = AgentContactMessage.objects.create(
+        # ===============================
+        # CREATE OBJECT
+        # ===============================
+        contact_message = AgentContactMessage(
             agent=request.user,
             name=name,
             message=message
         )
 
+        # ===============================
+        # DATABASE / MODEL VALIDATION
+        # ===============================
+        try:
+
+            contact_message.full_clean()
+
+        except ValidationError as e:
+
+            errors = e.message_dict
+
+            # Return validation error in message field
+            first_error = next(
+                (
+                    error
+                    for field_errors in errors.values()
+                    for error in field_errors
+                ),
+                "Invalid data"
+            )
+
+            return Response({
+                "message": first_error
+            }, status=400)
+
+        # ===============================
+        # SAVE
+        # ===============================
+        contact_message.save()
+
+        # ===============================
+        # RESPONSE
+        # ===============================
         serializer = AgentContactMessageSerializer(
             contact_message
         )
@@ -15596,13 +15679,12 @@ class AgentContactMessageCreateAPIView(APIView):
         return Response({
 
             "status": True,
+
             "message": "Message sent successfully",
 
             "data": serializer.data
 
         })
-
-
 
 import uuid
 import re

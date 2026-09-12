@@ -302,13 +302,7 @@ path(
         views.restore_expired_property,
         name="restore_expired_property"
     ),
-    # path(
-    #     'expired_property/add/',
-    #     views.add_expired_property,
-    #     name='add_expired_property'
-    # ),
-    # path('expired_property/edit/<int:property_id>/', views.edit_exproperty, name="edit_exproperty"),
-    # path('delete_exproperty/<int:pk>/', views.expired_property_delete, name="expired_property_delete"),
+    
 
     path('delete_premium_expire/<int:pk>/', views.delete_premium_expire, name="delete_premium_expire"),
 
@@ -317,13 +311,6 @@ path(
 
     path('admin_expirepremium/<int:pk>/', views.edit_expirepremium, name="edit_expirepremium"),
     path('admin_expireagent/<int:pk>/', views.edit_expireagent, name="edit_expireagent"),
-    # path("register/", views.blog_register, name="blog_register"),
-    # path("blogdashboard/", views.blog_dashboard, name="blog_dashboard"),
-    # path("blogdashboard/create/", views.blog_dashboard_create, name="blog_dashboard_create"),
-    # path("blogdashboard/update/<int:blog_id>/", views.blog_dashboard_update, name="blog_dashboard_update"),
-    # path("blogdashboard/delete/<int:blog_id>/", views.blog_dashboard_delete, name="blog_dashboard_delete"),
-    # path("bloglogin/", views.blog_login, name="blog_login"),
-    # path("bloglogout/", views.blog_logout, name="blog_logout"),
 
     path("ajax/property-search/", views.property_live_search, name="property_live_search"),
 
@@ -334,7 +321,6 @@ path(
 
     path('useradd',views.AddUser, name='adduser'),
     path('plans',views.plans, name="userplan"),
-    path('promotion',views.promotion, name='promotion'),
     path("export-users/", views.export_users_excel, name="export_users_excel"),
 
     path("agent_register/",views.agent_registration,name="agent_registration"),
@@ -343,75 +329,20 @@ path(
     path('reject-agent/<uuid:agent_id>/', views.reject_agent, name='reject_agent'),
 
 
-path("testimonials/", views.testimonial_admin_view, name="testimonial"),
-path("testimonials/delete/<int:id>/", views.delete_testimonial, name="delete_testimonial"),
-path("edit-testimonial/<int:id>/", views.edit_testimonial, name="edit_testimonial"),
-path("userprofiles/", views.userprofile_list_view, name="userprofiles"),
-path("userprofiles/edit/<int:id>/", views.edit_userprofile, name="edit_userprofile"),
-path("userprofiles/delete/<int:id>/", views.delete_userprofile, name="delete_userprofile"),
-path("packages/", views.package_dashboard, name="package_dashboard"),
-    # path("packages/delete/<str:type>/<int:id>/", views.delete_package, name="delete_package"),
+    path("testimonials/", views.testimonial_admin_view, name="testimonial"),
+    path("testimonials/delete/<int:id>/", views.delete_testimonial, name="delete_testimonial"),
+    path("edit-testimonial/<int:id>/", views.edit_testimonial, name="edit_testimonial"),
+    path("userprofiles/", views.userprofile_list_view, name="userprofiles"),
+    path("userprofiles/edit/<int:id>/", views.edit_userprofile, name="edit_userprofile"),
+    path("userprofiles/delete/<int:id>/", views.delete_userprofile, name="delete_userprofile"),
+    path("packages/", views.package_dashboard, name="package_dashboard"),
     path(
-    "packages/delete/<str:type>/<uuid:id>/",
-    views.delete_package,
-    name="delete_package"
-),
+        "packages/delete/<str:type>/<uuid:id>/",
+        views.delete_package,
+        name="delete_package"
+    ),
 
-
-
-# Expired Agent Properties CRUD
-# path(
-#     "agent-properties/expired/",
-#     views.expired_agent_property_dashboard,
-#     name="expired_agent_property_dashboard",
-# ),
-
-# path(
-#     "agent-properties/expired/<uuid:id>/get/",
-#     views.get_expired_agent_property,
-#     name="get_expired_agent_property",
-# ),
-# path(
-#     "agent-properties/expired/add/",
-#     views.add_expired_agent_property,
-#     name="add_expired_agent_property",
-# ),
-
-# path(
-#     "agent-properties/expired/<uuid:id>/edit/",
-#     views.edit_expired_agent_property,
-#     name="edit_expired_agent_property",
-# ),
-
-# path(
-#     "agent-properties/expired/<uuid:id>/delete/",
-#     views.delete_expired_agent_property,
-#     name="delete_expired_agent_property",
-# ),
-
-# path(
-#     "agent-properties/expired/<uuid:id>/restore/",
-#     views.restore_expired_agent_property,
-#     name="restore_expired_agent_property",
-# ),
-
-
-# # Manual sync button endpoint
-# path(
-#     "property-expiry/run-sync/",
-#     views.run_property_expiry_sync,
-#     name="run_property_expiry_sync",
-# ),
 
     re_path(r'^.*$', views.superuser_login_view, name="redirect_to_index"),
     
 ]
-
-
-    
-
-   
-    # path("banner-management/",views.slider_banner_view,name="slider_banner"),
-    # path('hero-images/', views.hero_management, name='hero_management'),
-
-

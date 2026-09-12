@@ -20,10 +20,9 @@ from django.conf import settings
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.contrib.auth.models import AbstractUser
-
-from django.db import models
-from django.contrib.auth.models import AbstractUser
-
+from django.core.exceptions import ValidationError
+from agents.models import AgentUserProfile, PendingAgentRegistration, PendingAgentRegistration
+from .validators import validate_safe_text
 from .validators import *
 # from agents.services import *
 
@@ -452,33 +451,6 @@ class ExpiredPremium(models.Model):
     def __str__(self):
         return f"{self.name} (Expired)"
 
-
-# class PremiumImage(models.Model):
-#     premium = models.ForeignKey(
-#         Premium,
-#         on_delete=models.CASCADE,
-#         related_name="images",
-#         null=True,
-#         blank=True
-#     )
-#     expired_premium = models.ForeignKey(
-#         ExpiredPremium,
-#         on_delete=models.CASCADE,
-#         related_name="images",
-#         null=True,
-#         blank=True
-#     )
-
-#     image = CloudinaryField("image", folder="premium/multiple")
-
-#     def __str__(self):
-#         if self.premium:
-#             return f"Image for {self.premium.name}"
-#         if self.expired_premium:
-#             return f"Expired image for {self.expired_premium.name}"
-#         return "Orphan image"
-
-
 class PremiumImage(models.Model):
 
     premium = models.ForeignKey(
@@ -621,15 +593,6 @@ class Budget(models.Model):
     def __str__(self):
         return self.value
     
-# class Budget(models.Model):
-
-#     value = models.CharField(
-#         max_length=100,
-#         validators=[validate_budget]
-#     )
-
-#     def __str__(self):
-#         return self.value
 
 class UserCreate(models.Model):
 
@@ -1306,43 +1269,6 @@ class UserProfile(models.Model):
 
         return sub.plan
     
-    # def increase_property_usage(self, category_name):
-    #     print("========== PROFILE UPDATE ==========")
-    #     print("Profile ID:", self.id)
-    #     print("User:", self.user.email)
-    #     print("Before Total:", self.total_property_used)
-    #     print("Before Residential:", self.residential_property_used)
-    #     print("Before Commercial:", self.commercial_property_used)
-
-    #     category = category_name.lower().strip()
-
-    #     self.total_property_used += 1
-
-    #     if category in [
-    #         "residential",
-    #         "plot/land"
-    #     ]:
-
-    #         self.residential_property_used += 1
-
-    #     elif category in [
-    #         "commercial",
-    #         "industrial"
-    #     ]:
-
-    #         self.commercial_property_used += 1
-
-    #     self.refresh_from_db()
-
-    #     self.save(update_fields=[
-    #         "total_property_used",
-    #         "residential_property_used",
-    #         "commercial_property_used"
-    #     ])
-    #     print("After Total:", self.total_property_used)
-    #     print("After Residential:", self.residential_property_used)
-    #     print("After Commercial:", self.commercial_property_used)
-    #     print("====================================")
     def increase_property_usage(self, category_name):
 
         category = category_name.lower().strip()
@@ -1409,51 +1335,6 @@ class UserProfile(models.Model):
             "residential_property_used",
             "commercial_property_used"
         ])
-    # def change_property_category(
-    #     self,
-    #     old_category,
-    #     new_category
-    # ):
-
-    #     old_category = old_category.lower().strip()
-
-    #     new_category = new_category.lower().strip()
-
-    #     if old_category == new_category:
-    #         return
-
-    #     if (
-    #         old_category in [
-    #             "residential",
-    #             "plot/land"
-    #         ]
-    #         and
-    #         new_category in [
-    #             "commercial",
-    #             "industrial"
-    #         ]
-    #     ):
-
-    #         self.commercial_property_used += 1
-
-    #     elif (
-    #         old_category in [
-    #             "commercial",
-    #             "industrial"
-    #         ]
-    #         and
-    #         new_category in [
-    #             "residential",
-    #             "plot/land"
-    #         ]
-    #     ):
-
-    #         self.residential_property_used += 1
-
-    #     self.save(update_fields=[
-    #         "residential_property_used",
-    #         "commercial_property_used"
-    #     ])
 
     def __str__(self):
 
@@ -1472,12 +1353,6 @@ class Purpose(models.Model):
 
     def __str__(self):
         return self.name
-
-
-from django.db import models
-from cloudinary.models import CloudinaryField
-from .validators import validate_safe_text
-
 
 class Amenities(models.Model):
     name = models.CharField(
@@ -1623,188 +1498,6 @@ class FieldOption(models.Model):
 
     def __str__(self):
         return f"{self.field.field_name} - {self.name}"
-
-
-
-# class Userupgrade(models.Model):
-
-#     name = models.CharField(max_length=255)
-
-#     validity = models.PositiveIntegerField(
-#         help_text="Plan validity in days"
-#     )
-
-#     # Example: 2 Residential / 1 Commercial
-#     listing = models.CharField(
-#         max_length=255,
-#         help_text="Example: 2 Residential / 1 Commercial"
-#     )
-
-#     enquiries = models.PositiveIntegerField()
-
-#     edit = models.PositiveIntegerField(
-#         help_text="Number of edit options allowed"
-#     )
-
-#     genuine = models.CharField(
-#         max_length=255,
-#         help_text="Matching genuine clients"
-#     )
-
-#     meta = models.PositiveIntegerField(
-#         help_text="Meta ads promotion count"
-#     )
-
-#     bulk = models.PositiveIntegerField(
-#         help_text="Bulk WhatsApp message count"
-#     )
-
-#     poster = models.PositiveIntegerField(
-#         help_text="Poster creation count"
-#     )
-
-#     social_media = models.CharField(
-#         max_length=255,
-#         help_text="Social media marketing duration"
-#     )
-
-#     lead_follow = models.CharField(
-#         max_length=255,
-#         help_text="Lead followup support"
-#     )
-
-#     best = models.CharField(
-#         max_length=255,
-#         help_text="Best suited for"
-#     )
-
-#     created = models.DateTimeField(auto_now_add=True)
-
-#     def __str__(self):
-#         return self.name
-
-
-
-# class Userplan(models.Model):
-#     id = models.UUIDField(
-#         primary_key=True,
-#         default=uuid.uuid4,
-#         editable=False
-#     )
-
-#     plan_type = models.CharField(
-#         max_length=50,
-#         default="owner_upgrade_plan",
-#         editable=False
-#     )
-
-#     name = models.CharField(
-#         max_length=255,
-#         validators=[validate_safe_text]
-#     )
-
-#     validity = models.PositiveIntegerField(
-#         help_text="Plan validity in days"
-#     )
-
-#     listing = models.CharField(
-#         max_length=255,
-#         help_text="Example: 2 Residential / 1 Commercial",
-#         validators=[validate_safe_text]
-#     )
-
-#     enquiries = models.PositiveIntegerField()
-
-#     edit = models.PositiveIntegerField(
-#         help_text="Number of edit options allowed"
-#     )
-
-#     genuine = models.CharField(
-#         max_length=255,
-#         help_text="Matching genuine clients",
-#         validators=[validate_safe_text]
-#     )
-
-#     meta = models.PositiveIntegerField(
-#         help_text="Meta ads promotion count"
-#     )
-
-#     bulk = models.PositiveIntegerField(
-#         help_text="Bulk WhatsApp message count"
-#     )
-
-#     poster = models.PositiveIntegerField(
-#         help_text="Poster creation count"
-#     )
-
-#     social_media = models.CharField(
-#         max_length=255,
-#         help_text="Social media marketing duration",
-#         validators=[validate_safe_text]
-#     )
-
-#     lead_follow = models.CharField(
-#         max_length=255,
-#         help_text="Lead followup support",
-#         validators=[validate_safe_text]
-#     )
-
-#     best = models.CharField(
-#         max_length=255,blank=True,null=True,
-#         help_text="Best suited for",
-#         validators=[validate_safe_text]
-#     )
-
-#     created = models.DateTimeField(
-#         auto_now_add=True
-#     )
-
-
-#     def clean(self):
-
-#         if self.validity <= 0:
-
-#             raise ValidationError({
-#                 "validity": "Validity must be greater than 0."
-#             })
-
-#         numeric_fields = {
-#             "enquiries": self.enquiries,
-#             "edit": self.edit,
-#             "meta": self.meta,
-#             "bulk": self.bulk,
-#             "poster": self.poster
-#         }
-
-#         for field_name, value in numeric_fields.items():
-
-#             if value < 0:
-
-#                 raise ValidationError({
-#                     field_name: f"{field_name} cannot be negative."
-#                 })
-
-
-#     def save(self, *args, **kwargs):
-
-#         # always fixed
-#         self.plan_type = "owner_plan"
-
-#         self.full_clean()
-
-#         super().save(*args, **kwargs)
-
-    
-#     def __str__(self):
-
-#         return self.name
-
-import uuid
-
-from django.db import models
-from django.core.exceptions import ValidationError
-
-from .validators import validate_safe_text
 
 
 class Userplan(models.Model):
@@ -2680,43 +2373,6 @@ class ReelPackage(models.Model):
             f"{self.name} - ₹{self.price_per_day}"
         )
 
-# class UserAdd(models.Model):
-#     user_id = models.CharField(max_length=20, unique=True, blank=True)
-
-#     name = models.CharField(max_length=255)
-#     mobile = models.CharField(max_length=255, blank=True, null=True)
-#     email = models.CharField(max_length=255, blank=True, null=True)
-
-#     user_plans = models.ManyToManyField(Userplan, blank=True)
-
-#     upgrade_plan = models.ForeignKey(
-#         Userupgrade, on_delete=models.SET_NULL, null=True, blank=True
-#     )
-
-#     created = models.DateTimeField(auto_now_add=True)
-#     is_active = models.BooleanField(default=True)
-
-#     def generate_user_id(self):
-#         while True:
-#             random_part = ''.join(random.choices(string.digits, k=6))
-#             user_id = f"buysel{random_part}"
-#             if not UserAdd.objects.filter(user_id=user_id).exists():
-#                 return user_id
-
-#     def save(self, *args, **kwargs):
-#         if not self.user_id:
-#             self.user_id = self.generate_user_id()
-#         super().save(*args, **kwargs)
-
-#     def clean(self):
-#         from django.core.exceptions import ValidationError
-
-#         if self.pk:
-#             if self.user_plans.count() > 2:
-#                 raise ValidationError("User can have maximum 2 plans only")
-
-#     def __str__(self):
-#         return f"{self.user_id} - {self.name}"
 
 def generate_global_property_uuid():
     from agents.models import AgentProperty
@@ -3166,96 +2822,6 @@ class Property(models.Model):
                 self.generate_property_code()
             )
 
-        # if (
-        #     not is_new and
-        #     self.duration_days <= 0
-        # ):
-
-        #     from developer.models import ExpiredProperty, PropertyImage
-        #     main_image = None
-
-        #     if self.pk:
-        #         first_image = self.images.first()
-        #         if first_image:
-        #             main_image = first_image.image
-
-        #     expired = ExpiredProperty.objects.create(
-        #         category=self.category,
-        #         subcategory=self.subcategory,
-        #         purpose=self.purpose,
-
-        #         property_code=self.property_code,
-
-        #         label=self.label,
-        #         land_area=self.land_area,
-        #         sq_ft=self.sq_ft,
-        #         description=self.description,
-
-        #         image=main_image,
-        #         screenshot=self.screenshot,
-
-        #         perprice=self.perprice,
-        #         price=self.price,
-        #         deposit=self.deposit,
-
-        #         user=self.user,
-        #         owner=self.owner,
-
-        #         package=self.package,
-        #         subscription=self.subscription,
-        #         single_property_package=self.single_property_package,
-
-        #         single_property_edit_limit=self.single_property_edit_limit,
-        #         single_property_edit_used=self.single_property_edit_used,
-
-        #         whatsapp=self.whatsapp,
-        #         phone=self.phone,
-
-        #         location=self.location,
-
-        #         city=self.city,
-        #         district=self.district,
-        #         taluk=self.taluk,
-        #         village=self.village,
-        #         state=self.state,
-        #         pincode=self.pincode,
-
-        #         land_mark=self.land_mark,
-        #         selling_points=self.selling_points,
-
-        #         paid=self.paid,
-
-        #         added_by=self.added_by,
-        #         market_staff=self.market_staff,
-
-        #         message=self.message,
-        #         note=self.note,
-
-        #         is_featured=self.is_featured,
-
-        #         created_at=self.created_at,
-        #         duration_days=0,
-        #         expiry_date=self.expiry_date,
-        #     )
-
-        #     expired.amenities.set(self.amenities.all())
-        #     for feature in self.property_features.all():
-        #         ExpiredPropertyFeature.objects.create(
-        #             expired_property=expired,
-        #             field=feature.field,
-        #             value=feature.value,
-        #             icon=feature.icon,
-        #         )
-
-        #     for img in self.images.all():
-        #         PropertyImage.objects.create(
-        #             expired_property=expired,
-        #             image=img.image,
-        #         )
-
-        #     self.delete()
-        #     return
-
         super().save(*args,**kwargs)
 
         if is_new and self.user:
@@ -3466,38 +3032,9 @@ class PropertyFeature(models.Model):
 
     def save(self,*args,**kwargs):
 
-        # if (
-        #     self.field
-        #     and self.field.icon
-        #     and not self.icon
-        # ):
-
-        #     self.icon=self.field.icon
-
         self.full_clean()
 
         super().save(*args,**kwargs)
-
-        # feature_data=[]
-
-        # for item in self.property.property_features.all():
-
-        #     feature_data.append({
-        #         "id":item.id,
-        #         "field_id":item.field.id,
-        #         "field_name":item.field.field_name,
-        #         "value":item.value,
-        #         "icon":(
-        #             item.icon.url
-        #             if item.icon else None
-        #         )
-        #     })
-
-        # self.property.features=feature_data
-
-        # self.property.save(
-        #     update_fields=["features"]
-        # )
 
     def __str__(self):
 
@@ -3597,122 +3134,6 @@ class PropertyImage(models.Model):
 
         return "Property Image"
 
-# class ExpiredProperty(models.Model):
-
-#     category = models.ForeignKey("Category", on_delete=models.CASCADE)
-#     subcategory = models.ForeignKey("Subcategory", on_delete=models.SET_NULL, null=True, blank=True, related_name="expired_properties")
-#     purpose = models.ForeignKey("Purpose", on_delete=models.CASCADE)
-
-#     property_code = models.CharField(max_length=20, unique=True, null=True, blank=True, db_index=True)
-
-#     label = models.CharField(max_length=255, validators=[validate_safe_text])
-#     land_area = models.CharField(max_length=255, validators=[validate_safe_text])
-
-#     sq_ft = models.CharField(max_length=10, null=True, blank=True, validators=[validate_safe_text])
-
-#     description = models.CharField(max_length=10000, validators=[validate_safe_message])
-
-#     amenities = models.ManyToManyField("Amenities", blank=True, related_name="expired_properties")
-
-#     image = CloudinaryField('image', folder="propertice")
-
-#     perprice = models.CharField(max_length=50, blank=True, null=True, validators=[validate_safe_text])
-#     price = models.CharField(max_length=50, validators=[validate_safe_text])
-
-#     owner = models.CharField(max_length=255, validators=[validate_safe_text])
-
-#     whatsapp = models.CharField(max_length=255, validators=[validate_phone_number])
-#     phone = models.CharField(max_length=255, validators=[validate_phone_number])
-
-#     location = models.URLField(max_length=3000)
-
-#     city = models.CharField(max_length=255, validators=[validate_safe_text])
-#     pincode = models.CharField(max_length=10, validators=[validate_pincode])
-#     district = models.CharField(max_length=255, validators=[validate_safe_text])
-
-#     taluk = models.CharField(max_length=255, null=True, blank=True, validators=[validate_safe_text])
-#     village = models.CharField(max_length=255, null=True, blank=True, validators=[validate_safe_text])
-#     state = models.CharField(max_length=255, null=True, blank=True, validators=[validate_safe_text])
-
-#     land_mark = models.CharField(max_length=255, blank=True, null=True,default=list, validators=[validate_safe_text])
-
-#     paid = models.CharField(max_length=255, validators=[validate_safe_text])
-
-#     added_by = models.CharField(max_length=255, blank=True, null=True, validators=[validate_safe_text])
-#     market_staff = models.CharField(max_length=255, blank=True, null=True, validators=[validate_safe_text])
-
-#     created_at = models.DateTimeField()
-#     duration_days = models.PositiveIntegerField()
-#     note = models.TextField(null=True,blank=True,validators=[validate_safe_message])
-
-#     screenshot = CloudinaryField('image', folder="propertice/screenshots", blank=True, null=True)
-
-   
-    # def is_active_again(self):
-    #     return self.duration_days > 0
-
-    # def clean(self):
-
-
-    #     if self.duration_days < 0:
-    #         raise ValidationError("Duration cannot be negative.")
-
-    #     if self.property_code:
-    #         self.property_code = self.property_code.strip().upper()
-
-    # def save(self, *args, **kwargs):
-
-    #     self.full_clean() 
-
-    #     if self.pk and self.is_active_again():
-
-    #         active_prop = Property.objects.create(
-    #             category=self.category,
-    #             subcategory=self.subcategory,
-    #             purpose=self.purpose,
-    #             property_code=self.property_code,
-    #             label=self.label,
-    #             land_area=self.land_area,
-    #             sq_ft=self.sq_ft,
-    #             description=self.description,
-    #             image=self.image,
-    #             perprice=self.perprice,
-    #             price=self.price,
-    #             owner=self.owner,
-    #             whatsapp=self.whatsapp,
-    #             phone=self.phone,
-    #             location=self.location,
-    #             city=self.city,
-    #             pincode=self.pincode,
-    #             district=self.district,
-    #             taluk=self.taluk,
-    #             village=self.village,
-    #             state=self.state,
-    #             land_mark=self.land_mark,
-    #             paid=self.paid,
-    #             added_by=self.added_by,
-    #             market_staff=self.market_staff,
-    #             created_at=self.created_at,
-    #             duration_days=self.duration_days,
-    #             note=self.note,
-    #             screenshot=self.screenshot,
-    #         )
-
-    #         active_prop.amenities.set(self.amenities.all())
-
-    #         for img in self.images.all():
-    #             PropertyImage.objects.create(
-    #                 property=active_prop,
-    #                 image=img.image
-    #             )
-
-    #         super().delete()
-
-    #     else:
-    #         super().save(*args, **kwargs)
-
-    # def __str__(self):
-    #     return f"{self.label} ({self.property_code})"
 
 class ExpiredProperty(models.Model):
 
@@ -3879,6 +3300,7 @@ class ExpiredProperty(models.Model):
     )
 
     pincode = models.CharField(
+        null=True,blank=True,
         max_length=10,
         validators=[validate_pincode]
     )
@@ -4266,83 +3688,6 @@ class ExpireAgents(models.Model):
     def __str__(self):
         return f"{self.agent.username} - Expired"
 
-# class ExpireAgents(models.Model):
-#     agentsname = models.CharField(max_length=100)
-#     agentsspeacialised = models.CharField(max_length=100)
-#     agentsphone = models.CharField(max_length=100)
-#     agentswhatsapp = models.CharField(max_length=100, blank=True, null=True)
-#     agentsemail = models.CharField(max_length=100, blank=True, null=True)
-#     agentslocation = models.CharField(max_length=200)
-#     agentscity = models.CharField(max_length=200)
-#     agentspincode = models.CharField(max_length=100)
-#     agentsimage = CloudinaryField('buysel', folder="agents")
-
-#     created_at = models.DateTimeField()
-#     duration_days = models.PositiveIntegerField(default=365, null=True, blank=True)
-
-   
-#     def is_active_again(self):
-#         try:
-#             days = int(self.duration_days or 0)
-#         except (ValueError, TypeError):
-#             days = 0
-
-#         expiry_date = self.created_at + timedelta(days=days)
-#         return timezone.now() <= expiry_date
-
-#     def clean(self):
-
-#         validate_agent_name(self.agentsname)
-#         validate_safe_text(self.agentsspeacialised)
-#         validate_phone_number(self.agentsphone)
-
-#         if self.agentswhatsapp:
-#             validate_phone_number(self.agentswhatsapp)
-
-#         if self.agentsemail:
-#             validate_email(self.agentsemail)
-
-#         validate_safe_text(self.agentslocation)
-#         validate_safe_text(self.agentscity)
-#         validate_pincode(self.agentspincode)
-
-#         if self.duration_days is not None and self.duration_days < 0:
-#             raise ValidationError("Duration cannot be negative.")
-
-#     def save(self, *args, **kwargs):
-
-#         self.full_clean()  
-
-#         if self.pk and self.is_active_again():
-
-#             active_agent = Agents.objects.create(
-#                 agentsname=self.agentsname,
-#                 agentsspeacialised=self.agentsspeacialised,
-#                 agentsphone=self.agentsphone,
-#                 agentswhatsapp=self.agentswhatsapp,
-#                 agentsemail=self.agentsemail,
-#                 agentslocation=self.agentslocation,
-#                 agentscity=self.agentscity,
-#                 agentspincode=self.agentspincode,
-#                 agentsimage=self.agentsimage,
-#                 created_at=self.created_at,
-#                 duration_days=self.duration_days,
-#             )
-
-#             for img in self.images.all():
-#                 img.agents = active_agent
-#                 img.expired_agents = None
-#                 img.save()
-
-#             super(ExpireAgents, self).delete()
-#         else:
-#             super(ExpireAgents, self).save(*args, **kwargs)
-
-#     def __str__(self):
-#         return f"{self.agentsname} (Expired)"
-
-
-
 class AgentsImage(models.Model):
     agents = models.ForeignKey("Agents", on_delete=models.CASCADE, related_name="images", null=True, blank=True)
     expired_agents = models.ForeignKey("ExpireAgents", on_delete=models.CASCADE, related_name="images", null=True, blank=True)
@@ -4483,9 +3828,6 @@ class SliderAd(models.Model):
 
     def __str__(self):
         return f"Banner {self.id}"
-    
-
-from django.core.exceptions import ValidationError
 
 def validate_png(image):
     if not image.name.lower().endswith('.png'):
@@ -4519,22 +3861,6 @@ class BannerAd(models.Model):
 
     def __str__(self):
         return f"Hero Image {self.id}"
-
-import uuid
-
-from django.db import models
-from django.utils import timezone
-
-from developer.models import UserCreate
-from agents.models import AgentUserProfile, PendingAgentRegistration, PendingAgentRegistration
-
-from developer.models import (
-    Userplan,
-    PremiumPlan,
-    ElitePlan,
-    AgentPlan
-)
-
 
 class Payment(models.Model):
 
@@ -4743,34 +4069,12 @@ class Subscription(models.Model):
 
     def clean(self):
 
-        # today = timezone.now().date()
-
-        # if self.end_date <= today:
-
-        #     raise ValidationError(
-        #         "End date must be after today."
-        #     )
 
         if self.used_listings > self.property_limit:
 
             raise ValidationError(
                 "Used listings cannot exceed property limit."
             )
-    # def save(self, *args, **kwargs):
-
-    #     self.plan_type = self.plan_type.lower()
-
-    #     if self.end_date < timezone.now().date():
-    #         self.is_active = False
-    #     else:
-    #         self.is_active = True
-
-    #     self.full_clean()
-
-    #     super().save(*args, **kwargs)
-
-    #     # Sync Agent Profile after every subscription change
-    #     self.agent.sync_subscription()
 
 
     def save(self, *args, **kwargs):

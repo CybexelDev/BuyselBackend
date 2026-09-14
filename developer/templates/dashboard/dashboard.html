@@ -61,150 +61,128 @@
 
                         <button type="button" id="notificationButton" title="Notifications" aria-label="Notifications"
                             aria-expanded="false"
-                            class="relative grid h-9 w-9 place-items-center rounded-xl text-slate-500 transition duration-200 hover:bg-[#f2f9e8] hover:text-[#659d28] focus:outline-none focus:ring-4 focus:ring-[#8bc83f]/10 sm:h-10 sm:w-10">
+                            class="notification-bell relative grid h-9 w-9 place-items-center rounded-xl border border-[#dfe8d7] bg-white/80 text-[#52634b] shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-[#b9d99a] hover:bg-[#f7fbf2] hover:text-[#5f9726] focus:outline-none focus:ring-4 focus:ring-[#8bc83f]/10 sm:h-10 sm:w-10">
                             <i class="fa-regular fa-bell text-[14px]"></i>
-
-                            <!-- Unread badge -->
                             <span id="notificationBadge"
-                                class="absolute -right-0.5 -top-0.5 {% if unread_count == 0 %}hidden{% else %}flex{% endif %} min-w-[17px] h-[17px] items-center justify-center rounded-full bg-[#ef4444] px-1 text-[9px] font-bold text-white ring-2 ring-white">
+                                class="absolute -right-1 -top-1 {% if unread_count == 0 %}hidden{% else %}flex{% endif %} min-w-[18px] h-[18px] items-center justify-center rounded-full bg-[#8bc83f] px-1 text-[9px] font-bold text-white ring-2 ring-white shadow-sm">
                                 {{ unread_count }}
                             </span>
                         </button>
 
-                        <!-- Notification dropdown -->
                         <div id="notificationDropdown"
-                            class="absolute right-0 top-[calc(100%+12px)] z-[100] hidden w-[340px] max-w-[calc(100vw-24px)] overflow-hidden rounded-2xl border border-[#dfe8d7] bg-[#f7f9f4] shadow-[0_24px_60px_rgba(15,23,42,0.18)]">
+                            class="notification-panel absolute right-0 top-[calc(100%+12px)] z-[100] hidden w-[390px] max-w-[calc(100vw-20px)] overflow-hidden rounded-[22px] border border-[#dce7d5] bg-white shadow-[0_24px_70px_rgba(35,55,28,0.16)]">
 
-                            <!-- Header -->
-                            <div
-                                class="flex items-center justify-between border-b border-[#e3eadf] bg-white/80 px-4 py-3">
-                                <div>
-                                    <p class="text-sm font-bold text-[#26371f]">
-                                        Notifications
-                                    </p>
-                                    <p class="mt-0.5 text-[10px] text-slate-400">
-                                        Recent system activity
-                                    </p>
+                            <div class="border-b border-[#e8eee4] bg-[#fbfcfa] px-4 py-4">
+                                <div class="flex items-center justify-between gap-3">
+                                    <div class="flex items-center gap-3">
+                                        <span class="grid h-9 w-9 place-items-center rounded-xl bg-[#eef7e4] text-[#659d28]">
+                                            <i class="fa-regular fa-bell text-xs"></i>
+                                        </span>
+                                        <div>
+                                            <p class="text-sm font-bold text-[#26371f]">Notifications</p>
+                                            <p class="mt-0.5 text-[10px] font-medium text-[#9aa494]">Recent admin activity</p>
+                                        </div>
+                                    </div>
+                                    <button type="button" id="markAllNotificationsRead"
+                                        class="rounded-lg px-2.5 py-1.5 text-[10px] font-bold text-[#659d28] transition hover:bg-[#eef7e4] hover:text-[#4d7e1f]">
+                                        Mark all read
+                                    </button>
                                 </div>
-
-                                <button type="button" id="markAllNotificationsRead"
-                                    class="text-[10px] font-semibold text-[#659d28] transition hover:text-[#355f16]">
-                                    Mark all read
-                                </button>
                             </div>
 
-                            <!-- Notification list -->
-
-
-                            <div id="notificationList" class="max-h-[360px] overflow-y-auto">
-
+                            <div id="notificationList" class="notification-scroll max-h-[390px] overflow-y-auto">
                                 {% if notifications %}
-
                                 {% for notification in notifications %}
+                                <div class="notification-item group border-b border-[#edf1eb] px-4 py-3.5 transition duration-200 {% if notification.is_read %}notification-read{% else %}notification-unread{% endif %}"
+                                    data-notification-id="{{ notification.id }}" data-notification-item>
 
-                                <div class="
-        border-b border-[#e3eadf] px-4 py-3
-        transition duration-200
-        {% if notification.is_read %}
-            bg-[#f7f9f4] hover:bg-white
-        {% else %}
-            bg-[#f0f8e8] border-l-[3px] border-l-[#8bc83f]
-            hover:bg-[#eaf5dc]
-        {% endif %}
-    " data-notification-id="{{ notification.id }}" data-notification-item>
                                     <div class="flex items-start gap-3">
-
-                                        <!-- Icon -->
-                                        <span class="
-    mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-xl
-    transition
-    {% if notification.is_read %}
-        bg-[#eef3ea] text-slate-400
-    {% else %}
-        bg-[#dff1c9] text-[#5f9726] ring-1 ring-[#8bc83f]/20
-    {% endif %}
-">
+                                        <span class="notification-icon mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-xl">
                                             {% if notification.type == "advertisement" %}
-                                            <i class="fa-solid fa-bullhorn text-xs"></i>
+                                                <i class="fa-solid fa-bullhorn text-[11px]"></i>
+                                            {% elif notification.type == "reel" %}
+                                                <i class="fa-solid fa-clapperboard text-[11px]"></i>
+                                            {% elif "Category" in notification.title %}
+                                                <i class="fa-solid fa-layer-group text-[11px]"></i>
+                                            {% elif "Purpose" in notification.title %}
+                                                <i class="fa-solid fa-bullseye text-[11px]"></i>
+                                            {% elif "Subcategory Field" in notification.title %}
+                                                <i class="fa-solid fa-list-check text-[11px]"></i>
+                                            {% elif "Subcategory" in notification.title %}
+                                                <i class="fa-solid fa-sitemap text-[11px]"></i>
+                                            {% elif "Amenity" in notification.title %}
+                                                <i class="fa-solid fa-wand-magic-sparkles text-[11px]"></i>
+                                            {% elif "Property" in notification.title %}
+                                                <i class="fa-solid fa-house text-[11px]"></i>
+                                            {% elif "Agent" in notification.title %}
+                                                <i class="fa-solid fa-user-tie text-[11px]"></i>
+                                            {% elif "User Profile" in notification.title %}
+                                                <i class="fa-solid fa-id-card text-[11px]"></i>
+                                            {% elif "User" in notification.title %}
+                                                <i class="fa-solid fa-users text-[11px]"></i>
+                                            {% elif "Blog" in notification.title %}
+                                                <i class="fa-solid fa-blog text-[11px]"></i>
+                                            {% elif "Banner" in notification.title %}
+                                                <i class="fa-solid fa-image text-[11px]"></i>
+                                            {% elif "Slider" in notification.title %}
+                                                <i class="fa-solid fa-images text-[11px]"></i>
+                                            {% elif "Package" in notification.title %}
+                                                <i class="fa-solid fa-gem text-[11px]"></i>
+                                            {% elif "Promotion" in notification.title %}
+                                                <i class="fa-solid fa-bullhorn text-[11px]"></i>
                                             {% else %}
-                                            <i class="fa-solid fa-clapperboard text-xs"></i>
+                                                <i class="fa-solid fa-circle-info text-[11px]"></i>
                                             {% endif %}
                                         </span>
 
-                                        <!-- Content -->
                                         <div class="min-w-0 flex-1">
-
                                             <div class="flex items-start justify-between gap-2">
+                                                <p class="notification-title min-w-0 truncate text-[12px] leading-5">{{ notification.title }}</p>
 
-                                                <p class="
-        text-[13px] leading-5 text-[#26371f]
-        {% if notification.is_read %}
-            font-semibold
-        {% else %}
-            font-bold
-        {% endif %}
-    ">
-                                                    {{ notification.title }}
-                                                </p>
                                                 {% if not notification.is_read %}
                                                 <button type="button"
-                                                    class="mark-notification-read mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full text-[#659d28] transition hover:bg-[#eaf5dc]"
-                                                    data-notification-id="{{ notification.id }}" title="Mark as read"
-                                                    aria-label="Mark notification as read">
-                                                    <i class="fa-solid fa-check text-[10px]"></i>
+                                                    class="mark-notification-read notification-read-btn mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full transition"
+                                                    data-notification-id="{{ notification.id }}"
+                                                    title="Mark as read" aria-label="Mark notification as read">
+                                                    <i class="fa-solid fa-check text-[9px]"></i>
                                                 </button>
+                                                {% else %}
+                                                <span class="notification-status mt-1 shrink-0 text-[9px] font-semibold">Read</span>
                                                 {% endif %}
-
                                             </div>
-                                            <p class="mt-1 text-[11px] leading-4 font-medium text-[#66735f]">
-                                                {{ notification.message }}
-                                            </p>
-                                            <p class="mt-1.5 text-[9px] font-medium text-[#9aa494]">
-                                                {{ notification.created_at|date:"d M Y, h:i A" }}
-                                            </p>
 
+                                            <p class="notification-message mt-1 text-[11px] leading-4">{{ notification.message }}</p>
+
+                                            <div class="mt-2 flex items-center gap-2">
+                                                <span class="notification-dot h-1.5 w-1.5 rounded-full"></span>
+                                                <p class="notification-date text-[9px] font-medium">
+                                                    {{ notification.created_at|date:"d M Y, h:i A" }}
+                                                </p>
+                                            </div>
                                         </div>
-
                                     </div>
-
                                 </div>
-
                                 {% endfor %}
-
                                 {% else %}
-
-                                <!-- Empty state -->
-                                <div id="notificationEmpty" class="px-5 py-10 text-center">
-                                    <span
-                                        class="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-[#eaf5dc] text-[#659d28]">
+                                <div id="notificationEmpty" class="px-5 py-12 text-center">
+                                    <span class="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-[#f1f5ed] text-[#8b9983]">
                                         <i class="fa-regular fa-bell-slash"></i>
                                     </span>
-
-                                    <p class="mt-3 text-sm font-semibold text-[#46583e]">
-                                        No notifications
-                                    </p>
-
-                                    <p class="mt-1 text-xs text-slate-400">
-                                        New activity will appear here.
-                                    </p>
+                                    <p class="mt-3 text-sm font-semibold text-[#52634b]">All caught up</p>
+                                    <p class="mt-1 text-xs font-normal text-[#9aa494]">New admin activity will appear here.</p>
                                 </div>
-
                                 {% endif %}
-
                             </div>
 
-
-
-                            <!-- Footer -->
-                            <div class="border-t border-[#e3eadf] bg-white/70 px-4 py-2.5 text-center">
-                                <span class="text-[10px] font-medium text-slate-400">
-                                    Buysel Admin Activity
+                            <div class="flex items-center justify-between border-t border-[#e8eee4] bg-[#fbfcfa] px-4 py-2.5">
+                                <span class="text-[9px] font-semibold uppercase tracking-[0.12em] text-[#a0aa9b]">Buysel Admin</span>
+                                <span class="inline-flex items-center gap-1.5 text-[9px] font-semibold text-[#7e8b78]">
+                                    <span class="h-1.5 w-1.5 rounded-full bg-[#8bc83f]"></span>
+                                    Live activity
                                 </span>
                             </div>
-
                         </div>
                     </div>
-
 
 
                     <div class="mx-1 hidden h-7 w-px bg-slate-200 sm:block"></div>
@@ -716,6 +694,46 @@
         </main>
     </div>
 </div>
+
+
+<style>
+/* Notification drawer only */
+.notification-panel { backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+.notification-scroll { scrollbar-width: thin; scrollbar-color: #c7d6bf transparent; }
+.notification-scroll::-webkit-scrollbar { width: 6px; }
+.notification-scroll::-webkit-scrollbar-track { background: transparent; }
+.notification-scroll::-webkit-scrollbar-thumb { background: #c7d6bf; border-radius: 999px; }
+
+.notification-item { position: relative; }
+.notification-item:hover { background: #fbfdf9; }
+.notification-unread { background: #f7fbf2; }
+.notification-unread::before {
+    content: ""; position: absolute; left: 0; top: 12px; bottom: 12px;
+    width: 3px; border-radius: 0 999px 999px 0; background: #8bc83f;
+}
+.notification-read { background: #fff; }
+.notification-unread .notification-title { color: #26351f; font-weight: 800; }
+.notification-read .notification-title { color: #394536; font-weight: 700; }
+.notification-unread .notification-message { color: #3f4d3a; font-weight: 600; }
+.notification-read .notification-message { color: #596354; font-weight: 500; }
+
+.notification-unread .notification-icon {
+    background: #eaf5dc; color: #659d28;
+    box-shadow: inset 0 0 0 1px rgba(139,200,63,.14);
+}
+.notification-read .notification-icon { background: #f1f4ef; color: #a0aa9b; }
+.notification-read-btn { color: #719d45; background: #f1f8e9; }
+.notification-read-btn:hover { background: #e4f2d5; color: #4f7f21; transform: scale(1.05); }
+.notification-status, .notification-date { color: #4f5c4a; }
+.notification-dot { background: #b5c5ad; }
+.notification-unread .notification-dot { background: #8bc83f; }
+.notification-bell i { transition: transform .2s ease; }
+.notification-bell:hover i { transform: rotate(-10deg); }
+
+@media (max-width: 480px) {
+    #notificationDropdown { width: min(390px, calc(100vw - 20px)); }
+}
+</style>
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -1294,103 +1312,79 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", function () {
+    const button = document.getElementById("notificationButton");
+    const dropdown = document.getElementById("notificationDropdown");
+    const wrapper = document.getElementById("notificationWrapper");
+    const markAll = document.getElementById("markAllNotificationsRead");
+    const badge = document.getElementById("notificationBadge");
 
-        const notificationButton =
-            document.getElementById("notificationButton");
+    if (!button || !dropdown) return;
 
-        const notificationDropdown =
-            document.getElementById("notificationDropdown");
-
-        const notificationWrapper =
-            document.getElementById("notificationWrapper");
-
-        if (!notificationButton || !notificationDropdown) {
-            return;
-        }
-
-        // ==============================
-        // OPEN / CLOSE NOTIFICATION
-        // ==============================
-
-        notificationButton.addEventListener("click", function (event) {
-
-            event.preventDefault();
-            event.stopPropagation();
-
-            notificationDropdown.classList.toggle("hidden");
-
-            const isOpen =
-                !notificationDropdown.classList.contains("hidden");
-
-            notificationButton.setAttribute(
-                "aria-expanded",
-                isOpen ? "true" : "false"
-            );
-        });
-
-
-        // ==============================
-        // CLOSE WHEN CLICKING OUTSIDE
-        // ==============================
-
-        document.addEventListener("click", function (event) {
-
-            if (
-                notificationWrapper &&
-                !notificationWrapper.contains(event.target)
-            ) {
-                notificationDropdown.classList.add("hidden");
-
-                notificationButton.setAttribute(
-                    "aria-expanded",
-                    "false"
-                );
-            }
-
-        });
-
-    });
     function getCookie(name) {
-        let cookieValue = null;
-
-        if (document.cookie && document.cookie !== "") {
-            const cookies = document.cookie.split(";");
-
-            for (let cookie of cookies) {
+        let value = null;
+        if (document.cookie) {
+            document.cookie.split(";").forEach(cookie => {
                 cookie = cookie.trim();
-
                 if (cookie.startsWith(name + "=")) {
-                    cookieValue =
-                        decodeURIComponent(
-                            cookie.substring(name.length + 1)
-                        );
-                    break;
+                    value = decodeURIComponent(cookie.substring(name.length + 1));
                 }
-            }
+            });
         }
-
-        return cookieValue;
+        return value;
     }
 
+    function setBadge(count) {
+        if (!badge) return;
+        if (count <= 0) {
+            badge.textContent = "0";
+            badge.classList.add("hidden");
+            badge.classList.remove("flex");
+        } else {
+            badge.textContent = count;
+            badge.classList.remove("hidden");
+            badge.classList.add("flex");
+        }
+    }
 
-    // ==============================
-    // MARK SINGLE NOTIFICATION READ
-    // ==============================
+    function makeRead(item, buttonToRemove) {
+        if (buttonToRemove) buttonToRemove.remove();
+        if (!item) return;
 
-    const markReadButtons =
-        document.querySelectorAll(".mark-notification-read");
+        item.classList.remove("notification-unread");
+        item.classList.add("notification-read");
 
-    markReadButtons.forEach(function (button) {
+        const header = item.querySelector(".flex.items-start.justify-between");
+        if (header && !header.querySelector(".notification-status")) {
+            const status = document.createElement("span");
+            status.className = "notification-status mt-1 shrink-0 text-[9px] font-semibold";
+            status.textContent = "Read";
+            header.appendChild(status);
+        }
+    }
 
-        button.addEventListener("click", function (event) {
+    button.addEventListener("click", function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        const open = !dropdown.classList.contains("hidden");
+        dropdown.classList.toggle("hidden", open);
+        button.setAttribute("aria-expanded", open ? "false" : "true");
+    });
 
+    document.addEventListener("click", function (event) {
+        if (wrapper && !wrapper.contains(event.target)) {
+            dropdown.classList.add("hidden");
+            button.setAttribute("aria-expanded", "false");
+        }
+    });
+
+    document.querySelectorAll(".mark-notification-read").forEach(function (readButton) {
+        readButton.addEventListener("click", function (event) {
             event.preventDefault();
             event.stopPropagation();
 
-            const notificationId =
-                button.dataset.notificationId;
-
+            const notificationId = readButton.dataset.notificationId;
+            const item = readButton.closest("[data-notification-item]");
             const formData = new FormData();
             formData.append("notification_id", notificationId);
 
@@ -1402,274 +1396,195 @@ document.addEventListener("DOMContentLoaded", function () {
                     "X-Requested-With": "XMLHttpRequest"
                 }
             })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.success) {
+                    console.error(data.message);
+                    return;
+                }
+
+                makeRead(item, readButton);
+                setBadge(Math.max(0, parseInt(badge?.textContent || "0", 10) - 1));
+            })
+            .catch(error => console.error("Mark notification read error:", error));
+        });
+    });
+
+    if (markAll) {
+        markAll.addEventListener("click", function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            const buttons = Array.from(document.querySelectorAll(".mark-notification-read"));
+            if (!buttons.length) {
+                setBadge(0);
+                markAll.textContent = "All read";
+                return;
+            }
+
+            let done = 0;
+            let failed = false;
+
+            buttons.forEach(function (readButton) {
+                const formData = new FormData();
+                formData.append("notification_id", readButton.dataset.notificationId);
+
+                fetch("{% url 'mark_dashboard_notification_read' %}", {
+                    method: "POST",
+                    body: formData,
+                    headers: {
+                        "X-CSRFToken": getCookie("csrftoken"),
+                        "X-Requested-With": "XMLHttpRequest"
+                    }
+                })
                 .then(response => response.json())
                 .then(data => {
-
                     if (!data.success) {
-                        console.error(data.message);
+                        failed = true;
                         return;
                     }
-
-                    // Remove mark-read button
-                    button.remove();
-
-                    // Update notification UI
-                    const item =
-                        button.closest("[data-notification-item]");
-
-                    if (item) {
-                        item.classList.add("opacity-60");
-                    }
-
-                    // Update badge
-                    const badge =
-                        document.getElementById("notificationBadge");
-
-                    if (badge) {
-                        let count =
-                            parseInt(badge.textContent || "0") - 1;
-
-                        if (count <= 0) {
-                            badge.textContent = "0";
-                            badge.classList.add("hidden");
-                            badge.classList.remove("flex");
-                        } else {
-                            badge.textContent = count;
-                        }
-                    }
-
+                    makeRead(readButton.closest("[data-notification-item]"), readButton);
                 })
                 .catch(error => {
-                    console.error("Mark notification read error:", error);
+                    failed = true;
+                    console.error("Mark all notifications read error:", error);
+                })
+                .finally(() => {
+                    done++;
+                    if (done === buttons.length) {
+                        if (!failed) {
+                            setBadge(0);
+                            markAll.textContent = "All read";
+                        }
+                    }
                 });
-
+            });
         });
-
-    });
+    }
+});
 </script>
 <style>
-    /* <-------------css added----------->*/
+/* Notification drawer only */
+.notification-panel {
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+}
 
-    /* =========================================================
-   BASE3 CONTENT-PANEL INTEGRATION — FULL WIDTH FIX
-========================================================= */
+.notification-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: #c7d6bf transparent;
+}
 
-    #mainContent {
-        min-width: 0;
+.notification-scroll::-webkit-scrollbar {
+    width: 6px;
+}
+
+.notification-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.notification-scroll::-webkit-scrollbar-thumb {
+    background: #c7d6bf;
+    border-radius: 999px;
+}
+
+.notification-item {
+    position: relative;
+}
+
+.notification-item:hover {
+    background: #fbfdf9;
+}
+
+.notification-unread {
+    background: #f7fbf2;
+}
+
+.notification-unread::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 12px;
+    bottom: 12px;
+    width: 3px;
+    border-radius: 0 999px 999px 0;
+    background: #8bc83f;
+}
+
+/* Read / Unread text - soft black shades */
+.notification-read {
+    background: #fff;
+}
+
+.notification-unread .notification-title {
+    color: #303030;
+    font-weight: 800;
+}
+
+.notification-read .notification-title {
+    color: #464646;
+    font-weight: 700;
+}
+
+.notification-unread .notification-message {
+    color: #505050;
+    font-weight: 600;
+}
+
+.notification-read .notification-message {
+    color: #626262;
+    font-weight: 500;
+}
+
+.notification-unread .notification-icon {
+    background: #eaf5dc;
+    color: #659d28;
+    box-shadow: inset 0 0 0 1px rgba(139, 200, 63, .14);
+}
+
+.notification-read .notification-icon {
+    background: #f1f4ef;
+    color: #707070;
+}
+
+.notification-read-btn {
+    color: #719d45;
+    background: #f1f8e9;
+    border: 1px solid #d8e8ca;
+}
+
+ .notification-read-btn:hover {
+    background: #e4f2d5;
+    color: #4f7f21;
+    transform: scale(1.05);
+}
+
+.notification-status,
+.notification-date {
+    color: #666666;
+}
+
+.notification-dot {
+    background: #b5b5b5;
+}
+
+.notification-unread .notification-dot {
+    background: #8bc83f;
+}
+
+.notification-bell i {
+    transition: transform .2s ease;
+}
+
+.notification-bell:hover i {
+    transform: rotate(-10deg);
+}
+
+@media (max-width: 480px) {
+    #notificationDropdown {
+        width: min(390px, calc(100vw - 20px));
     }
-
-    #mainContent>.dashboard-page {
-        width: 100% !important;
-        max-width: none !important;
-        min-height: 100% !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        overflow-x: clip !important;
-    }
-
-    #mainContent>.dashboard-page>.dashboard-shell {
-        width: 100% !important;
-        max-width: none !important;
-        min-width: 0 !important;
-        min-height: 100% !important;
-        margin: 0 !important;
-        border: 0 !important;
-        border-radius: 0 !important;
-        box-shadow: none !important;
-        outline: 0 !important;
-        --tw-ring-shadow: 0 0 #0000 !important;
-        background: transparent !important;
-    }
-
-    .dashboard-topbar,
-    .dashboard-main,
-    .dashboard-hero,
-    .dashboard-quick-actions,
-    .dashboard-stats-grid,
-    .dashboard-agent-card {
-        width: 100% !important;
-        max-width: none !important;
-        min-width: 0 !important;
-    }
-
-    /* Keep only the dashboard's internal spacing. The base already has p-5. */
-    .dashboard-main {
-        padding: clamp(16px, 1.7vw, 28px) 0 28px !important;
-    }
-
-    .dashboard-topbar {
-        margin: 0 !important;
-        padding-inline: clamp(16px, 2vw, 30px) !important;
-    }
-
-    /* Desktop: use all available right-panel width */
-    @media (min-width: 1024px) {
-        #mainContent>.dashboard-page {
-            min-height: calc(100vh - 72px) !important;
-        }
-
-        .dashboard-topbar>div {
-            grid-template-columns: minmax(190px, 240px) minmax(320px, 1fr) auto !important;
-        }
-
-        .dashboard-topbar>div>div:nth-child(2) {
-            width: 100% !important;
-            max-width: none !important;
-            margin-inline: 0 !important;
-        }
-
-        .dashboard-hero>.relative.z-10 {
-            grid-template-columns: minmax(0, 1.25fr) minmax(330px, 430px) !important;
-        }
-    }
-
-    /* Common 1024–1366 laptop screens */
-    @media (min-width: 1024px) and (max-width: 1366px) {
-        .dashboard-main {
-            padding-top: 20px !important;
-        }
-
-        .dashboard-hero {
-            min-height: 360px !important;
-            padding: 28px !important;
-        }
-
-        .dashboard-hero>.relative.z-10 {
-            grid-template-columns: minmax(0, 1fr) minmax(300px, 360px) !important;
-            gap: 28px !important;
-        }
-
-        #animatedHeading {
-            font-size: clamp(2rem, 3.05vw, 2.5rem) !important;
-        }
-    }
-
-    /* Tablet/mobile: no duplicate outer gutters */
-    @media (max-width: 1023px) {
-        #mainContent>.dashboard-page {
-            padding: 0 !important;
-        }
-
-        .dashboard-shell {
-            border-radius: 0 !important;
-        }
-
-        .dashboard-main {
-            padding: 16px 0 24px !important;
-        }
-    }
-
-    @media (max-width: 639px) {
-        .dashboard-main {
-            padding: 12px 0 20px !important;
-        }
-
-        .dashboard-topbar {
-            border-radius: 18px !important;
-        }
-    }
-
-    /* =========================================================
-   PREMIUM NAVBAR + SUBTLE DASHBOARD BACKGROUND
-========================================================= */
-
-    .dashboard-page,
-    .dashboard-shell {
-        background: transparent !important;
-    }
-
-    .dashboard-main {
-        position: relative;
-        isolation: isolate;
-        background:
-            radial-gradient(circle at 8% 8%, rgba(139, 200, 63, 0.085), transparent 24%),
-            radial-gradient(circle at 92% 22%, rgba(181, 223, 125, 0.08), transparent 22%),
-            linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(250, 252, 248, 0.58));
-    }
-
-    .dashboard-main::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        z-index: -1;
-        pointer-events: none;
-        background: linear-gradient(180deg,
-                rgba(255, 255, 255, 0.36),
-                transparent 34%);
-    }
-
-    .dashboard-topbar {
-        border: 1px solid rgba(216, 229, 205, 0.92);
-        border-radius: 22px !important;
-        background:
-            linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(246, 250, 242, 0.90)) !important;
-        box-shadow:
-            0 14px 40px rgba(67, 96, 47, 0.08),
-            inset 0 1px 0 rgba(255, 255, 255, 0.96);
-        backdrop-filter: blur(18px) saturate(130%);
-        -webkit-backdrop-filter: blur(18px) saturate(130%);
-    }
-
-    .dashboard-topbar::after {
-        content: "";
-        position: absolute;
-        left: 22px;
-        right: 22px;
-        bottom: -1px;
-        height: 2px;
-        border-radius: 999px;
-        background: linear-gradient(90deg,
-                transparent,
-                rgba(139, 200, 63, 0.42),
-                transparent);
-    }
-
-    .dashboard-topbar h1 {
-        color: #26371f !important;
-    }
-
-    .dashboard-topbar p {
-        color: #8a9a80 !important;
-    }
-
-    .dashboard-topbar button[title="Notifications"] {
-        background: rgba(255, 255, 255, 0.68);
-        border: 1px solid rgba(221, 231, 213, 0.85);
-    }
-
-    .dashboard-topbar button[title="Notifications"]:hover {
-        background: #f3f9ea;
-        border-color: rgba(139, 200, 63, 0.32);
-    }
-
-    .dashboard-topbar button[title="Admin profile"] {
-        box-shadow:
-            0 10px 24px rgba(105, 167, 42, 0.24),
-            0 0 0 5px rgba(139, 200, 63, 0.08);
-    }
-
-    .dashboard-quick-actions>a {
-        background: rgba(255, 255, 255, 0.82) !important;
-        border-color: rgba(220, 230, 212, 0.92) !important;
-        box-shadow: 0 10px 28px rgba(51, 74, 37, 0.045) !important;
-    }
-
-    .dashboard-quick-actions>a:hover {
-        background: rgba(255, 255, 255, 0.96) !important;
-        box-shadow: 0 16px 34px rgba(51, 74, 37, 0.075) !important;
-    }
-
-    @media (max-width: 1023px) {
-        .dashboard-topbar {
-            border-radius: 18px !important;
-        }
-
-        .dashboard-main {
-            background:
-                radial-gradient(circle at 14% 6%, rgba(139, 200, 63, 0.07), transparent 26%),
-                linear-gradient(180deg, rgba(255, 255, 255, 0.76), rgba(250, 252, 248, 0.62));
-        }
-    }
+}
 </style>
 
 {% endblock %}

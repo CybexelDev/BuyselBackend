@@ -100,10 +100,7 @@ def validate_safe_message(value):
     for pattern in blocked_patterns:
         if re.search(pattern, value, re.IGNORECASE | re.DOTALL):
             raise ValidationError("Invalid content detected in message.")
-
-    # if len(value.strip()) < 10:
-        # raise ValidationError("Message must be at least 10 characters long.")
-
+        
 def validate_budget(value):
     if not value:
         raise ValidationError("Budget cannot be empty.")

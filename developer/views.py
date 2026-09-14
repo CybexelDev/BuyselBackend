@@ -1,7 +1,6 @@
 from django.contrib.auth import authenticate, login
 from django.shortcuts import render, redirect
 from django.views.decorators.cache import never_cache
-
 from .forms import SuperuserLoginForm
 from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
@@ -32,9 +31,220 @@ from users.models import *
 from django.contrib import messages
 from django.db import transaction
 from agents.models import *
+from django.utils import timezone
+from django.contrib.auth import get_user_model
+from datetime import timedelta
+from django.db.models import Count
+from django.contrib.auth import logout
+from uuid import UUID
+from django.contrib import messages
+from django.urls import reverse
+from django.shortcuts import render, redirect, get_object_or_404
+from django.views.decorators.cache import never_cache
+from django.contrib.auth.decorators import user_passes_test
+from .models import Category, Subcategory, SubcategoryField, Purpose, Amenities
+from django.core.paginator import Paginator
+import re
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.views.decorators.cache import never_cache
+from django.contrib.auth.decorators import user_passes_test
+from django.core.paginator import Paginator
+from django.http import HttpResponse
+import traceback
+from django.contrib.auth.models import AnonymousUser
+import traceback
+from datetime import timedelta
+from django.contrib import messages
+from django.core.paginator import Paginator
+from django.http import HttpResponse
+from django.shortcuts import render, redirect
+from django.views.decorators.cache import never_cache
+from django.contrib.auth.decorators import user_passes_test
+from django.utils import timezone
+from .models import (
+    Category,
+    Subcategory,
+    Purpose,
+    Amenities,
+    Property,
+    PropertyImage,
+    SubcategoryField,
+    UserCreate,
+)
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.contrib.auth.decorators import user_passes_test
+from django.views.decorators.cache import never_cache
+from django.http import JsonResponse, HttpResponse
+from django.core.paginator import Paginator
+from django.db import transaction
+import traceback
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from django.http import JsonResponse
+from django.http import JsonResponse
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from datetime import timedelta
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib import messages
+from django.views.decorators.cache import never_cache
+from django.contrib.auth.decorators import user_passes_test
+from django.db.models import Q
+from django.core.paginator import Paginator
+from django.shortcuts import render
+from django.contrib.auth.decorators import user_passes_test
+from django.views.decorators.cache import never_cache
+from .models import AgentUserProfile
+from django.contrib import messages
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import user_passes_test
+from django.views.decorators.cache import never_cache
+from django.db.models import Q
+from django.core.paginator import Paginator
+from .models import AgentUserProfile
+import re
+from django.contrib import messages
+from django.contrib.auth.decorators import user_passes_test
+from django.core.exceptions import ValidationError
+from django.core.paginator import Paginator
+from django.db import transaction
+from django.db.models import Q
+from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
+from django.views.decorators.cache import never_cache
+from django.views.decorators.http import require_POST
+from django.utils import timezone
+from django.core.exceptions import ValidationError
+from django.db import transaction
+import re
+from django.contrib import messages
+from django.core.exceptions import ValidationError
+from django.db import transaction
+from django.shortcuts import get_object_or_404, redirect
+from django.views.decorators.cache import never_cache
+from django.views.decorators.http import require_POST
+from django.contrib.auth.decorators import user_passes_test
+from PIL import Image
+import openpyxl
+from django.shortcuts import render
+from django.db import transaction
+from django.contrib.auth.hashers import make_password
+from .models import UserCreate, Userplan
+from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import get_object_or_404
+from .models import (
+    Userplan,
+    PremiumPlan,
+    ElitePlan,
+    AgentPlan,
+    SinglePropertyPackage,
+    Purpose,
+    Category,
+)
+from django.http import HttpResponse
+import openpyxl
+from .models import UserCreate
+from django.views.decorators.http import require_http_methods
+from django.shortcuts import render, redirect, get_object_or_404
+from .models import AdvertisementPackage, ReelPackage
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from .forms import PendingAgentRegistrationForm
+from .models import PendingAgentRegistration
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib import messages
+from .models import Blog
+from .forms import BlogForm
+from django.shortcuts import render
+from .models import BannerAd, SliderAd
+from .forms import BannerAdForm, SliderAdForm
+from django.shortcuts import redirect
+from django.contrib import messages
+from itertools import chain
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
+from django.db.models import Q
+from .models import (
+    AdvertisementRequestNotification,
+    ReelPurchaseNotification,
+)
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
+from django.db.models import Q
+from agents.models import AgentProperty
+from django.core.paginator import Paginator
+from django.db.models import Q
+import json
+from django.contrib import messages
+from django.db import transaction
+from django.shortcuts import redirect, render
+from .forms import AgentPropertyForm
+from agents.models import (
+    AgentProperty,
+    AgentPropertyImage,
+    AgentPropertyFieldValue,
+    AgentPropertySellingPoint,
+    AgentPropertyLandmark,
+    AgentUserProfile,
+)
+from developer.models import (
+    Category,
+    Purpose,
+    Amenities,
+    SubcategoryField,
+    AgentUserProfile,
+)
+from .forms import AgentPropertyForm
+import json
+from django.contrib import messages
+from django.contrib.auth.decorators import user_passes_test
+from django.db import transaction
+from django.shortcuts import redirect
+from django.utils import timezone
+from django.views.decorators.cache import never_cache
+from django.views.decorators.http import require_POST
+import json
+import traceback
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from django.views.decorators.http import require_http_methods
+from django.views.decorators.csrf import csrf_exempt
+
+from developer.models import (
+    ExpiredProperty,
+    PropertyImage,
+    ExpiredPropertyFeature,
+    Amenities,
+    Category,
+    Subcategory,
+    Purpose,
+    SubcategoryField,
+)
+import json
+from datetime import timedelta
+from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ValidationError
+from django.db import IntegrityError, transaction
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from django.utils import timezone
+from django.views.decorators.http import require_POST
+from developer.models import (
+    ExpiredProperty,
+    Property,
+    PropertyFeature,
+    PropertyImage,
+)
 
 
-#added by mehreena
+
+# added by mehreena
 def create_admin_notification(title, message, notification_type="info"):
     AdminNotification.objects.create(
         title=title,
@@ -47,12 +257,6 @@ def base(request):
 
     context = {"agenthouse": agenthouse}
     return render(request, "base2.html", context)
-
-
-from django.utils import timezone
-from django.contrib.auth import get_user_model
-from datetime import timedelta
-
 
 def superuser_login_view(request):
     User = get_user_model()
@@ -91,18 +295,11 @@ def superuser_login_view(request):
 
     return render(request, "auth/login.html", {"form": form})
 
-
 # ✅ Dashboard view (only for logged-in superusers)
 def superuser_required(user):
     return user.is_authenticated and user.is_superuser
 
-
-
-
-
-from django.db.models import Count
-
-#added by mehreena
+# added by mehreena
 # dashboard
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
@@ -118,14 +315,7 @@ def Dashboard(request):
     total_agent_expired = ExpiredAgentProperty.objects.count()
 
     # ALL PROPERTIES IN THE SYSTEM
-    total_all = (
-        total_active
-        + total_expired
-        + total_agent_active
-        + total_agent_expired
-    )
-
-    
+    total_all = total_active + total_expired + total_agent_active + total_agent_expired
 
     # active_by_purpose = (
     #     Property.objects
@@ -141,18 +331,12 @@ def Dashboard(request):
     active_by_purpose_map = defaultdict(int)
 
     # Normal active properties
-    for item in (
-        Property.objects
-        .values("purpose__name")
-        .annotate(total=Count("id"))
-    ):
+    for item in Property.objects.values("purpose__name").annotate(total=Count("id")):
         active_by_purpose_map[item["purpose__name"]] += item["total"]
 
     # Agent active properties
-    for item in (
-        AgentProperty.objects
-        .values("purpose__name")
-        .annotate(total=Count("id"))
+    for item in AgentProperty.objects.values("purpose__name").annotate(
+        total=Count("id")
     ):
         active_by_purpose_map[item["purpose__name"]] += item["total"]
 
@@ -170,8 +354,7 @@ def Dashboard(request):
     # ===========================
 
     all_purposes = list(
-        AgentProperty.objects
-        .values_list("purpose__name", flat=True)
+        AgentProperty.objects.values_list("purpose__name", flat=True)
         .distinct()
         .order_by("purpose__name")
     )
@@ -189,11 +372,7 @@ def Dashboard(request):
         total_properties = properties.count()
 
         for purpose in all_purposes:
-            purpose_map[purpose] = (
-                properties
-                .filter(purpose__name=purpose)
-                .count()
-            )
+            purpose_map[purpose] = properties.filter(purpose__name=purpose).count()
 
         premium_report.append(
             {
@@ -276,29 +455,17 @@ def Dashboard(request):
     # ==========================
 
     advertisement_notifications = (
-        AdvertisementRequestNotification.objects
-        .select_related(
-            "agent",
-            "advertisement_package"
-        )
-        .order_by("-created_at")
+        AdvertisementRequestNotification.objects.select_related(
+            "agent", "advertisement_package"
+        ).order_by("-created_at")
     )
 
-    reel_notifications = (
-        ReelPurchaseNotification.objects
-        .select_related(
-            "agent",
-            "payment",
-            "payment__reel_package"
-        )
-        .order_by("-created_at")
-    )
+    reel_notifications = ReelPurchaseNotification.objects.select_related(
+        "agent", "payment", "payment__reel_package"
+    ).order_by("-created_at")
 
     # General Developer/Admin notifications
-    admin_notifications = (
-        AdminNotification.objects
-        .order_by("-created_at")
-    )
+    admin_notifications = AdminNotification.objects.order_by("-created_at")
 
     notifications = []
 
@@ -345,16 +512,11 @@ def Dashboard(request):
         )
 
     # Latest notification first
-    notifications.sort(
-        key=lambda x: x["created_at"],
-        reverse=True
-    )
+    notifications.sort(key=lambda x: x["created_at"], reverse=True)
 
     # Unread notification count
     unread_count = sum(
-        1
-        for notification in notifications
-        if not notification["is_read"]
+        1 for notification in notifications if not notification["is_read"]
     )
 
     # ===========================
@@ -366,36 +528,20 @@ def Dashboard(request):
         "total_expired": total_expired,
         "total_agent_active": total_agent_active,
         "total_agent_expired": total_agent_expired,
-
         "total_all": total_all,
         "active_by_purpose": active_by_purpose,
         "all_purposes": all_purposes,
         "premium_report": premium_report,
-
         # Notifications
         "notifications": notifications,
         "unread_count": unread_count,
     }
 
-    return render(
-        request,
-        "dashboard/dashboard.html",
-        context
-    )
-
-
-from django.contrib.auth import logout
-
+    return render(request, "dashboard/dashboard.html", context)
 
 def superuser_logout_view(request):
     logout(request)
     return redirect("superuser_login_view")
-
-
-from uuid import UUID
-from django.contrib import messages
-from django.urls import reverse
-
 
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
@@ -432,7 +578,6 @@ def create_blog(request):
 
     return render(request, "content/blogs.html", {"blog": blog_page})
 
-
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 def update_blog(request, blog_id):
@@ -449,7 +594,6 @@ def update_blog(request, blog_id):
         return redirect("create_blog")
     return redirect("create_blog")
 
-
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 @require_POST
@@ -458,13 +602,7 @@ def delete_blog(request, pk):
     blog.delete()
     return redirect("create_blog")
 
-
-from django.shortcuts import render, redirect, get_object_or_404
-from django.views.decorators.cache import never_cache
-from django.contrib.auth.decorators import user_passes_test
-from .models import Category, Subcategory, SubcategoryField, Purpose, Amenities
-
-# categories add , edit 
+# categories add , edit
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 def categories(request):
@@ -505,10 +643,7 @@ def categories(request):
             icon = request.FILES.get("icon")
 
             if name and icon:
-                category = Category.objects.create(
-                    name=name,
-                    icon=icon
-                )
+                category = Category.objects.create(name=name, icon=icon)
 
                 create_admin_notification(
                     "Category Added",
@@ -517,10 +652,7 @@ def categories(request):
                 )
 
         elif action == "edit_category":
-            category = get_object_or_404(
-                Category,
-                id=request.POST.get("category_id")
-            )
+            category = get_object_or_404(Category, id=request.POST.get("category_id"))
 
             category.name = request.POST.get("name")
 
@@ -536,10 +668,7 @@ def categories(request):
             )
 
         elif action == "delete_category":
-            category = get_object_or_404(
-                Category,
-                id=request.POST.get("category_id")
-            )
+            category = get_object_or_404(Category, id=request.POST.get("category_id"))
 
             category_id = category.id
             category_name = category.name
@@ -568,10 +697,7 @@ def categories(request):
                 )
 
         elif action == "edit_purpose":
-            purpose = get_object_or_404(
-                Purpose,
-                id=request.POST.get("purpose_id")
-            )
+            purpose = get_object_or_404(Purpose, id=request.POST.get("purpose_id"))
 
             purpose.name = request.POST.get("name")
             purpose.save()
@@ -583,10 +709,7 @@ def categories(request):
             )
 
         elif action == "delete_purpose":
-            purpose = get_object_or_404(
-                Purpose,
-                id=request.POST.get("purpose_id")
-            )
+            purpose = get_object_or_404(Purpose, id=request.POST.get("purpose_id"))
 
             purpose_id = purpose.id
             purpose_name = purpose.name
@@ -609,9 +732,7 @@ def categories(request):
 
             if name and category_id:
                 subcategory = Subcategory.objects.create(
-                    name=name,
-                    category_id=category_id,
-                    image=image
+                    name=name, category_id=category_id, image=image
                 )
 
                 create_admin_notification(
@@ -621,30 +742,24 @@ def categories(request):
                 )
 
         elif action == "edit_subcategory":
-                sub = get_object_or_404(
-                    Subcategory,
-                    id=request.POST.get("subcategory_id")
-                )
+            sub = get_object_or_404(Subcategory, id=request.POST.get("subcategory_id"))
 
-                sub.name = request.POST.get("name")
-                sub.category_id = request.POST.get("category_id")
+            sub.name = request.POST.get("name")
+            sub.category_id = request.POST.get("category_id")
 
-                if request.FILES.get("image"):
-                    sub.image = request.FILES.get("image")
+            if request.FILES.get("image"):
+                sub.image = request.FILES.get("image")
 
-                sub.save()
+            sub.save()
 
-                create_admin_notification(
-                    "Subcategory Updated",
-                    f"Subcategory • {sub.name} was updated successfully.",
-                    "info",
-                )
+            create_admin_notification(
+                "Subcategory Updated",
+                f"Subcategory • {sub.name} was updated successfully.",
+                "info",
+            )
 
         elif action == "delete_subcategory":
-            sub = get_object_or_404(
-                Subcategory,
-                id=request.POST.get("subcategory_id")
-            )
+            sub = get_object_or_404(Subcategory, id=request.POST.get("subcategory_id"))
 
             subcategory_id = sub.id
             subcategory_name = sub.name
@@ -689,7 +804,7 @@ def categories(request):
                 f"Subcategory Field • {field.field_name} was added successfully.",
                 "success",
             )
-    
+
         elif action == "edit_field":
 
             field = get_object_or_404(SubcategoryField, id=request.POST.get("field_id"))
@@ -769,10 +884,7 @@ def categories(request):
 
         elif action == "delete_field":
 
-            field = get_object_or_404(
-                SubcategoryField,
-                id=request.POST.get("field_id")
-            )
+            field = get_object_or_404(SubcategoryField, id=request.POST.get("field_id"))
 
             field_id = field.id
             field_name = field.field_name
@@ -793,10 +905,7 @@ def categories(request):
             icon = request.FILES.get("icon")
 
             if name:
-                amenity = Amenities.objects.create(
-                    name=name,
-                    icon=icon
-                )
+                amenity = Amenities.objects.create(name=name, icon=icon)
 
                 create_admin_notification(
                     "Amenity Added",
@@ -805,10 +914,7 @@ def categories(request):
                 )
 
         elif action == "edit_amenity":
-            amenity = get_object_or_404(
-                Amenities,
-                id=request.POST.get("amenity_id")
-            )
+            amenity = get_object_or_404(Amenities, id=request.POST.get("amenity_id"))
 
             amenity.name = request.POST.get("name")
 
@@ -825,10 +931,7 @@ def categories(request):
 
         elif action == "delete_amenity":
 
-            amenity = get_object_or_404(
-                Amenities,
-                id=request.POST.get("amenity_id")
-            )
+            amenity = get_object_or_404(Amenities, id=request.POST.get("amenity_id"))
 
             amenity_id = amenity.id
             amenity_name = amenity.name
@@ -862,20 +965,6 @@ def categories(request):
         },
     )
 
-
-from django.core.paginator import Paginator
-import re
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
-from django.views.decorators.cache import never_cache
-from django.contrib.auth.decorators import user_passes_test
-from django.core.paginator import Paginator
-from django.http import HttpResponse
-import traceback
-
-#  PUT THIS AT TOP OF views.py
-
-
 def parse_listing(listing):
     if not listing:
         return {}
@@ -887,7 +976,6 @@ def parse_listing(listing):
     result = {}
 
     try:
-
 
         if ":" in listing:
             parts = listing.split(",")
@@ -914,9 +1002,6 @@ def parse_listing(listing):
         print("PARSE ERROR:", e)
 
     return result
-
-from django.contrib.auth.models import AnonymousUser
-
 
 def can_add_property(owner, category, purpose, is_admin=False):
     """
@@ -1001,38 +1086,6 @@ def can_add_property(owner, category, purpose, is_admin=False):
         return True, None
 
     return False, "Choose a subscription plan."
-
-import traceback
-from datetime import timedelta
-
-from django.contrib import messages
-from django.core.paginator import Paginator
-from django.http import HttpResponse
-from django.shortcuts import render, redirect
-from django.views.decorators.cache import never_cache
-from django.contrib.auth.decorators import user_passes_test
-from django.utils import timezone
-
-from .models import (
-    Category,
-    Subcategory,
-    Purpose,
-    Amenities,
-    Property,
-    PropertyImage,
-    SubcategoryField,
-    UserCreate,
-)
-
-from django.shortcuts import render, redirect
-from django.contrib import messages
-from django.contrib.auth.decorators import user_passes_test
-from django.views.decorators.cache import never_cache
-from django.http import JsonResponse, HttpResponse
-from django.core.paginator import Paginator
-from django.db import transaction
-import traceback
-
 
 @never_cache
 @user_passes_test(lambda u: u.is_superuser, login_url="superuser_login_view")
@@ -1293,10 +1346,7 @@ def add_property(request):
                 # MULTIPLE IMAGES
                 # =============================
                 for img in uploaded_images:
-                    PropertyImage.objects.create(
-                        property=property_obj,
-                        image=img
-                    )
+                    PropertyImage.objects.create(property=property_obj, image=img)
 
                 create_admin_notification(
                     "Property Added",
@@ -1321,10 +1371,6 @@ def add_property(request):
             "search": search,
         },
     )
-
-
-from django.http import JsonResponse
-from django.shortcuts import get_object_or_404
 
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
@@ -1399,9 +1445,6 @@ def get_property(request, property_id):
         }
     )
 
-
-from django.http import JsonResponse
-
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 def get_subcategories(request, category_id):
@@ -1420,9 +1463,6 @@ def get_subcategories(request, category_id):
         data.append({"id": sub.id, "name": sub.name})
 
     return JsonResponse(data, safe=False)
-
-from django.http import JsonResponse
-
 
 def get_subcategory_fields(request, subcategory_id):
 
@@ -1454,7 +1494,6 @@ def get_subcategory_fields(request, subcategory_id):
         )
 
     return JsonResponse(data, safe=False)
-
 
 def get_user_details(request, user_id):
 
@@ -1513,11 +1552,6 @@ def get_user_details(request, user_id):
 
         return JsonResponse({"status": False, "message": "User not found."})
 
-from django.http import JsonResponse
-from django.shortcuts import get_object_or_404
-from datetime import timedelta
-
-
 def get_user_details(request, user_id):
     user = get_object_or_404(UserCreate, id=user_id)
 
@@ -1559,7 +1593,6 @@ def get_user_details(request, user_id):
             "expiry": expiry_date.strftime("%Y-%m-%d") if expiry_date else "",
         }
     )
-
 
 @never_cache
 @user_passes_test(lambda u: u.is_superuser, login_url="superuser_login_view")
@@ -1829,10 +1862,6 @@ def edit_property(request, property_id):
     return redirect("add_property")
 
 
-from django.shortcuts import get_object_or_404, redirect
-from django.contrib import messages
-from django.views.decorators.cache import never_cache
-from django.contrib.auth.decorators import user_passes_test
 
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
@@ -1855,7 +1884,6 @@ def delete_property(request, property_id):
     messages.success(request, "Property deleted successfully.")
 
     return redirect("add_property")
-
 
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 def agents_login(request):
@@ -1902,7 +1930,6 @@ def agents_login(request):
             )
 
             messages.success(request, " Premium Agent created successfully!")
-
 
         elif "agentname" in request.POST:
             agentsname = request.POST.get("agentname")
@@ -2012,16 +2039,6 @@ def admin_premiumagents(request):
         },
     )
 
-
-from django.db.models import Q
-from django.core.paginator import Paginator
-from django.shortcuts import render
-from django.contrib.auth.decorators import user_passes_test
-from django.views.decorators.cache import never_cache
-
-from .models import AgentUserProfile
-
-
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 def admin_agents(request):
@@ -2081,16 +2098,6 @@ def admin_agents(request):
             "to_date": to_date,
         },
     )
-
-
-from django.contrib import messages
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import user_passes_test
-from django.views.decorators.cache import never_cache
-from django.db.models import Q
-from django.core.paginator import Paginator
-
-from .models import AgentUserProfile
 
 # agent add function
 @never_cache
@@ -2287,7 +2294,7 @@ def edit_agent(request, pk):
 
     return redirect("admin_agents")
 
-# agent delete function 
+# agent delete function
 def delete_agent(request, pk):
     agent = get_object_or_404(AgentUserProfile, pk=pk)
 
@@ -2304,8 +2311,6 @@ def delete_agent(request, pk):
 
     messages.success(request, "🗑️ Agent deleted successfully!")
     return redirect("admin_agents")
-
-
 
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
@@ -2335,7 +2340,6 @@ def edit_premium(request, pk):
 
     return render(request, "admin_premiumagents.html", {"premium": premium})
 
-
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 @require_POST
@@ -2346,7 +2350,7 @@ def delete_premium(request, pk):
     return redirect("admin_premiumagents")
 
 
-
+# contact view
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 def admin_contact(request):
@@ -2369,7 +2373,7 @@ def delete_contact(request, pk):
     messages.success(request, "🗑️ Contact deleted successfully!")
     return redirect("admin_contact")
 
-
+# message
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 def admin_message(request):
@@ -2382,16 +2386,25 @@ def admin_message(request):
 
     return render(request, "content/messages.html", {"page_obj": page_obj})
 
-
+# message delete
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 @require_POST
 def delete_message(request, pk):
     message = get_object_or_404(Inbox, pk=pk)
-    message.delete()
-    messages.success(request, "🗑️ Message deleted successfully!")  # flash message
-    return redirect("admin_message")
+    message_id = message.id
+    message_name = getattr(message, "name", None) or "Unknown"
 
+    message.delete()
+
+    create_admin_notification(
+        "Message Deleted",
+        f"Message #{message_id} • {message_name} was deleted successfully.",
+        "warning",
+    )
+
+    messages.success(request, "🗑️ Message deleted successfully!")
+    return redirect("admin_message")
 
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
@@ -2447,7 +2460,6 @@ def admin_agent_reg(request):
         },
     )
 
-
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 def delete_agent_reg(request, pk):
@@ -2455,7 +2467,6 @@ def delete_agent_reg(request, pk):
     agent.delete()
     messages.success(request, "🗑️ Agent deleted successfully!")
     return redirect("agent_reg")
-
 
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
@@ -2501,7 +2512,6 @@ def admin_property_list(request):
         },
     )
 
-
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 @require_POST
@@ -2510,7 +2520,6 @@ def delete_property_list(request, pk):
     property_list.delete()
     messages.success(request, "🗑️ Property deleted successfully!")
     return redirect("admin_property_list")
-
 
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
@@ -2523,61 +2532,34 @@ def admin_request(request):
 
     return render(request, "content/request_forms.html", {"page_obj": page_obj})
 
-
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 @require_POST
 def delete_requestforms(request, pk):
     requestforms = get_object_or_404(Request, pk=pk)
+    request_id = requestforms.id
+    request_name = getattr(requestforms, "name", None) or "Unknown"
+
     requestforms.delete()
+
+    create_admin_notification(
+        "Request Form Deleted",
+        f"Request Form #{request_id} • {request_name} was deleted successfully.",
+        "warning",
+    )
+
     messages.success(request, "🗑️ Property deleted successfully!")
     return redirect("requestforms")
-
-
-# ============================================================
-# EXPIRED PROPERTY CRUD ONLY
-# Paste this section into your existing views.py
-# ============================================================
-
-import re
-
-from django.contrib import messages
-from django.contrib.auth.decorators import user_passes_test
-from django.core.exceptions import ValidationError
-from django.core.paginator import Paginator
-from django.db import transaction
-from django.db.models import Q
-from django.shortcuts import get_object_or_404, redirect, render
-from django.utils import timezone
-from django.views.decorators.cache import never_cache
-from django.views.decorators.http import require_POST
 
 # Required models already imported in your project:
 # ExpiredProperty, PropertyImage, Category, Purpose, Amenities
 # Required helper already available:
 # superuser_required
-
-
 def _safe_int(value, default=0):
     try:
         return int(value or default)
     except (TypeError, ValueError):
         return default
-
-
-
-from django.utils import timezone
-from django.core.exceptions import ValidationError
-from django.db import transaction
-import re
-from django.contrib import messages
-from django.core.exceptions import ValidationError
-from django.db import transaction
-from django.shortcuts import get_object_or_404, redirect
-from django.views.decorators.cache import never_cache
-from django.views.decorators.http import require_POST
-from django.contrib.auth.decorators import user_passes_test
-
 
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
@@ -2666,7 +2648,6 @@ def edit_expirepremium(request, pk):
         return redirect("expired_agent")
 
     return render(request, "agents/expired_agents.html", {"premium": premium})
-
 
 # -----------------------------
 # Expired Premium List with search & filters
@@ -2775,13 +2756,13 @@ def edit_expireagent(request, pk):
 
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
+
 @require_POST
 def delete_agents_expire(request, pk):
     premium = get_object_or_404(ExpireAgents, pk=pk)
     premium.delete()
     messages.success(request, "🗑️ Premium Agent deleted successfully!")
     return redirect("expired_agent")
-
 
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
@@ -2908,7 +2889,6 @@ def property_live_search(request):
 
     return JsonResponse({"results": results})
 
-
 def blog_register(request):
     if request.method == "POST":
         username = request.POST.get("username")
@@ -2925,10 +2905,8 @@ def blog_register(request):
 
     return render(request, "blogregister.html")
 
-
 MAX_ATTEMPTS = 5
 BLOCK_HOURS = 2
-
 
 def blog_login(request):
     if request.method == "POST":
@@ -2981,7 +2959,6 @@ def blog_login(request):
 
     return render(request, "bloglogin.html")
 
-
 @never_cache
 def blog_dashboard(request):
     user_id = request.session.get("user_id")
@@ -3003,17 +2980,11 @@ def blog_dashboard(request):
         },
     )
 
-
 def blog_logout(request):
     request.session.flush()
     return redirect("blog_login")
 
-
-# 100 KB
-from PIL import Image
-
 MAX_IMAGE_SIZE = 100 * 1024  # 100 KB
-
 
 @never_cache
 def blog_dashboard_create(request):
@@ -3055,7 +3026,6 @@ def blog_dashboard_create(request):
 
     return redirect("blog_dashboard")
 
-
 @never_cache
 @require_POST
 def blog_dashboard_update(request, blog_id):
@@ -3094,7 +3064,6 @@ def blog_dashboard_update(request, blog_id):
     messages.success(request, "Blog post updated successfully.")
     return redirect("blog_dashboard")
 
-
 @never_cache
 @require_POST
 def blog_dashboard_delete(request, blog_id):
@@ -3106,15 +3075,7 @@ def blog_dashboard_delete(request, blog_id):
     blog.delete()
     return redirect("blog_dashboard")
 
-
-import openpyxl
-from django.shortcuts import render
-from django.db import transaction
-from django.contrib.auth.hashers import make_password
-
-from .models import UserCreate, Userplan
-
-# buysel users 
+# buysel users
 def AddUser(request):
 
     success = None
@@ -3262,10 +3223,10 @@ def AddUser(request):
                             user.save()
 
                         create_admin_notification(
-                        "User Updated",
-                        f"User #{user.id} • {user.name} was updated successfully.",
-                        "info",
-                    )
+                            "User Updated",
+                            f"User #{user.id} • {user.name} was updated successfully.",
+                            "info",
+                        )
 
                     success = "User updated successfully."
 
@@ -3322,18 +3283,7 @@ def AddUser(request):
         },
     )
 
-from django.shortcuts import render, redirect, get_object_or_404
-
-from .models import (
-    Userplan,
-    PremiumPlan,
-    ElitePlan,
-    AgentPlan,
-    SinglePropertyPackage,
-    Purpose,
-    Category,
-)
-
+# plans
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 def plans(request):
@@ -3707,12 +3657,6 @@ def plans(request):
         },
     )
 
-from django.http import HttpResponse
-import openpyxl
-
-from .models import UserCreate
-
-
 def export_users_excel(request):
 
     workbook = openpyxl.Workbook()
@@ -3821,10 +3765,6 @@ def export_users_excel(request):
 
     return response
 
-
-from django.views.decorators.http import require_http_methods
-
-
 @require_http_methods(["POST"])
 def pending_agent_register_api(request):
     full_name = request.POST.get("full_name")
@@ -3871,12 +3811,10 @@ def pending_agent_register_api(request):
 def pending_agents_list_view(request):
     pending_agents = PendingAgentRegistration.objects.filter(status="pending")
     return render(
-        request,
-        "agents/pending_agents.html",
-        {"pending_agents": pending_agents}
+        request, "agents/pending_agents.html", {"pending_agents": pending_agents}
     )
 
-# pending agent approved 
+# pending agent approved
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 @require_POST
@@ -3925,15 +3863,12 @@ def approve_agent(request, agent_id):
     messages.success(request, f"{agent.username} approved successfully.")
     return redirect("pending_agents_list")
 
-# pending agent rejected 
+# pending agent rejected
 @never_cache
-@user_passes_test(superuser_required, login_url="superuser_login_view") 
+@user_passes_test(superuser_required, login_url="superuser_login_view")
 @require_POST
 def reject_agent(request, agent_id):
-    agent_request = get_object_or_404(
-        PendingAgentRegistration,
-        id=agent_id
-    )
+    agent_request = get_object_or_404(PendingAgentRegistration, id=agent_id)
 
     agent_request.status = "rejected"
     agent_request.save()
@@ -3944,12 +3879,10 @@ def reject_agent(request, agent_id):
         "warning",
     )
 
-    messages.info(
-        request,
-        f"{agent_request.full_name} has been rejected."
-    )
+    messages.info(request, f"{agent_request.full_name} has been rejected.")
     return redirect("pending_agents_list")
 
+# Testimonial
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 def testimonial_admin_view(request):
@@ -3976,15 +3909,26 @@ def testimonial_admin_view(request):
         {"testimonials": testimonials, "users": users},
     )
 
-
+# testimonial delete
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 @require_POST
 def delete_testimonial(request, id):
     testimonial = get_object_or_404(Testimonial, id=id)
+
+    testimonial_id = testimonial.id
+
     testimonial.delete()
+
+    create_admin_notification(
+        "Testimonial Deleted",
+        f"Testimonial #{testimonial_id} was deleted successfully.",
+        "warning",
+    )
+
     return redirect("testimonial")
 
+# testimonial edit
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 def edit_testimonial(request, id):
@@ -4005,11 +3949,18 @@ def edit_testimonial(request, id):
             testimonial.image = request.FILES["image"]
 
         testimonial.save()
+
+        create_admin_notification(
+            "Testimonial Updated",
+            f"Testimonial #{testimonial.id} was updated successfully.",
+            "info",
+        )
+
         return redirect("testimonial")
 
     return render(request, "edit_testimonial.html", {"t": testimonial, "users": users})
 
-# userprofile edit 
+# userprofile edit
 def userprofile_list_view(request):
 
     # =========================================================
@@ -4077,8 +4028,7 @@ def userprofile_list_view(request):
 
     return render(request, "users/user_profiles.html", {"profiles": profiles})
 
-
-# userprofile delete 
+# userprofile delete
 def delete_userprofile(request, id):
 
     try:
@@ -4113,7 +4063,6 @@ def delete_userprofile(request, id):
         messages.error(request, "Unable to delete the user profile. Please try again.")
 
     return redirect("userprofiles")
-
 
 def edit_userprofile(request, id):
 
@@ -4168,11 +4117,7 @@ def edit_userprofile(request, id):
 
     return render(request, "edit_userprofile.html", {"profile": profile})
 
-
-from django.shortcuts import render, redirect, get_object_or_404
-from .models import AdvertisementPackage, ReelPackage
-
-# promotional plan adverstmnt , reels add , edit 
+# promotional plan adverstmnt , reels add , edit
 def package_dashboard(request):
 
     if request.method == "POST":
@@ -4276,12 +4221,10 @@ def package_dashboard(request):
 
     return render(request, "plans/packages.html", {"ads": ads, "reels": reels})
 
-
 # =====================================================
 # DELETE PACKAGE
 # =====================================================
-
-# promotional plan delete 
+# promotional plan delete
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 @require_POST
@@ -4309,12 +4252,6 @@ def delete_package(request, type, id):
 
     return redirect("package_dashboard")
 
-from django.shortcuts import render, redirect
-from django.contrib import messages
-
-from .forms import PendingAgentRegistrationForm
-from .models import PendingAgentRegistration
-
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 def agent_registration(request):
@@ -4330,6 +4267,12 @@ def agent_registration(request):
             registration.submitted_by = None
 
             registration.save()
+
+            create_admin_notification(
+                "Agent Registration Added",
+                f"Agent Registration • {registration.full_name} was added successfully.",
+                "success",
+            )
 
             if registration.status == "approved":
                 messages.success(
@@ -4391,7 +4334,7 @@ def blog_dashboard(request):
 
     else:
 
-            print(form.errors)
+        print(form.errors)
 
     context = {
         "blogs": blogs,
@@ -4401,13 +4344,6 @@ def blog_dashboard(request):
     }
 
     return render(request, "blogs/admin_blog.html", context)
-
-
-from django.shortcuts import get_object_or_404, redirect
-from django.contrib import messages
-
-from .models import Blog
-from .forms import BlogForm
 
 # edit blog function
 @never_cache
@@ -4470,11 +4406,6 @@ def delete_blog(request, id):
 
     return redirect("blog_dashboard")
 
-
-from django.shortcuts import render
-from .models import BannerAd, SliderAd
-from .forms import BannerAdForm, SliderAdForm
-
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 def ads_dashboard(request):
@@ -4488,10 +4419,7 @@ def ads_dashboard(request):
 
     return render(request, "ads/ads_dashboard.html", context)
 
-# added by mehreena 
-from django.shortcuts import redirect
-from django.contrib import messages
-
+# added by mehreena
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 @require_POST
@@ -4505,10 +4433,7 @@ def add_banner(request):
 
             banner = form.save()
 
-            messages.success(
-                request,
-                "Banner added successfully."
-            )
+            messages.success(request, "Banner added successfully.")
 
             create_admin_notification(
                 "Banner Added",
@@ -4518,10 +4443,7 @@ def add_banner(request):
 
         else:
 
-            messages.error(
-                request,
-                form.errors
-            )
+            messages.error(request, form.errors)
 
             create_admin_notification(
                 "Banner Add Failed",
@@ -4531,9 +4453,9 @@ def add_banner(request):
 
     return redirect("ads_dashboard")
 
-from django.shortcuts import get_object_or_404
 
-# ads management banner edit 
+
+# ads management banner edit
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 @require_POST
@@ -4582,7 +4504,7 @@ def delete_banner(request, id):
 
     return redirect("ads_dashboard")
 
-# ads management slider add 
+# ads management slider add
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 @require_POST
@@ -4607,7 +4529,8 @@ def add_slider(request):
 
     return redirect("ads_dashboard")
 
-# ads management slider edit 
+
+# ads management slider edit
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 @require_POST
@@ -4616,11 +4539,7 @@ def edit_slider(request, id):
     slider = get_object_or_404(SliderAd, id=id)
 
     if request.method == "POST":
-        form = SliderAdForm(
-            request.POST,
-            request.FILES,
-            instance=slider
-        )
+        form = SliderAdForm(request.POST, request.FILES, instance=slider)
 
         if form.is_valid():
             slider = form.save()
@@ -4660,25 +4579,9 @@ def delete_slider(request, id):
 
     return redirect("ads_dashboard")
 
-
-from itertools import chain
-
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_POST
-from django.db.models import Q
-
-from .models import (
-    AdvertisementRequestNotification,
-    ReelPurchaseNotification,
-)
-
 # ============================================================
 # Advertisement & Reel Dashboard
 # ============================================================
-
-
 # @login_required
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
@@ -4842,12 +4745,9 @@ def advertisement_notifications(request):
         context,
     )
 
-
 # ============================================================
 # MARK AS READ
 # ============================================================
-
-
 # @login_required
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
@@ -4879,7 +4779,6 @@ def mark_notification_read(request, request_type, id):
 # ============================================================
 # DASHBOARD NOTIFICATION - MARK AS READ
 # ============================================================
-
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 @require_POST
@@ -4889,11 +4788,7 @@ def mark_dashboard_notification_read(request):
 
     if not notification_id:
         return JsonResponse(
-            {
-                "success": False,
-                "message": "Notification ID required."
-            },
-            status=400
+            {"success": False, "message": "Notification ID required."}, status=400
         )
 
     try:
@@ -4904,20 +4799,14 @@ def mark_dashboard_notification_read(request):
         # ------------------------------------------
         if source == "admin":
 
-            updated = AdminNotification.objects.filter(
-                id=pk
-            ).update(
-                is_read=True
-            )
+            updated = AdminNotification.objects.filter(id=pk).update(is_read=True)
 
         # ------------------------------------------
         # Advertisement Notification
         # ------------------------------------------
         elif source == "advertisement":
 
-            updated = AdvertisementRequestNotification.objects.filter(
-                id=pk
-            ).update(
+            updated = AdvertisementRequestNotification.objects.filter(id=pk).update(
                 is_read=True
             )
 
@@ -4926,43 +4815,24 @@ def mark_dashboard_notification_read(request):
         # ------------------------------------------
         elif source == "reel":
 
-            updated = ReelPurchaseNotification.objects.filter(
-                id=pk
-            ).update(
+            updated = ReelPurchaseNotification.objects.filter(id=pk).update(
                 is_read=True
             )
 
         else:
             return JsonResponse(
-                {
-                    "success": False,
-                    "message": "Invalid notification type."
-                },
-                status=400
+                {"success": False, "message": "Invalid notification type."}, status=400
             )
 
-        return JsonResponse(
-            {
-                "success": True,
-                "updated": updated
-            }
-        )
+        return JsonResponse({"success": True, "updated": updated})
 
     except Exception as error:
 
-        return JsonResponse(
-            {
-                "success": False,
-                "message": str(error)
-            },
-            status=400
-        )
+        return JsonResponse({"success": False, "message": str(error)}, status=400)
 
 # ============================================================
 # UPDATE STATUS
 # ============================================================
-
-
 # @login_required
 # @require_POST
 @never_cache
@@ -5025,12 +4895,9 @@ def update_status(request, request_type, id):
 
     return redirect("advertisement_notifications")
 
-
 # ============================================================
 # VIEW DETAILS
 # ============================================================
-
-
 # @login_required
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
@@ -5178,19 +5045,6 @@ def expired_agents_dashboard(request):
 
     return render(request, "agents/expired_agents.html", context)
 
-
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from django.core.paginator import Paginator
-from django.db.models import Q
-
-from agents.models import AgentProperty
-
-from django.core.paginator import Paginator
-from django.db.models import Q
-
-
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 def agent_property_dashboard(request):
@@ -5278,7 +5132,8 @@ def agent_property_detail(request, id):
 
     return render(request, "agent_property/agent_property_detail.html", context)
 
-#added by mehreena
+# added by mehreena
+# agent registration delete
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 @require_POST
@@ -5286,54 +5141,22 @@ def delete_agent_property(request, id):
 
     property_obj = get_object_or_404(AgentProperty, id=id)
 
+    property_id = property_obj.id
+    property_label = property_obj.label or "Unnamed Property"
+
     property_obj.delete()
+
+    create_admin_notification(
+        "Agent Property Deleted",
+        f"Agent Property #{property_id} • {property_label} was deleted successfully.",
+        "warning",
+    )
 
     messages.success(request, "Property deleted successfully.")
 
     return redirect("agent_property/agent_property_dashboard")
 
-
-
-import json
-
-from django.contrib import messages
-from django.db import transaction
-from django.shortcuts import redirect, render
-
-from .forms import AgentPropertyForm
-
-from agents.models import (
-    AgentProperty,
-    AgentPropertyImage,
-    AgentPropertyFieldValue,
-    AgentPropertySellingPoint,
-    AgentPropertyLandmark,
-    AgentUserProfile,
-)
-
-from developer.models import (
-    Category,
-    Purpose,
-    Amenities,
-    SubcategoryField,
-    AgentUserProfile,
-)
-
-from .forms import AgentPropertyForm
-import json
-
-from django.contrib import messages
-from django.contrib.auth.decorators import user_passes_test
-from django.db import transaction
-from django.shortcuts import redirect
-from django.utils import timezone
-from django.views.decorators.cache import never_cache
-from django.views.decorators.http import require_POST
-
-import json
-import traceback
-
-
+# agent registration add
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 @require_POST
@@ -5355,10 +5178,7 @@ def add_agent_property(request):
     # FORM
     # -------------------------------------------------
 
-    form = AgentPropertyForm(
-        request.POST,
-        request.FILES
-    )
+    form = AgentPropertyForm(request.POST, request.FILES)
 
     print("FORM VALID =", form.is_valid())
 
@@ -5366,10 +5186,7 @@ def add_agent_property(request):
 
         print("FORM ERRORS =", form.errors)
 
-        messages.error(
-            request,
-            "Please correct the property details."
-        )
+        messages.error(request, "Please correct the property details.")
 
         return redirect("agent_property_dashboard")
 
@@ -5387,28 +5204,19 @@ def add_agent_property(request):
 
             try:
 
-                agent = AgentUserProfile.objects.get(
-                    id=agent_id
-                )
+                agent = AgentUserProfile.objects.get(id=agent_id)
 
             except AgentUserProfile.DoesNotExist:
 
-                messages.error(
-                    request,
-                    "Selected agent was not found."
-                )
+                messages.error(request, "Selected agent was not found.")
 
-                return redirect(
-                    "agent_property_dashboard"
-                )
+                return redirect("agent_property_dashboard")
 
         # =================================================
         # CREATE PROPERTY INSTANCE
         # =================================================
 
-        property_obj = form.save(
-            commit=False
-        )
+        property_obj = form.save(commit=False)
 
         # -------------------------------------------------
         # OPTIONAL AGENT
@@ -5429,26 +5237,19 @@ def add_agent_property(request):
         # PAID
         # -------------------------------------------------
 
-        property_obj.paid = (
-            request.POST.get("paid") == "on"
-        )
+        property_obj.paid = request.POST.get("paid") == "on"
 
         # -------------------------------------------------
         # FEATURED
         # -------------------------------------------------
 
-        property_obj.is_featured = (
-            request.POST.get("is_featured") == "on"
-        )
+        property_obj.is_featured = request.POST.get("is_featured") == "on"
 
         # -------------------------------------------------
         # NOTES
         # -------------------------------------------------
 
-        property_obj.notes = request.POST.get(
-            "notes",
-            ""
-        ).strip()
+        property_obj.notes = request.POST.get("notes", "").strip()
 
         # -------------------------------------------------
         # DEFAULT DURATION
@@ -5472,41 +5273,27 @@ def add_agent_property(request):
 
         property_obj.save()
 
-        print(
-            "PROPERTY CREATED:",
-            property_obj.id
-        )
+        print("PROPERTY CREATED:", property_obj.id)
 
         # =================================================
         # AMENITIES
         # =================================================
 
-        amenity_ids = request.POST.getlist(
-            "amenities"
-        )
+        amenity_ids = request.POST.getlist("amenities")
 
         if amenity_ids:
 
-            property_obj.amenities.set(
-                Amenities.objects.filter(
-                    id__in=amenity_ids
-                )
-            )
+            property_obj.amenities.set(Amenities.objects.filter(id__in=amenity_ids))
 
         # =================================================
         # IMAGES
         # =================================================
 
-        images = request.FILES.getlist(
-            "images"
-        )
+        images = request.FILES.getlist("images")
 
         for image in images:
 
-            AgentPropertyImage.objects.create(
-                property=property_obj,
-                image=image
-            )
+            AgentPropertyImage.objects.create(property=property_obj, image=image)
 
         # =================================================
         # DYNAMIC FIELDS
@@ -5528,9 +5315,7 @@ def add_agent_property(request):
 
                 if field.field_type == "multi_select":
 
-                    raw = request.POST.get(
-                        field_name
-                    )
+                    raw = request.POST.get(field_name)
 
                     if not raw:
                         continue
@@ -5548,9 +5333,7 @@ def add_agent_property(request):
                     if values:
 
                         AgentPropertyFieldValue.objects.create(
-                            property=property_obj,
-                            field=field,
-                            value=json.dumps(values)
+                            property=property_obj, field=field, value=json.dumps(values)
                         )
 
                 # -----------------------------------------
@@ -5559,18 +5342,10 @@ def add_agent_property(request):
 
                 elif field.field_type == "boolean":
 
-                    value = (
-                        "1"
-                        if request.POST.get(
-                            field_name
-                        ) == "on"
-                        else "0"
-                    )
+                    value = "1" if request.POST.get(field_name) == "on" else "0"
 
                     AgentPropertyFieldValue.objects.create(
-                        property=property_obj,
-                        field=field,
-                        value=value
+                        property=property_obj, field=field, value=value
                     )
 
                 # -----------------------------------------
@@ -5579,9 +5354,7 @@ def add_agent_property(request):
 
                 else:
 
-                    value = request.POST.get(
-                        field_name
-                    )
+                    value = request.POST.get(field_name)
 
                     if value is None:
                         continue
@@ -5592,18 +5365,14 @@ def add_agent_property(request):
                         continue
 
                     AgentPropertyFieldValue.objects.create(
-                        property=property_obj,
-                        field=field,
-                        value=value
+                        property=property_obj, field=field, value=value
                     )
 
         # =================================================
         # SELLING POINTS
         # =================================================
 
-        selling_points = request.POST.getlist(
-            "selling_points"
-        )
+        selling_points = request.POST.getlist("selling_points")
 
         for point in selling_points:
 
@@ -5612,22 +5381,15 @@ def add_agent_property(request):
             if not point:
                 continue
 
-            AgentPropertySellingPoint.objects.create(
-                property=property_obj,
-                point=point
-            )
+            AgentPropertySellingPoint.objects.create(property=property_obj, point=point)
 
         # =================================================
         # LANDMARKS
         # =================================================
 
-        names = request.POST.getlist(
-            "landmark_name"
-        )
+        names = request.POST.getlist("landmark_name")
 
-        distances = request.POST.getlist(
-            "landmark_distance"
-        )
+        distances = request.POST.getlist("landmark_distance")
 
         for index, name in enumerate(names):
 
@@ -5642,27 +5404,24 @@ def add_agent_property(request):
                 distance = distances[index].strip()
 
             AgentPropertyLandmark.objects.create(
-                property=property_obj,
-                name=name,
-                distance=distance
+                property=property_obj, name=name, distance=distance
             )
 
         # =================================================
         # SUCCESS
         # =================================================
 
-        messages.success(
-            request,
-            "Agent property added successfully."
+        create_admin_notification(
+            "Agent Property Added",
+            f"Agent Property #{property_obj.id} • {property_obj.label or 'Unnamed Property'} was added successfully.",
+            "success",
         )
 
-        print(
-            "========== PROPERTY ADD SUCCESS =========="
-        )
+        messages.success(request, "Agent property added successfully.")
 
-        return redirect(
-            "agent_property_dashboard"
-        )
+        print("========== PROPERTY ADD SUCCESS ==========")
+
+        return redirect("agent_property_dashboard")
 
     except Exception as e:
 
@@ -5672,14 +5431,9 @@ def add_agent_property(request):
 
         traceback.print_exc()
 
-        messages.error(
-            request,
-            f"Unable to add property: {str(e)}"
-        )
+        messages.error(request, f"Unable to add property: {str(e)}")
 
-        return redirect(
-            "agent_property_dashboard"
-        )
+        return redirect("agent_property_dashboard")
 
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
@@ -5764,6 +5518,7 @@ def get_agent_property(request, id):
         }
     )
 
+# agent registration edit
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 @require_POST
@@ -6006,6 +5761,12 @@ def edit_agent_property(request, id):
         # SUCCESS
         # ==========================================
 
+        create_admin_notification(
+            "Agent Property Updated",
+            f"Agent Property #{property.id} • {property.label or 'Unnamed Property'} was updated successfully.",
+            "info",
+        )
+
         messages.success(
             request,
             (f"Property updated successfully. " f"Duration: {duration_days} days."),
@@ -6019,26 +5780,7 @@ def edit_agent_property(request, id):
 
     return redirect("agent_property_dashboard")
 
-
-from django.http import JsonResponse
-from django.shortcuts import get_object_or_404
-from django.views.decorators.http import require_http_methods
-from django.views.decorators.csrf import csrf_exempt
-
-from developer.models import (
-    ExpiredProperty,
-    PropertyImage,
-    ExpiredPropertyFeature,
-    Amenities,
-    Category,
-    Subcategory,
-    Purpose,
-    SubcategoryField,
-)
-
-import json
-
-# expired properties edit 
+# expired properties edit
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 @require_http_methods(["GET", "POST", "DELETE"])
@@ -6409,26 +6151,6 @@ def expired_property_edit_delete(request, id):
         {"status": True, "message": "Expired Property Deleted Successfully."}
     )
 
-
-from datetime import timedelta
-
-from django.contrib.auth.decorators import login_required
-from django.core.exceptions import ValidationError
-from django.db import IntegrityError, transaction
-from django.http import JsonResponse
-from django.shortcuts import get_object_or_404
-from django.utils import timezone
-from django.views.decorators.http import require_POST
-
-# Update this import according to your project structure
-from developer.models import (
-    ExpiredProperty,
-    Property,
-    PropertyFeature,
-    PropertyImage,
-)
-
-
 @login_required
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 @require_POST
@@ -6796,6 +6518,7 @@ def expired_agent_property_detail(request, property_id):
 
     return JsonResponse(data)
 
+# Expired Agent Properties edit
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 @require_POST
@@ -7426,21 +7149,30 @@ def edit_expired_agent_property(request, property_id):
             property=property_obj, image=uploaded_image
         )
 
-    # =========================================================
-    # SUCCESS
-    # =========================================================
+        # =========================================================
+        # SUCCESS
+        # =========================================================
 
-    return JsonResponse(
-        {
-            "success": True,
-            "message": "Expired property updated successfully.",
-            "property_id": str(property_obj.pk),
-            "agent_id": str(property_obj.agent_id) if property_obj.agent_id else None,
-            "new_images": len(uploaded_images),
-            "deleted_images": len(deleted_images),
-        }
-    )
+        create_admin_notification(
+            "Expired Agent Property Updated",
+            f"Expired Agent Property #{property_obj.id} • {property_obj.label or 'Unnamed Property'} was updated successfully.",
+            "info",
+        )
 
+        return JsonResponse(
+            {
+                "success": True,
+                "message": "Expired property updated successfully.",
+                "property_id": str(property_obj.pk),
+                "agent_id": (
+                    str(property_obj.agent_id) if property_obj.agent_id else None
+                ),
+                "new_images": len(uploaded_images),
+                "deleted_images": len(deleted_images),
+            }
+        )
+
+# Expired Agent Properties delete
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 @require_POST
@@ -7574,7 +7306,16 @@ def restore_expired_agent_property(request, property_id):
     # DELETE EXPIRED PROPERTY
     # =========================================================
 
+    expired_property_id = expired.id
+    expired_property_label = expired.label or "Unnamed Property"
+
     expired.delete()
+
+    create_admin_notification(
+        "Expired Agent Property Restored",
+        f"Expired Agent Property #{expired_property_id} • {expired_property_label} was restored successfully.",
+        "success",
+    )
 
     return JsonResponse(
         {
@@ -7583,7 +7324,6 @@ def restore_expired_agent_property(request, property_id):
             "property_id": str(active_property.id),
         }
     )
-
 
 @transaction.atomic
 def delete_expired_agent_property(request, property_id):
@@ -7602,21 +7342,20 @@ def delete_expired_agent_property(request, property_id):
         {"success": True, "message": "Expired property deleted successfully."}
     )
 
-
-# Agentcontactmessage 
+# Agentcontactmessage
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 def agent_contact_messages(request):
-    contact_messages = AgentContactMessage.objects.select_related(
-        "agent"
-    ).order_by("-created_at")
+    contact_messages = AgentContactMessage.objects.select_related("agent").order_by(
+        "-created_at"
+    )
 
     return render(
         request,
         "content/agent_contact_messages.html",
         {
             "contact_messages": contact_messages,
-        }
+        },
     )
 
 # Agent Contact Message Status Update
@@ -7625,18 +7364,12 @@ def agent_contact_messages(request):
 @require_POST
 def update_agent_contact_message_status(request, message_id):
 
-    contact_message = get_object_or_404(
-        AgentContactMessage,
-        id=message_id
-    )
+    contact_message = get_object_or_404(AgentContactMessage, id=message_id)
 
     status = request.POST.get("status")
 
     if status not in ["pending", "replied"]:
-        messages.error(
-            request,
-            "Invalid status."
-        )
+        messages.error(request, "Invalid status.")
         return redirect("agent_contact_messages")
 
     contact_message.status = status
@@ -7654,9 +7387,12 @@ def update_agent_contact_message_status(request, message_id):
         ]
     )
 
-    messages.success(
-        request,
-        f"Message status changed to {status.title()}."
+    create_admin_notification(
+        "Agent Contact Message Updated",
+        f"Agent Contact Message #{contact_message.id} status was changed to {status.title()}.",
+        "info",
     )
+
+    messages.success(request, f"Message status changed to {status.title()}.")
 
     return redirect("agent_contact_messages")

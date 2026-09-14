@@ -1,8 +1,6 @@
 from datetime import timedelta
-
 from django.db import transaction
 from django.utils import timezone
-
 from developer.models import (
     Property,
     PropertyFeature,
@@ -77,7 +75,6 @@ def get_restore_duration_days(subscription):
     # ----------------------------------------------------------
 
     return 30
-
 
 @transaction.atomic
 def restore_one_expired_property(
@@ -328,7 +325,6 @@ def restore_one_expired_property(
     expired_property.delete()
 
     return active_property
-
 
 @transaction.atomic
 def restore_user_expired_properties(

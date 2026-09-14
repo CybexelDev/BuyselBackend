@@ -593,15 +593,7 @@ class Budget(models.Model):
     def __str__(self):
         return self.value
     
-# class Budget(models.Model):
 
-#     value = models.CharField(
-#         max_length=100,
-#         validators=[validate_budget]
-#     )
-
-#     def __str__(self):
-#         return self.value
 
 class UserCreate(models.Model):
 

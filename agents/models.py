@@ -272,7 +272,7 @@ class AgentUserProfile(models.Model):
 
     def sync_subscription(self):
         from developer.models import PremiumPlan, ElitePlan
-        from agents.models import ExpireAgents
+        from developer.models import ExpireAgents
 
         today = timezone.now().date()
 

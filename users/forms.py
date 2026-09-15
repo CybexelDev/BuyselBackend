@@ -3,6 +3,14 @@ from django.core.validators import RegexValidator
 from .models import *
 from developer.models import *
 from agents.models import *
+import re
+from django import forms
+from django.core.validators import RegexValidator
+from agents.models import AgentUserProfile
+import re
+from django import forms
+from django.core.validators import RegexValidator
+
 
 
 class PropertyForm(forms.ModelForm):
@@ -62,14 +70,6 @@ class PropertyForm(forms.ModelForm):
             if image.size > 5 * 1024 * 1024:  # 5MB max
                 raise forms.ValidationError("Image size must be under 5MB.")
         return image
-
-
-
-import re
-from django import forms
-from django.core.validators import RegexValidator
-from agents.models import AgentUserProfile
-
 
 class AgentRegister(forms.ModelForm):
 
@@ -164,11 +164,6 @@ class AgentRegister(forms.ModelForm):
 
         return agent
 
-import re
-from django import forms
-from django.core.validators import RegexValidator
-
-
 class InboxMessages(forms.ModelForm):
     name = forms.CharField(
         max_length=50,
@@ -211,7 +206,6 @@ class InboxMessages(forms.ModelForm):
     class Meta:
         model = Inbox
         fields = ['name', 'contact', 'pin_code', 'messages_text']
-
 
 class AgentContactForm(forms.ModelForm):
     class Meta:

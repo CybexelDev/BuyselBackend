@@ -59,6 +59,279 @@ import cloudinary.uploader
 from django.conf import settings
 from django.core.files.base import ContentFile
 import base64
+from .forms import PropertyForm
+from .forms import AgentRegister
+from django.http import JsonResponse
+from django.core.exceptions import ObjectDoesNotExist
+from geopy.distance import geodesic
+from django.shortcuts import render, redirect
+from django.http import JsonResponse
+from math import radians, sin, cos, sqrt, atan2
+from urllib.parse import quote
+from django.shortcuts import render, redirect
+from django.http import JsonResponse
+from django.contrib import messages
+from urllib.parse import quote
+import re
+from .models import  *
+from developer.models import  *
+
+from urllib.parse import quote
+import re
+from django.shortcuts import render, redirect
+from django.http import JsonResponse
+from django.contrib import messages
+from django.utils.safestring import mark_safe
+from rest_framework import viewsets
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import SearchFilter
+
+from .serializers import *
+from rest_framework_simplejwt.tokens import RefreshToken,TokenError
+from django.contrib.auth.hashers import check_password
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
+import re
+from rest_framework.permissions import AllowAny
+from rest_framework.authentication import SessionAuthentication
+from django.contrib.auth import get_user_model
+import requests
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
+from rest_framework.permissions import IsAuthenticated
+from .utils import *
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from cloudinary.utils import cloudinary_url
+import uuid
+import secrets
+from urllib.parse import urlencode
+from rest_framework import generics
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from django.contrib.auth.hashers import check_password
+from rest_framework_simplejwt.tokens import RefreshToken
+import uuid
+import jwt
+from django.conf import settings
+from rest_framework import viewsets
+from rest_framework.permissions import AllowAny
+from .models import Property, Wishlist, UserCreate
+from .serializers import PropertyCardSerializer
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from django.utils import timezone
+from datetime import timedelta
+import random
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
+from django.utils import timezone
+from django.contrib.auth.hashers import make_password
+import requests
+from django.core.files.base import ContentFile
+import jwt
+import uuid
+from django.conf import settings
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
+from .models import UserCreate, UserProfile
+from .serializers import UserProfileSerializer
+import uuid
+import jwt
+import cloudinary.uploader
+from django.conf import settings
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
+from .models import UserCreate, UserProfile
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.permissions import AllowAny
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.exceptions import TokenError
+from django.core.exceptions import ValidationError as DjangoValidationError
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from agents.authentication import AgentJWTAuthentication
+from rest_framework_simplejwt.tokens import AccessToken
+from rest_framework.permissions import AllowAny
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from developer.models import UserCreate, UserProfile
+import jwt
+from django.conf import settings
+from rest_framework.exceptions import AuthenticationFailed
+from collections import defaultdict
+from collections import defaultdict
+import jwt
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
+from rest_framework_simplejwt.exceptions import InvalidToken
+import json
+from django.db.models import Q
+from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+from django.db.models.functions import ExtractMonth
+from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
+from rest_framework import generics
+from rest_framework.permissions import AllowAny
+from django.db.models import Q
+import jwt
+from django.conf import settings
+from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
+from rest_framework import generics
+from rest_framework.permissions import AllowAny
+from rest_framework.exceptions import NotFound
+from rest_framework import generics, status
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import AuthenticationFailed
+from .models import Property, PropertyEnquiry
+from .serializers import PropertyEnquirySerializer
+from .authentication import UserJWTAuthentication
+from .utils import hashids
+from uuid import UUID
+from itertools import chain
+from django.utils import timezone
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
+from rest_framework.generics import RetrieveAPIView
+from .models import Blog
+from .serializers import SingleBlogSerializer
+from rest_framework.generics import ListAPIView
+from .models import Blog
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+from .models import Wishlist
+from .authentication import UserJWTAuthentication
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+import jwt
+from itertools import chain
+from django.conf import settings
+from django.db.models import Q
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
+import re
+from math import radians, sin, cos, sqrt, atan2
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
+from .models import Property
+from .serializers import PropertySerializer
+import uuid
+from django.db.models.functions import Lower, Trim
+from django.db.models import Q
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
+import uuid
+from uuid import UUID
+from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+from users.models import UserProfile
+from uuid import UUID
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+import re
+import jwt
+from itertools import chain
+from math import radians, sin, cos, sqrt, atan2
+from django.conf import settings
+from jwt.exceptions import (
+    ExpiredSignatureError,
+    InvalidTokenError
+)
+from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+import jwt
+from itertools import chain
+from django.conf import settings
+from django.db.models import IntegerField
+from django.db.models import Q
+from django.db.models.functions import Cast
+
+from jwt import (
+    ExpiredSignatureError,
+    InvalidTokenError
+)
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
+from rest_framework import status
+from rest_framework.authentication import BaseAuthentication
+from rest_framework.exceptions import AuthenticationFailed
+import jwt
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from django.shortcuts import get_object_or_404
+import uuid
+import re
+from datetime import timedelta
+from django.utils import timezone
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
+from users.models import (
+    Userplan,
+    UserProfile,
+    UserCreate
+)
+from users.serializers import (
+    UserPlanActivateSerializer
+)
+from users.authentication import (
+    UserJWTAuthentication
+)
+from django.utils import timezone
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+from django.utils import timezone 
+import uuid
+import razorpay
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.permissions import AllowAny
+import re
+import hmac
+import hashlib
+from datetime import timedelta
+from django.conf import settings
+from django.utils import timezone
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
+from users.models import Payment, UserProfile
+from django.conf import settings
+from rest_framework.response import Response
+from rest_framework.views import APIView
+import os
 
 razorpay_client = razorpay.Client(
     auth=(
@@ -108,7 +381,6 @@ def sitemap_view(request):
     file_path = os.path.join(settings.BASE_DIR, 'users/templates/sitemap.xml')
     return FileResponse(open(file_path, 'rb'), content_type='application/xml')
 
-from .forms import AgentRegister
 def agent_form(request):
     if request.method == 'POST':
         form = AgentRegister(request.POST, request.FILES)
@@ -121,7 +393,6 @@ def agent_form(request):
             return JsonResponse({'success': False, 'errors': errors})
 
     return render(request, 'agent_form.html')
-from .forms import PropertyForm
 
 def property_form(request):
     if request.method == 'POST' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
@@ -133,30 +404,6 @@ def property_form(request):
             return JsonResponse({'success': False, 'errors': form.errors}, status=400)
 
     return render(request, 'property_form.html')
-
-
-
-
-from django.http import JsonResponse
-from django.core.exceptions import ObjectDoesNotExist
-from geopy.distance import geodesic
-from django.shortcuts import render, redirect
-from django.http import JsonResponse
-from math import radians, sin, cos, sqrt, atan2
-from urllib.parse import quote
-from django.shortcuts import render, redirect
-from django.http import JsonResponse
-from django.contrib import messages
-from urllib.parse import quote
-import re
-from .models import  *
-from developer.models import  *
-
-from urllib.parse import quote
-import re
-from django.shortcuts import render, redirect
-from django.http import JsonResponse
-from django.contrib import messages
 
 def index(request):
     purposes = Purpose.objects.all()
@@ -328,9 +575,6 @@ def index(request):
         "search_query": query,  # Pass current search term to template
     })
 
-
-
-
 def haversine(lat1, lon1, lat2, lon2):
     """Calculate the great-circle distance between two points."""
     R = 6371  # Earth radius in km
@@ -409,8 +653,6 @@ def nearest_property(request):
         return JsonResponse({"error": "No nearby properties with valid coordinates"}, status=404)
 
     return JsonResponse(results, safe=False)
-
-
 
 def properties(request):
     properties_list = Property.objects.all().order_by('-created_at')
@@ -504,7 +746,6 @@ def filter_properties(request):
 
     return JsonResponse(data, safe=False)
 
-
 def property_detail(request, pk):
     property_obj = get_object_or_404(Property, pk=pk)
     extra_images = property_obj.images.all()
@@ -530,9 +771,6 @@ def property_detail(request, pk):
         'amenities': amenities,
         'related_properties': related_properties,
     })
-
-from django.utils.safestring import mark_safe
-
 
 @property
 def map_embed(self):
@@ -583,8 +821,6 @@ def contact(request):
         return redirect("contact")
 
     return render(request, "contact.html")
-
-
 
 def agents(request):
     premium = Premium.objects.all()
@@ -682,7 +918,6 @@ def agents(request):
         },
     )
 
-
 def agent_detail(request, pk):
     agent = get_object_or_404(Premium, pk=pk)
     properties = agent.properties.all()  # fetch properties linked to this agent
@@ -718,10 +953,6 @@ def agent_detail(request, pk):
         "properties": properties
     })
 
-
-
-
-
 def agent_property_detail(request, pk):
     property_obj = get_object_or_404(AgentProperty, pk=pk)
     extra_images = property_obj.images.all()  # related_name from AgentPropertyImage
@@ -750,7 +981,6 @@ def gallery(request, pk):
         'extra_images': extra_images
     })
 
-
 def property_gallery(request, pk):
     property_obj = get_object_or_404(AgentProperty, pk=pk)  # or your actual model name
     extra_images = AgentPropertyImage.objects.filter(property=property_obj)
@@ -759,7 +989,6 @@ def property_gallery(request, pk):
         'property': property_obj,
         'extra_images': extra_images
     })
-
 
 @csrf_exempt
 def upload_property_screenshot(request):
@@ -786,7 +1015,6 @@ def upload_property_screenshot(request):
 
     return JsonResponse({"status": "error", "message": "Invalid request method"}, status=400)
 
-
 @csrf_exempt
 def upload_agents_screenshot(request):
     if request.method != "POST":
@@ -807,37 +1035,6 @@ def upload_agents_screenshot(request):
 
     except AgentProperty.DoesNotExist:
         return JsonResponse({"error": "Property not found"}, status=404)
-
-from rest_framework import viewsets
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.filters import SearchFilter
-
-from .serializers import *
-from rest_framework_simplejwt.tokens import RefreshToken,TokenError
-from django.contrib.auth.hashers import check_password
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt
-import re
-from rest_framework.permissions import AllowAny
-from rest_framework.authentication import SessionAuthentication
-from django.contrib.auth import get_user_model
-import requests
-
-from google.oauth2 import id_token
-from google.auth.transport import requests as google_requests
-from rest_framework.permissions import IsAuthenticated
-from .utils import *
-from rest_framework_simplejwt.authentication import JWTAuthentication
-from cloudinary.utils import cloudinary_url
-import uuid
-import secrets
-from urllib.parse import urlencode
-from rest_framework import generics
-
 
 class PropertyViewSet(viewsets.ReadOnlyModelViewSet):
 
@@ -980,11 +1177,6 @@ class PropertyViewSet(viewsets.ReadOnlyModelViewSet):
 
         return queryset
 
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from django.contrib.auth.hashers import check_password
-from rest_framework_simplejwt.tokens import RefreshToken
 class RequestCreateAPIView(APIView):
 
     authentication_classes = []   # public form
@@ -1030,7 +1222,6 @@ class BudgetListAPIView(APIView):
                 "message": str(e)
             }, status=500)
         
-
 class CategoryListView(APIView):
     def get(self, request):
         category = Category.objects.all().order_by("id")
@@ -1070,16 +1261,6 @@ class PremiumPasswordChangeAPIView(APIView):
             serializer.errors,
             status=status.HTTP_400_BAD_REQUEST
         )
-
-import uuid
-import jwt
-from django.conf import settings
-from rest_framework import viewsets
-from rest_framework.permissions import AllowAny
-
-from .models import Property, Wishlist, UserCreate
-from .serializers import PropertyCardSerializer
-
 
 class FeaturedPropertyViewSet(viewsets.ModelViewSet):
 
@@ -1326,7 +1507,6 @@ class VerifyOTPAPI(APIView):
 
         return Response(serializer.errors, status=400)
 
-
 class ResendOTPAPI(APIView):
 
     authentication_classes = []
@@ -1502,12 +1682,6 @@ class VerifyForgotOTPAPI(APIView):
                 {"error":"User not found"},
                 status=404
             )
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from django.utils import timezone
-from datetime import timedelta
-import random
 
 class ForgotPasswordResendOTPAPI(APIView):
 
@@ -1564,12 +1738,6 @@ class ForgotPasswordResendOTPAPI(APIView):
                 {"error": "User not found"},
                 status=404
             )
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
-from django.utils import timezone
-from django.contrib.auth.hashers import make_password
 
 class UserChangePasswordAPI(APIView):
 
@@ -1960,12 +2128,6 @@ class FacebookLoginAPI(APIView):
                 status=500
             )
 
-
-
-
-import requests
-from django.core.files.base import ContentFile
-
 def handle_google_user(email, name, picture):
     user, _ = UserCreate.objects.get_or_create(
         email=email,
@@ -2166,20 +2328,6 @@ class FacebookLoginRedirectView(APIView):
 
         return redirect(facebook_auth_url)
 
-
-import jwt
-import uuid
-
-from django.conf import settings
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
-
-from .models import UserCreate, UserProfile
-from .serializers import UserProfileSerializer
-
-
 class UserProfileView(APIView):
 
     authentication_classes = []
@@ -2370,21 +2518,6 @@ class UserProfileView(APIView):
             status=400
         )
 
-
-
-import uuid
-import jwt
-import cloudinary.uploader
-
-from django.conf import settings
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
-
-from .models import UserCreate, UserProfile
-
-
 class UserProfileImageUpdateView(APIView):
 
     authentication_classes = []
@@ -2566,15 +2699,6 @@ class UserProfileImageUpdateView(APIView):
             }
         )
 
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework.permissions import AllowAny
-
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.exceptions import TokenError
-
-
 class RefreshTokenView(APIView):
     authentication_classes = []
     permission_classes = [AllowAny]
@@ -2606,8 +2730,6 @@ class RefreshTokenView(APIView):
                 {"error": "Invalid or expired refresh token"},
                 status=401
             )
-
-
 
 class AmenitiesListCreateView(APIView):
 
@@ -2701,7 +2823,6 @@ class LogoutAPIView(APIView):
         return response
 
 
-from agents.authentication import AgentJWTAuthentication
 class InboxCreateAPIView(APIView):
 
     authentication_classes = []   # public message form
@@ -3033,11 +3154,7 @@ class AgentChangePasswordAPI(APIView):
                 status=400
             )
 
-from django.core.exceptions import ValidationError as DjangoValidationError
 
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
 class AgentPendingRegisterAPIView(APIView):
 
     authentication_classes = [UserJWTAuthentication]
@@ -3717,8 +3834,6 @@ class AgentTokenRefreshAPIView(APIView):
         except TokenError:
             return Response({"error": "Invalid or expired refresh token"}, status=status.HTTP_401_UNAUTHORIZED)
 
-
-
 class PremiumFeatureAPIView(APIView):
     authentication_classes = [AgentJWTAuthentication]
     permission_classes = [IsAuthenticated]
@@ -3745,14 +3860,6 @@ class EliteFeatureAPIView(APIView):
         return Response({
             "message": "Welcome Elite Agent"
         })
-
-
-from rest_framework_simplejwt.tokens import AccessToken
-
-from rest_framework.permissions import AllowAny
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
 
 class SubmitAgentReviewAPIView(APIView):
 
@@ -3911,10 +4018,6 @@ class SubmitAgentReviewAPIView(APIView):
             serializer.errors,
             status=400
         )
-
-from developer.models import UserCreate, UserProfile
-import jwt
-from django.conf import settings
 
 class ToggleReviewLikeAPIView(APIView):
     permission_classes = []            # 🔥 disable DRF auth
@@ -4114,12 +4217,6 @@ class PublicAgentProfileAPIView(APIView):
                 "message": "Agent not found"
             }, status=404)
 
-
-
-
-from rest_framework.exceptions import AuthenticationFailed
-
-
 class AgentJWTAuthentication(JWTAuthentication):
 
     def get_user(self, validated_token):
@@ -4134,11 +4231,6 @@ class AgentJWTAuthentication(JWTAuthentication):
         except Exception:
             raise AuthenticationFailed("Agent not found")
         
-
-from collections import defaultdict
-
-from collections import defaultdict
-
 class PlanListAPIView(APIView):
 
     authentication_classes = [AgentJWTAuthentication]
@@ -4634,11 +4726,6 @@ class AgentUpgradePlanAPIView(APIView):
             "expiry_date": agent.plan_expiry_date
         })
 
-
-
-
-
-
 class AgentUsageSummaryAPI(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -4671,7 +4758,6 @@ class AgentUsageSummaryAPI(APIView):
                 "remaining": max(commercial_limit - commercial_used, 0)
             }
         })
-
 
 def check_plan_expiry_notifications():
     agents = AgentUserProfile.objects.all()
@@ -4758,7 +4844,6 @@ class MarkNotificationReadAPI(APIView):
         except Notification.DoesNotExist:
             return Response({"error": "Notification not found"}, status=404)
 
-
 # ================= UNREAD COUNT =================
 class UnreadNotificationCountAPI(APIView):
     permission_classes = [IsAuthenticated]
@@ -4817,7 +4902,6 @@ class AgentPlanCombinedAPIView(APIView):
             "agent_types": agent_types,
             "plans": plans
         })
-
 
 class AgentPlanListAPIView(APIView):
     authentication_classes = []
@@ -5011,13 +5095,6 @@ class AgentPlansAPIView(APIView):
             "plans": response_data
         }, status=status.HTTP_200_OK)
 
-import jwt
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
-from rest_framework_simplejwt.exceptions import InvalidToken
-
 class AllPlansAPIView(APIView):
 
     authentication_classes = []   # ✅ IMPORTANT FIX
@@ -5120,7 +5197,6 @@ class AllPlansAPIView(APIView):
                 "message": str(e)
             }, status=500)
 
-
 class AgentContactCreateAPIView(APIView):
     authentication_classes = [UserJWTAuthentication]
     permission_classes = [IsAuthenticated]
@@ -5164,7 +5240,6 @@ class AgentContactCreateAPIView(APIView):
 
         return Response(serializer.errors, status=400)
 
-
 class AgentContactListAPIView(APIView):
     authentication_classes = [AgentJWTAuthentication]
     permission_classes = [IsAuthenticated]
@@ -5176,7 +5251,6 @@ class AgentContactListAPIView(APIView):
         serializer = AgentContactSerializer(contacts, many=True)
 
         return Response(serializer.data)
-
 
 class AgentContactDeleteAPIView(APIView):
     authentication_classes = [AgentJWTAuthentication]
@@ -5197,8 +5271,7 @@ class AgentContactDeleteAPIView(APIView):
             "status": True,
             "message": "Contact message deleted successfully"
         })
-
-        
+ 
 class ChangePasswordAPIView(APIView):
     authentication_classes = [AgentJWTAuthentication]
     permission_classes = [IsAuthenticated]
@@ -5227,10 +5300,6 @@ class ChangePasswordAPIView(APIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
-import json
-
-
 class AmenitiesAPIView(View):
     def get(self, request):
         try:
@@ -5249,7 +5318,6 @@ class AmenitiesAPIView(View):
         except Exception as e:
             return JsonResponse({"status": False, "message": str(e), "data": []})
 
-
 class CategoryListAPIView(APIView):
     authentication_classes = []
     permission_classes = [AllowAny]
@@ -5258,7 +5326,6 @@ class CategoryListAPIView(APIView):
         categories = Category.objects.all().order_by("name")
         data = [{"id": c.id, "name": c.name, "icon": c.icon.url if c.icon else None} for c in categories]
         return Response({"status": True, "data": data})
-
 
 class SubcategoryListAPIView(APIView):
     authentication_classes = []
@@ -5328,7 +5395,6 @@ class SubcategoryFieldListAPIView(APIView):
             "data": data
         })
     
-
 class PurposeListAPIView(APIView):
     authentication_classes = []
     permission_classes = [AllowAny]
@@ -5337,7 +5403,6 @@ class PurposeListAPIView(APIView):
         purposes = Purpose.objects.all().order_by("name")
         data = [{"id": p.id, "name": p.name} for p in purposes]
         return Response({"status": True, "data": data})
-
 
 class PropertyMetaAPIView(APIView):
     authentication_classes = []
@@ -5595,7 +5660,6 @@ class AgentPropertyListAPIView(APIView):
             "remaining_edit_count": remaining_edits,
             "data": serializer.data
         })
-
 
 class AgentPropertyLimitAPIView(APIView):
     authentication_classes = [AgentJWTAuthentication]
@@ -6057,11 +6121,6 @@ class AgentPropertyAPIView(APIView):
             ).data
         })
 
-from django.db.models import Q
-from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny
-from rest_framework.response import Response
-
 class PublicPropertyListAPIView(APIView):
     authentication_classes = []
     permission_classes = [AllowAny]
@@ -6104,7 +6163,6 @@ class PublicPropertyListAPIView(APIView):
         return Response({
             "data": serializer.data
         })
-
 
 class PublicPropertyDetailAPIView(APIView):
     authentication_classes = []
@@ -6573,11 +6631,6 @@ class AgentPropertyDetailAPIView(APIView):
 
         })
     
-
-
-
-from django.db.models.functions import ExtractMonth
-
 class AgentPropertyEnquiryCreateAPI(APIView):
 
     authentication_classes = [UserJWTAuthentication]
@@ -6611,7 +6664,6 @@ class AgentPropertyEnquiryCreateAPI(APIView):
             "message": "Enquiry submitted successfully",
             "data": serializer.data
         })
-
 
 class AgentPropertyEnquiryListAPI(APIView):
 
@@ -6834,11 +6886,6 @@ class DashboardAPIView(APIView):
             }
         })
     
-
-
-
-
-
 class TestimonialListAPI(APIView):
     permission_classes = [AllowAny]
 
@@ -7018,16 +7065,6 @@ class WishlistView(APIView):
                 except Wishlist.DoesNotExist:
                     return Response({"error": "Not in wishlist"}, status=404)
 
-
-
-from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
-from rest_framework import generics
-from rest_framework.permissions import AllowAny
-from django.db.models import Q
-import jwt
-from django.conf import settings
-from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
-
 class PropertyListAPI(generics.ListAPIView):
     serializer_class = PropertyCardSerializer
     permission_classes = [AllowAny]
@@ -7141,8 +7178,6 @@ class PropertyListAPI(generics.ListAPIView):
 
         context["wishlist_ids"] = wishlist_ids
         return context
-
-
 
 class WishlistView(APIView):
 
@@ -7308,11 +7343,6 @@ class WishlistView(APIView):
             "error": "Not in wishlist"
         }, status=404)
 
-
-from rest_framework import generics
-from rest_framework.permissions import AllowAny
-from rest_framework.exceptions import NotFound
-
 class PropertyDetailAPIView(generics.RetrieveAPIView):
     serializer_class = PropertyDetailSerializer
     authentication_classes = []
@@ -7362,17 +7392,6 @@ class PropertyDetailAPIView(generics.RetrieveAPIView):
         context = super().get_serializer_context()
         context["request"] = self.request
         return context
-
-from rest_framework import generics, status
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.exceptions import AuthenticationFailed
-
-from .models import Property, PropertyEnquiry
-from .serializers import PropertyEnquirySerializer
-from .authentication import UserJWTAuthentication
-from .utils import hashids
-
 
 class PropertyEnquiryCreateView(generics.CreateAPIView):
     queryset = PropertyEnquiry.objects.all()
@@ -7453,13 +7472,6 @@ class PropertyEnquiryCreateView(generics.CreateAPIView):
                 },
                 status=status.HTTP_401_UNAUTHORIZED
             )
-
-from uuid import UUID
-from itertools import chain
-from django.utils import timezone
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
 
 class RelatedPropertiesAPIView(APIView):
 
@@ -7572,7 +7584,6 @@ class RelatedPropertiesAPIView(APIView):
             "data": serializer.data
         })
 
-
 class ContactCreateAPIView(APIView):
 
     def post(self,request):
@@ -7589,7 +7600,6 @@ class ContactCreateAPIView(APIView):
             )
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
     
-
 class BlogListingAPIView(APIView):
 
     authentication_classes = []     
@@ -7605,12 +7615,6 @@ class BlogListingAPIView(APIView):
 
         return Response(serializer.data,status=status.HTTP_200_OK)
     
-
-from rest_framework.generics import RetrieveAPIView
-from .models import Blog
-from .serializers import SingleBlogSerializer
-
-
 class SingleBlogAPIView(RetrieveAPIView):
 
     authentication_classes = []     
@@ -7619,13 +7623,6 @@ class SingleBlogAPIView(RetrieveAPIView):
     queryset = Blog.objects.all()
     serializer_class = SingleBlogSerializer
     lookup_field = "id"
-
-
-
-from rest_framework.generics import ListAPIView
-from .models import Blog
-# from .serializers import BlogSerializer
-
 
 class BlogByCategoryAPIView(ListAPIView):
 
@@ -7646,8 +7643,6 @@ class BlogByCategoryAPIView(ListAPIView):
 
         return queryset
     
-
-
 class BlogNameSearchAPIView(ListAPIView):
 
     authentication_classes = []     # ✅ allow without login
@@ -7663,17 +7658,6 @@ class BlogNameSearchAPIView(ListAPIView):
             )
 
         return Blog.objects.none()
-
-
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
-
-from .models import Wishlist
-from .authentication import UserJWTAuthentication
-
 
 class BulkWishlistDeleteAPIView(APIView):
     """
@@ -7697,7 +7681,6 @@ class BulkWishlistDeleteAPIView(APIView):
             },
             status=status.HTTP_200_OK
         )
-
 
 class WishlistFilterAPIView(APIView):
 
@@ -7808,8 +7791,7 @@ class WishlistFilterAPIView(APIView):
             })
 
         return Response(results, status=status.HTTP_200_OK)
-    
-    
+     
 class WishlistSortingAPIView(APIView):
 
     authentication_classes = [UserJWTAuthentication]
@@ -7894,12 +7876,6 @@ class WishlistSortingAPIView(APIView):
 
         return Response(results, status=status.HTTP_200_OK)
 
-
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-
 class UserProfileUpdateView(APIView):
 
     authentication_classes = [UserJWTAuthentication]  
@@ -7922,9 +7898,6 @@ class UserProfileUpdateView(APIView):
             {"message": "Profile updated successfully"},
             status=200
         )
-
-
-
 
 class MyActivityView(APIView):
 
@@ -8047,8 +8020,6 @@ class UpdateAgentReviewAPIView(APIView):
             }
         }, status=200)
 
-
-
 class DeleteAgentReviewAPIView(APIView):
     authentication_classes = []   # ❌ disable default JWT (important)
     permission_classes = []       # ❌ handle manually
@@ -8106,7 +8077,6 @@ class DeleteAgentReviewAPIView(APIView):
             "message": "Review deleted successfully"
         }, status=200)
 
-
 class ActiveSliderAdsAPIView(ListAPIView):
     serializer_class = SliderAdSerializer
     authentication_classes = []
@@ -8114,7 +8084,6 @@ class ActiveSliderAdsAPIView(ListAPIView):
 
     def get_queryset(self):
         return SliderAd.objects.filter(is_active=True).order_by('-created_at')
-
 
 class BannerAdsAPIView(ListAPIView):
     serializer_class = BannerAdSerializer
@@ -8374,7 +8343,6 @@ class AgentDetailAPIView(APIView):
             status=200
         )
 
-
 class PropertyFilterAPIView(APIView):
 
     permission_classes = [AllowAny]
@@ -8432,18 +8400,6 @@ class PropertyFilterAPIView(APIView):
             "count": queryset.count(),
             "data": serializer.data
         }, status=status.HTTP_200_OK)
-
-
-import jwt
-from itertools import chain
-
-from django.conf import settings
-from django.db.models import Q
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
-
 
 class PropertySearchAPIView(APIView):
 
@@ -8572,8 +8528,6 @@ class PropertySearchAPIView(APIView):
             "data": serializer.data
         })
 
-
-
 class PropertyEnquiryByUserAPIView(APIView):
 
     authentication_classes = [UserJWTAuthentication]
@@ -8604,17 +8558,6 @@ class PropertyEnquiryByUserAPIView(APIView):
             },
             status=200
         )
-
-import re
-from math import radians, sin, cos, sqrt, atan2
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
-
-from .models import Property
-from .serializers import PropertySerializer
-
 
 class NearbyPropertyAPIView(APIView):
     permission_classes = [AllowAny]
@@ -8749,7 +8692,6 @@ class AgentSearchAPIView(ListAPIView):
 
         return queryset.order_by("-created_at")
 
-
 class AgentCityListAPIView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
@@ -8867,8 +8809,6 @@ class EnquiryDetailAPIView(APIView):
             "data": serializer.data
         })
     
-
-
 def normalize_location_value(value):
 
     if not value:
@@ -8882,7 +8822,6 @@ def normalize_location_value(value):
         .replace("_", "")
         .replace("-", "")
     )
-
 
 class PropertyFilterOptionsAPIView(APIView):
 
@@ -9191,11 +9130,6 @@ class AgentPropertyLocationAPIView(APIView):
             "data": serializer.data
         })
     
-
-import uuid
-
-from django.db.models.functions import Lower, Trim
-
 class AgentPropertyCityFilterAPIView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
@@ -9312,14 +9246,6 @@ class AgentPropertyCityFilterAPIView(APIView):
             "properties": serializer.data
         })
     
-
-from django.db.models import Q
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
-import uuid
-
-
 class AgentPropertySearchAPIView(APIView):
 
     permission_classes = [AllowAny]
@@ -9661,14 +9587,6 @@ class CombinedPropertyListAPIView(APIView):
 
         return True
         
-from uuid import UUID
-
-from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny
-from rest_framework.response import Response
-
-from users.models import UserProfile
-
 class UniversalPropertyDetailAPIView(APIView):
 
     authentication_classes = []
@@ -10178,15 +10096,6 @@ class UniversalPropertyDetailAPIView(APIView):
             "error": "Property not found"
         }, status=404)
 
-
-
-from uuid import UUID
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
-
-
 class UniversalPropertyEnquiryAPI(APIView):
 
     authentication_classes = [UserJWTAuthentication]
@@ -10261,23 +10170,6 @@ class UniversalPropertyEnquiryAPI(APIView):
             status=status.HTTP_404_NOT_FOUND
         )
 
-
-import re
-import jwt
-
-from itertools import chain
-from math import radians, sin, cos, sqrt, atan2
-
-from django.conf import settings
-
-from jwt.exceptions import (
-    ExpiredSignatureError,
-    InvalidTokenError
-)
-
-from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny
-from rest_framework.response import Response
 class NearbyPropertyAPIView(APIView):
 
     permission_classes = [AllowAny]
@@ -10913,26 +10805,6 @@ class NearbyPropertyAPIView(APIView):
             }
         )
 
-import jwt
-
-from itertools import chain
-
-from django.conf import settings
-from django.db.models import IntegerField
-from django.db.models import Q
-from django.db.models.functions import Cast
-
-from jwt import (
-    ExpiredSignatureError,
-    InvalidTokenError
-)
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
-from rest_framework import status
-
-
 class PropertiesFilterAPIView(APIView):
 
     permission_classes = [AllowAny]
@@ -11163,12 +11035,6 @@ class PropertiesFilterAPIView(APIView):
             status=status.HTTP_200_OK
         )
 
-
-from rest_framework.authentication import BaseAuthentication
-from rest_framework.exceptions import AuthenticationFailed
-import jwt
-
-
 class UnifiedJWTAuthentication(BaseAuthentication):
 
     def authenticate(self, request):
@@ -11288,12 +11154,6 @@ class UnifiedEnquiryListAPIView(APIView):
             {"status": False, "message": "POST not allowed"},
             status=405
         )
-
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from django.shortcuts import get_object_or_404
 
 class EnquiryDetailAPIView(APIView):
 
@@ -11976,7 +11836,6 @@ class UserPropertyDetailAPIView(APIView):
 
         }, status=status.HTTP_200_OK)
 
-
 class AgentContactMessageCreateAPIView(APIView):
 
     authentication_classes = [AgentJWTAuthentication]
@@ -12015,35 +11874,6 @@ class AgentContactMessageCreateAPIView(APIView):
             "data": serializer.data
 
         })
-
-
-
-import uuid
-import re
-
-from datetime import timedelta
-
-from django.utils import timezone
-
-from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from rest_framework import status
-
-from users.models import (
-    Userplan,
-    UserProfile,
-    UserCreate
-)
-
-from users.serializers import (
-    UserPlanActivateSerializer
-)
-
-from users.authentication import (
-    UserJWTAuthentication
-)
-
 
 class ActivateUserPlanAPIView(APIView):
 
@@ -12212,14 +12042,6 @@ class ActivateUserPlanAPIView(APIView):
             },
             status=status.HTTP_200_OK
         )
-
-from django.utils import timezone
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
-
 
 class CurrentUserPlanAPIView(APIView):
 
@@ -12792,9 +12614,6 @@ class OwnerDashboardAPIView(APIView):
 
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-
-from django.utils import timezone
-
 class UserPropertyListAPIView(APIView):
 
     authentication_classes = [UserJWTAuthentication]
@@ -12903,9 +12722,6 @@ class UserPropertyListAPIView(APIView):
             serializer.data
 
         }, status=status.HTTP_200_OK)
-
-
-
 
 class UserPropertyCreateAPIView(APIView):
 
@@ -13430,15 +13246,6 @@ class UserPropertyCreateAPIView(APIView):
             ).data
 
         }, status=201)
-
-        
-import uuid
-import razorpay
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework.permissions import AllowAny
 
 class CreatePaymentAPIView(APIView):
 
@@ -14089,23 +13896,6 @@ class CreatePaymentAPIView(APIView):
                 str(e)
 
             }, status=400)
-
-
-import re
-import hmac
-import hashlib
-
-from datetime import timedelta
-
-from django.conf import settings
-from django.utils import timezone
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
-
-from users.models import Payment, UserProfile
-
 
 class VerifyPaymentAPIView(APIView):
 
@@ -15163,7 +14953,6 @@ class VerifyPaymentAPIView(APIView):
                 "error": str(e)
             }, status=400)
 
-
 class AdvertisementRequestAPIView(APIView):
 
     authentication_classes = [AgentJWTAuthentication]
@@ -15369,15 +15158,6 @@ class AgentPurchaseHistoryAPIView(APIView):
             "count": len(serializer.data),
             "plans": serializer.data
         })
- 
-
-
-
-from django.conf import settings
-from rest_framework.response import Response
-from rest_framework.views import APIView
-import os
-
 
 class DebugDB(APIView):
     def get(self, request):

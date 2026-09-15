@@ -97,7 +97,6 @@ class PropertySerializer(serializers.ModelSerializer):
 
             return data
 
-
 class PremiumLoginSerializer(serializers.Serializer):
 
     username = serializers.CharField()
@@ -247,7 +246,6 @@ class PremiumPasswordChangeSerializer(serializers.Serializer):
 
         return data
 
-
 class AgentFormSerializer(serializers.ModelSerializer):
 
     image = serializers.SerializerMethodField()
@@ -265,7 +263,6 @@ class AgentFormSerializer(serializers.ModelSerializer):
                 return None
 
         return None
-
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -322,7 +319,6 @@ class RegisterSerializer(serializers.ModelSerializer):
 
         return UserCreate.objects.create(**validated_data)
 
-
 class VerifyOTPSerializer(serializers.Serializer):
     email = serializers.EmailField()
     otp = serializers.CharField(max_length=6)
@@ -377,20 +373,10 @@ class UserLoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField()
 
-
-
-
-
-
-
-
 class AgentNotificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notification
         fields = "__all__"
-
-
-
 
 class UserProfileSerializer(
     serializers.ModelSerializer
@@ -492,7 +478,6 @@ class UserProfileSerializer(
                 return None
 
         return None
-
 
 # added by mehreena
 class AmenitiesSerializer(serializers.ModelSerializer):
@@ -639,7 +624,6 @@ class AgentSerializer(serializers.ModelSerializer):
         if obj.elite_plan:
             return obj.elite_plan.name
         return None
-    
     
 class AgentRegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -1401,12 +1385,10 @@ class PremiumPlanSerializer(serializers.ModelSerializer):
         model = PremiumPlan
         fields = '__all__'
 
-
 class ElitePlanSerializer(serializers.ModelSerializer):
     class Meta:
         model = ElitePlan
         fields = '__all__'
-
 
 class CurrentPlanSerializer(serializers.Serializer):
     status = serializers.CharField()
@@ -1444,8 +1426,6 @@ class ChangePasswordSerializer(serializers.Serializer):
         if data['new_password'] != data['confirm_password']:
             raise serializers.ValidationError("New password and confirm password do not match")
         return data
-
-
 class AgentPropertySerializer(serializers.ModelSerializer):
 
     # ✅ UUID PRIMARY KEY
@@ -2470,7 +2450,6 @@ class AgentPropertySerializer(serializers.ModelSerializer):
             else obj.image.url
         )
 
-
 class AgentPropertyEnquirySerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -2485,27 +2464,21 @@ class AgentPropertyEnquirySerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["id", "created_at"]
 
-
-
 class AdvertisementPackageSerializer(serializers.ModelSerializer):
     class Meta:
         model = AdvertisementPackage
         fields = "__all__"
-
 
 class ReelPackageSerializer(serializers.ModelSerializer):
     class Meta:
         model = ReelPackage
         fields = "__all__"
 
-
 class TestimonialSerializer(serializers.ModelSerializer):
     class Meta:
         model = Testimonial
         fields = "__all__"
         read_only_fields = ["user"]
-
-
 
 class PropertyCardSerializer(serializers.ModelSerializer):
 
@@ -2545,8 +2518,6 @@ class PropertyCardSerializer(serializers.ModelSerializer):
 
         # ✅ SAFE UUID COMPARISON
         return str(obj.pk) in wishlist_ids
-
-
 
 class WishlistSerializer(serializers.ModelSerializer):
 
@@ -2663,8 +2634,6 @@ class WishlistSerializer(serializers.ModelSerializer):
 
     def get_is_wishlisted(self, obj):
         return True
-
-
 
 class PropertyDetailSerializer(serializers.ModelSerializer):
 
@@ -3274,8 +3243,6 @@ class RelatedPropertySerializer(serializers.ModelSerializer):
             user=request.user
         ).exists()
 
-
-
 class ContactSerializer(serializers.ModelSerializer):
     class Meta:
         model = Contact
@@ -3298,7 +3265,6 @@ class ContactSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Phone number is too short")
         return value
     
-
 class BlogListSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
 
@@ -3322,8 +3288,6 @@ class BlogListSerializer(serializers.ModelSerializer):
             return image_url
         return None
     
-
-
 class SingleBlogSerializer(serializers.ModelSerializer):
     card_paragraph = serializers.SerializerMethodField()
     image = serializers.SerializerMethodField()
@@ -3442,15 +3406,12 @@ class UserProfileUpdateSerializer(serializers.Serializer):
         profile.save()
         return profile
 
-
 class MyActivitySerializer(serializers.Serializer):
 
     wishlist_count = serializers.IntegerField()
     enquiries_count = serializers.IntegerField()
     properties_listed_count = serializers.IntegerField()
     viewed_properties_count = serializers.IntegerField()
-
-
 
 class SliderAdSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
@@ -3464,8 +3425,6 @@ class SliderAdSerializer(serializers.ModelSerializer):
             return obj.image.url   
         return None
     
-
-
 class BannerAdSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
 
@@ -3477,7 +3436,6 @@ class BannerAdSerializer(serializers.ModelSerializer):
         if obj.image:
             return obj.image.url   
         return None
-
 
 class AgentDetailSerializer(serializers.ModelSerializer):
     # agent_id = serializers.CharField(source='agent_code', read_only=True)
@@ -3574,7 +3532,6 @@ class AgentDetailSerializer(serializers.ModelSerializer):
         cities = self.get_operating_cities(obj)
         return len(cities)
     
-
 class PremiumElitePropertySerializer(serializers.ModelSerializer):
 
     images = serializers.SerializerMethodField()
@@ -3647,7 +3604,6 @@ class PremiumElitePropertySerializer(serializers.ModelSerializer):
 
         return data
 
-
 class EnquiryDetailSerializer(serializers.ModelSerializer):
     created_at = serializers.SerializerMethodField()
     property_label = serializers.CharField(source="property.label", read_only=True)
@@ -3707,8 +3663,6 @@ class EnquiryDetailSerializer(serializers.ModelSerializer):
 
         return image
     
-
-
 class RecentEnquirySerializer(serializers.ModelSerializer):
 
     property_name = serializers.CharField(
@@ -3812,8 +3766,6 @@ class RecentAgentEnquirySerializer(serializers.ModelSerializer):
         return indian_time.strftime(
             "%B %d, %Y %I:%M %p"
         )
-
-
 
 class CombinedPropertyListSerializer(serializers.Serializer):
 
@@ -4824,11 +4776,9 @@ class AgentContactMessageSerializer(
             "created_at"
         ]
 
-
 class UserPlanActivateSerializer(serializers.Serializer):
 
     plan_id = serializers.CharField()
-
 
 class CurrentUserPlanSerializer(serializers.ModelSerializer):
 
@@ -4956,7 +4906,6 @@ class CurrentUserPlanSerializer(serializers.ModelSerializer):
                 plan.best_suited_for,
         }
 
-
 class CreatePaymentSerializer(serializers.Serializer):
 
     plan_id = serializers.UUIDField()
@@ -5021,8 +4970,6 @@ class ReelPurchaseNotificationSerializer(serializers.ModelSerializer):
 
         return features
     
-
-
 class PurchaseHistorySerializer(serializers.Serializer):
     plan_type = serializers.CharField()
     plan_name = serializers.CharField()

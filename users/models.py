@@ -32,8 +32,6 @@ class Wishlist(models.Model):
     def __str__(self):
         return f"{self.user.email} - {self.property_uuid}"
 
-
-
 class Testimonial(models.Model):
 
     user = models.ForeignKey(UserCreate, on_delete=models.CASCADE)

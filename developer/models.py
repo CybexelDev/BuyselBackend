@@ -594,7 +594,6 @@ class Budget(models.Model):
         return self.value
     
 
-
 class UserCreate(models.Model):
 
     USER_ROLES = (

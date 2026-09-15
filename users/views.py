@@ -15069,6 +15069,456 @@ class UserPropertyDetailAPIView(APIView):
     # UPDATE
     # =========================================================
 
+    # def put(self, request, id):
+
+    #     obj = self.get_object(
+    #         request,
+    #         id
+    #     )
+
+    #     if not obj:
+
+    #         return Response({
+
+    #             "status": False,
+    #             "message": "Property not found"
+
+    #         }, status=status.HTTP_404_NOT_FOUND)
+
+    #     # =====================================================
+    #     # PROPERTY LIMIT DATA
+    #     # =====================================================
+
+    #     limit_data = get_property_remaining_counts(
+    #         request.user
+    #     )
+    #     subscription = obj.subscription
+
+    #     use_subscription = None
+
+    #     if subscription:
+
+    #         if (
+    #             subscription.is_active
+    #             and
+    #             subscription.expiry_date > timezone.now()
+    #         ):
+
+    #             if subscription.is_unlimited_edit:
+
+    #                 use_subscription = subscription
+
+    #             elif (
+    #                 not subscription.has_no_edit
+    #                 and
+    #                 subscription.remaining_edit > 0
+    #             ):
+
+    #                 use_subscription = subscription
+    #     else:
+
+    #         if obj.single_property_edit_limit > 0:
+
+    #             if (
+    #                 obj.single_property_edit_used
+    #                 >= obj.single_property_edit_limit
+    #             ):
+
+    #                 return Response({
+
+    #                     "status": False,
+
+    #                     "message": "Edit limit exceeded"
+
+    #                 }, status=400)
+
+    #     # -------------------------------------------------
+    #     # Current plan exhausted
+    #     # Find another active plan
+    #     # -------------------------------------------------
+
+    #     # if use_subscription is None:
+    #     if subscription and use_subscription is None:
+
+    #         use_subscription = get_available_edit_subscription(
+    #             request.user
+    #         )
+
+    #         if use_subscription is None:
+
+    #             return Response({
+
+    #                 "status": False,
+
+    #                 "message": "Edit limit exceeded"
+
+    #             }, status=400)
+
+    #         # Move property to new subscription
+
+    #         obj.subscription = use_subscription
+
+    #         obj.package = use_subscription.plan
+
+    #         obj.save(
+    #             update_fields=[
+    #                 "subscription",
+    #                 "package"
+    #             ]
+    #         )
+        
+
+    #     # if subscription:
+
+    #     #     if subscription.has_no_edit:
+
+    #     #         return Response({
+
+    #     #             "status": False,
+
+    #     #             "message":
+    #     #             "Editing is not allowed in your plan"
+
+    #     #         }, status=400)
+
+    #     #     if (
+    #     #         not subscription.is_unlimited_edit
+    #     #         and
+    #     #         subscription.remaining_edit <= 0
+    #     #     ):
+
+    #     #         return Response({
+
+    #     #             "status": False,
+
+    #     #             "message":
+    #     #             "Edit limit exceeded"
+
+    #     #         }, status=400)
+
+    #     data = (
+    #         request.data.dict()
+    #         if hasattr(request.data, "dict")
+    #         else request.data.copy()
+    #     )
+
+    #     # =====================================================
+    #     # REMOVE READ ONLY FIELDS
+    #     # =====================================================
+
+    #     for field in [
+
+    #         "id",
+    #         "user",
+    #         "property_code",
+    #         "created_at",
+    #         "updated_at"
+
+    #     ]:
+
+    #         data.pop(field, None)
+
+    #     # =====================================================
+    #     # CATEGORY VALIDATION
+    #     # =====================================================
+
+    #     new_category_id = data.get("category")
+
+    #     if new_category_id and obj.subscription:
+
+    #         try:
+
+    #             new_category = Category.objects.get(
+    #                 id=new_category_id
+    #             )
+
+    #         except Category.DoesNotExist:
+
+    #             return Response({
+
+    #                 "status": False,
+    #                 "message": "Invalid category"
+
+    #             }, status=status.HTTP_400_BAD_REQUEST)
+
+    #         category_name = (
+    #             new_category.name.lower()
+    #         )
+
+    #         # Residential categories
+    #         is_residential = any(
+    #             keyword in category_name
+    #             for keyword in [
+    #                 "residential",
+    #                 "plot/land",
+    #                 # "plot"
+    #             ]
+    #         )
+
+    #         # Commercial categories
+    #         is_commercial = any(
+    #             keyword in category_name
+    #             for keyword in [
+    #                 "commercial",
+    #                 "industrial"
+    #             ]
+    #         )
+
+    #         # =================================================
+    #         # OLD CATEGORY
+    #         # =================================================
+
+    #         old_category_name = (
+    #             obj.category.name.lower()
+    #             if obj.category else ""
+    #         )
+
+    #         old_is_residential = any(
+    #             keyword in old_category_name
+    #             for keyword in [
+    #                 "residential",
+    #                 "plot/land",
+    #                 # "plot"
+    #             ]
+    #         )
+
+    #         old_is_commercial = any(
+    #             keyword in old_category_name
+    #             for keyword in [
+    #                 "commercial",
+    #                 "industrial"
+    #             ]
+    #         )
+
+    #         # =================================================
+    #         # CATEGORY CHANGE VALIDATION
+    #         # =================================================
+
+    #         if (
+    #             old_is_residential != is_residential
+    #         ):
+
+    #             if (
+    #                 is_residential
+    #                 and limit_data["residential_remaining"] <= 0
+    #             ):
+
+    #                 return Response({
+
+    #                     "status": False,
+
+    #                     "message":
+    #                     "Residential property limit exceeded"
+
+    #                 }, status=status.HTTP_400_BAD_REQUEST)
+
+    #         if (
+    #             old_is_commercial != is_commercial
+    #         ):
+
+    #             if (
+    #                 is_commercial
+    #                 and limit_data["commercial_remaining"] <= 0
+    #             ):
+
+    #                 return Response({
+
+    #                     "status": False,
+
+    #                     "message":
+    #                     "Commercial property limit exceeded"
+
+    #                 }, status=status.HTTP_400_BAD_REQUEST)
+
+    #     # =====================================================
+    #     # SERIALIZER CONTEXT
+    #     # =====================================================
+
+    #     context = {
+
+    #         "request": request,
+
+    #         "amenities_list":
+    #         self.parse_list_field(
+    #             request,
+    #             "amenities"
+    #         ),
+
+    #         "selling_points_list":
+    #         self.parse_list_field(
+    #             request,
+    #             "selling_points"
+    #         ),
+
+    #         "land_mark_list":
+    #         self.parse_list_field(
+    #             request,
+    #             "landmarks"
+    #         ),
+
+    #         "features_list":
+    #         self.parse_list_field(
+    #             request,
+    #             "field_values"
+    #         ),
+    #     }
+
+    #     serializer = UserPropertySerializer(
+
+    #         obj,
+    #         data=data,
+    #         # partial=True,
+    #         partial = False,
+    #         context=context
+
+    #     )
+
+    #     if not serializer.is_valid():
+
+    #         return Response({
+
+    #             "status": False,
+    #             "errors": serializer.errors
+
+    #         }, status=status.HTTP_400_BAD_REQUEST)
+    #     old_category_name = obj.category.name if obj.category else ""
+
+    #     instance = serializer.save()
+    #     # instance = serializer.save()
+
+    #     new_category_name = (
+    #         instance.category.name.lower().strip()
+    #         if instance.category else ""
+    #     )
+
+    #     if old_category_name != new_category_name:
+
+    #         # Always update user profile counts
+    #         request.user.profile.change_property_category(
+    #             old_category_name,
+    #             new_category_name
+    #         )
+
+    #         # Update subscription counts only if property belongs to a plan
+    #         if instance.subscription:
+    #             instance.subscription.change_property_category(
+    #                 old_category_name,
+    #                 new_category_name
+    #             )
+
+    #     property_subscription = instance.subscription
+
+    #     if (
+    #         property_subscription
+    #         and property_subscription.is_active
+    #     ):
+
+    #         if (
+    #             not property_subscription.has_no_edit
+    #             and
+    #             not property_subscription.is_unlimited_edit
+    #         ):
+
+    #             property_subscription.edit_used += 1
+
+    #             property_subscription.save(
+    #                 update_fields=["edit_used"]
+    #             )
+    #     elif instance.single_property_edit_limit > 0:
+
+    #         instance.single_property_edit_used += 1
+
+    #         instance.save(
+    #             update_fields=[
+    #                 "single_property_edit_used"
+    #             ]
+    #         )
+
+    #     # if subscription:
+
+    #     #     if (
+    #     #         not subscription.has_no_edit
+    #     #         and
+    #     #         not subscription.is_unlimited_edit
+    #     #     ):
+
+    #     #         subscription.edit_used += 1
+
+    #     #         subscription.save(
+    #     #             update_fields=["edit_used"]
+    #     #         )
+
+    #     # =====================================================
+    #     # MAIN IMAGE UPDATE
+    #     # =====================================================
+
+    #     # image = request.FILES.get("image")
+
+    #     # if image:
+
+    #     #     instance.image = image
+
+    #     #     instance.save(
+    #     #         update_fields=["image"]
+    #     #     )
+
+    #     # # =====================================================
+    #     # # MULTIPLE IMAGES
+    #     # # =====================================================
+
+    #     # images = request.FILES.getlist("images")
+
+    #     # if images:
+
+    #     #     PropertyImage.objects.bulk_create([
+
+    #     #         PropertyImage(
+    #     #             property=instance,
+    #     #             image=img
+    #     #         )
+
+    #     #         for img in images
+    #     #     ])
+
+    #     # =====================================================
+    #     # REFRESH LIMITS
+    #     # =====================================================
+
+    #     limit_data = get_property_remaining_counts(
+    #         request.user
+    #     )
+
+    #     return Response({
+
+    #         "status": True,
+
+    #         "message":
+    #         "Property updated successfully",
+
+    #         "remaining_property":
+    #         limit_data["remaining_property"],
+
+    #         "residential_remaining":
+    #         limit_data["residential_remaining"],
+
+    #         "commercial_remaining":
+    #         limit_data["commercial_remaining"],
+
+    #         "data":
+    #         UserPropertySerializer(
+    #             instance,
+    #             context={
+    #                 "request": request
+    #             }
+    #         ).data
+
+    #     }, status=status.HTTP_200_OK)
+
+
+    # =========================================================
+    # UPDATE
+    # =========================================================
+
     def put(self, request, id):
 
         obj = self.get_object(
@@ -15092,109 +15542,125 @@ class UserPropertyDetailAPIView(APIView):
         limit_data = get_property_remaining_counts(
             request.user
         )
-        subscription = obj.subscription
+
+        # =====================================================
+        # FIND ANY AVAILABLE PLAN EDIT
+        # =====================================================
 
         use_subscription = None
 
-        if subscription:
+        active_subscriptions = (
+            UserPlanSubscription.objects
+            .filter(
+                user=request.user,
+                is_active=True,
+                expiry_date__gt=timezone.now()
+            )
+            .order_by("id")
+        )
 
+        for sub in active_subscriptions:
+
+            # Unlimited edit plan
+            if sub.is_unlimited_edit:
+
+                use_subscription = sub
+                break
+
+            # Normal edit plan
             if (
-                subscription.is_active
+                not sub.has_no_edit
                 and
-                subscription.expiry_date > timezone.now()
+                sub.remaining_edit > 0
             ):
 
-                if subscription.is_unlimited_edit:
+                use_subscription = sub
+                break
 
-                    use_subscription = subscription
+        # =====================================================
+        # FIND SINGLE PROPERTY EDIT
+        # =====================================================
 
-                elif (
-                    not subscription.has_no_edit
-                    and
-                    subscription.remaining_edit > 0
-                ):
+        single_property_for_edit = None
 
-                    use_subscription = subscription
-        else:
+        # Only search for single-property edits if
+        # there is no available plan edit.
 
-            if obj.single_property_edit_limit > 0:
+        if use_subscription is None:
 
-                if (
-                    obj.single_property_edit_used
-                    >= obj.single_property_edit_limit
-                ):
-
-                    return Response({
-
-                        "status": False,
-
-                        "message": "Edit limit exceeded"
-
-                    }, status=400)
-
-        # -------------------------------------------------
-        # Current plan exhausted
-        # Find another active plan
-        # -------------------------------------------------
-
-        # if use_subscription is None:
-        if subscription and use_subscription is None:
-
-            use_subscription = get_available_edit_subscription(
-                request.user
+            single_properties = (
+                Property.objects
+                .filter(
+                    user=request.user,
+                    single_property_package__isnull=False
+                )
+                .filter(
+                    single_property_edit_limit__gt=0
+                )
+                .order_by("created_at")
             )
 
-            if use_subscription is None:
+            for single_property in single_properties:
 
-                return Response({
+                edit_limit = (
+                    single_property.single_property_edit_limit
+                    or 0
+                )
 
-                    "status": False,
+                edit_used = (
+                    single_property.single_property_edit_used
+                    or 0
+                )
 
-                    "message": "Edit limit exceeded"
+                if edit_used < edit_limit:
 
-                }, status=400)
+                    single_property_for_edit = (
+                        single_property
+                    )
 
-            # Move property to new subscription
+                    break
 
-            obj.subscription = use_subscription
+        # =====================================================
+        # FINAL EDIT LIMIT CHECK
+        # =====================================================
 
-            obj.package = use_subscription.plan
+        # No plan edit and no single-property edit
+        # means the user's TOTAL edit count is zero.
 
-            obj.save(
-                update_fields=[
-                    "subscription",
-                    "package"
-                ]
-            )
-        
+        if (
+            use_subscription is None
+            and
+            single_property_for_edit is None
+        ):
 
-        # if subscription:
+            return Response({
 
-        #     if subscription.has_no_edit:
+                "status": False,
 
-        #         return Response({
+                "message":
+                "Edit limit exceeded"
 
-        #             "status": False,
+            }, status=status.HTTP_400_BAD_REQUEST)
 
-        #             "message":
-        #             "Editing is not allowed in your plan"
+        # =====================================================
+        # IMPORTANT
+        # =====================================================
+        #
+        # DO NOT CHANGE obj.subscription HERE.
+        #
+        # The edit count belongs to the USER'S total
+        # edit pool, not to the property currently being edited.
+        #
+        # Therefore we do NOT do:
+        #
+        # obj.subscription = use_subscription
+        # obj.package = use_subscription.plan
+        #
+        # =====================================================
 
-        #         }, status=400)
-
-        #     if (
-        #         not subscription.is_unlimited_edit
-        #         and
-        #         subscription.remaining_edit <= 0
-        #     ):
-
-        #         return Response({
-
-        #             "status": False,
-
-        #             "message":
-        #             "Edit limit exceeded"
-
-        #         }, status=400)
+        # =====================================================
+        # REQUEST DATA
+        # =====================================================
 
         data = (
             request.data.dict()
@@ -15224,7 +15690,7 @@ class UserPropertyDetailAPIView(APIView):
 
         new_category_id = data.get("category")
 
-        if new_category_id and obj.subscription:
+        if new_category_id:
 
             try:
 
@@ -15245,17 +15711,18 @@ class UserPropertyDetailAPIView(APIView):
                 new_category.name.lower()
             )
 
-            # Residential categories
+            # =================================================
+            # NEW CATEGORY TYPE
+            # =================================================
+
             is_residential = any(
                 keyword in category_name
                 for keyword in [
                     "residential",
                     "plot/land",
-                    # "plot"
                 ]
             )
 
-            # Commercial categories
             is_commercial = any(
                 keyword in category_name
                 for keyword in [
@@ -15270,7 +15737,8 @@ class UserPropertyDetailAPIView(APIView):
 
             old_category_name = (
                 obj.category.name.lower()
-                if obj.category else ""
+                if obj.category
+                else ""
             )
 
             old_is_residential = any(
@@ -15278,7 +15746,6 @@ class UserPropertyDetailAPIView(APIView):
                 for keyword in [
                     "residential",
                     "plot/land",
-                    # "plot"
                 ]
             )
 
@@ -15291,7 +15758,7 @@ class UserPropertyDetailAPIView(APIView):
             )
 
             # =================================================
-            # CATEGORY CHANGE VALIDATION
+            # RESIDENTIAL CATEGORY CHANGE
             # =================================================
 
             if (
@@ -15300,7 +15767,8 @@ class UserPropertyDetailAPIView(APIView):
 
                 if (
                     is_residential
-                    and limit_data["residential_remaining"] <= 0
+                    and
+                    limit_data["residential_remaining"] <= 0
                 ):
 
                     return Response({
@@ -15312,13 +15780,18 @@ class UserPropertyDetailAPIView(APIView):
 
                     }, status=status.HTTP_400_BAD_REQUEST)
 
+            # =================================================
+            # COMMERCIAL CATEGORY CHANGE
+            # =================================================
+
             if (
                 old_is_commercial != is_commercial
             ):
 
                 if (
                     is_commercial
-                    and limit_data["commercial_remaining"] <= 0
+                    and
+                    limit_data["commercial_remaining"] <= 0
                 ):
 
                     return Response({
@@ -15363,12 +15836,18 @@ class UserPropertyDetailAPIView(APIView):
             ),
         }
 
+        # =====================================================
+        # SERIALIZER
+        # =====================================================
+
         serializer = UserPropertySerializer(
 
             obj,
+
             data=data,
-            # partial=True,
-            partial = False,
+
+            partial=False,
+
             context=context
 
         )
@@ -15381,112 +15860,118 @@ class UserPropertyDetailAPIView(APIView):
                 "errors": serializer.errors
 
             }, status=status.HTTP_400_BAD_REQUEST)
-        old_category_name = obj.category.name if obj.category else ""
+
+        # =====================================================
+        # OLD CATEGORY
+        # =====================================================
+
+        old_category_name = (
+            obj.category.name
+            if obj.category
+            else ""
+        )
+
+        # =====================================================
+        # SAVE PROPERTY
+        # =====================================================
 
         instance = serializer.save()
-        # instance = serializer.save()
+
+        # =====================================================
+        # NEW CATEGORY
+        # =====================================================
 
         new_category_name = (
             instance.category.name.lower().strip()
-            if instance.category else ""
+            if instance.category
+            else ""
         )
 
-        if old_category_name != new_category_name:
+        # =====================================================
+        # UPDATE USER PROFILE CATEGORY COUNT
+        # =====================================================
 
-            # Always update user profile counts
+        if (
+            old_category_name.lower().strip()
+            !=
+            new_category_name
+        ):
+
             request.user.profile.change_property_category(
                 old_category_name,
                 new_category_name
             )
 
-            # Update subscription counts only if property belongs to a plan
+            # ---------------------------------------------
+            # UPDATE SUBSCRIPTION CATEGORY COUNT
+            # ---------------------------------------------
+
             if instance.subscription:
+
                 instance.subscription.change_property_category(
                     old_category_name,
                     new_category_name
                 )
 
-        property_subscription = instance.subscription
+        # =====================================================
+        # CONSUME EDIT COUNT
+        # =====================================================
 
-        if (
-            property_subscription
-            and property_subscription.is_active
-        ):
+        if use_subscription:
 
-            if (
-                not property_subscription.has_no_edit
+            # =================================================
+            # UNLIMITED PLAN
+            # =================================================
+
+            if use_subscription.is_unlimited_edit:
+
+                # Unlimited = don't increment edit_used
+
+                pass
+
+            # =================================================
+            # NORMAL PLAN
+            # =================================================
+
+            elif (
+                not use_subscription.has_no_edit
                 and
-                not property_subscription.is_unlimited_edit
+                use_subscription.remaining_edit > 0
             ):
 
-                property_subscription.edit_used += 1
+                use_subscription.edit_used += 1
 
-                property_subscription.save(
-                    update_fields=["edit_used"]
+                use_subscription.save(
+                    update_fields=[
+                        "edit_used"
+                    ]
                 )
-        elif instance.single_property_edit_limit > 0:
 
-            instance.single_property_edit_used += 1
+        # =====================================================
+        # SINGLE PROPERTY EDIT
+        # =====================================================
 
-            instance.save(
+        elif single_property_for_edit:
+
+            single_property_for_edit.single_property_edit_used += 1
+
+            single_property_for_edit.save(
                 update_fields=[
                     "single_property_edit_used"
                 ]
             )
 
-        # if subscription:
-
-        #     if (
-        #         not subscription.has_no_edit
-        #         and
-        #         not subscription.is_unlimited_edit
-        #     ):
-
-        #         subscription.edit_used += 1
-
-        #         subscription.save(
-        #             update_fields=["edit_used"]
-        #         )
-
         # =====================================================
-        # MAIN IMAGE UPDATE
-        # =====================================================
-
-        # image = request.FILES.get("image")
-
-        # if image:
-
-        #     instance.image = image
-
-        #     instance.save(
-        #         update_fields=["image"]
-        #     )
-
-        # # =====================================================
-        # # MULTIPLE IMAGES
-        # # =====================================================
-
-        # images = request.FILES.getlist("images")
-
-        # if images:
-
-        #     PropertyImage.objects.bulk_create([
-
-        #         PropertyImage(
-        #             property=instance,
-        #             image=img
-        #         )
-
-        #         for img in images
-        #     ])
-
-        # =====================================================
-        # REFRESH LIMITS
+        # REFRESH PROPERTY LIMITS
         # =====================================================
 
         limit_data = get_property_remaining_counts(
             request.user
         )
+
+        # =====================================================
+        # RESPONSE
+        # =====================================================
 
         return Response({
 
@@ -15513,7 +15998,6 @@ class UserPropertyDetailAPIView(APIView):
             ).data
 
         }, status=status.HTTP_200_OK)
-
     # =========================================================
     # DELETE
     # =========================================================

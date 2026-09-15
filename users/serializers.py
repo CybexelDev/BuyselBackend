@@ -132,9 +132,17 @@ class PremiumLoginSerializer(serializers.Serializer):
 
         return data
 
+
 class RequestSerializer(serializers.ModelSerializer):
 
+    message = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        allow_null=True
+    )
+
     class Meta:
+
         model = Request
 
         fields = [
@@ -148,36 +156,128 @@ class RequestSerializer(serializers.ModelSerializer):
 
         read_only_fields = ["id", "created_at"]
 
+    def to_internal_value(self, data):
+
+        errors = {}
+
+        # --------------------------------------------------
+        # NAME VALIDATION
+        # --------------------------------------------------
+        name = data.get("name")
+
+        if not name:
+            errors["name"] = "Name is required"
+        elif isinstance(name, str) and len(name.strip()) < 2:
+            errors["name"] = "Name must be at least 2 characters"
+
+        # --------------------------------------------------
+        # EMAIL VALIDATION
+        # --------------------------------------------------
+        email = data.get("email")
+
+        email_regex = r"^[\w.-]+@[\w.-]+\.\w+$"
+
+        if not email or not isinstance(email, str):
+            errors["email"] = "Enter a valid email address"
+        elif not re.match(email_regex, email):
+            errors["email"] = "Enter a valid email address"
+
+        # --------------------------------------------------
+        # PHONE VALIDATION
+        # --------------------------------------------------
+        phone = data.get("phone")
+
+        if not phone or not isinstance(phone, str):
+            errors["phone"] = "Enter a valid 10-digit phone number"
+        elif not re.match(r"^[6-9]\d{9}$", phone):
+            errors["phone"] = "Enter a valid 10-digit phone number"
+
+        # --------------------------------------------------
+        # MESSAGE VALIDATION
+        # --------------------------------------------------
+        if "message" in data:
+
+            message = data.get("message")
+
+            # None is allowed
+            if message is not None and isinstance(message, str):
+
+                # Empty string is allowed
+                if message != "":
+
+                    # Only spaces are NOT allowed
+                    if not message.strip():
+                        errors["message"] = (
+                            "Message cannot contain only spaces"
+                        )
+
+                    # Less than 5 characters
+                    elif len(message.strip()) < 5:
+                        errors["message"] = (
+                            "Message must be at least 5 characters"
+                        )
+
+        # --------------------------------------------------
+        # RETURN ALL ERRORS TOGETHER
+        # --------------------------------------------------
+        if errors:
+            raise serializers.ValidationError(errors)
+
+        # --------------------------------------------------
+        # NORMAL DRF CONVERSION
+        # --------------------------------------------------
+        return super().to_internal_value(data)
+
     def validate(self, data):
 
-        name = data.get("name")
-        email = data.get("email")
-        phone = data.get("phone")
-        message = data.get("message")
-
-        if not name or len(name.strip()) < 2:
-            raise serializers.ValidationError({
-                "name": "Name must be at least 2 characters"
-            })
-
-        email_regex = r"^[\w\.-]+@[\w\.-]+\.\w+$"
-
-        if not email or not re.match(email_regex, email):
-            raise serializers.ValidationError({
-                "email": "Enter a valid email address"
-            })
-
-        if not phone or not re.match(r"^[6-9]\d{9}$", phone):
-            raise serializers.ValidationError({
-                "phone": "Enter a valid 10-digit phone number"
-            })
-
-        if message and len(message.strip()) < 5:
-            raise serializers.ValidationError({
-                "message": "Message must be at least 5 characters"
-            })
-
         return data
+
+# class RequestSerializer(serializers.ModelSerializer):
+
+#     class Meta:
+#         model = Request
+
+#         fields = [
+#             "id",
+#             "name",
+#             "email",
+#             "phone",
+#             "message",
+#             "created_at"
+#         ]
+
+#         read_only_fields = ["id", "created_at"]
+
+#     def validate(self, data):
+
+#         name = data.get("name")
+#         email = data.get("email")
+#         phone = data.get("phone")
+#         message = data.get("message")
+
+#         if not name or len(name.strip()) < 2:
+#             raise serializers.ValidationError({
+#                 "name": "Name must be at least 2 characters"
+#             })
+
+#         email_regex = r"^[\w\.-]+@[\w\.-]+\.\w+$"
+
+#         if not email or not re.match(email_regex, email):
+#             raise serializers.ValidationError({
+#                 "email": "Enter a valid email address"
+#             })
+
+#         if not phone or not re.match(r"^[6-9]\d{9}$", phone):
+#             raise serializers.ValidationError({
+#                 "phone": "Enter a valid 10-digit phone number"
+#             })
+
+#         if message and len(message.strip()) < 5:
+#             raise serializers.ValidationError({
+#                 "message": "Message must be at least 5 characters"
+#             })
+
+#         return data
 
 class BudgetSerializer(serializers.ModelSerializer):
 
@@ -268,9 +368,83 @@ class AgentFormSerializer(serializers.ModelSerializer):
 
 
 
+# class RegisterSerializer(serializers.ModelSerializer):
+
+#     confirm_password = serializers.CharField(write_only=True)
+
+#     class Meta:
+#         model = UserCreate
+#         fields = [
+#             "name",
+#             "email",
+#             "mobile",
+#             "password",
+#             "confirm_password"
+#         ]
+
+#         extra_kwargs = {
+#             "password": {"write_only": True}
+#         }
+
+#     def validate(self, attrs):
+
+#         password = attrs.get("password")
+#         confirm_password = attrs.get("confirm_password")
+#         email = attrs.get("email")
+
+#         # 1. Password match check
+#         if password != confirm_password:
+#             raise serializers.ValidationError({
+#                 "confirm_password": "Passwords do not match"
+#             })
+
+#         # 2. Email uniqueness check (case-insensitive)
+#         if UserCreate.objects.filter(email__iexact=email).exists():
+#             raise serializers.ValidationError({
+#                 "email": "Email already registered"
+#             })
+
+#         # 3. Password strength (optional but good)
+#         if len(password) < 6:
+#             raise serializers.ValidationError({
+#                 "password": "Password must be at least 6 characters long"
+#             })
+
+#         return attrs
+
+#     def create(self, validated_data):
+
+#         validated_data.pop("confirm_password")
+
+#         validated_data["password"] = make_password(
+#             validated_data["password"]
+#         )
+
+#         return UserCreate.objects.create(**validated_data)
+
 class RegisterSerializer(serializers.ModelSerializer):
 
-    confirm_password = serializers.CharField(write_only=True)
+    mobile = serializers.CharField(
+        required=True,
+        allow_blank=False
+    )
+
+    email = serializers.EmailField(
+        required=True,
+        validators=[]
+    )
+
+    password = serializers.CharField(
+        write_only=True,
+        required=True,
+        allow_blank=False
+    )
+
+    confirm_password = serializers.CharField(
+        write_only=True,
+        required=True,
+        allow_blank=False
+    )
 
     class Meta:
         model = UserCreate
@@ -282,29 +456,55 @@ class RegisterSerializer(serializers.ModelSerializer):
             "confirm_password"
         ]
 
-        extra_kwargs = {
-            "password": {"write_only": True}
-        }
-
     def validate(self, attrs):
 
         password = attrs.get("password")
         confirm_password = attrs.get("confirm_password")
         email = attrs.get("email")
 
-        # 1. Password match check
+        # ------------------------------------------
+        # PASSWORD REQUIRED
+        # ------------------------------------------
+
+        if not password:
+            raise serializers.ValidationError({
+                "password": "Password is required"
+            })
+
+        # ------------------------------------------
+        # CONFIRM PASSWORD REQUIRED
+        # ------------------------------------------
+
+        if not confirm_password:
+            raise serializers.ValidationError({
+                "confirm_password": "Confirm password is required"
+            })
+
+        # ------------------------------------------
+        # PASSWORD MATCH
+        # ------------------------------------------
+
         if password != confirm_password:
             raise serializers.ValidationError({
                 "confirm_password": "Passwords do not match"
             })
 
-        # 2. Email uniqueness check (case-insensitive)
-        if UserCreate.objects.filter(email__iexact=email).exists():
+        # ------------------------------------------
+        # EMAIL UNIQUENESS
+        # ------------------------------------------
+
+        if UserCreate.objects.filter(
+            email__iexact=email
+        ).exists():
+
             raise serializers.ValidationError({
                 "email": "Email already registered"
             })
 
-        # 3. Password strength (optional but good)
+        # ------------------------------------------
+        # PASSWORD LENGTH
+        # ------------------------------------------
+
         if len(password) < 6:
             raise serializers.ValidationError({
                 "password": "Password must be at least 6 characters long"
@@ -320,7 +520,9 @@ class RegisterSerializer(serializers.ModelSerializer):
             validated_data["password"]
         )
 
-        return UserCreate.objects.create(**validated_data)
+        return UserCreate.objects.create(
+            **validated_data
+        )
 
 
 class VerifyOTPSerializer(serializers.Serializer):
@@ -331,9 +533,27 @@ class VerifyOTPSerializer(serializers.Serializer):
             raise serializers.ValidationError("OTP must contain only numbers.")
         return value
 
+# class ForgotPasswordSerializer(serializers.Serializer):
+
+#     email = serializers.EmailField()
+
 class ForgotPasswordSerializer(serializers.Serializer):
 
-    email = serializers.EmailField()
+    email = serializers.EmailField(
+        required=True,
+        allow_blank=False
+    )
+
+    def validate_email(self, value):
+
+        value = value.strip().lower()
+
+        if not value:
+            raise serializers.ValidationError(
+                "Email is required."
+            )
+
+        return value
 
 
 class VerifyForgotOTPSerializer(serializers.Serializer):

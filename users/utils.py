@@ -665,9 +665,53 @@ def get_property_remaining_counts(user):
     }
 
 
+# def get_edit_remaining_count(user):
+
+#     profile = user.profile
+
+#     subscriptions = (
+#         UserPlanSubscription.objects
+#         .filter(
+#             user=user,
+#             is_active=True,
+#             expiry_date__gt=timezone.now()
+#         )
+#         .select_related("plan")
+#     )
+
+#     if not subscriptions.exists():
+
+#         return {
+#             "remaining_edit": 0,
+#             "has_unlimited_edit": False
+#         }
+
+#     total_limit = 0
+#     total_used = 0
+
+#     for sub in subscriptions:
+
+#         if sub.is_unlimited_edit:
+
+#             return {
+#                 "remaining_edit": "Unlimited",
+#                 "has_unlimited_edit": True
+#             }
+
+#         total_limit += sub.edit_limit_count or 0
+#         total_used += sub.edit_used
+
+#     return {
+#         "remaining_edit": max(total_limit - total_used, 0),
+#         "has_unlimited_edit": False
+#     }
+
+
 def get_edit_remaining_count(user):
 
-    profile = user.profile
+    # ==========================================
+    # PLAN EDIT COUNT
+    # ==========================================
 
     subscriptions = (
         UserPlanSubscription.objects
@@ -679,29 +723,77 @@ def get_edit_remaining_count(user):
         .select_related("plan")
     )
 
-    if not subscriptions.exists():
-
-        return {
-            "remaining_edit": 0,
-            "has_unlimited_edit": False
-        }
-
     total_limit = 0
     total_used = 0
+    has_unlimited_edit = False
 
     for sub in subscriptions:
 
         if sub.is_unlimited_edit:
-
-            return {
-                "remaining_edit": "Unlimited",
-                "has_unlimited_edit": True
-            }
+            has_unlimited_edit = True
+            break
 
         total_limit += sub.edit_limit_count or 0
-        total_used += sub.edit_used
+        total_used += sub.edit_used or 0
+
+    # ==========================================
+    # SINGLE PROPERTY EDIT COUNT
+    # ==========================================
+
+    single_property_edit_remaining = 0
+
+    single_properties = (
+        Property.objects
+        .filter(
+            user=user,
+            single_property_package__isnull=False
+        )
+        .only(
+            "single_property_edit_limit",
+            "single_property_edit_used"
+        )
+    )
+
+    for prop in single_properties:
+
+        edit_limit = prop.single_property_edit_limit or 0
+        edit_used = prop.single_property_edit_used or 0
+
+        single_property_edit_remaining += max(
+            edit_limit - edit_used,
+            0
+        )
+
+    # ==========================================
+    # UNLIMITED PLAN
+    # ==========================================
+
+    if has_unlimited_edit:
+
+        return {
+            "remaining_edit": "Unlimited",
+            "has_unlimited_edit": True,
+            "single_property_edit_remaining":
+                single_property_edit_remaining
+        }
+
+    # ==========================================
+    # TOTAL REMAINING EDIT
+    # ==========================================
+
+    plan_edit_remaining = max(
+        total_limit - total_used,
+        0
+    )
+
+    total_remaining_edit = (
+        plan_edit_remaining +
+        single_property_edit_remaining
+    )
 
     return {
-        "remaining_edit": max(total_limit - total_used, 0),
-        "has_unlimited_edit": False
+        "remaining_edit": total_remaining_edit,
+        "has_unlimited_edit": False,
+        "single_property_edit_remaining":
+            single_property_edit_remaining
     }

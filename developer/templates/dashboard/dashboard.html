@@ -13,14 +13,16 @@
 
                 <!-- Brand / page identity -->
                 <div class="flex min-w-0 shrink-0 items-center gap-3 ">
-                    <div class="relative grid h-11 w-11 place-items-center overflow-hidden rounded-[15px] bg-gradient-to-br from-[#96d447] to-[#6aa72a] text-white shadow-[0_10px_24px_rgba(105,167,42,0.24)] sm:h-12 sm:w-12">
+                    <div
+                        class="relative grid h-11 w-11 place-items-center overflow-hidden rounded-[15px] bg-gradient-to-br from-[#96d447] to-[#6aa72a] text-white shadow-[0_10px_24px_rgba(105,167,42,0.24)] sm:h-12 sm:w-12">
                         <i class="fa-solid fa-house-chimney-window text-base sm:text-lg"></i>
                         <span class="absolute -bottom-4 -right-4 h-9 w-9 rounded-full bg-[#f8faf5]/20"></span>
                     </div>
 
                     <div class="min-w-0">
                         <div class="flex items-center gap-2 ">
-                            <h1 class="truncate text-[15px] font-bold tracking-[-0.025em] text-[#24351e] sm:text-[17px]">
+                            <h1
+                                class="truncate text-[15px] font-bold tracking-[-0.025em] text-[#24351e] sm:text-[17px]">
                                 Buysel Admin
                             </h1>
                         </div>
@@ -32,193 +34,183 @@
 
                 <!-- Main navbar search -->
                 <div class="relative order-3 w-full lg:order-none lg:mx-auto lg:max-w-[720px]">
-                    <span class="pointer-events-none absolute inset-y-0 left-0 z-10 flex items-center pl-4 text-slate-400">
+                    <span
+                        class="pointer-events-none absolute inset-y-0 left-0 z-10 flex items-center pl-4 text-slate-400">
                         <i class="fa-solid fa-magnifying-glass text-[13px]"></i>
                     </span>
 
-                    <input
-                        id="livePropertySearch"
-                        type="text"
-                        placeholder="Search properties or agents..."
-                        autocomplete="off"
-                        aria-label="Search properties and agents"
-                        aria-controls="searchDropdown"
+                    <input id="livePropertySearch" type="text" placeholder="Search properties or agents..."
+                        autocomplete="off" aria-label="Search properties and agents" aria-controls="searchDropdown"
                         aria-expanded="false"
-                        class="h-11 w-full rounded-[14px] border border-[#dfe8d7] bg-white/80 py-2.5 pl-11 pr-14 text-[13px] font-medium text-[#46583e] shadow-[0_6px_20px_rgba(48,72,35,0.05)] outline-none transition-all duration-200 placeholder:text-slate-400 hover:border-[#cdddbf] hover:bg-white focus:border-[#8bc83f]/60 focus:bg-white focus:ring-4 focus:ring-[#8bc83f]/10 sm:h-12 sm:text-sm"
-                    >
+                        class="h-11 w-full rounded-[14px] border border-[#dfe8d7] bg-white/80 py-2.5 pl-11 pr-14 text-[13px] font-medium text-[#46583e] shadow-[0_6px_20px_rgba(48,72,35,0.05)] outline-none transition-all duration-200 placeholder:text-slate-400 hover:border-[#cdddbf] hover:bg-white focus:border-[#8bc83f]/60 focus:bg-white focus:ring-4 focus:ring-[#8bc83f]/10 sm:h-12 sm:text-sm">
 
                     <span class="pointer-events-none absolute inset-y-0 right-3 flex items-center">
-                        <span class="grid h-7 min-w-7 place-items-center rounded-lg border border-[#dfe8d7] bg-white px-1.5 text-[10px] font-bold text-slate-400 shadow-sm">/</span>
+                        <span
+                            class="grid h-7 min-w-7 place-items-center rounded-lg border border-[#dfe8d7] bg-white px-1.5 text-[10px] font-bold text-slate-400 shadow-sm">/</span>
                     </span>
 
-                    <div
-                        id="searchDropdown"
-                        role="listbox"
-                        class="buysel-scrollbar absolute left-0 top-[calc(100%+10px)] z-50 hidden max-h-80 w-full overflow-y-auto rounded-2xl border border-slate-200/90 bg-[#f7f9f4] p-1.5 shadow-[0_28px_70px_rgba(15,23,42,0.20)]"
-                    ></div>
+                    <div id="searchDropdown" role="listbox"
+                        class="buysel-scrollbar absolute left-0 top-[calc(100%+10px)] z-50 hidden max-h-80 w-full overflow-y-auto rounded-2xl border border-slate-200/90 bg-[#f7f9f4] p-1.5 shadow-[0_28px_70px_rgba(15,23,42,0.20)]">
+                    </div>
                 </div>
 
                 <!-- Navbar actions -->
                 <div class="ml-auto flex shrink-0 items-center gap-1 sm:gap-1.5">
                     <!-- Notifications -->
-<div class="relative" id="notificationWrapper">
+                    <div class="relative" id="notificationWrapper">
 
-    <button
-        type="button"
-        id="notificationButton"
-        title="Notifications"
-        aria-label="Notifications"
-        aria-expanded="false"
-        class="relative grid h-9 w-9 place-items-center rounded-xl text-slate-500 transition duration-200 hover:bg-[#f2f9e8] hover:text-[#659d28] focus:outline-none focus:ring-4 focus:ring-[#8bc83f]/10 sm:h-10 sm:w-10"
-    >
-        <i class="fa-regular fa-bell text-[14px]"></i>
+                        <button type="button" id="notificationButton" title="Notifications" aria-label="Notifications"
+                            aria-expanded="false"
+                            class="relative grid h-9 w-9 place-items-center rounded-xl text-slate-500 transition duration-200 hover:bg-[#f2f9e8] hover:text-[#659d28] focus:outline-none focus:ring-4 focus:ring-[#8bc83f]/10 sm:h-10 sm:w-10">
+                            <i class="fa-regular fa-bell text-[14px]"></i>
 
-        <!-- Unread badge -->
-        <span
-    id="notificationBadge"
-    class="absolute -right-0.5 -top-0.5 {% if unread_count == 0 %}hidden{% else %}flex{% endif %} min-w-[17px] h-[17px] items-center justify-center rounded-full bg-[#ef4444] px-1 text-[9px] font-bold text-white ring-2 ring-white"
->
-    {{ unread_count }}
-</span>
-    </button>
+                            <!-- Unread badge -->
+                            <span id="notificationBadge"
+                                class="absolute -right-0.5 -top-0.5 {% if unread_count == 0 %}hidden{% else %}flex{% endif %} min-w-[17px] h-[17px] items-center justify-center rounded-full bg-[#ef4444] px-1 text-[9px] font-bold text-white ring-2 ring-white">
+                                {{ unread_count }}
+                            </span>
+                        </button>
 
-    <!-- Notification dropdown -->
-    <div
-        id="notificationDropdown"
-        class="absolute right-0 top-[calc(100%+12px)] z-[100] hidden w-[340px] max-w-[calc(100vw-24px)] overflow-hidden rounded-2xl border border-[#dfe8d7] bg-[#f7f9f4] shadow-[0_24px_60px_rgba(15,23,42,0.18)]"
-    >
+                        <!-- Notification dropdown -->
+                        <div id="notificationDropdown"
+                            class="absolute right-0 top-[calc(100%+12px)] z-[100] hidden w-[340px] max-w-[calc(100vw-24px)] overflow-hidden rounded-2xl border border-[#dfe8d7] bg-[#f7f9f4] shadow-[0_24px_60px_rgba(15,23,42,0.18)]">
 
-        <!-- Header -->
-        <div class="flex items-center justify-between border-b border-[#e3eadf] bg-white/80 px-4 py-3">
-            <div>
-                <p class="text-sm font-bold text-[#26371f]">
-                    Notifications
-                </p>
-                <p class="mt-0.5 text-[10px] text-slate-400">
-                    Recent system activity
-                </p>
-            </div>
+                            <!-- Header -->
+                            <div
+                                class="flex items-center justify-between border-b border-[#e3eadf] bg-white/80 px-4 py-3">
+                                <div>
+                                    <p class="text-sm font-bold text-[#26371f]">
+                                        Notifications
+                                    </p>
+                                    <p class="mt-0.5 text-[10px] text-slate-400">
+                                        Recent system activity
+                                    </p>
+                                </div>
 
-            <button
-                type="button"
-                id="markAllNotificationsRead"
-                class="text-[10px] font-semibold text-[#659d28] transition hover:text-[#355f16]"
-            >
-                Mark all read
-            </button>
-        </div>
+                                <button type="button" id="markAllNotificationsRead"
+                                    class="text-[10px] font-semibold text-[#659d28] transition hover:text-[#355f16]">
+                                    Mark all read
+                                </button>
+                            </div>
 
-        <!-- Notification list -->
-        <div
-            id="notificationList"
-            class="max-h-[360px] overflow-y-auto"
-        >
+                            <!-- Notification list -->
 
-     <div id="notificationList" class="max-h-[360px] overflow-y-auto">
 
-    {% if notifications %}
+                            <div id="notificationList" class="max-h-[360px] overflow-y-auto">
 
-        {% for notification in notifications %}
+                                {% if notifications %}
 
-        <div
-            class="border-b border-[#e3eadf] px-4 py-3 transition hover:bg-white"
-            data-notification-id="{{ notification.id }}"
-        >
+                                {% for notification in notifications %}
 
-            <div class="flex items-start gap-3">
+                                <div class="
+        border-b border-[#e3eadf] px-4 py-3
+        transition duration-200
+        {% if notification.is_read %}
+            bg-[#f7f9f4] hover:bg-white
+        {% else %}
+            bg-[#f0f8e8] border-l-[3px] border-l-[#8bc83f]
+            hover:bg-[#eaf5dc]
+        {% endif %}
+    " data-notification-id="{{ notification.id }}" data-notification-item>
+                                    <div class="flex items-start gap-3">
 
-                <!-- Icon -->
-                <span
-                    class="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-xl
-                    {% if notification.is_read %}
-                        bg-[#eef3ea] text-slate-400
-                    {% else %}
-                        bg-[#eaf5dc] text-[#659d28]
-                    {% endif %}"
-                >
-                    {% if notification.type == "advertisement" %}
-                        <i class="fa-solid fa-bullhorn text-xs"></i>
-                    {% else %}
-                        <i class="fa-solid fa-clapperboard text-xs"></i>
-                    {% endif %}
-                </span>
+                                        <!-- Icon -->
+                                        <span class="
+    mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-xl
+    transition
+    {% if notification.is_read %}
+        bg-[#eef3ea] text-slate-400
+    {% else %}
+        bg-[#dff1c9] text-[#5f9726] ring-1 ring-[#8bc83f]/20
+    {% endif %}
+">
+                                            {% if notification.type == "advertisement" %}
+                                            <i class="fa-solid fa-bullhorn text-xs"></i>
+                                            {% else %}
+                                            <i class="fa-solid fa-clapperboard text-xs"></i>
+                                            {% endif %}
+                                        </span>
 
-                <!-- Content -->
-                <div class="min-w-0 flex-1">
+                                        <!-- Content -->
+                                        <div class="min-w-0 flex-1">
 
-                    <div class="flex items-start justify-between gap-2">
+                                            <div class="flex items-start justify-between gap-2">
 
-                        <p class="text-xs font-bold text-[#26371f]">
-                            {{ notification.title }}
-                        </p>
+                                                <p class="
+        text-[13px] leading-5 text-[#26371f]
+        {% if notification.is_read %}
+            font-semibold
+        {% else %}
+            font-bold
+        {% endif %}
+    ">
+                                                    {{ notification.title }}
+                                                </p>
+                                                {% if not notification.is_read %}
+                                                <button type="button"
+                                                    class="mark-notification-read mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full text-[#659d28] transition hover:bg-[#eaf5dc]"
+                                                    data-notification-id="{{ notification.id }}" title="Mark as read"
+                                                    aria-label="Mark notification as read">
+                                                    <i class="fa-solid fa-check text-[10px]"></i>
+                                                </button>
+                                                {% endif %}
 
-                        {% if not notification.is_read %}
-                            <span
-                                class="mt-1 h-2 w-2 shrink-0 rounded-full bg-[#7bc832]"
-                            ></span>
-                        {% endif %}
+                                            </div>
+                                            <p class="mt-1 text-[11px] leading-4 font-medium text-[#66735f]">
+                                                {{ notification.message }}
+                                            </p>
+                                            <p class="mt-1.5 text-[9px] font-medium text-[#9aa494]">
+                                                {{ notification.created_at|date:"d M Y, h:i A" }}
+                                            </p>
 
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                                {% endfor %}
+
+                                {% else %}
+
+                                <!-- Empty state -->
+                                <div id="notificationEmpty" class="px-5 py-10 text-center">
+                                    <span
+                                        class="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-[#eaf5dc] text-[#659d28]">
+                                        <i class="fa-regular fa-bell-slash"></i>
+                                    </span>
+
+                                    <p class="mt-3 text-sm font-semibold text-[#46583e]">
+                                        No notifications
+                                    </p>
+
+                                    <p class="mt-1 text-xs text-slate-400">
+                                        New activity will appear here.
+                                    </p>
+                                </div>
+
+                                {% endif %}
+
+                            </div>
+
+
+
+                            <!-- Footer -->
+                            <div class="border-t border-[#e3eadf] bg-white/70 px-4 py-2.5 text-center">
+                                <span class="text-[10px] font-medium text-slate-400">
+                                    Buysel Admin Activity
+                                </span>
+                            </div>
+
+                        </div>
                     </div>
 
-                    <p class="mt-1 text-[11px] leading-4 text-slate-500">
-                        {{ notification.message }}
-                    </p>
-
-                    <p class="mt-1.5 text-[9px] text-slate-400">
-                        {{ notification.created_at|date:"d M Y, h:i A" }}
-                    </p>
-
-                </div>
-
-            </div>
-
-        </div>
-
-        {% endfor %}
-
-    {% else %}
-
-        <!-- Empty state -->
-        <div
-            id="notificationEmpty"
-            class="px-5 py-10 text-center"
-        >
-            <span
-                class="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-[#eaf5dc] text-[#659d28]"
-            >
-                <i class="fa-regular fa-bell-slash"></i>
-            </span>
-
-            <p class="mt-3 text-sm font-semibold text-[#46583e]">
-                No notifications
-            </p>
-
-            <p class="mt-1 text-xs text-slate-400">
-                New activity will appear here.
-            </p>
-        </div>
-
-    {% endif %}
-
-</div>
-
-        </div>
-
-        <!-- Footer -->
-        <div class="border-t border-[#e3eadf] bg-white/70 px-4 py-2.5 text-center">
-            <span class="text-[10px] font-medium text-slate-400">
-                Buysel Admin Activity
-            </span>
-        </div>
-
-    </div>
-</div>
-                    
 
 
                     <div class="mx-1 hidden h-7 w-px bg-slate-200 sm:block"></div>
 
-                    <button type="button" title="Admin profile" aria-label="Admin profile" class="grid h-9 w-9 place-items-center rounded-full bg-[#8bc83f] text-[11px] font-semibold text-white shadow-[0_8px_20px_rgba(139,200,63,0.28)] ring-4 ring-[#8bc83f]/10 transition hover:scale-[1.03] sm:h-10 sm:w-10 sm:text-xs">
+                    <button type="button" title="Admin profile" aria-label="Admin profile"
+                        class="grid h-9 w-9 place-items-center rounded-full bg-[#8bc83f] text-[11px] font-semibold text-white shadow-[0_8px_20px_rgba(139,200,63,0.28)] ring-4 ring-[#8bc83f]/10 transition hover:scale-[1.03] sm:h-10 sm:w-10 sm:text-xs">
                         BA
                     </button>
                 </div>
@@ -228,83 +220,76 @@
         <main class="dashboard-main px-4 py-5 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
 
             <!-- Hero overview -->
-            <section class="dashboard-hero buysel-enter relative mb-7 overflow-hidden rounded-[30px] bg-gradient-to-br from-[#659d28] via-[#8bc83f] to-[#b5df7d] px-5 py-6 text-white shadow-[0_24px_60px_rgba(101,157,40,0.28)] sm:px-7 sm:py-7 lg:px-9 lg:py-9">
+            <section
+                class="dashboard-hero buysel-enter relative mb-7 overflow-hidden rounded-[30px] bg-gradient-to-br from-[#659d28] via-[#8bc83f] to-[#b5df7d] px-5 py-6 text-white shadow-[0_24px_60px_rgba(101,157,40,0.28)] sm:px-7 sm:py-7 lg:px-9 lg:py-9">
                 <!-- Decorative green background -->
-                <div class="absolute inset-0 bg-[radial-gradient(circle_at_82%_18%,rgba(255,255,255,0.28),transparent_26%),radial-gradient(circle_at_18%_100%,rgba(255,255,255,0.16),transparent_32%)]"></div>
-                <div class="absolute inset-0 opacity-[0.12] [background-image:linear-gradient(rgba(255,255,255,0.9)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.9)_1px,transparent_1px)] [background-size:36px_36px]"></div>
+                <div
+                    class="absolute inset-0 bg-[radial-gradient(circle_at_82%_18%,rgba(255,255,255,0.28),transparent_26%),radial-gradient(circle_at_18%_100%,rgba(255,255,255,0.16),transparent_32%)]">
+                </div>
+                <div
+                    class="absolute inset-0 opacity-[0.12] [background-image:linear-gradient(rgba(255,255,255,0.9)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.9)_1px,transparent_1px)] [background-size:36px_36px]">
+                </div>
                 <div class="absolute -right-20 -top-24 h-72 w-72 rounded-full border-[44px] border-white/10"></div>
                 <div class="absolute -bottom-28 left-[38%] h-56 w-56 rounded-full bg-[#f8faf5]/10 blur-2xl"></div>
                 <div class="absolute bottom-0 right-0 h-24 w-2/5 rounded-tl-[90px] bg-[#f8faf5]/[0.07]"></div>
 
                 <div class="relative z-10 grid gap-8 xl:grid-cols-[1fr_420px] xl:items-center">
                     <div>
-                        <div class="mb-4 inline-flex items-center gap-2 rounded-full border border-white/25 bg-[#f8faf5]/15 px-3.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-white backdrop-blur-md">
+                        <div
+                            class="mb-4 inline-flex items-center gap-2 rounded-full border border-white/25 bg-[#f8faf5]/15 px-3.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-white backdrop-blur-md">
                             <span class="h-1.5 w-1.5 rounded-full bg-white"></span>
                             Dashboard overview
                         </div>
-<h2
-    id="animatedHeading"
-    aria-label="Your complete property network, beautifully organised."
-    class="relative max-w-3xl text-2xl font-bold leading-[1.12]
-           tracking-[-0.045em] sm:text-3xl lg:text-[42px]"
->
-    <!-- Animation സമയത്ത് layout move ആകാതിരിക്കാൻ -->
-    <span class="invisible select-none" aria-hidden="true">
-        Your complete property network, beautifully organised.
-    </span>
+                        <h2 id="animatedHeading" aria-label="Your complete property network, beautifully organised."
+                            class="relative max-w-3xl text-2xl font-bold leading-[1.12]
+           tracking-[-0.045em] sm:text-3xl lg:text-[42px]">
+                            <!-- Animation സമയത്ത് layout move ആകാതിരിക്കാൻ -->
+                            <span class="invisible select-none" aria-hidden="true">
+                                Your complete property network, beautifully organised.
+                            </span>
 
-    <!-- Typewriter text -->
-    <span class="absolute inset-0" aria-hidden="true">
-        <span id="normalHeadingText"></span>
+                            <!-- Typewriter text -->
+                            <span class="absolute inset-0" aria-hidden="true">
+                                <span id="normalHeadingText"></span>
 
-        <span
-            id="highlightHeading"
-            class="relative inline-block text-white"
-        >
-            <span id="highlightHeadingText"></span>
+                                <span id="highlightHeading" class="relative inline-block text-white">
+                                    <span id="highlightHeadingText"></span>
 
-            <span
-                id="headingUnderline"
-                class="absolute -bottom-1 left-0 h-1 w-full origin-left
+                                    <span id="headingUnderline" class="absolute -bottom-1 left-0 h-1 w-full origin-left
                        scale-x-0 rounded-full bg-white/35
-                       transition-transform duration-500"
-            ></span>
-        </span>
+                       transition-transform duration-500"></span>
+                                </span>
 
-        <span
-            id="typingCursor"
-            class="typing-cursor ml-1 inline-block h-[0.9em] w-[3px]
-                   bg-[#f7f9f4] align-middle"
-        ></span>
-    </span>
-</h2>
+                                <span id="typingCursor" class="typing-cursor ml-1 inline-block h-[0.9em] w-[3px]
+                   bg-[#f7f9f4] align-middle"></span>
+                            </span>
+                        </h2>
 
-                        <p class="ui-subtitle mt-4 max-w-2xl text-sm font-normal leading-6 text-white/80 sm:text-[15px]">
-                            Track properties, review purpose-wise activity and monitor every agent registration from one clean and professional workspace.
+                        <p
+                            class="ui-subtitle mt-4 max-w-2xl text-sm font-normal leading-6 text-white/80 sm:text-[15px]">
+                            Track properties, review purpose-wise activity and monitor every agent registration from one
+                            clean and professional workspace.
                         </p>
 
                         <div class="mt-6 flex flex-wrap gap-3">
-                            <a
-                                href="{% url 'add_property' %}"
-                                class="ui-button inline-flex items-center gap-2 rounded-xl bg-[#f7f9f4] px-4 py-3 text-xs font-semibold text-[#659d28] shadow-[0_12px_28px_rgba(76,120,30,0.22)] transition duration-200 hover:-translate-y-0.5 hover:bg-[#f7fced]"
-                            >
+                            <a href="{% url 'add_property' %}"
+                                class="ui-button inline-flex items-center gap-2 rounded-xl bg-[#f7f9f4] px-4 py-3 text-xs font-semibold text-[#659d28] shadow-[0_12px_28px_rgba(76,120,30,0.22)] transition duration-200 hover:-translate-y-0.5 hover:bg-[#f7fced]">
                                 <span class="grid h-6 w-6 place-items-center rounded-lg bg-[#f2f9e8]">
                                     <i class="fa-solid fa-plus text-[10px]"></i>
                                 </span>
                                 Manage Properties
                             </a>
 
-                            <a
-                                href="{% url 'admin_agents' %}"
-                                class="ui-button inline-flex items-center gap-2 rounded-xl border border-white/30 bg-[#f8faf5]/15 px-4 py-3 text-xs font-semibold text-white backdrop-blur-md transition duration-200 hover:-translate-y-0.5 hover:bg-[#f8faf5]/25"
-                            >
+                            <a href="{% url 'admin_agents' %}"
+                                class="ui-button inline-flex items-center gap-2 rounded-xl border border-white/30 bg-[#f8faf5]/15 px-4 py-3 text-xs font-semibold text-white backdrop-blur-md transition duration-200 hover:-translate-y-0.5 hover:bg-[#f8faf5]/25">
                                 <i class="fa-solid fa-user-tie"></i>
                                 View Agents
                                 <i class="fa-solid fa-arrow-right text-[10px] text-white/70"></i>
                             </a>
                         </div>
 
-                        <div class="mt-7 flex flex-wrap items-center gap-x-6 gap-y-3 text-[11px] font-bold text-white/75">
+                        <div
+                            class="mt-7 flex flex-wrap items-center gap-x-6 gap-y-3 text-[11px] font-bold text-white/75">
                             <span class="inline-flex items-center gap-2">
                                 <i class="fa-solid fa-circle-check text-white"></i>
                                 Property overview
@@ -324,14 +309,16 @@
                     <div class="relative mx-auto w-full max-w-[430px]">
                         <div class="absolute -inset-3 rounded-[30px] bg-[#f8faf5]/10 blur-xl"></div>
 
-                        <div class="relative overflow-hidden rounded-[26px] border border-white/25 bg-[#f8faf5]/15 p-4 shadow-[0_24px_55px_rgba(72,112,30,0.20)] backdrop-blur-xl sm:p-5">
+                        <div
+                            class="relative overflow-hidden rounded-[26px] border border-white/25 bg-[#f8faf5]/15 p-4 shadow-[0_24px_55px_rgba(72,112,30,0.20)] backdrop-blur-xl sm:p-5">
                             <div class="mb-4 flex items-center justify-between">
                                 <div class="flex items-center gap-2">
                                     <span class="h-2.5 w-2.5 rounded-full bg-[#f8faf5]/90"></span>
                                     <span class="h-2.5 w-2.5 rounded-full bg-white/55"></span>
                                     <span class="h-2.5 w-2.5 rounded-full bg-white/30"></span>
                                 </div>
-                                <span class="rounded-full border border-white/20 bg-[#f8faf5]/15 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.12em] text-white/85">
+                                <span
+                                    class="rounded-full border border-white/20 bg-[#f8faf5]/15 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.12em] text-white/85">
                                     Dashboard view
                                 </span>
                             </div>
@@ -339,12 +326,14 @@
                             <div class="grid grid-cols-2 gap-3">
                                 <div class="rounded-2xl border border-white/20 bg-[#f8faf5]/15 p-4">
                                     <div class="flex items-start justify-between gap-3">
-                                        <span class="grid h-9 w-9 place-items-center rounded-xl bg-[#f7f9f4] text-[#659d28] shadow-sm">
+                                        <span
+                                            class="grid h-9 w-9 place-items-center rounded-xl bg-[#f7f9f4] text-[#659d28] shadow-sm">
                                             <i class="fa-solid fa-building text-sm"></i>
-                                    </span>
+                                        </span>
                                         <i class="fa-solid fa-arrow-trend-up text-xs text-white/70"></i>
                                     </div>
-                                    <p class="mt-5 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/65">Properties</p>
+                                    <p class="mt-5 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/65">
+                                        Properties</p>
                                     <p class="ui-stat-value mt-1 text-3xl text-white">{{ total_all|default:"0" }}</p>
                                     <div class="mt-3 h-1.5 overflow-hidden rounded-full bg-[#f8faf5]/15">
                                         <div class="h-full w-4/5 rounded-full bg-white"></div>
@@ -353,12 +342,15 @@
 
                                 <div class="rounded-2xl border border-white/20 bg-[#f8faf5]/15 p-4">
                                     <div class="flex items-start justify-between gap-3">
-                                        <span class="grid h-9 w-9 place-items-center rounded-xl bg-[#f8faf5]/90 text-[#659d28] shadow-sm">
+                                        <span
+                                            class="grid h-9 w-9 place-items-center rounded-xl bg-[#f8faf5]/90 text-[#659d28] shadow-sm">
                                             <i class="fa-solid fa-user-tie text-sm"></i>
-                                    </span>
-                                        <span class="h-2 w-2 rounded-full bg-white shadow-[0_0_0_5px_rgba(255,255,255,0.12)]"></span>
+                                        </span>
+                                        <span
+                                            class="h-2 w-2 rounded-full bg-white shadow-[0_0_0_5px_rgba(255,255,255,0.12)]"></span>
                                     </div>
-                                    <p class="mt-5 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/65">Agents</p>
+                                    <p class="mt-5 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/65">
+                                        Agents</p>
                                     <p class="ui-stat-value mt-1 text-3xl text-white">{{ premium_report|length }}</p>
                                     <div class="mt-3 h-1.5 overflow-hidden rounded-full bg-[#f8faf5]/15">
                                         <div class="h-full w-3/5 rounded-full bg-[#f8faf5]/85"></div>
@@ -369,7 +361,8 @@
                             <div class="mt-3 rounded-2xl border border-white/20 bg-[#f8faf5]/10 p-4">
                                 <div class="flex items-center justify-between gap-3">
                                     <div>
-                                        <p class="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/60">Portfolio activity</p>
+                                        <p class="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/60">
+                                            Portfolio activity</p>
                                         <p class="mt-1 text-sm font-semibold text-white">Purpose-wise overview</p>
                                     </div>
                                     <span class="grid h-9 w-9 place-items-center rounded-xl bg-[#f8faf5]/15 text-white">
@@ -392,89 +385,114 @@
             </section>
 
             <!-- Quick actions -->
-            <section class="dashboard-quick-actions buysel-enter buysel-enter-delay-1 mb-8 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                <a href="{% url 'add_property' %}" class="group flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-[#f7f9f4] p-4 shadow-[0_10px_30px_rgba(15,23,42,0.04)] transition duration-300 hover:-translate-y-1 hover:border-[#8bc83f]/40 hover:shadow-[0_18px_38px_rgba(15,23,42,0.08)]">
-                    <span class="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#8bc83f] text-white shadow-[0_9px_20px_rgba(139,200,63,0.24)]">
+            <section
+                class="dashboard-quick-actions buysel-enter buysel-enter-delay-1 mb-8 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                <a href="{% url 'add_property' %}"
+                    class="group flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-[#f7f9f4] p-4 shadow-[0_10px_30px_rgba(15,23,42,0.04)] transition duration-300 hover:-translate-y-1 hover:border-[#8bc83f]/40 hover:shadow-[0_18px_38px_rgba(15,23,42,0.08)]">
+                    <span
+                        class="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#8bc83f] text-white shadow-[0_9px_20px_rgba(139,200,63,0.24)]">
                         <i class="fa-solid fa-house-circle-check"></i>
                     </span>
                     <div class="min-w-0">
                         <p class="ui-card-title text-sm text-[#31432a]">Properties</p>
                         <p class="mt-0.5 truncate text-xs font-normal text-slate-400">Manage active listings</p>
                     </div>
-                    <i class="fa-solid fa-arrow-right ml-auto text-xs text-slate-300 transition group-hover:translate-x-1 group-hover:text-[#659d28]"></i>
+                    <i
+                        class="fa-solid fa-arrow-right ml-auto text-xs text-slate-300 transition group-hover:translate-x-1 group-hover:text-[#659d28]"></i>
                 </a>
 
-                <a href="{% url 'admin_agents' %}" class="group flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-[#f7f9f4] p-4 shadow-[0_10px_30px_rgba(15,23,42,0.04)] transition duration-300 hover:-translate-y-1 hover:border-[#8bc83f]/40 hover:shadow-[0_18px_38px_rgba(15,23,42,0.08)]">
-                    <span class="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#f2f9e8] text-[#659d28] ring-1 ring-[#8bc83f]/15">
+                <a href="{% url 'admin_agents' %}"
+                    class="group flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-[#f7f9f4] p-4 shadow-[0_10px_30px_rgba(15,23,42,0.04)] transition duration-300 hover:-translate-y-1 hover:border-[#8bc83f]/40 hover:shadow-[0_18px_38px_rgba(15,23,42,0.08)]">
+                    <span
+                        class="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#f2f9e8] text-[#659d28] ring-1 ring-[#8bc83f]/15">
                         <i class="fa-solid fa-users-gear"></i>
                     </span>
                     <div class="min-w-0">
                         <p class="ui-card-title text-sm text-[#31432a]">Agents</p>
                         <p class="mt-0.5 truncate text-xs font-normal text-slate-400">Review registrations</p>
                     </div>
-                    <i class="fa-solid fa-arrow-right ml-auto text-xs text-slate-300 transition group-hover:translate-x-1 group-hover:text-[#659d28]"></i>
+                    <i
+                        class="fa-solid fa-arrow-right ml-auto text-xs text-slate-300 transition group-hover:translate-x-1 group-hover:text-[#659d28]"></i>
                 </a>
 
-                <a href="{% url 'categories' %}" class="group flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-[#f7f9f4] p-4 shadow-[0_10px_30px_rgba(15,23,42,0.04)] transition duration-300 hover:-translate-y-1 hover:border-[#8bc83f]/40 hover:shadow-[0_18px_38px_rgba(15,23,42,0.08)]">
-                    <span class="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#f2f9e8] text-[#659d28] ring-1 ring-[#8bc83f]/15">
+                <a href="{% url 'categories' %}"
+                    class="group flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-[#f7f9f4] p-4 shadow-[0_10px_30px_rgba(15,23,42,0.04)] transition duration-300 hover:-translate-y-1 hover:border-[#8bc83f]/40 hover:shadow-[0_18px_38px_rgba(15,23,42,0.08)]">
+                    <span
+                        class="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#f2f9e8] text-[#659d28] ring-1 ring-[#8bc83f]/15">
                         <i class="fa-solid fa-layer-group"></i>
                     </span>
                     <div class="min-w-0">
                         <p class="ui-card-title text-sm text-[#31432a]">Categories</p>
                         <p class="mt-0.5 truncate text-xs font-normal text-slate-400">Organise property types</p>
                     </div>
-                    <i class="fa-solid fa-arrow-right ml-auto text-xs text-slate-300 transition group-hover:translate-x-1 group-hover:text-[#659d28]"></i>
+                    <i
+                        class="fa-solid fa-arrow-right ml-auto text-xs text-slate-300 transition group-hover:translate-x-1 group-hover:text-[#659d28]"></i>
                 </a>
 
-                <a href="{% url 'package_dashboard' %}" class="group flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-[#f7f9f4] p-4 shadow-[0_10px_30px_rgba(15,23,42,0.04)] transition duration-300 hover:-translate-y-1 hover:border-[#8bc83f]/40 hover:shadow-[0_18px_38px_rgba(15,23,42,0.08)]">
-                    <span class="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#eef7e2] text-[#659d28] ring-1 ring-[#8bc83f]/15">
+                <a href="{% url 'package_dashboard' %}"
+                    class="group flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-[#f7f9f4] p-4 shadow-[0_10px_30px_rgba(15,23,42,0.04)] transition duration-300 hover:-translate-y-1 hover:border-[#8bc83f]/40 hover:shadow-[0_18px_38px_rgba(15,23,42,0.08)]">
+                    <span
+                        class="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#eef7e2] text-[#659d28] ring-1 ring-[#8bc83f]/15">
                         <i class="fa-solid fa-gem"></i>
                     </span>
                     <div class="min-w-0">
                         <p class="ui-card-title text-sm text-[#31432a]">Plans</p>
                         <p class="mt-0.5 truncate text-xs font-normal text-slate-400">Promotional packages</p>
                     </div>
-                    <i class="fa-solid fa-arrow-right ml-auto text-xs text-slate-300 transition group-hover:translate-x-1 group-hover:text-[#659d28]"></i>
+                    <i
+                        class="fa-solid fa-arrow-right ml-auto text-xs text-slate-300 transition group-hover:translate-x-1 group-hover:text-[#659d28]"></i>
                 </a>
             </section>
 
             <!-- Property statistics heading -->
-            <div class="buysel-enter buysel-enter-delay-2 mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div
+                class="buysel-enter buysel-enter-delay-2 mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                     <div class="flex items-center gap-2">
                         <span class="h-2 w-2 rounded-full bg-[#8bc83f]"></span>
-                        <p class="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#659d28]">Portfolio overview</p>
+                        <p class="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#659d28]">Portfolio
+                            overview</p>
                     </div>
-                    <h3 class="mt-1.5 text-xl font-bold tracking-[-0.035em] text-[#24351e] sm:text-2xl">Property Statistics</h3>
-                    <p class="ui-subtitle mt-1 text-sm text-slate-500">A clean purpose-wise summary of your active property records.</p>
+                    <h3 class="mt-1.5 text-xl font-bold tracking-[-0.035em] text-[#24351e] sm:text-2xl">Property
+                        Statistics</h3>
+                    <p class="ui-subtitle mt-1 text-sm text-slate-500">A clean purpose-wise summary of your active
+                        property records.</p>
                 </div>
 
-                <div class="inline-flex w-fit items-center gap-2 rounded-xl border border-slate-200 bg-[#f7f9f4] px-3 py-2 text-[11px] font-bold text-slate-500 shadow-sm">
+                <div
+                    class="inline-flex w-fit items-center gap-2 rounded-xl border border-slate-200 bg-[#f7f9f4] px-3 py-2 text-[11px] font-bold text-slate-500 shadow-sm">
                     <i class="fa-regular fa-folder-open text-[#659d28]"></i>
                     {{ active_by_purpose|length }} purpose categor{{ active_by_purpose|length|pluralize:"y,ies" }}
                 </div>
             </div>
 
             <!-- Statistics cards -->
-            <section class="dashboard-stats-grid buysel-enter buysel-enter-delay-2 mb-9 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                <article class="group relative min-h-[178px] overflow-hidden rounded-[24px] bg-[#8bc83f] p-5 text-white shadow-[0_18px_40px_rgba(139,200,63,0.26)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_25px_52px_rgba(139,200,63,0.32)]">
-                    <div class="absolute -bottom-14 -right-12 h-40 w-40 rounded-full bg-[#f8faf5]/10 transition duration-500 group-hover:scale-125"></div>
+            <section
+                class="dashboard-stats-grid buysel-enter buysel-enter-delay-2 mb-9 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                <article
+                    class="group relative min-h-[178px] overflow-hidden rounded-[24px] bg-[#8bc83f] p-5 text-white shadow-[0_18px_40px_rgba(139,200,63,0.26)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_25px_52px_rgba(139,200,63,0.32)]">
+                    <div
+                        class="absolute -bottom-14 -right-12 h-40 w-40 rounded-full bg-[#f8faf5]/10 transition duration-500 group-hover:scale-125">
+                    </div>
                     <div class="absolute -right-4 -top-8 h-28 w-28 rounded-full border-[18px] border-white/10"></div>
 
                     <div class="relative z-10 flex h-full flex-col justify-between">
                         <div class="flex items-start justify-between gap-4">
                             <div>
-                                <p class="text-[10px] font-semibold uppercase tracking-[0.15em] text-white/70">All properties</p>
+                                <p class="text-[10px] font-semibold uppercase tracking-[0.15em] text-white/70">All
+                                    properties</p>
                                 <p class="ui-stat-value mt-3 text-[42px] leading-none">{{ total_all|default:"0" }}</p>
                             </div>
-                            <span class="grid h-11 w-11 place-items-center rounded-2xl bg-[#f8faf5]/15 text-lg backdrop-blur-sm ring-1 ring-white/10">
+                            <span
+                                class="grid h-11 w-11 place-items-center rounded-2xl bg-[#f8faf5]/15 text-lg backdrop-blur-sm ring-1 ring-white/10">
                                 <i class="fa-solid fa-building"></i>
                             </span>
                         </div>
 
                         <div class="mt-8 flex items-center justify-between gap-3">
                             <p class="text-xs font-semibold text-white/75">Complete property inventory</p>
-                            <span class="grid h-8 w-8 place-items-center rounded-full bg-white text-[#659d28] shadow-sm">
+                            <span
+                                class="grid h-8 w-8 place-items-center rounded-full bg-white text-[#659d28] shadow-sm">
                                 <i class="fa-solid fa-arrow-trend-up text-xs"></i>
                             </span>
                         </div>
@@ -482,9 +500,14 @@
                 </article>
 
                 {% for item in active_by_purpose %}
-                <article class="group relative min-h-[178px] overflow-hidden rounded-[24px] border border-slate-200/80 bg-[#f7f9f4] p-5 shadow-[0_12px_32px_rgba(15,23,42,0.055)] transition duration-300 hover:-translate-y-1 hover:border-[#8bc83f]/45 hover:shadow-[0_22px_46px_rgba(15,23,42,0.095)]">
-                    <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#8bc83f] via-[#a8d968] to-[#d6efb8]"></div>
-                    <div class="absolute -bottom-14 -right-12 h-40 w-40 rounded-full bg-[#8bc83f]/[0.065] transition duration-500 group-hover:scale-125"></div>
+                <article
+                    class="group relative min-h-[178px] overflow-hidden rounded-[24px] border border-slate-200/80 bg-[#f7f9f4] p-5 shadow-[0_12px_32px_rgba(15,23,42,0.055)] transition duration-300 hover:-translate-y-1 hover:border-[#8bc83f]/45 hover:shadow-[0_22px_46px_rgba(15,23,42,0.095)]">
+                    <div
+                        class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#8bc83f] via-[#a8d968] to-[#d6efb8]">
+                    </div>
+                    <div
+                        class="absolute -bottom-14 -right-12 h-40 w-40 rounded-full bg-[#8bc83f]/[0.065] transition duration-500 group-hover:scale-125">
+                    </div>
 
                     <div class="relative z-10 flex h-full flex-col justify-between">
                         <div class="flex items-start justify-between gap-4">
@@ -493,22 +516,24 @@
                                 <p class="ui-stat-value mt-3 text-[42px] leading-none text-[#24351e]">{{ item.total|default:"0" }}</p>
                             </div>
 
-                            <span class="grid h-11 w-11 place-items-center rounded-2xl bg-[#f2f9e8] text-[#659d28] shadow-sm ring-1 ring-[#8bc83f]/15">
+                            <span
+                                class="grid h-11 w-11 place-items-center rounded-2xl bg-[#f2f9e8] text-[#659d28] shadow-sm ring-1 ring-[#8bc83f]/15">
                                 {% if item.purpose__name|lower == 'rent' %}
-                                    <i class="fa-solid fa-key"></i>
+                                <i class="fa-solid fa-key"></i>
                                 {% elif item.purpose__name|lower == 'sale' or item.purpose__name|lower == 'sell' %}
-                                    <i class="fa-solid fa-tag"></i>
+                                <i class="fa-solid fa-tag"></i>
                                 {% elif item.purpose__name|lower == 'lease' %}
-                                    <i class="fa-solid fa-file-signature"></i>
+                                <i class="fa-solid fa-file-signature"></i>
                                 {% else %}
-                                    <i class="fa-solid fa-folder-open"></i>
+                                <i class="fa-solid fa-folder-open"></i>
                                 {% endif %}
                             </span>
                         </div>
 
                         <div class="mt-8 flex items-center justify-between gap-3">
                             <p class="text-xs font-semibold text-slate-400">Active property records</p>
-                            <span class="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#659d28]">
+                            <span
+                                class="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#659d28]">
                                 Active
                                 <span class="h-1.5 w-1.5 rounded-full bg-[#8bc83f]"></span>
                             </span>
@@ -516,48 +541,48 @@
                     </div>
                 </article>
                 {% empty %}
-                <article class="flex min-h-[178px] items-center justify-center rounded-[24px] border border-dashed border-slate-300 bg-[#eef3e9] p-6 text-center sm:col-span-2 xl:col-span-3">
+                <article
+                    class="flex min-h-[178px] items-center justify-center rounded-[24px] border border-dashed border-slate-300 bg-[#eef3e9] p-6 text-center sm:col-span-2 xl:col-span-3">
                     <div>
-                        <span class="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-[#f7f9f4] text-slate-400 shadow-sm ring-1 ring-slate-200">
+                        <span
+                            class="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-[#f7f9f4] text-slate-400 shadow-sm ring-1 ring-slate-200">
                             <i class="fa-regular fa-folder-open"></i>
                         </span>
                         <p class="mt-3 text-sm font-semibold text-[#46583e]">No purpose statistics available</p>
-                        <p class="mt-1 text-xs font-normal text-slate-400">Purpose-wise property records will appear here.</p>
+                        <p class="mt-1 text-xs font-normal text-slate-400">Purpose-wise property records will appear
+                            here.</p>
                     </div>
                 </article>
                 {% endfor %}
             </section>
 
             <!-- Agent directory heading -->
-            <div class="buysel-enter buysel-enter-delay-3 mb-4 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+            <div
+                class="buysel-enter buysel-enter-delay-3 mb-4 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
                 <div>
                     <div class="flex items-center gap-2">
                         <span class="h-2 w-2 rounded-full bg-[#8bc83f]"></span>
-                        <p class="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#659d28]">Agent directory</p>
+                        <p class="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#659d28]">Agent directory
+                        </p>
                     </div>
-                    <h3 class="mt-1.5 text-xl font-bold tracking-[-0.035em] text-[#24351e] sm:text-2xl">Agent Registration Summary</h3>
-                    <p class="ui-subtitle mt-1 text-sm text-slate-500">Search, sort and review every available registration record.</p>
+                    <h3 class="mt-1.5 text-xl font-bold tracking-[-0.035em] text-[#24351e] sm:text-2xl">Agent
+                        Registration Summary</h3>
+                    <p class="ui-subtitle mt-1 text-sm text-slate-500">Search, sort and review every available
+                        registration record.</p>
                 </div>
 
                 <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
                     <label class="relative block w-full sm:w-64">
-                        <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
+                        <span
+                            class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
                             <i class="fa-solid fa-magnifying-glass text-xs"></i>
                         </span>
-                        <input
-                            id="agentTableSearch"
-                            type="search"
-                            placeholder="Filter agents..."
-                            class="h-10 w-full rounded-xl border border-slate-200 bg-[#f7f9f4] pl-9 pr-3 text-xs font-semibold text-[#46583e] outline-none transition placeholder:font-medium placeholder:text-slate-400 focus:border-[#8bc83f]/50 focus:ring-4 focus:ring-[#8bc83f]/10"
-                        >
+                        <input id="agentTableSearch" type="search" placeholder="Filter agents..."
+                            class="h-10 w-full rounded-xl border border-slate-200 bg-[#f7f9f4] pl-9 pr-3 text-xs font-semibold text-[#46583e] outline-none transition placeholder:font-medium placeholder:text-slate-400 focus:border-[#8bc83f]/50 focus:ring-4 focus:ring-[#8bc83f]/10">
                     </label>
 
-                    <button
-                        id="sortAgentRows"
-                        type="button"
-                        data-direction="desc"
-                        class="ui-button inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-[#f7f9f4] px-3.5 text-xs font-semibold text-slate-600 shadow-sm transition hover:border-[#8bc83f]/40 hover:bg-[#f2f9e8] hover:text-[#659d28]"
-                    >
+                    <button id="sortAgentRows" type="button" data-direction="desc"
+                        class="ui-button inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-[#f7f9f4] px-3.5 text-xs font-semibold text-slate-600 shadow-sm transition hover:border-[#8bc83f]/40 hover:bg-[#f2f9e8] hover:text-[#659d28]">
                         <i class="fa-solid fa-arrow-down-wide-short"></i>
                         Sort total
                     </button>
@@ -565,21 +590,26 @@
             </div>
 
             <!-- Agent table -->
-            <section class="dashboard-agent-card buysel-enter buysel-enter-delay-3 overflow-hidden rounded-[24px] border border-slate-200/80 bg-[#f7f9f4] shadow-[0_18px_45px_rgba(15,23,42,0.065)]">
-                <div class="flex flex-col gap-4 border-b border-slate-200/80 bg-[#edf3e8]/85 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+            <section
+                class="dashboard-agent-card buysel-enter buysel-enter-delay-3 overflow-hidden rounded-[24px] border border-slate-200/80 bg-[#f7f9f4] shadow-[0_18px_45px_rgba(15,23,42,0.065)]">
+                <div
+                    class="flex flex-col gap-4 border-b border-slate-200/80 bg-[#edf3e8]/85 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
                     <div class="flex items-center gap-3">
-                        <span class="grid h-11 w-11 place-items-center rounded-2xl bg-[#8bc83f] text-white shadow-[0_9px_20px_rgba(139,200,63,0.24)]">
+                        <span
+                            class="grid h-11 w-11 place-items-center rounded-2xl bg-[#8bc83f] text-white shadow-[0_9px_20px_rgba(139,200,63,0.24)]">
                             <i class="fa-solid fa-users"></i>
                         </span>
                         <div>
                             <p class="text-sm font-semibold text-[#24351e]">Registered Agents</p>
                             <p class="mt-0.5 text-xs font-normal text-slate-400">
-                                <span id="visibleAgentCount">{{ premium_report|length }}</span> visible record{{ premium_report|length|pluralize }}
+                                <span id="visibleAgentCount">{{ premium_report|length }}</span> visible record{{
+                                premium_report|length|pluralize }}
                             </p>
                         </div>
                     </div>
 
-                    <span class="inline-flex w-fit items-center gap-2 rounded-full border border-[#8bc83f]/20 bg-[#f2f9e8] px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#659d28]">
+                    <span
+                        class="inline-flex w-fit items-center gap-2 rounded-full border border-[#8bc83f]/20 bg-[#f2f9e8] px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#659d28]">
                         <span class="h-1.5 w-1.5 rounded-full bg-[#8bc83f]"></span>
                         Latest data
                     </span>
@@ -589,46 +619,60 @@
                     <table id="agentTable" class="w-full min-w-[900px] border-collapse whitespace-nowrap">
                         <thead>
                             <tr class="border-b border-slate-200 bg-[#edf3e8]">
-                                <th class="px-5 py-4 text-left text-[11px] font-semibold uppercase tracking-[0.09em] text-slate-400">#</th>
-                                <th class="px-5 py-4 text-left text-[11px] font-semibold uppercase tracking-[0.09em] text-slate-400">Agent</th>
-                                <th class="px-5 py-4 text-left text-[11px] font-semibold uppercase tracking-[0.09em] text-slate-400">Agent Type</th>
-                                <th class="px-5 py-4 text-left text-[11px] font-semibold uppercase tracking-[0.09em] text-slate-400">Total Registrations</th>
+                                <th
+                                    class="px-5 py-4 text-left text-[11px] font-semibold uppercase tracking-[0.09em] text-slate-400">
+                                    #</th>
+                                <th
+                                    class="px-5 py-4 text-left text-[11px] font-semibold uppercase tracking-[0.09em] text-slate-400">
+                                    Agent</th>
+                                <th
+                                    class="px-5 py-4 text-left text-[11px] font-semibold uppercase tracking-[0.09em] text-slate-400">
+                                    Agent Type</th>
+                                <th
+                                    class="px-5 py-4 text-left text-[11px] font-semibold uppercase tracking-[0.09em] text-slate-400">
+                                    Total Registrations</th>
                                 {% for purpose in all_purposes %}
-                                <th class="px-5 py-4 text-left text-[11px] font-semibold uppercase tracking-[0.09em] text-slate-400">For {{ purpose }}</th>
+                                <th
+                                    class="px-5 py-4 text-left text-[11px] font-semibold uppercase tracking-[0.09em] text-slate-400">
+                                    For {{ purpose }}</th>
                                 {% endfor %}
                             </tr>
                         </thead>
 
                         <tbody id="agentTableBody" class="divide-y divide-slate-100">
                             {% for row in premium_report %}
-                            <tr
-                                class="agent-row group transition duration-200 hover:bg-[#f7fbee]"
+                            <tr class="agent-row group transition duration-200 hover:bg-[#f7fbee]"
                                 data-search="{{ row.premium_name|lower }} {{ row.agent_type|lower }}"
-                                data-total="{{ row.total_properties|default:'0' }}"
-                            >
+                                data-total="{{ row.total_properties|default:'0' }}">
                                 <td class="px-5 py-[15px] text-[13px] font-semibold text-slate-400">{{ row.sl_no }}</td>
 
                                 <td class="px-5 py-[15px]">
                                     <div class="flex items-center gap-3.5">
-                                        <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#eaf5dc] text-[#659d28] shadow-sm ring-1 ring-[#8bc83f]/10 transition duration-200 group-hover:bg-[#8bc83f] group-hover:text-white">
+                                        <span
+                                            class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#eaf5dc] text-[#659d28] shadow-sm ring-1 ring-[#8bc83f]/10 transition duration-200 group-hover:bg-[#8bc83f] group-hover:text-white">
                                             <i class="fa-solid fa-user-tie text-sm"></i>
-                                    </span>
+                                        </span>
                                         <div class="min-w-0">
-                                            <p class="agent-name max-w-[280px] truncate leading-5 text-[#263b20] sm:text-[15px]">{{ row.premium_name }}</p>
-                                            <p class="mt-0.5 text-[11px] font-normal leading-4 text-slate-400">Verified registration profile</p>
-                                    </div>
+                                            <p
+                                                class="agent-name max-w-[280px] truncate leading-5 text-[#263b20] sm:text-[15px]">
+                                                {{ row.premium_name }}</p>
+                                            <p class="mt-0.5 text-[11px] font-normal leading-4 text-slate-400">Verified
+                                                registration profile</p>
+                                        </div>
                                     </div>
                                 </td>
 
                                 <td class="px-5 py-[15px]">
-                                    <span class="inline-flex items-center gap-2 rounded-full bg-[#e7eee2] px-3 py-1.5 text-[12px] font-bold text-slate-600 ring-1 ring-slate-200/70">
+                                    <span
+                                        class="inline-flex items-center gap-2 rounded-full bg-[#e7eee2] px-3 py-1.5 text-[12px] font-bold text-slate-600 ring-1 ring-slate-200/70">
                                         <span class="h-1.5 w-1.5 rounded-full bg-[#8bc83f]"></span>
                                         {{ row.agent_type }}
                                     </span>
                                 </td>
 
                                 <td class="px-5 py-[15px]">
-                                    <span class="inline-flex min-w-11 items-center justify-center rounded-xl bg-[#f2f9e8] px-3 py-2 text-[13px] font-semibold text-[#659d28] ring-1 ring-[#8bc83f]/10">
+                                    <span
+                                        class="inline-flex min-w-11 items-center justify-center rounded-xl bg-[#f2f9e8] px-3 py-2 text-[13px] font-semibold text-[#659d28] ring-1 ring-[#8bc83f]/10">
                                         {{ row.total_properties }}
                                     </span>
                                 </td>
@@ -642,22 +686,27 @@
                             {% empty %}
                             <tr id="serverEmptyRow">
                                 <td colspan="20" class="px-6 py-16 text-center">
-                                    <span class="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-[#f2f9e8] text-2xl text-[#659d28] ring-1 ring-[#8bc83f]/15">
+                                    <span
+                                        class="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-[#f2f9e8] text-2xl text-[#659d28] ring-1 ring-[#8bc83f]/15">
                                         <i class="fa-solid fa-user-slash"></i>
                                     </span>
-                                    <p class="mt-4 text-sm font-semibold text-[#46583e]">No agent registration data found</p>
-                                    <p class="mt-1 text-xs font-normal text-slate-400">New agent registrations will appear here.</p>
+                                    <p class="mt-4 text-sm font-semibold text-[#46583e]">No agent registration data
+                                        found</p>
+                                    <p class="mt-1 text-xs font-normal text-slate-400">New agent registrations will
+                                        appear here.</p>
                                 </td>
                             </tr>
                             {% endfor %}
 
                             <tr id="clientEmptyRow" class="hidden">
                                 <td colspan="20" class="px-6 py-14 text-center">
-                                    <span class="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-[#e7eee2] text-xl text-slate-400 ring-1 ring-slate-200">
+                                    <span
+                                        class="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-[#e7eee2] text-xl text-slate-400 ring-1 ring-slate-200">
                                         <i class="fa-solid fa-magnifying-glass"></i>
                                     </span>
                                     <p class="mt-4 text-sm font-semibold text-[#46583e]">No matching agents</p>
-                                    <p class="mt-1 text-xs font-normal text-slate-400">Try a different name or agent type.</p>
+                                    <p class="mt-1 text-xs font-normal text-slate-400">Try a different name or agent
+                                        type.</p>
                                 </td>
                             </tr>
                         </tbody>
@@ -778,19 +827,19 @@
 
                             const tagClass =
                                 prop.type === 'expired' ? 'bg-red-50 text-red-600 ring-red-100' :
-                                prop.type === 'premium' ? 'bg-purple-50 text-purple-600 ring-purple-100' :
-                                prop.type === 'expired_premium' ? 'bg-orange-50 text-orange-600 ring-orange-100' :
-                                prop.type === 'agents' ? 'bg-blue-50 text-blue-600 ring-blue-100' :
-                                prop.type === 'ex_agent' ? 'bg-red-50 text-red-600 ring-red-100' :
-                                'bg-[#eaf5dc] text-[#659d28] ring-[#8bc83f]/15';
+                                    prop.type === 'premium' ? 'bg-purple-50 text-purple-600 ring-purple-100' :
+                                        prop.type === 'expired_premium' ? 'bg-orange-50 text-orange-600 ring-orange-100' :
+                                            prop.type === 'agents' ? 'bg-blue-50 text-blue-600 ring-blue-100' :
+                                                prop.type === 'ex_agent' ? 'bg-red-50 text-red-600 ring-red-100' :
+                                                    'bg-[#eaf5dc] text-[#659d28] ring-[#8bc83f]/15';
 
                             const tagText =
                                 prop.type === 'expired' ? 'Expired' :
-                                prop.type === 'premium' ? 'Premium' :
-                                prop.type === 'expired_premium' ? 'Expired Premium' :
-                                prop.type === 'agents' ? 'Agent' :
-                                prop.type === 'ex_agent' ? 'Expired Agent' :
-                                'Active';
+                                    prop.type === 'premium' ? 'Premium' :
+                                        prop.type === 'expired_premium' ? 'Expired Premium' :
+                                            prop.type === 'agents' ? 'Agent' :
+                                                prop.type === 'ex_agent' ? 'Expired Agent' :
+                                                    'Active';
 
                             const resultIcon =
                                 prop.type === 'agents' || prop.type === 'ex_agent'
@@ -1013,157 +1062,157 @@
     });
 
 
-document.addEventListener("DOMContentLoaded", function () {
-    const heading = document.getElementById("animatedHeading");
-    const normalElement = document.getElementById("normalHeadingText");
-    const highlightElement = document.getElementById("highlightHeadingText");
-    const underline = document.getElementById("headingUnderline");
-    const cursor = document.getElementById("typingCursor");
+    document.addEventListener("DOMContentLoaded", function () {
+        const heading = document.getElementById("animatedHeading");
+        const normalElement = document.getElementById("normalHeadingText");
+        const highlightElement = document.getElementById("highlightHeadingText");
+        const underline = document.getElementById("headingUnderline");
+        const cursor = document.getElementById("typingCursor");
 
-    if (
-        !heading ||
-        !normalElement ||
-        !highlightElement ||
-        !underline ||
-        !cursor
-    ) {
-        return;
-    }
-
-    const normalText = "Your complete property network, ";
-    const highlightText = "beautifully organised.";
-
-    // Animation settings
-    const TYPE_SPEED = 55;
-    const HIGHLIGHT_TYPE_SPEED = 65;
-    const DELETE_SPEED = 28;
-
-    // Full sentence വന്ന ശേഷം 2 seconds wait ചെയ്യും
-    const HOLD_AFTER_TYPING = 2000;
-
-    // Delete ചെയ്ത ശേഷം വീണ്ടും type ചെയ്യുന്നതിന് മുമ്പുള്ള delay
-    const RESTART_DELAY = 500;
-
-    let animationStarted = false;
-
-    function wait(milliseconds) {
-        return new Promise(function (resolve) {
-            window.setTimeout(resolve, milliseconds);
-        });
-    }
-
-    async function typeText(element, text, speed) {
-        for (const character of Array.from(text)) {
-            element.textContent += character;
-            await wait(speed);
-        }
-    }
-
-    async function deleteText(element, speed) {
-        let characters = Array.from(element.textContent);
-
-        while (characters.length > 0) {
-            characters.pop();
-            element.textContent = characters.join("");
-            await wait(speed);
-        }
-    }
-
-    function showUnderline() {
-        underline.classList.remove("scale-x-0");
-        underline.classList.add("scale-x-100");
-    }
-
-    function hideUnderline() {
-        underline.classList.remove("scale-x-100");
-        underline.classList.add("scale-x-0");
-    }
-
-    async function runTypewriterLoop() {
-        while (true) {
-            normalElement.textContent = "";
-            highlightElement.textContent = "";
-            hideUnderline();
-
-            await typeText(
-                normalElement,
-                normalText,
-                TYPE_SPEED
-            );
-
-            await typeText(
-                highlightElement,
-                highlightText,
-                HIGHLIGHT_TYPE_SPEED
-            );
-
-            showUnderline();
-
-            // Sentence complete ആയ ശേഷം wait
-            await wait(HOLD_AFTER_TYPING);
-
-            hideUnderline();
-            await wait(250);
-
-            // ആദ്യം highlighted text delete ചെയ്യും
-            await deleteText(
-                highlightElement,
-                DELETE_SPEED
-            );
-
-            // ശേഷം normal text delete ചെയ്യും
-            await deleteText(
-                normalElement,
-                DELETE_SPEED
-            );
-
-            await wait(RESTART_DELAY);
-        }
-    }
-
-    function startAnimation() {
-        if (animationStarted) {
+        if (
+            !heading ||
+            !normalElement ||
+            !highlightElement ||
+            !underline ||
+            !cursor
+        ) {
             return;
         }
 
-        animationStarted = true;
-        runTypewriterLoop();
-    }
+        const normalText = "Your complete property network, ";
+        const highlightText = "beautifully organised.";
 
-    // User motion animations disable ചെയ്തിട്ടുണ്ടെങ്കിൽ
-    // full text മാത്രം കാണിക്കും
-    if (
-        window.matchMedia &&
-        window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    ) {
-        normalElement.textContent = normalText;
-        highlightElement.textContent = highlightText;
-        showUnderline();
-        cursor.classList.add("hidden");
-        return;
-    }
+        // Animation settings
+        const TYPE_SPEED = 55;
+        const HIGHLIGHT_TYPE_SPEED = 65;
+        const DELETE_SPEED = 28;
 
-    // Heading screen-ൽ വരുമ്പോൾ animation start ചെയ്യും
-    if ("IntersectionObserver" in window) {
-        const observer = new IntersectionObserver(
-            function (entries) {
-                if (entries[0].isIntersecting) {
-                    startAnimation();
-                    observer.disconnect();
-                }
-            },
-            {
-                threshold: 0.35
+        // Full sentence വന്ന ശേഷം 2 seconds wait ചെയ്യും
+        const HOLD_AFTER_TYPING = 2000;
+
+        // Delete ചെയ്ത ശേഷം വീണ്ടും type ചെയ്യുന്നതിന് മുമ്പുള്ള delay
+        const RESTART_DELAY = 500;
+
+        let animationStarted = false;
+
+        function wait(milliseconds) {
+            return new Promise(function (resolve) {
+                window.setTimeout(resolve, milliseconds);
+            });
+        }
+
+        async function typeText(element, text, speed) {
+            for (const character of Array.from(text)) {
+                element.textContent += character;
+                await wait(speed);
             }
-        );
+        }
 
-        observer.observe(heading);
-    } else {
-        startAnimation();
-    }
-});
+        async function deleteText(element, speed) {
+            let characters = Array.from(element.textContent);
+
+            while (characters.length > 0) {
+                characters.pop();
+                element.textContent = characters.join("");
+                await wait(speed);
+            }
+        }
+
+        function showUnderline() {
+            underline.classList.remove("scale-x-0");
+            underline.classList.add("scale-x-100");
+        }
+
+        function hideUnderline() {
+            underline.classList.remove("scale-x-100");
+            underline.classList.add("scale-x-0");
+        }
+
+        async function runTypewriterLoop() {
+            while (true) {
+                normalElement.textContent = "";
+                highlightElement.textContent = "";
+                hideUnderline();
+
+                await typeText(
+                    normalElement,
+                    normalText,
+                    TYPE_SPEED
+                );
+
+                await typeText(
+                    highlightElement,
+                    highlightText,
+                    HIGHLIGHT_TYPE_SPEED
+                );
+
+                showUnderline();
+
+                // Sentence complete ആയ ശേഷം wait
+                await wait(HOLD_AFTER_TYPING);
+
+                hideUnderline();
+                await wait(250);
+
+                // ആദ്യം highlighted text delete ചെയ്യും
+                await deleteText(
+                    highlightElement,
+                    DELETE_SPEED
+                );
+
+                // ശേഷം normal text delete ചെയ്യും
+                await deleteText(
+                    normalElement,
+                    DELETE_SPEED
+                );
+
+                await wait(RESTART_DELAY);
+            }
+        }
+
+        function startAnimation() {
+            if (animationStarted) {
+                return;
+            }
+
+            animationStarted = true;
+            runTypewriterLoop();
+        }
+
+        // User motion animations disable ചെയ്തിട്ടുണ്ടെങ്കിൽ
+        // full text മാത്രം കാണിക്കും
+        if (
+            window.matchMedia &&
+            window.matchMedia("(prefers-reduced-motion: reduce)").matches
+        ) {
+            normalElement.textContent = normalText;
+            highlightElement.textContent = highlightText;
+            showUnderline();
+            cursor.classList.add("hidden");
+            return;
+        }
+
+        // Heading screen-ൽ വരുമ്പോൾ animation start ചെയ്യും
+        if ("IntersectionObserver" in window) {
+            const observer = new IntersectionObserver(
+                function (entries) {
+                    if (entries[0].isIntersecting) {
+                        startAnimation();
+                        observer.disconnect();
+                    }
+                },
+                {
+                    threshold: 0.35
+                }
+            );
+
+            observer.observe(heading);
+        } else {
+            startAnimation();
+        }
+    });
 </script>
-<script>
+<!-- <script>
 document.addEventListener("DOMContentLoaded", function () {
 
     const notificationButton = document.getElementById("notificationButton");
@@ -1241,237 +1290,386 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
 });
+</script> -->
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const notificationButton =
+            document.getElementById("notificationButton");
+
+        const notificationDropdown =
+            document.getElementById("notificationDropdown");
+
+        const notificationWrapper =
+            document.getElementById("notificationWrapper");
+
+        if (!notificationButton || !notificationDropdown) {
+            return;
+        }
+
+        // ==============================
+        // OPEN / CLOSE NOTIFICATION
+        // ==============================
+
+        notificationButton.addEventListener("click", function (event) {
+
+            event.preventDefault();
+            event.stopPropagation();
+
+            notificationDropdown.classList.toggle("hidden");
+
+            const isOpen =
+                !notificationDropdown.classList.contains("hidden");
+
+            notificationButton.setAttribute(
+                "aria-expanded",
+                isOpen ? "true" : "false"
+            );
+        });
+
+
+        // ==============================
+        // CLOSE WHEN CLICKING OUTSIDE
+        // ==============================
+
+        document.addEventListener("click", function (event) {
+
+            if (
+                notificationWrapper &&
+                !notificationWrapper.contains(event.target)
+            ) {
+                notificationDropdown.classList.add("hidden");
+
+                notificationButton.setAttribute(
+                    "aria-expanded",
+                    "false"
+                );
+            }
+
+        });
+
+    });
+    function getCookie(name) {
+        let cookieValue = null;
+
+        if (document.cookie && document.cookie !== "") {
+            const cookies = document.cookie.split(";");
+
+            for (let cookie of cookies) {
+                cookie = cookie.trim();
+
+                if (cookie.startsWith(name + "=")) {
+                    cookieValue =
+                        decodeURIComponent(
+                            cookie.substring(name.length + 1)
+                        );
+                    break;
+                }
+            }
+        }
+
+        return cookieValue;
+    }
+
+
+    // ==============================
+    // MARK SINGLE NOTIFICATION READ
+    // ==============================
+
+    const markReadButtons =
+        document.querySelectorAll(".mark-notification-read");
+
+    markReadButtons.forEach(function (button) {
+
+        button.addEventListener("click", function (event) {
+
+            event.preventDefault();
+            event.stopPropagation();
+
+            const notificationId =
+                button.dataset.notificationId;
+
+            const formData = new FormData();
+            formData.append("notification_id", notificationId);
+
+            fetch("{% url 'mark_dashboard_notification_read' %}", {
+                method: "POST",
+                body: formData,
+                headers: {
+                    "X-CSRFToken": getCookie("csrftoken"),
+                    "X-Requested-With": "XMLHttpRequest"
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+
+                    if (!data.success) {
+                        console.error(data.message);
+                        return;
+                    }
+
+                    // Remove mark-read button
+                    button.remove();
+
+                    // Update notification UI
+                    const item =
+                        button.closest("[data-notification-item]");
+
+                    if (item) {
+                        item.classList.add("opacity-60");
+                    }
+
+                    // Update badge
+                    const badge =
+                        document.getElementById("notificationBadge");
+
+                    if (badge) {
+                        let count =
+                            parseInt(badge.textContent || "0") - 1;
+
+                        if (count <= 0) {
+                            badge.textContent = "0";
+                            badge.classList.add("hidden");
+                            badge.classList.remove("flex");
+                        } else {
+                            badge.textContent = count;
+                        }
+                    }
+
+                })
+                .catch(error => {
+                    console.error("Mark notification read error:", error);
+                });
+
+        });
+
+    });
 </script>
-
 <style>
+    /* <-------------css added----------->*/
 
-/* <-------------css added----------->*/
-    
-/* =========================================================
+    /* =========================================================
    BASE3 CONTENT-PANEL INTEGRATION — FULL WIDTH FIX
 ========================================================= */
 
-#mainContent {
-    min-width: 0;
-}
-
-#mainContent > .dashboard-page {
-    width: 100% !important;
-    max-width: none !important;
-    min-height: 100% !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    overflow-x: clip !important;
-}
-
-#mainContent > .dashboard-page > .dashboard-shell {
-    width: 100% !important;
-    max-width: none !important;
-    min-width: 0 !important;
-    min-height: 100% !important;
-    margin: 0 !important;
-    border: 0 !important;
-    border-radius: 0 !important;
-    box-shadow: none !important;
-    outline: 0 !important;
-    --tw-ring-shadow: 0 0 #0000 !important;
-    background: transparent !important;
-}
-
-.dashboard-topbar,
-.dashboard-main,
-.dashboard-hero,
-.dashboard-quick-actions,
-.dashboard-stats-grid,
-.dashboard-agent-card {
-    width: 100% !important;
-    max-width: none !important;
-    min-width: 0 !important;
-}
-
-/* Keep only the dashboard's internal spacing. The base already has p-5. */
-.dashboard-main {
-    padding: clamp(16px, 1.7vw, 28px) 0 28px !important;
-}
-
-.dashboard-topbar {
-    margin: 0 !important;
-    padding-inline: clamp(16px, 2vw, 30px) !important;
-}
-
-/* Desktop: use all available right-panel width */
-@media (min-width: 1024px) {
-    #mainContent > .dashboard-page {
-        min-height: calc(100vh - 72px) !important;
+    #mainContent {
+        min-width: 0;
     }
 
-    .dashboard-topbar > div {
-        grid-template-columns: minmax(190px, 240px) minmax(320px, 1fr) auto !important;
-    }
-
-    .dashboard-topbar > div > div:nth-child(2) {
+    #mainContent>.dashboard-page {
         width: 100% !important;
         max-width: none !important;
-        margin-inline: 0 !important;
-    }
-
-    .dashboard-hero > .relative.z-10 {
-        grid-template-columns: minmax(0, 1.25fr) minmax(330px, 430px) !important;
-    }
-}
-
-/* Common 1024–1366 laptop screens */
-@media (min-width: 1024px) and (max-width: 1366px) {
-    .dashboard-main {
-        padding-top: 20px !important;
-    }
-
-    .dashboard-hero {
-        min-height: 360px !important;
-        padding: 28px !important;
-    }
-
-    .dashboard-hero > .relative.z-10 {
-        grid-template-columns: minmax(0, 1fr) minmax(300px, 360px) !important;
-        gap: 28px !important;
-    }
-
-    #animatedHeading {
-        font-size: clamp(2rem, 3.05vw, 2.5rem) !important;
-    }
-}
-
-/* Tablet/mobile: no duplicate outer gutters */
-@media (max-width: 1023px) {
-    #mainContent > .dashboard-page {
+        min-height: 100% !important;
+        margin: 0 !important;
         padding: 0 !important;
+        overflow-x: clip !important;
     }
 
-    .dashboard-shell {
+    #mainContent>.dashboard-page>.dashboard-shell {
+        width: 100% !important;
+        max-width: none !important;
+        min-width: 0 !important;
+        min-height: 100% !important;
+        margin: 0 !important;
+        border: 0 !important;
         border-radius: 0 !important;
+        box-shadow: none !important;
+        outline: 0 !important;
+        --tw-ring-shadow: 0 0 #0000 !important;
+        background: transparent !important;
     }
 
-    .dashboard-main {
-        padding: 16px 0 24px !important;
+    .dashboard-topbar,
+    .dashboard-main,
+    .dashboard-hero,
+    .dashboard-quick-actions,
+    .dashboard-stats-grid,
+    .dashboard-agent-card {
+        width: 100% !important;
+        max-width: none !important;
+        min-width: 0 !important;
     }
-}
 
-@media (max-width: 639px) {
+    /* Keep only the dashboard's internal spacing. The base already has p-5. */
     .dashboard-main {
-        padding: 12px 0 20px !important;
+        padding: clamp(16px, 1.7vw, 28px) 0 28px !important;
     }
 
     .dashboard-topbar {
-        border-radius: 18px !important;
+        margin: 0 !important;
+        padding-inline: clamp(16px, 2vw, 30px) !important;
     }
-}
 
-/* =========================================================
+    /* Desktop: use all available right-panel width */
+    @media (min-width: 1024px) {
+        #mainContent>.dashboard-page {
+            min-height: calc(100vh - 72px) !important;
+        }
+
+        .dashboard-topbar>div {
+            grid-template-columns: minmax(190px, 240px) minmax(320px, 1fr) auto !important;
+        }
+
+        .dashboard-topbar>div>div:nth-child(2) {
+            width: 100% !important;
+            max-width: none !important;
+            margin-inline: 0 !important;
+        }
+
+        .dashboard-hero>.relative.z-10 {
+            grid-template-columns: minmax(0, 1.25fr) minmax(330px, 430px) !important;
+        }
+    }
+
+    /* Common 1024–1366 laptop screens */
+    @media (min-width: 1024px) and (max-width: 1366px) {
+        .dashboard-main {
+            padding-top: 20px !important;
+        }
+
+        .dashboard-hero {
+            min-height: 360px !important;
+            padding: 28px !important;
+        }
+
+        .dashboard-hero>.relative.z-10 {
+            grid-template-columns: minmax(0, 1fr) minmax(300px, 360px) !important;
+            gap: 28px !important;
+        }
+
+        #animatedHeading {
+            font-size: clamp(2rem, 3.05vw, 2.5rem) !important;
+        }
+    }
+
+    /* Tablet/mobile: no duplicate outer gutters */
+    @media (max-width: 1023px) {
+        #mainContent>.dashboard-page {
+            padding: 0 !important;
+        }
+
+        .dashboard-shell {
+            border-radius: 0 !important;
+        }
+
+        .dashboard-main {
+            padding: 16px 0 24px !important;
+        }
+    }
+
+    @media (max-width: 639px) {
+        .dashboard-main {
+            padding: 12px 0 20px !important;
+        }
+
+        .dashboard-topbar {
+            border-radius: 18px !important;
+        }
+    }
+
+    /* =========================================================
    PREMIUM NAVBAR + SUBTLE DASHBOARD BACKGROUND
 ========================================================= */
 
-.dashboard-page,
-.dashboard-shell {
-    background: transparent !important;
-}
-
-.dashboard-main {
-    position: relative;
-    isolation: isolate;
-    background:
-        radial-gradient(circle at 8% 8%, rgba(139, 200, 63, 0.085), transparent 24%),
-        radial-gradient(circle at 92% 22%, rgba(181, 223, 125, 0.08), transparent 22%),
-        linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(250, 252, 248, 0.58));
-}
-
-.dashboard-main::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    pointer-events: none;
-    background: linear-gradient(
-        180deg,
-        rgba(255, 255, 255, 0.36),
-        transparent 34%
-    );
-}
-
-.dashboard-topbar {
-    border: 1px solid rgba(216, 229, 205, 0.92);
-    border-radius: 22px !important;
-    background:
-        linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(246, 250, 242, 0.90)) !important;
-    box-shadow:
-        0 14px 40px rgba(67, 96, 47, 0.08),
-        inset 0 1px 0 rgba(255, 255, 255, 0.96);
-    backdrop-filter: blur(18px) saturate(130%);
-    -webkit-backdrop-filter: blur(18px) saturate(130%);
-}
-
-.dashboard-topbar::after {
-    content: "";
-    position: absolute;
-    left: 22px;
-    right: 22px;
-    bottom: -1px;
-    height: 2px;
-    border-radius: 999px;
-    background: linear-gradient(
-        90deg,
-        transparent,
-        rgba(139, 200, 63, 0.42),
-        transparent
-    );
-}
-
-.dashboard-topbar h1 {
-    color: #26371f !important;
-}
-
-.dashboard-topbar p {
-    color: #8a9a80 !important;
-}
-
-.dashboard-topbar button[title="Notifications"] {
-    background: rgba(255, 255, 255, 0.68);
-    border: 1px solid rgba(221, 231, 213, 0.85);
-}
-
-.dashboard-topbar button[title="Notifications"]:hover {
-    background: #f3f9ea;
-    border-color: rgba(139, 200, 63, 0.32);
-}
-
-.dashboard-topbar button[title="Admin profile"] {
-    box-shadow:
-        0 10px 24px rgba(105, 167, 42, 0.24),
-        0 0 0 5px rgba(139, 200, 63, 0.08);
-}
-
-.dashboard-quick-actions > a {
-    background: rgba(255, 255, 255, 0.82) !important;
-    border-color: rgba(220, 230, 212, 0.92) !important;
-    box-shadow: 0 10px 28px rgba(51, 74, 37, 0.045) !important;
-}   
-
-.dashboard-quick-actions > a:hover {
-    background: rgba(255, 255, 255, 0.96) !important;
-    box-shadow: 0 16px 34px rgba(51, 74, 37, 0.075) !important;
-}
-
-@media (max-width: 1023px) {
-    .dashboard-topbar {
-        border-radius: 18px !important;
+    .dashboard-page,
+    .dashboard-shell {
+        background: transparent !important;
     }
 
     .dashboard-main {
+        position: relative;
+        isolation: isolate;
         background:
-            radial-gradient(circle at 14% 6%, rgba(139, 200, 63, 0.07), transparent 26%),
-            linear-gradient(180deg, rgba(255,255,255,0.76), rgba(250,252,248,0.62));
+            radial-gradient(circle at 8% 8%, rgba(139, 200, 63, 0.085), transparent 24%),
+            radial-gradient(circle at 92% 22%, rgba(181, 223, 125, 0.08), transparent 22%),
+            linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(250, 252, 248, 0.58));
     }
-}
 
+    .dashboard-main::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+        background: linear-gradient(180deg,
+                rgba(255, 255, 255, 0.36),
+                transparent 34%);
+    }
+
+    .dashboard-topbar {
+        border: 1px solid rgba(216, 229, 205, 0.92);
+        border-radius: 22px !important;
+        background:
+            linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(246, 250, 242, 0.90)) !important;
+        box-shadow:
+            0 14px 40px rgba(67, 96, 47, 0.08),
+            inset 0 1px 0 rgba(255, 255, 255, 0.96);
+        backdrop-filter: blur(18px) saturate(130%);
+        -webkit-backdrop-filter: blur(18px) saturate(130%);
+    }
+
+    .dashboard-topbar::after {
+        content: "";
+        position: absolute;
+        left: 22px;
+        right: 22px;
+        bottom: -1px;
+        height: 2px;
+        border-radius: 999px;
+        background: linear-gradient(90deg,
+                transparent,
+                rgba(139, 200, 63, 0.42),
+                transparent);
+    }
+
+    .dashboard-topbar h1 {
+        color: #26371f !important;
+    }
+
+    .dashboard-topbar p {
+        color: #8a9a80 !important;
+    }
+
+    .dashboard-topbar button[title="Notifications"] {
+        background: rgba(255, 255, 255, 0.68);
+        border: 1px solid rgba(221, 231, 213, 0.85);
+    }
+
+    .dashboard-topbar button[title="Notifications"]:hover {
+        background: #f3f9ea;
+        border-color: rgba(139, 200, 63, 0.32);
+    }
+
+    .dashboard-topbar button[title="Admin profile"] {
+        box-shadow:
+            0 10px 24px rgba(105, 167, 42, 0.24),
+            0 0 0 5px rgba(139, 200, 63, 0.08);
+    }
+
+    .dashboard-quick-actions>a {
+        background: rgba(255, 255, 255, 0.82) !important;
+        border-color: rgba(220, 230, 212, 0.92) !important;
+        box-shadow: 0 10px 28px rgba(51, 74, 37, 0.045) !important;
+    }
+
+    .dashboard-quick-actions>a:hover {
+        background: rgba(255, 255, 255, 0.96) !important;
+        box-shadow: 0 16px 34px rgba(51, 74, 37, 0.075) !important;
+    }
+
+    @media (max-width: 1023px) {
+        .dashboard-topbar {
+            border-radius: 18px !important;
+        }
+
+        .dashboard-main {
+            background:
+                radial-gradient(circle at 14% 6%, rgba(139, 200, 63, 0.07), transparent 26%),
+                linear-gradient(180deg, rgba(255, 255, 255, 0.76), rgba(250, 252, 248, 0.62));
+        }
+    }
 </style>
 
 {% endblock %}

@@ -21,10 +21,9 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
-from agents.models import AgentUserProfile, PendingAgentRegistration, PendingAgentRegistration
+from agents.models import AgentUserProfile, PendingAgentRegistration
 from .validators import validate_safe_text
 from .validators import *
-# from agents.services import *
 
 class CustomUser(AbstractUser):
     rate_limit = models.IntegerField(
@@ -1953,12 +1952,6 @@ class ElitePlan(models.Model):
     total_property_listings = models.PositiveIntegerField(
         help_text="Total number of property listings allowed"
     )
-
-    # sale_listings_limit = models.PositiveIntegerField(
-    #     default=10,
-    #     help_text="Number of sale listings allowed"
-    # )
-
     featured_listings_limit = models.PositiveIntegerField(
         default=10,
         help_text="Number of featured listings allowed"
@@ -2783,30 +2776,7 @@ class Property(models.Model):
                     return new_code
 
         return f"{prefix}-{str(uuid.uuid4())[:6]}"
-
-    # def save(self, *args, **kwargs):
-    #         is_new = self._state.adding
     
-    #         self.full_clean()
-    
-    #         if self.user and not self.owner:
-    #             self.owner = self.user.name
-    
-    #         if not self.property_code:
-    #             self.property_code = self.generate_property_code()
-    
-    #         # Save FIRST
-    #         super().save(*args, **kwargs)
-    
-    #         # Only after save, the object definitely has a PK
-    #         if not is_new and self.duration_days <= 0:
-    #             self.move_to_expired()
-    #             return
-    
-    #         if is_new and self.user:
-    #             self.user.role = "owner"
-    #             self.user.save(update_fields=["role"])
-
     def save(self,*args,**kwargs):
 
         is_new=self._state.adding
@@ -3033,7 +3003,6 @@ class PropertyFeature(models.Model):
     def save(self,*args,**kwargs):
 
         self.full_clean()
-
         super().save(*args,**kwargs)
 
     def __str__(self):
@@ -3111,7 +3080,6 @@ class PropertyImage(models.Model):
 
     def save(self,*args,**kwargs):
 
-        # self.full_clean()
         self.clean()
 
         super().save(*args,**kwargs)
@@ -3650,10 +3618,6 @@ class Agents(models.Model):
             super(Agents, self).delete()
         else:
             super(Agents, self).save(*args, **kwargs)
-
-# from django.db import models
-# from django.utils import timezone
-
 class ExpireAgents(models.Model):
 
     agent = models.OneToOneField(

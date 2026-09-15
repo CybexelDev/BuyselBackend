@@ -92,8 +92,8 @@ from django.core.cache import cache
 from users.models import *
 from django.contrib import messages
 from django.db import transaction
-from django.db.models import Count
 from agents.models import *
+
 
 #added by mehreena
 def create_admin_notification(title, message, notification_type="info"):
@@ -151,6 +151,7 @@ def superuser_required(user):
     return user.is_authenticated and user.is_superuser
 
 #added by mehreena
+# dashboard
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 def Dashboard(request):
@@ -252,6 +253,72 @@ def Dashboard(request):
             }
         )
 
+    # # ==========================
+    # # NOTIFICATIONS
+    # # ==========================
+
+    # advertisement_notifications = (
+    #     AdvertisementRequestNotification.objects
+    #     .select_related(
+    #         "agent",
+    #         "advertisement_package"
+    #     )
+    #     .order_by("-created_at")
+    # )
+
+    # reel_notifications = (
+    #     ReelPurchaseNotification.objects
+    #     .select_related(
+    #         "agent",
+    #         "payment",
+    #         "payment__reel_package"
+    #     )
+    #     .order_by("-created_at")
+    # )
+
+    # notifications = []
+
+    # # Advertisement notifications
+    # for item in advertisement_notifications:
+
+    #     notifications.append(
+    #         {
+    #             "id": str(item.id),
+    #             "type": "advertisement",
+    #             "title": item.title,
+    #             "message": item.message,
+    #             "is_read": item.is_read,
+    #             "created_at": item.created_at,
+    #         }
+    #     )
+
+    # # Reel notifications
+    # for item in reel_notifications:
+
+    #     notifications.append(
+    #         {
+    #             "id": str(item.id),
+    #             "type": "reel",
+    #             "title": item.title,
+    #             "message": item.message,
+    #             "is_read": item.is_read,
+    #             "created_at": item.created_at,
+    #         }
+    #     )
+
+    # # Latest notification first
+    # notifications.sort(
+    #     key=lambda x: x["created_at"],
+    #     reverse=True
+    # )
+
+    # # Unread notification count
+    # unread_count = sum(
+    #     1
+    #     for notification in notifications
+    #     if not notification["is_read"]
+    # )
+
     # ==========================
     # NOTIFICATIONS
     # ==========================
@@ -275,6 +342,12 @@ def Dashboard(request):
         .order_by("-created_at")
     )
 
+    # General Developer/Admin notifications
+    admin_notifications = (
+        AdminNotification.objects
+        .order_by("-created_at")
+    )
+
     notifications = []
 
     # Advertisement notifications
@@ -282,7 +355,7 @@ def Dashboard(request):
 
         notifications.append(
             {
-                "id": str(item.id),
+                "id": f"advertisement-{item.id}",
                 "type": "advertisement",
                 "title": item.title,
                 "message": item.message,
@@ -296,8 +369,22 @@ def Dashboard(request):
 
         notifications.append(
             {
-                "id": str(item.id),
+                "id": f"reel-{item.id}",
                 "type": "reel",
+                "title": item.title,
+                "message": item.message,
+                "is_read": item.is_read,
+                "created_at": item.created_at,
+            }
+        )
+
+    # General Admin/Developer notifications
+    for item in admin_notifications:
+
+        notifications.append(
+            {
+                "id": f"admin-{item.id}",
+                "type": item.notification_type,
                 "title": item.title,
                 "message": item.message,
                 "is_read": item.is_read,
@@ -388,10 +475,23 @@ def categories(request):
             icon = request.FILES.get("icon")
 
             if name and icon:
-                Category.objects.create(name=name, icon=icon)
+                category = Category.objects.create(
+                    name=name,
+                    icon=icon
+                )
+
+                create_admin_notification(
+                    "Category Added",
+                    f"Category • {category.name} was added successfully.",
+                    "success",
+                )
 
         elif action == "edit_category":
-            category = get_object_or_404(Category, id=request.POST.get("category_id"))
+            category = get_object_or_404(
+                Category,
+                id=request.POST.get("category_id")
+            )
+
             category.name = request.POST.get("name")
 
             if request.FILES.get("icon"):
@@ -399,24 +499,75 @@ def categories(request):
 
             category.save()
 
+            create_admin_notification(
+                "Category Updated",
+                f"Category • {category.name} was updated successfully.",
+                "info",
+            )
+
         elif action == "delete_category":
-            Category.objects.filter(id=request.POST.get("category_id")).delete()
+            category = get_object_or_404(
+                Category,
+                id=request.POST.get("category_id")
+            )
+
+            category_id = category.id
+            category_name = category.name
+
+            category.delete()
+
+            create_admin_notification(
+                "Category Deleted",
+                f"Category #{category_id} • {category_name} was deleted successfully.",
+                "warning",
+            )
 
         # =========================
         # PURPOSE
         # =========================
         elif action == "add_purpose":
             name = request.POST.get("name")
+
             if name:
-                Purpose.objects.create(name=name)
+                purpose = Purpose.objects.create(name=name)
+
+                create_admin_notification(
+                    "Purpose Added",
+                    f"Purpose • {purpose.name} was added successfully.",
+                    "success",
+                )
 
         elif action == "edit_purpose":
-            purpose = get_object_or_404(Purpose, id=request.POST.get("purpose_id"))
+            purpose = get_object_or_404(
+                Purpose,
+                id=request.POST.get("purpose_id")
+            )
+
             purpose.name = request.POST.get("name")
             purpose.save()
 
+            create_admin_notification(
+                "Purpose Updated",
+                f"Purpose • {purpose.name} was updated successfully.",
+                "info",
+            )
+
         elif action == "delete_purpose":
-            Purpose.objects.filter(id=request.POST.get("purpose_id")).delete()
+            purpose = get_object_or_404(
+                Purpose,
+                id=request.POST.get("purpose_id")
+            )
+
+            purpose_id = purpose.id
+            purpose_name = purpose.name
+
+            purpose.delete()
+
+            create_admin_notification(
+                "Purpose Deleted",
+                f"Purpose #{purpose_id} • {purpose_name} was deleted successfully.",
+                "warning",
+            )
 
         # =========================
         # SUBCATEGORY
@@ -427,24 +578,54 @@ def categories(request):
             image = request.FILES.get("image")
 
             if name and category_id:
-                Subcategory.objects.create(
-                    name=name, category_id=category_id, image=image
+                subcategory = Subcategory.objects.create(
+                    name=name,
+                    category_id=category_id,
+                    image=image
+                )
+
+                create_admin_notification(
+                    "Subcategory Added",
+                    f"Subcategory • {subcategory.name} was added successfully.",
+                    "success",
                 )
 
         elif action == "edit_subcategory":
-            sub = get_object_or_404(Subcategory, id=request.POST.get("subcategory_id"))
+                sub = get_object_or_404(
+                    Subcategory,
+                    id=request.POST.get("subcategory_id")
+                )
 
-            sub.name = request.POST.get("name")
-            sub.category_id = request.POST.get("category_id")
+                sub.name = request.POST.get("name")
+                sub.category_id = request.POST.get("category_id")
 
-            if request.FILES.get("image"):
-                sub.image = request.FILES.get("image")
+                if request.FILES.get("image"):
+                    sub.image = request.FILES.get("image")
 
-            sub.save()
+                sub.save()
+
+                create_admin_notification(
+                    "Subcategory Updated",
+                    f"Subcategory • {sub.name} was updated successfully.",
+                    "info",
+                )
 
         elif action == "delete_subcategory":
-            Subcategory.objects.filter(id=request.POST.get("subcategory_id")).delete()
+            sub = get_object_or_404(
+                Subcategory,
+                id=request.POST.get("subcategory_id")
+            )
 
+            subcategory_id = sub.id
+            subcategory_name = sub.name
+
+            sub.delete()
+
+            create_admin_notification(
+                "Subcategory Deleted",
+                f"Subcategory #{subcategory_id} • {subcategory_name} was deleted successfully.",
+                "warning",
+            )
         # =========================
         # SUBCATEGORY FIELDS
         # =========================
@@ -473,6 +654,12 @@ def categories(request):
                         icon=icons[index] if index < len(icons) else None,
                     )
 
+            create_admin_notification(
+                "Subcategory Field Added",
+                f"Subcategory Field • {field.field_name} was added successfully.",
+                "success",
+            )
+    
         elif action == "edit_field":
 
             field = get_object_or_404(SubcategoryField, id=request.POST.get("field_id"))
@@ -544,8 +731,29 @@ def categories(request):
                 id__in=used_option_ids
             ).delete()
 
+            create_admin_notification(
+                "Subcategory Field Updated",
+                f"Subcategory Field • {field.field_name} was updated successfully.",
+                "info",
+            )
+
         elif action == "delete_field":
-            SubcategoryField.objects.filter(id=request.POST.get("field_id")).delete()
+
+            field = get_object_or_404(
+                SubcategoryField,
+                id=request.POST.get("field_id")
+            )
+
+            field_id = field.id
+            field_name = field.field_name
+
+            field.delete()
+
+            create_admin_notification(
+                "Subcategory Field Deleted",
+                f"Subcategory Field #{field_id} • {field_name} was deleted successfully.",
+                "warning",
+            )
 
         # =========================
         # AMENITIES  ✅ NEW
@@ -555,10 +763,22 @@ def categories(request):
             icon = request.FILES.get("icon")
 
             if name:
-                Amenities.objects.create(name=name, icon=icon)
+                amenity = Amenities.objects.create(
+                    name=name,
+                    icon=icon
+                )
+
+                create_admin_notification(
+                    "Amenity Added",
+                    f"Amenity • {amenity.name} was added successfully.",
+                    "success",
+                )
 
         elif action == "edit_amenity":
-            amenity = get_object_or_404(Amenities, id=request.POST.get("amenity_id"))
+            amenity = get_object_or_404(
+                Amenities,
+                id=request.POST.get("amenity_id")
+            )
 
             amenity.name = request.POST.get("name")
 
@@ -567,8 +787,29 @@ def categories(request):
 
             amenity.save()
 
+            create_admin_notification(
+                "Amenity Updated",
+                f"Amenity • {amenity.name} was updated successfully.",
+                "info",
+            )
+
         elif action == "delete_amenity":
-            Amenities.objects.filter(id=request.POST.get("amenity_id")).delete()
+
+            amenity = get_object_or_404(
+                Amenities,
+                id=request.POST.get("amenity_id")
+            )
+
+            amenity_id = amenity.id
+            amenity_name = amenity.name
+
+            amenity.delete()
+
+            create_admin_notification(
+                "Amenity Deleted",
+                f"Amenity #{amenity_id} • {amenity_name} was deleted successfully.",
+                "warning",
+            )
 
         # =========================
         # REDIRECT AFTER POST
@@ -603,9 +844,7 @@ def parse_listing(listing):
     result = {}
 
     try:
-        # 🔥 Support BOTH formats:
-        # "residential:2,commercial:3"
-        # "2 Residential 3 Commercial"
+
 
         if ":" in listing:
             parts = listing.split(",")
@@ -724,11 +963,6 @@ def add_property(request):
     purposes = Purpose.objects.all()
     amenities_list = Amenities.objects.all()
     users = UserCreate.objects.all()
-    # properties = (
-    #     Property.objects
-    #     .all()
-    #     .order_by("-created_at")
-    # )
     search = request.GET.get("search", "").strip()
 
     properties = Property.objects.select_related(
@@ -981,7 +1215,17 @@ def add_property(request):
                 # MULTIPLE IMAGES
                 # =============================
                 for img in uploaded_images:
-                    PropertyImage.objects.create(property=property_obj, image=img)
+                    PropertyImage.objects.create(
+                        property=property_obj,
+                        image=img
+                    )
+
+                create_admin_notification(
+                    "Property Added",
+                    f"Property #{property_obj.id} • {property_obj.label or 'Unnamed Property'} was added successfully.",
+                    "success",
+                )
+
                 messages.success(request, "Property added successfully")
         except Exception as e:
             traceback.print_exc()
@@ -1475,7 +1719,11 @@ def edit_property(request, property_id):
         # ====================================
         # SUCCESS
         # ====================================
-
+        create_admin_notification(
+            "Property Updated",
+            f"Property #{property_obj.id} • {property_obj.label or 'Unnamed Property'} was updated successfully.",
+            "info",
+        )
         messages.success(request, "Property updated successfully.")
 
     except Exception as e:
@@ -1487,6 +1735,13 @@ def edit_property(request, property_id):
         messages.error(request, str(e))
 
     return redirect("add_property")
+
+
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib import messages
+from django.views.decorators.cache import never_cache
+from django.contrib.auth.decorators import user_passes_test
+
 
 @never_cache
 @user_passes_test(lambda u: u.is_superuser, login_url="superuser_login_view")
@@ -1507,6 +1762,220 @@ def delete_property(request, property_id):
     return redirect("add_property")
 
 
+# @never_cache
+# @user_passes_test(
+#     superuser_required,
+#     login_url='superuser_login_view'
+# )
+# @require_POST
+# def edit_property(request, property_id):
+
+#     prop = get_object_or_404(
+#         Property,
+#         id=property_id
+#     )
+
+#     # BASIC FIELDS
+
+#     prop.label = request.POST.get("label")
+#     prop.land_area = request.POST.get("land_area")
+#     prop.sq_ft = request.POST.get("sq_ft")
+
+#     prop.description = request.POST.get(
+#         "description"
+#     )
+
+#     prop.message = request.POST.get(
+#         "message"
+#     )
+
+#     prop.perprice = request.POST.get(
+#         "perprice"
+#     )
+
+#     prop.price = request.POST.get(
+#         "price"
+#     )
+
+#     prop.whatsapp = request.POST.get(
+#         "whatsapp"
+#     )
+
+#     prop.phone = request.POST.get(
+#         "phone"
+#     )
+
+#     prop.location = request.POST.get(
+#         "location"
+#     )
+
+#     prop.city = request.POST.get(
+#         "city"
+#     )
+
+#     prop.district = request.POST.get(
+#         "district"
+#     )
+
+#     prop.village = request.POST.get(
+#         "village"
+#     )
+
+#     prop.taluk = request.POST.get(
+#         "taluk"
+#     )
+
+#     prop.state = request.POST.get(
+#         "state"
+#     )
+
+#     prop.pincode = request.POST.get(
+#         "pincode"
+#     )
+
+#     prop.added_by = request.POST.get(
+#         "added_by"
+#     )
+
+#     prop.market_staff = request.POST.get(
+#         "market_staff"
+#     )
+
+#     # PAID
+
+#     prop.paid = request.POST.get(
+#         "paid",
+#         "no"
+#     )
+
+#     # CATEGORY
+
+#     category_id = request.POST.get(
+#         "category"
+#     )
+
+#     if category_id:
+
+#         prop.category = get_object_or_404(
+#             Category,
+#             id=category_id
+#         )
+
+#     # PURPOSE
+
+#     purpose_id = request.POST.get(
+#         "purpose"
+#     )
+
+#     if purpose_id:
+
+#         prop.purpose = get_object_or_404(
+#             Purpose,
+#             id=purpose_id
+#         )
+
+#     # OWNER
+
+#     owner_id = request.POST.get(
+#         "owner"
+#     )
+
+#     if owner_id:
+
+#         prop.owner = get_object_or_404(
+#             UserCreate,
+#             id=owner_id
+#         )
+
+#     # DURATION
+
+#     duration_days = request.POST.get(
+#         "duration_days"
+#     )
+
+#     if duration_days:
+
+#         try:
+#             prop.duration_days = int(
+#                 duration_days
+#             )
+
+#         except ValueError:
+#             pass
+
+#     # SCREENSHOT
+
+#     screenshot_file = request.FILES.get(
+#         "manual_screenshot"
+#     )
+
+#     if screenshot_file:
+
+#         prop.screenshot = screenshot_file
+
+#     # SAVE
+
+#     prop.save()
+
+#     # AMENITIES
+
+#     amenity_ids = request.POST.getlist(
+#         "amenities"
+#     )
+
+#     if amenity_ids:
+
+#         amenities_qs = Amenities.objects.filter(
+#             id__in=amenity_ids
+#         )
+
+#         prop.amenities.set(
+#             amenities_qs
+#         )
+
+#     # ADD NEW IMAGES
+
+#     new_images = request.FILES.getlist(
+#         "images"
+#     )
+
+#     for img in new_images:
+
+#         PropertyImage.objects.create(
+#             property=prop,
+#             image=img
+#         )
+
+#     # DELETE IMAGES
+
+#     delete_images = request.POST.getlist(
+#         "delete_images"
+#     )
+
+#     for img_id in delete_images:
+
+#         PropertyImage.objects.filter(
+#             id=img_id,
+#             property=prop
+#         ).delete()
+
+#     messages.success(
+#         request,
+#         "Property updated successfully."
+#     )
+
+#     return redirect("add_property")
+
+
+# @never_cache
+# @user_passes_test(superuser_required, login_url='superuser_login_view')
+# @require_POST
+# def delete_property(request, pk):
+#     prop = get_object_or_404(Property, pk=pk)
+#     prop.delete()
+#     return redirect('add_property')
+
+
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 @require_POST
@@ -1514,7 +1983,16 @@ def delete_property(request, property_id):
 
     property_obj = get_object_or_404(Property, id=property_id)
 
+    property_id = property_obj.id
+    property_label = property_obj.label or "Unnamed Property"
+
     property_obj.delete()
+
+    create_admin_notification(
+        "Property Deleted",
+        f"Property #{property_id} • {property_label} was deleted successfully.",
+        "warning",
+    )
 
     messages.success(request, "Property deleted successfully.")
 
@@ -1558,7 +2036,15 @@ def agents_login(request):
                 duration_days=duration_days,
                 created_at=timezone.now(),
             )
+
+            create_admin_notification(
+                "Premium Agent Added",
+                f"Premium Agent • {name} was added successfully.",
+                "success",
+            )
+
             messages.success(request, " Premium Agent created successfully!")
+
 
         elif "agentname" in request.POST:
             agentsname = request.POST.get("agentname")
@@ -1594,6 +2080,12 @@ def agents_login(request):
                 agentspincode=agentspincode,
                 agentsimage=agentsimage,
                 duration_days=plan.validity,
+            )
+
+            create_admin_notification(
+                "Agent Added",
+                f"Agent • {agentsname} was added successfully with a {plan.validity} days plan.",
+                "success",
             )
 
             messages.success(
@@ -1847,9 +2339,11 @@ def add_admin_agent(request):
 
         agent.save()
 
-        # =========================================
-        # SUCCESS TOAST
-        # =========================================
+        create_admin_notification(
+            "Agent Added",
+            f"Agent • {agent.username} was added successfully.",
+            "success",
+        )
 
         messages.success(request, f"Agent '{agent.username}' added successfully.")
 
@@ -1861,45 +2355,7 @@ def add_admin_agent(request):
 
         return redirect("admin_agents")
 
-
-@never_cache
-@user_passes_test(superuser_required, login_url="superuser_login_view")
-def edit_premium(request, pk):
-    premium = get_object_or_404(Premium, pk=pk)
-
-    if request.method == "POST":
-        premium.name = request.POST.get("name", premium.name)
-        premium.speacialised = request.POST.get("speacialised", premium.speacialised)
-        premium.phone = request.POST.get("phone", premium.phone)
-        premium.whatsapp = request.POST.get("whatsapp", premium.whatsapp)
-        premium.email = request.POST.get("email", premium.email)
-        premium.location = request.POST.get("location", premium.location)
-        premium.city = request.POST.get("city", premium.city)
-
-        # 🔥 Convert to int to avoid TypeError
-        premium.duration_days = int(
-            request.POST.get("duration_days") or premium.duration_days
-        )
-
-        if "image" in request.FILES:
-            premium.image = request.FILES["image"]
-
-        premium.save()  # triggers auto-move to ExpiredPremium if duration <= 0
-
-        return redirect("admin_premiumagents")
-
-    return render(request, "admin_premiumagents.html", {"premium": premium})
-
-
-@never_cache
-@user_passes_test(superuser_required, login_url="superuser_login_view")
-@require_POST
-def delete_premium(request, pk):
-    premium = get_object_or_404(Premium, pk=pk)
-    premium.delete()
-    messages.success(request, "🗑️ Premium Agent deleted successfully!")
-    return redirect("admin_premiumagents")
-
+# agent edit function
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 def edit_agent(request, pk):
@@ -1941,17 +2397,75 @@ def edit_agent(request, pk):
 
         agent.save()
 
-        messages.success(request, "Agent updated successfully")
+        create_admin_notification(
+            "Agent Updated",
+            f"Agent • {agent.username} was updated successfully.",
+            "info",
+        )
 
+        messages.success(request, "Agent updated successfully")
         return redirect("admin_agents")
 
     return redirect("admin_agents")
 
+# agent delete function 
 def delete_agent(request, pk):
     agent = get_object_or_404(AgentUserProfile, pk=pk)
+
+    agent_id = agent.id
+    agent_username = agent.username
+
     agent.delete()
+
+    create_admin_notification(
+        "Agent Deleted",
+        f"Agent #{agent_id} • {agent_username} was deleted successfully.",
+        "warning",
+    )
+
     messages.success(request, "🗑️ Agent deleted successfully!")
     return redirect("admin_agents")
+
+
+
+@never_cache
+@user_passes_test(superuser_required, login_url="superuser_login_view")
+def edit_premium(request, pk):
+    premium = get_object_or_404(Premium, pk=pk)
+
+    if request.method == "POST":
+        premium.name = request.POST.get("name", premium.name)
+        premium.speacialised = request.POST.get("speacialised", premium.speacialised)
+        premium.phone = request.POST.get("phone", premium.phone)
+        premium.whatsapp = request.POST.get("whatsapp", premium.whatsapp)
+        premium.email = request.POST.get("email", premium.email)
+        premium.location = request.POST.get("location", premium.location)
+        premium.city = request.POST.get("city", premium.city)
+
+        # 🔥 Convert to int to avoid TypeError
+        premium.duration_days = int(
+            request.POST.get("duration_days") or premium.duration_days
+        )
+
+        if "image" in request.FILES:
+            premium.image = request.FILES["image"]
+
+        premium.save()  # triggers auto-move to ExpiredPremium if duration <= 0
+
+        return redirect("admin_premiumagents")
+
+    return render(request, "admin_premiumagents.html", {"premium": premium})
+
+
+@never_cache
+@user_passes_test(superuser_required, login_url="superuser_login_view")
+@require_POST
+def delete_premium(request, pk):
+    premium = get_object_or_404(Premium, pk=pk)
+    premium.delete()
+    messages.success(request, "🗑️ Premium Agent deleted successfully!")
+    return redirect("admin_premiumagents")
+
 
 
 @never_cache
@@ -2548,6 +3062,12 @@ def AddUser(request):
                         # role/profile after assigning plans
                         user.save()
 
+                    create_admin_notification(
+                        "User Added",
+                        f"User #{user.id} • {user.name} was added successfully.",
+                        "success",
+                    )
+
                     success = "User created successfully."
 
             # ==================================================
@@ -2614,7 +3134,13 @@ def AddUser(request):
 
                             user.save()
 
-                        success = "User updated successfully."
+                        create_admin_notification(
+                        "User Updated",
+                        f"User #{user.id} • {user.name} was updated successfully.",
+                        "info",
+                    )
+
+                    success = "User updated successfully."
 
             # ==================================================
             # DELETE USER
@@ -2627,7 +3153,16 @@ def AddUser(request):
 
                     user = UserCreate.objects.get(id=user_id)
 
+                    user_id = user.id
+                    user_name = user.name
+
                     user.delete()
+
+                    create_admin_notification(
+                        "User Deleted",
+                        f"User #{user_id} • {user_name} was deleted successfully.",
+                        "warning",
+                    )
 
                     success = "User deleted successfully."
 
@@ -2824,9 +3359,6 @@ def plans(request):
 
             plan.total_property_listings = int(request.POST.get("total_listing") or 0)
 
-            # plan.sale_listings_limit = int(
-            #     request.POST.get("sale") or 0
-            # )
             plan.featured_listings_limit = int(request.POST.get("sale") or 0)
 
             plan.priority_search = request.POST.get("priority_search")
@@ -3232,15 +3764,21 @@ def approve_agent(request, agent_id):
     elif pending.agent_type == "elite" and pending.elite_plan:
         agent.activate_elite_plan(pending.elite_plan)
 
+    create_admin_notification(
+        "New Agent Registered",
+        f"Agent • {agent.username} was registered successfully.",
+        "success",
+    )
+
     # Delete pending
     pending.delete()
 
     messages.success(request, f"{agent.username} approved successfully.")
     return redirect("pending_agents_list")
 
-
+# pending agent rejected 
 @never_cache
-@user_passes_test(superuser_required, login_url="superuser_login_view")
+@user_passes_test(superuser_required, login_url="superuser_login_view") 
 @require_POST
 def reject_agent(request, agent_id):
     agent_request = get_object_or_404(
@@ -3250,6 +3788,12 @@ def reject_agent(request, agent_id):
 
     agent_request.status = "rejected"
     agent_request.save()
+
+    create_admin_notification(
+        "Agent Registration Rejected",
+        f"Agent • {agent_request.full_name} registration was rejected.",
+        "warning",
+    )
 
     messages.info(
         request,
@@ -3351,10 +3895,12 @@ def userprofile_list_view(request):
             profile.save()
             profile.save()
 
-            # =====================================================
-            # TOAST NOTIFICATION — EDIT SUCCESS
-            # This message appears as a green toast after redirect
-            # =====================================================
+            create_admin_notification(
+                "User Profile Updated",
+                f"User Profile #{profile.id} • {profile.full_name or profile.username or 'User'} was updated successfully.",
+                "info",
+            )
+
             messages.success(request, "User profile updated successfully.")
 
         except Exception as error:
@@ -3395,12 +3941,16 @@ def delete_userprofile(request, id):
         # Store the name before deleting for the toast message
         profile_name = profile.full_name or profile.username or "User profile"
 
+        profile_id = profile.id
+
         profile.delete()
 
-        # =========================================================
-        # TOAST NOTIFICATION — DELETE SUCCESS
-        # This message appears as a green toast after deletion
-        # =========================================================
+        create_admin_notification(
+            "User Profile Deleted",
+            f"User Profile #{profile_id} • {profile_name} was deleted successfully.",
+            "warning",
+        )
+
         messages.success(request, f"{profile_name} deleted successfully.")
 
     except Exception as error:
@@ -3504,6 +4054,22 @@ def package_dashboard(request):
 
             pkg.save()
 
+            if pkg_id:
+                create_admin_notification(
+                    "Advertisement Package Updated",
+                    f"Advertisement Package #{pkg.id} • {pkg.name} was updated successfully.",
+                    "info",
+                )
+            else:
+                create_admin_notification(
+                    "Advertisement Package Added",
+                    f"Advertisement Package #{pkg.id} • {pkg.name} was added successfully.",
+                    "success",
+                )
+
+        # =====================================================
+        # REEL PACKAGE
+        # =====================================================
         # new code added by mehreena
         elif pkg_type == "reel":
 
@@ -3529,7 +4095,20 @@ def package_dashboard(request):
 
             pkg.save()
 
-        return redirect("package_dashboard")
+            if pkg_id:
+                create_admin_notification(
+                    "Reel Package Updated",
+                    f"Reel Package #{pkg.id} • {pkg.name} was updated successfully.",
+                    "info",
+                )
+            else:
+                create_admin_notification(
+                    "Reel Package Added",
+                    f"Reel Package #{pkg.id} • {pkg.name} was added successfully.",
+                    "success",
+                )
+
+            return redirect("package_dashboard")
 
     # =====================================================
     # FETCH DATA
@@ -3546,6 +4125,7 @@ def package_dashboard(request):
 # DELETE PACKAGE
 # =====================================================
 
+# promotional plan delete 
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 @require_POST
@@ -3560,7 +4140,16 @@ def delete_package(request, type, id):
     else:
         return redirect("package_dashboard")
 
+    package_id = package.id
+    package_name = package.name
+
     package.delete()
+
+    create_admin_notification(
+        "Advertisement Package Deleted" if type == "ad" else "Reel Package Deleted",
+        f"{'Advertisement Package' if type == 'ad' else 'Reel Package'} #{package_id} • {package_name} was deleted successfully.",
+        "warning",
+    )
 
     return redirect("package_dashboard")
 
@@ -3576,8 +4165,6 @@ def agent_registration(request):
 
             registration = form.save(commit=False)
 
-            # if request.user.is_authenticated:
-            #     registration.submitted_by = request.user
             registration.submitted_by = None
 
             registration.save()
@@ -3613,7 +4200,7 @@ def agent_registration(request):
         context,
     )
 
-
+# add blog function
 def blog_dashboard(request):
 
     blogs = Blog.objects.select_related("category").order_by("-date")
@@ -3628,15 +4215,19 @@ def blog_dashboard(request):
 
         form = BlogForm(request.POST, request.FILES)
 
-        if form.is_valid():
+        blog = form.save()
 
-            form.save()
+        create_admin_notification(
+            "Blog Added",
+            f"Blog • {blog.blog_head or 'Untitled Blog'} was added successfully.",
+            "success",
+        )
 
-            messages.success(request, "Blog added successfully.")
+        messages.success(request, "Blog added successfully.")
 
-            return redirect("blog_dashboard")
+        return redirect("blog_dashboard")
 
-        else:
+    else:
 
             print(form.errors)
 
@@ -3666,10 +4257,15 @@ def edit_blog(request, id):
 
                 form.instance.image = blog.image
 
-            form.save()
+            blog = form.save()
+
+            create_admin_notification(
+                "Blog Updated",
+                f"Blog • {blog.blog_head or 'Untitled Blog'} was updated successfully.",
+                "info",
+            )
 
             messages.success(request, "Blog updated successfully.")
-
             return redirect("blog_dashboard")
 
         else:
@@ -3684,14 +4280,21 @@ def edit_blog(request, id):
 
     return render("blog_dashboard")
 
-
+# delete blog function
 def delete_blog(request, id):
-
     blog = get_object_or_404(Blog, id=id)
 
     if request.method == "POST":
+        blog_id = blog.id
+        blog_label = blog.blog_head or "Untitled Blog"
 
         blog.delete()
+
+        create_admin_notification(
+            "Blog Deleted",
+            f"Blog #{blog_id} • {blog_label} was deleted successfully.",
+            "warning",
+        )
 
         messages.success(request, "Blog deleted successfully.")
 
@@ -3754,6 +4357,7 @@ def add_banner(request):
 
 from django.shortcuts import get_object_or_404
 
+# ads management banner edit 
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 @require_POST
@@ -3762,21 +4366,25 @@ def edit_banner(request, id):
     banner = get_object_or_404(BannerAd, id=id)
 
     if request.method == "POST":
-
         form = BannerAdForm(request.POST, request.FILES, instance=banner)
 
         if form.is_valid():
+            banner = form.save()
 
-            form.save()
+            create_admin_notification(
+                "Banner Updated",
+                f"Banner #{banner.id} was updated successfully.",
+                "info",
+            )
 
             messages.success(request, "Banner updated.")
 
         else:
-
             messages.error(request, form.errors)
 
     return redirect("ads_dashboard")
 
+# ads management banner delete
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 @require_POST
@@ -3784,33 +4392,46 @@ def delete_banner(request, id):
 
     banner = get_object_or_404(BannerAd, id=id)
 
+    banner_id = banner.id
+
     banner.delete()
+
+    create_admin_notification(
+        "Banner Deleted",
+        f"Banner #{banner_id} was deleted successfully.",
+        "warning",
+    )
 
     messages.success(request, "Banner deleted.")
 
     return redirect("ads_dashboard")
 
+# ads management slider add 
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 @require_POST
 def add_slider(request):
 
     if request.method == "POST":
-
         form = SliderAdForm(request.POST, request.FILES)
 
         if form.is_valid():
+            slider = form.save()
 
-            form.save()
+            create_admin_notification(
+                "Slider Added",
+                f"Slider #{slider.id} was added successfully.",
+                "success",
+            )
 
             messages.success(request, "Slider image added.")
 
         else:
-
             messages.error(request, form.errors)
 
     return redirect("ads_dashboard")
 
+# ads management slider edit 
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 @require_POST
@@ -3819,21 +4440,29 @@ def edit_slider(request, id):
     slider = get_object_or_404(SliderAd, id=id)
 
     if request.method == "POST":
-
-        form = SliderAdForm(request.POST, request.FILES, instance=slider)
+        form = SliderAdForm(
+            request.POST,
+            request.FILES,
+            instance=slider
+        )
 
         if form.is_valid():
+            slider = form.save()
 
-            form.save()
+            create_admin_notification(
+                "Slider Updated",
+                f"Slider #{slider.id} was updated successfully.",
+                "info",
+            )
 
             messages.success(request, "Slider updated.")
 
         else:
-
             messages.error(request, form.errors)
 
     return redirect("ads_dashboard")
 
+# ads management slider delete
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 @require_POST
@@ -3841,7 +4470,15 @@ def delete_slider(request, id):
 
     slider = get_object_or_404(SliderAd, id=id)
 
+    slider_id = slider.id
+
     slider.delete()
+
+    create_admin_notification(
+        "Slider Deleted",
+        f"Slider #{slider_id} was deleted successfully.",
+        "warning",
+    )
 
     messages.success(request, "Slider deleted.")
 
@@ -4046,6 +4683,87 @@ def mark_notification_read(request, request_type, id):
 
     return redirect("advertisement_notifications")
 
+# ============================================================
+# DASHBOARD NOTIFICATION - MARK AS READ
+# ============================================================
+
+@never_cache
+@user_passes_test(superuser_required, login_url="superuser_login_view")
+@require_POST
+def mark_dashboard_notification_read(request):
+
+    notification_id = request.POST.get("notification_id")
+
+    if not notification_id:
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Notification ID required."
+            },
+            status=400
+        )
+
+    try:
+        source, pk = notification_id.split("-", 1)
+
+        # ------------------------------------------
+        # General Admin / Developer Notification
+        # ------------------------------------------
+        if source == "admin":
+
+            updated = AdminNotification.objects.filter(
+                id=pk
+            ).update(
+                is_read=True
+            )
+
+        # ------------------------------------------
+        # Advertisement Notification
+        # ------------------------------------------
+        elif source == "advertisement":
+
+            updated = AdvertisementRequestNotification.objects.filter(
+                id=pk
+            ).update(
+                is_read=True
+            )
+
+        # ------------------------------------------
+        # Reel Notification
+        # ------------------------------------------
+        elif source == "reel":
+
+            updated = ReelPurchaseNotification.objects.filter(
+                id=pk
+            ).update(
+                is_read=True
+            )
+
+        else:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": "Invalid notification type."
+                },
+                status=400
+            )
+
+        return JsonResponse(
+            {
+                "success": True,
+                "updated": updated
+            }
+        )
+
+    except Exception as error:
+
+        return JsonResponse(
+            {
+                "success": False,
+                "message": str(error)
+            },
+            status=400
+        )
 
 # ============================================================
 # UPDATE STATUS
@@ -4173,14 +4891,6 @@ def subscription_dashboard(request):
         .distinct()
         .order_by("-purchased_at")
     )
-    # for sub in user_subscriptions:
-    #     print(
-    #         "USER:",
-    #         sub.user.name,
-    #         "PLAN:",
-    #         sub.plan.name
-    #     )
-
     agent_subscriptions = (
         Subscription.objects.select_related("agent", "payment")
         .filter(is_active=True)
@@ -5201,6 +5911,24 @@ def edit_agent_property(request, id):
     return redirect("agent_property_dashboard")
 
 
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from django.views.decorators.http import require_http_methods
+from django.views.decorators.csrf import csrf_exempt
+
+from developer.models import (
+    ExpiredProperty,
+    PropertyImage,
+    ExpiredPropertyFeature,
+    Amenities,
+    Category,
+    Subcategory,
+    Purpose,
+    SubcategoryField,
+)
+
+import json
+
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 @require_http_methods(["GET", "POST", "DELETE"])
@@ -5234,7 +5962,6 @@ def expired_property_edit_delete(request, id):
         # Dynamic Fields
         # ------------------------------------------
 
-        # dynamic_fields = []
         from collections import defaultdict
 
         dynamic_fields = []
@@ -5547,6 +6274,12 @@ def expired_property_edit_delete(request, id):
                     )
 
         property_obj.save()
+
+        create_admin_notification(
+            "Expired Property Updated",
+            f"Expired Property #{property_obj.id} • {property_obj.label or 'Unnamed Property'} was updated successfully.",
+            "info",
+        )
 
         return JsonResponse(
             {"status": True, "message": "Expired Property Updated Successfully."}
@@ -6741,3 +7474,62 @@ def delete_expired_agent_property(request, property_id):
     return JsonResponse(
         {"success": True, "message": "Expired property deleted successfully."}
     )
+
+
+# Agentcontactmessage 
+@never_cache
+@user_passes_test(superuser_required, login_url="superuser_login_view")
+def agent_contact_messages(request):
+    contact_messages = AgentContactMessage.objects.select_related(
+        "agent"
+    ).order_by("-created_at")
+
+    return render(
+        request,
+        "content/agent_contact_messages.html",
+        {
+            "contact_messages": contact_messages,
+        }
+    )
+
+# Agent Contact Message Status Update
+@never_cache
+@user_passes_test(superuser_required, login_url="superuser_login_view")
+@require_POST
+def update_agent_contact_message_status(request, message_id):
+
+    contact_message = get_object_or_404(
+        AgentContactMessage,
+        id=message_id
+    )
+
+    status = request.POST.get("status")
+
+    if status not in ["pending", "replied"]:
+        messages.error(
+            request,
+            "Invalid status."
+        )
+        return redirect("agent_contact_messages")
+
+    contact_message.status = status
+
+    if status == "replied":
+        contact_message.replied_at = timezone.now()
+    else:
+        contact_message.replied_at = None
+
+    contact_message.save(
+        update_fields=[
+            "status",
+            "replied_at",
+            "updated_at",
+        ]
+    )
+
+    messages.success(
+        request,
+        f"Message status changed to {status.title()}."
+    )
+
+    return redirect("agent_contact_messages")

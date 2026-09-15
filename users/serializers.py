@@ -493,22 +493,48 @@ class UserProfileSerializer(
 
         return None
 
-    
-class AmenitiesSerializer(serializers.ModelSerializer):
+#old code     
+# class AmenitiesSerializer(serializers.ModelSerializer):
 
+#     icon = serializers.SerializerMethodField()
+
+#     class Meta:
+#         model = Amenities
+#         fields = ["id", "name", "icon"]
+
+#     def get_icon(self, obj):
+#         if obj.icon:
+#             return obj.icon.url
+#         return None
+
+
+# added by mehreena
+class AmenitiesSerializer(serializers.ModelSerializer):
     icon = serializers.SerializerMethodField()
 
     class Meta:
         model = Amenities
         fields = ["id", "name", "icon"]
 
+    def validate_name(self, value):
+        value = value.strip()
+
+        if not value:
+            raise serializers.ValidationError(
+                "Name cannot be blank or spaces."
+            )
+
+        if Amenities.objects.filter(name__iexact=value).exists():
+            raise serializers.ValidationError(
+                "An amenity with this name already exists."
+            )
+
+        return value
+
     def get_icon(self, obj):
         if obj.icon:
             return obj.icon.url
         return None
-
-
-
 
 class InboxSerializer(serializers.ModelSerializer):
     class Meta:
@@ -3807,8 +3833,19 @@ class UserProfileUpdateSerializer(serializers.Serializer):
 
     full_name = serializers.CharField(required=False, allow_blank=True)
     email = serializers.EmailField(required=False)
-    mobile = serializers.CharField(required=False, allow_blank=True)
-    alternate_mobile = serializers.CharField(required=False, allow_blank=True)
+    # mobile = serializers.CharField(required=False, allow_blank=True)
+    # alternate_mobile = serializers.CharField(required=False, allow_blank=True)
+    mobile = serializers.RegexField(
+    regex=r'^[6-9]\d{9}$',
+    required=False,
+    allow_blank=True
+    )
+
+    alternate_mobile = serializers.RegexField(
+        regex=r'^[6-9]\d{9}$',
+        required=False,
+        allow_blank=True
+    )
     city = serializers.CharField(required=False, allow_blank=True)
 
     def update(self, user, validated_data):

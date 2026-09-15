@@ -195,66 +195,39 @@ urlpatterns = [
         views.restore_expired_property,
         name="restore_expired_property",
     ),
-    path(
-        "delete_premium_expire/<int:pk>/",
-        views.delete_premium_expire,
-        name="delete_premium_expire",
-    ),
-    path("expired_agent", views.expire_premium, name="expired_agent"),
-    path(
-        "delete_exagents/<int:pk>/",
-        views.delete_agents_expire,
-        name="delete_agents_expire",
-    ),
-    path(
-        "admin_expirepremium/<int:pk>/",
-        views.edit_expirepremium,
-        name="edit_expirepremium",
-    ),
-    path(
-        "admin_expireagent/<int:pk>/", views.edit_expireagent, name="edit_expireagent"
-    ),
-    path(
-        "ajax/property-search/", views.property_live_search, name="property_live_search"
-    ),
-    path(
-        "get-subcategories/<int:category_id>/",
-        views.get_subcategories,
-        name="get_subcategories",
-    ),
-    path(
-        "get-subcategory-fields/<int:subcategory_id>/",
-        views.get_subcategory_fields,
-        name="get_subcategory_fields",
-    ),
-    path(
-        "get-user-details/<int:user_id>/",
-        views.get_user_details,
-        name="get_user_details",
-    ),
-    path("useradd", views.AddUser, name="adduser"),
-    path("plans", views.plans, name="userplan"),
+    
+
+    path('delete_premium_expire/<int:pk>/', views.delete_premium_expire, name="delete_premium_expire"),
+
+    path('expired_agent', views.expire_premium, name='expired_agent'),
+    path('delete_exagents/<int:pk>/', views.delete_agents_expire, name="delete_agents_expire"),
+
+    path('admin_expirepremium/<int:pk>/', views.edit_expirepremium, name="edit_expirepremium"),
+    path('admin_expireagent/<int:pk>/', views.edit_expireagent, name="edit_expireagent"),
+
+    path("ajax/property-search/", views.property_live_search, name="property_live_search"),
+
+    path('get-subcategories/<int:category_id>/', views.get_subcategories, name='get_subcategories'),
+    path('get-subcategory-fields/<int:subcategory_id>/', views.get_subcategory_fields, name='get_subcategory_fields'),
+
+    path('get-user-details/<int:user_id>/', views.get_user_details, name='get_user_details'),
+
+    path('useradd',views.AddUser, name='adduser'),
+    path('plans',views.plans, name="userplan"),
     path("export-users/", views.export_users_excel, name="export_users_excel"),
-    path("agent_register/", views.agent_registration, name="agent_registration"),
-    path("pending-agents/", views.pending_agents_list_view, name="pending_agents_list"),
-    path("approve-agent/<uuid:agent_id>/", views.approve_agent, name="approve_agent"),
-    path("reject-agent/<uuid:agent_id>/", views.reject_agent, name="reject_agent"),
+
+    path("agent_register/",views.agent_registration,name="agent_registration"),
+    path('pending-agents/', views.pending_agents_list_view, name='pending_agents_list'),
+    path('approve-agent/<uuid:agent_id>/', views.approve_agent, name='approve_agent'),
+    path('reject-agent/<uuid:agent_id>/', views.reject_agent, name='reject_agent'),
+
+
     path("testimonials/", views.testimonial_admin_view, name="testimonial"),
-    path(
-        "testimonials/delete/<int:id>/",
-        views.delete_testimonial,
-        name="delete_testimonial",
-    ),
+    path("testimonials/delete/<int:id>/", views.delete_testimonial, name="delete_testimonial"),
     path("edit-testimonial/<int:id>/", views.edit_testimonial, name="edit_testimonial"),
     path("userprofiles/", views.userprofile_list_view, name="userprofiles"),
-    path(
-        "userprofiles/edit/<int:id>/", views.edit_userprofile, name="edit_userprofile"
-    ),
-    path(
-        "userprofiles/delete/<int:id>/",
-        views.delete_userprofile,
-        name="delete_userprofile",
-    ),
+    path("userprofiles/edit/<int:id>/", views.edit_userprofile, name="edit_userprofile"),
+    path("userprofiles/delete/<int:id>/", views.delete_userprofile, name="delete_userprofile"),
     path("packages/", views.package_dashboard, name="package_dashboard"),
     path(
         "packages/delete/<str:type>/<uuid:id>/",

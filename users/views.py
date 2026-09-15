@@ -1262,6 +1262,211 @@ class PremiumPasswordChangeAPIView(APIView):
             status=status.HTTP_400_BAD_REQUEST
         )
 
+
+# class FeaturedPropertyViewSet(viewsets.ReadOnlyModelViewSet):
+
+#     serializer_class = PropertyCardSerializer
+
+#     def get_queryset(self):
+#         return Property.objects.filter(
+#             is_featured=True
+#         ).prefetch_related(
+#             "images",
+#             "category",
+#             "purpose"
+#         ).order_by("-id")
+
+#     def get_serializer_context(self):
+#         context = super().get_serializer_context()
+#         request = self.request
+
+#         wishlist_ids = set()
+#         auth_header = request.headers.get("Authorization")
+
+#         if auth_header:
+#             try:
+#                 token = auth_header.split(" ")[1]
+
+#                 decoded = jwt.decode(
+#                     token,
+#                     settings.SECRET_KEY,
+#                     algorithms=["HS256"]
+#                 )
+
+#                 user_id = int(decoded.get("user_id"))
+
+#                 # ✅ IMPORTANT FIX: GET USER OBJECT FIRST
+#                 user = UserCreate.objects.get(id=user_id)
+
+#                 wishlist_ids = set(
+#                     Wishlist.objects.filter(user=user)
+#                     .values_list("property_id", flat=True)
+#                 )
+
+#             except jwt.ExpiredSignatureError:
+#                 pass
+#             except jwt.InvalidTokenError:
+#                 pass
+#             except UserCreate.DoesNotExist:
+#                 pass
+#             except Exception:
+#                 pass
+
+#         context["wishlist_ids"] = wishlist_ids
+#         return context
+
+import uuid
+import jwt
+from django.conf import settings
+from rest_framework import viewsets
+from rest_framework.permissions import AllowAny
+
+# class FeaturedPropertyViewSet(viewsets.ModelViewSet):
+#     serializer_class = PropertyCardSerializer
+#     permission_classes = [AllowAny]
+#     authentication_classes = []  
+#     http_method_names = ["get"]
+
+#     lookup_field = "uuid"              
+#     lookup_url_kwarg = "uuid"          
+
+#     def get_queryset(self):
+#         return Property.objects.filter(
+#             is_featured=True
+#         ).prefetch_related(
+#             "images",
+#             "category",
+#             "purpose"
+#         )
+
+#     def get_user(self):
+#         auth_header = self.request.headers.get("Authorization")
+
+#         if not auth_header:
+#             return None
+
+#         try:
+#             token = auth_header.split(" ")[1]
+
+#             decoded = jwt.decode(
+#                 token,
+#                 settings.SECRET_KEY,
+#                 algorithms=["HS256"]
+#             )
+
+#             user_id = decoded.get("user_id")
+
+#             if not user_id:
+#                 return None
+
+#             user_id = uuid.UUID(user_id)
+
+#             return UserCreate.objects.filter(id=user_id).first()
+
+#         except Exception as e:
+#             print("Auth Error:", str(e))
+#             return None
+
+#     def get_serializer_context(self):
+#         context = super().get_serializer_context()
+
+#         user = self.get_user()
+#         wishlist_ids = set()
+
+#         if user:
+#             wishlist_ids = set(
+#                 Wishlist.objects.filter(user_id=user.id)
+#                 .values_list("property_uuid", flat=True)
+#             )
+
+#         context["wishlist_ids"] = wishlist_ids
+#         return context
+
+
+import uuid
+import jwt
+from django.conf import settings
+from rest_framework import viewsets
+from rest_framework.permissions import AllowAny
+
+from .models import Property, Wishlist, UserCreate
+from .serializers import PropertyCardSerializer
+
+
+# class FeaturedPropertyViewSet(viewsets.ModelViewSet):
+
+#     serializer_class = PropertyCardSerializer
+#     permission_classes = [AllowAny]
+#     authentication_classes = []
+#     http_method_names = ["get"]
+
+#     # ===============================
+#     # QUERYSET
+#     # ===============================
+#     def get_queryset(self):
+#         return Property.objects.filter(
+#             is_featured=True
+#         ).prefetch_related(
+#             "images",
+#             "category",
+#             "purpose"
+#         )
+
+#     # ===============================
+#     # USER
+#     # ===============================
+#     def get_user(self):
+#         auth_header = self.request.headers.get("Authorization")
+
+#         if not auth_header:
+#             return None
+
+#         try:
+#             token = auth_header.split(" ")[1]
+
+#             decoded = jwt.decode(
+#                 token,
+#                 settings.SECRET_KEY,
+#                 algorithms=["HS256"]
+#             )
+
+#             user_id = decoded.get("user_id")
+
+#             if not user_id:
+#                 return None
+
+#             # 🔥 SAFE UUID HANDLING
+#             try:
+#                 user_id = uuid.UUID(str(user_id))
+#             except:
+#                 return None
+
+#             return UserCreate.objects.filter(id=user_id).first()
+
+#         except Exception as e:
+#             print("Auth Error:", str(e))
+#             return None
+
+#     # ===============================
+#     # CONTEXT (WISHLIST FIX)
+#     # ===============================
+#     def get_serializer_context(self):
+#         context = super().get_serializer_context()
+
+#         user = self.get_user()
+#         wishlist_ids = set()
+
+#         if user:
+#             wishlist_ids = Wishlist.objects.filter(user=user).values_list(
+#                 "property_uuid", flat=True
+#             )
+
+#             # 🔥 IMPORTANT: convert UUID → string
+#             wishlist_ids = {str(i) for i in wishlist_ids}
+
+#         context["wishlist_ids"] = wishlist_ids
+#         return context
+
 class FeaturedPropertyViewSet(viewsets.ModelViewSet):
 
     serializer_class = PropertyCardSerializer
@@ -1273,6 +1478,7 @@ class FeaturedPropertyViewSet(viewsets.ModelViewSet):
     # QUERYSET
     # ===============================
     def get_queryset(self):
+
         return Property.objects.filter(
             is_featured=True
         ).prefetch_related(
@@ -1285,12 +1491,16 @@ class FeaturedPropertyViewSet(viewsets.ModelViewSet):
     # USER
     # ===============================
     def get_user(self):
-        auth_header = self.request.headers.get("Authorization")
+
+        auth_header = self.request.headers.get(
+            "Authorization"
+        )
 
         if not auth_header:
             return None
 
         try:
+
             token = auth_header.split(" ")[1]
 
             decoded = jwt.decode(
@@ -1304,37 +1514,124 @@ class FeaturedPropertyViewSet(viewsets.ModelViewSet):
             if not user_id:
                 return None
 
-            # 🔥 SAFE UUID HANDLING
+            # SAFE UUID HANDLING
             try:
-                user_id = uuid.UUID(str(user_id))
-            except:
+
+                user_id = uuid.UUID(
+                    str(user_id)
+                )
+
+            except Exception:
+
                 return None
 
-            return UserCreate.objects.filter(id=user_id).first()
+            return UserCreate.objects.filter(
+                id=user_id
+            ).first()
 
         except Exception as e:
-            print("Auth Error:", str(e))
+
+            print(
+                "Auth Error:",
+                str(e)
+            )
+
             return None
 
     # ===============================
     # CONTEXT (WISHLIST FIX)
     # ===============================
     def get_serializer_context(self):
+
         context = super().get_serializer_context()
 
         user = self.get_user()
+
         wishlist_ids = set()
 
         if user:
-            wishlist_ids = Wishlist.objects.filter(user=user).values_list(
-                "property_uuid", flat=True
+
+            wishlist_ids = Wishlist.objects.filter(
+                user=user
+            ).values_list(
+                "property_uuid",
+                flat=True
             )
 
-            # 🔥 IMPORTANT: convert UUID → string
-            wishlist_ids = {str(i) for i in wishlist_ids}
+            # UUID -> STRING
+            wishlist_ids = {
+                str(i)
+                for i in wishlist_ids
+            }
 
         context["wishlist_ids"] = wishlist_ids
+
         return context
+
+    # ===============================
+    # LIST
+    # ===============================
+    def list(self, request, *args, **kwargs):
+
+        context = self.get_serializer_context()
+
+        # ===============================
+        # FEATURED USER PROPERTIES
+        # ===============================
+        user_properties = Property.objects.filter(
+            is_featured=True
+        ).prefetch_related(
+            "images",
+            "category",
+            "purpose"
+        )
+
+        # ===============================
+        # FEATURED AGENT PROPERTIES
+        # ===============================
+        agent_properties = AgentProperty.objects.filter(
+            is_featured=True
+        ).prefetch_related(
+            "images",
+            "category",
+            "purpose"
+        )
+
+        # ===============================
+        # USER PROPERTY DATA
+        # ===============================
+        user_data = PropertyCardSerializer(
+            user_properties,
+            many=True,
+            context=context
+        ).data
+
+        # ===============================
+        # AGENT PROPERTY DATA
+        # ===============================
+        agent_data = AgentPropertyCardSerializer(
+            agent_properties,
+            many=True,
+            context=context
+        ).data
+
+        # ===============================
+        # COMBINE BOTH
+        # ===============================
+        featured_data = (
+            user_data +
+            agent_data
+        )
+
+        # ===============================
+        # RESPONSE
+        # ===============================
+        return Response(
+            featured_data,
+            status=status.HTTP_200_OK
+        )
+
+
 
 class AgentFormView(APIView):
 
@@ -4094,6 +4391,42 @@ class ToggleReviewLikeAPIView(APIView):
             "total_likes": review.likes.count()
         })
 
+# class AgentListFrontendAPIView(APIView):
+#     permission_classes = [AllowAny]
+#     authentication_classes = []
+
+#     def get(self, request):
+#         agent_type = request.GET.get("type")  # all / Agent / PremiumAgent / EliteAgent
+
+#         agents = AgentUserProfile.objects.filter(is_active=True)
+
+#         # Mapping frontend → DB values
+#         type_mapping = {
+#             "Agent": "basic",
+#             "PremiumAgent": "premium",
+#             "EliteAgent": "elite"
+#         }
+
+#         if agent_type and agent_type != "all":
+#             mapped_type = type_mapping.get(agent_type)
+
+#             if mapped_type:
+#                 agents = agents.filter(agent_type=mapped_type)
+#             else:
+#                 return Response(
+#                     {"error": "Invalid agent type"},
+#                     status=400
+#                 )
+
+#         serializer = AgentListFrontendSerializer(agents, many=True)
+#         return Response(serializer.data)
+
+from django.db.models import Case, When, Value, IntegerField
+from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+
+
 class AgentListFrontendAPIView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
@@ -4121,7 +4454,19 @@ class AgentListFrontendAPIView(APIView):
                     status=400
                 )
 
+        # Elite → Premium → Basic
+        agents = agents.annotate(
+            agent_priority=Case(
+                When(agent_type="elite", then=Value(1)),
+                When(agent_type="premium", then=Value(2)),
+                When(agent_type="basic", then=Value(3)),
+                default=Value(4),
+                output_field=IntegerField(),
+            )
+        ).order_by("agent_priority")
+
         serializer = AgentListFrontendSerializer(agents, many=True)
+
         return Response(serializer.data)
 
 class AgentReviewListAPIView(APIView):
@@ -5161,7 +5506,8 @@ class AllPlansAPIView(APIView):
                 })
 
 
-            property_count = Property.objects.filter(user=user.user).count()
+            # property_count = Property.objects.filter(user=user.user).count()
+            property_count = user.total_property_used or 0
             active_subscriptions = UserPlanSubscription.objects.filter(
                 user=user.user,
                 is_active=True
@@ -6029,6 +6375,24 @@ class AgentPropertyAPIView(APIView):
             selected_subscription.save(
                 update_fields=["used_listings"]
             )
+
+            agent.total_property_used = (
+                agent.total_property_used or 0
+            ) + 1
+
+            agent.save(
+                update_fields=["total_property_used"]
+            )
+
+        # property_obj = serializer.save(
+        #     subscription=selected_subscription,
+        #     paid = True
+        # )
+        # selected_subscription.used_listings += 1
+
+        # selected_subscription.save(
+        #     update_fields=["used_listings"]
+        # )
         # FEATURED LISTING
 
         selected_featured_subscription = None
@@ -6798,7 +7162,12 @@ class DashboardAPIView(APIView):
 
         agent_properties = AgentProperty.objects.filter(agent=user)
 
-        total_properties = agent_properties.count()
+        # total_properties = agent_properties.count()
+        total_properties = user.total_property_used or 0
+
+        # enquiries_qs = AgentPropertyEnquiry.objects.filter(
+        #     agent_property__agent=user
+        # )
         enquiries_qs = AgentPropertyEnquiry.objects.filter(
             property__agent=user
         )
@@ -7926,17 +8295,31 @@ class MyActivityView(APIView):
             property_enquiries_count +
             agent_property_enquiries_count
         )
+        user_profile = UserProfile.objects.filter( user=user ).first()
 
-
+        if user_profile:  
+            properties_listed_count = ( user_profile.total_property_used if user_profile.total_property_used is not None else 0 ) 
+        else: 
+            user_add = UserCreate.objects.filter( email=user.email ).first() 
+            if user_add: 
+                properties_listed_count = Property.objects.filter( user=user_add ).count() 
+            else: 
+                properties_listed_count = 0
         # ✅ MATCH UserAdd USING EMAIL (NO RELATION NEEDED)
-        user_add = UserCreate.objects.filter(
-            email=user.email
-        ).first()
+        # user_add = UserCreate.objects.filter(
+        #     email=user.email
+        # ).first()
+
+        # user_profile = UserProfile.objects.filter( user=user ).first()
+
+        # properties_listed_count = ( user_profile.total_property_used if user_profile and user_profile.total_property_used is not None else 0 )
 
         # ✅ Properties listed
-        properties_listed_count = Property.objects.filter(
-            user=user_add
-        ).count() if user_add else 0
+        # properties_listed_count = Property.objects.filter(
+        #     user=user_add
+        # ).count() if user_add else 0
+
+        # properties_listed_count = ( user_profile.total_property_used if user_profile else 0 )
 
         # ✅ Viewed properties
         viewed_properties_count = PropertyView.objects.filter(
@@ -8401,6 +8784,156 @@ class PropertyFilterAPIView(APIView):
             "data": serializer.data
         }, status=status.HTTP_200_OK)
 
+
+import jwt
+from itertools import chain
+
+from django.conf import settings
+from django.db.models import Q
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
+
+
+# class PropertySearchAPIView(APIView):
+
+#     authentication_classes = []
+#     permission_classes = [AllowAny]
+
+#     def get(self, request):
+
+#         raw_input = request.query_params.get(
+#             "label",
+#             ""
+#         ).strip().lower()
+
+#         user_properties = Property.objects.select_related(
+#             "user",
+#             "category",
+#             "purpose"
+#         ).prefetch_related("images")
+
+#         agent_properties = AgentProperty.objects.select_related(
+#             "agent",
+#             "category",
+#             "purpose"
+#         ).prefetch_related("images")
+
+
+#         price_prefix = None
+#         text_parts = []
+
+#         if raw_input:
+#             for part in raw_input.split():
+
+#                 if part.isdigit():
+#                     price_prefix = part
+#                 else:
+#                     text_parts.append(part)
+
+#         search_text = " ".join(text_parts)
+
+
+#         if search_text:
+
+#             user_properties = user_properties.filter(
+#                 Q(label__istartswith=search_text) |
+#                 Q(city__istartswith=search_text) |
+#                 Q(district__istartswith=search_text)
+#             )
+
+#             agent_properties = agent_properties.filter(
+#                 Q(label__istartswith=search_text) |
+#                 Q(city__istartswith=search_text) |
+#                 Q(district__istartswith=search_text)
+#             )
+
+
+#         if price_prefix:
+
+#             user_properties = user_properties.filter(
+#                 price__startswith=price_prefix
+#             )
+
+#             agent_properties = agent_properties.filter(
+#                 price__startswith=price_prefix
+#             )
+
+
+#         combined = list(
+#             chain(
+#                 user_properties,
+#                 agent_properties
+#             )
+#         )
+
+
+#         combined.sort(
+#             key=lambda x: x.created_at,
+#             reverse=True
+#         )
+
+
+#         # -------------------------
+#         # WISHLIST UUIDS
+#         # -------------------------
+#         wishlist_ids = set()
+
+#         auth = request.headers.get("Authorization")
+
+#         if auth:
+#             try:
+#                 token = auth.split()[1]
+
+#                 decoded = jwt.decode(
+#                     token,
+#                     settings.SECRET_KEY,
+#                     algorithms=["HS256"]
+#                 )
+
+#                 user_id = decoded.get("user_id")
+
+#                 wishlist_ids = set(
+#                     str(x)
+#                     for x in Wishlist.objects.filter(
+#                         user_id=user_id
+#                     ).values_list(
+#                         "property_uuid",
+#                         flat=True
+#                     )
+#                 )
+
+#             except Exception:
+#                 pass
+
+
+#         serializer = CombinedPropertyListSerializer(
+#             combined,
+#             many=True,
+#             context={
+#                 "request": request,
+#                 "wishlist_ids": wishlist_ids
+#             }
+#         )
+
+
+#         return Response({
+#             "count": len(combined),
+#             "data": serializer.data
+#         })
+
+
+import re
+from itertools import chain
+import jwt
+from django.conf import settings
+from django.db.models import Q
+from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+
+
 class PropertySearchAPIView(APIView):
 
     authentication_classes = []
@@ -8412,6 +8945,10 @@ class PropertySearchAPIView(APIView):
             "label",
             ""
         ).strip().lower()
+
+        # =====================================================
+        # BASE QUERYSETS
+        # =====================================================
 
         user_properties = Property.objects.select_related(
             "user",
@@ -8425,35 +8962,47 @@ class PropertySearchAPIView(APIView):
             "purpose"
         ).prefetch_related("images")
 
+        # =====================================================
+        # SPLIT SEARCH INPUT
+        # =====================================================
 
+        search_words = []
         price_prefix = None
-        text_parts = []
 
         if raw_input:
+
             for part in raw_input.split():
 
+                # Numeric input = price search
                 if part.isdigit():
+
                     price_prefix = part
+
                 else:
-                    text_parts.append(part)
 
-        search_text = " ".join(text_parts)
+                    search_words.append(part)
 
+        for word in search_words:
 
-        if search_text:
+            escaped_word = re.escape(word)
+
+            word_prefix_regex = rf"(^|\W){escaped_word}"
 
             user_properties = user_properties.filter(
-                Q(label__istartswith=search_text) |
-                Q(city__istartswith=search_text) |
-                Q(district__istartswith=search_text)
+                Q(label__iregex=word_prefix_regex) |
+                Q(city__iregex=word_prefix_regex) |
+                Q(district__iregex=word_prefix_regex)
             )
 
             agent_properties = agent_properties.filter(
-                Q(label__istartswith=search_text) |
-                Q(city__istartswith=search_text) |
-                Q(district__istartswith=search_text)
+                Q(label__iregex=word_prefix_regex) |
+                Q(city__iregex=word_prefix_regex) |
+                Q(district__iregex=word_prefix_regex)
             )
 
+        # =====================================================
+        # PRICE FILTER
+        # =====================================================
 
         if price_prefix:
 
@@ -8465,6 +9014,9 @@ class PropertySearchAPIView(APIView):
                 price__startswith=price_prefix
             )
 
+        # =====================================================
+        # COMBINE USER + AGENT PROPERTIES
+        # =====================================================
 
         combined = list(
             chain(
@@ -8473,45 +9025,59 @@ class PropertySearchAPIView(APIView):
             )
         )
 
+        # =====================================================
+        # SORT BY CREATED DATE
+        # =====================================================
 
         combined.sort(
             key=lambda x: x.created_at,
             reverse=True
         )
 
-
-        # -------------------------
+        # =====================================================
         # WISHLIST UUIDS
-        # -------------------------
+        # =====================================================
+
         wishlist_ids = set()
 
         auth = request.headers.get("Authorization")
 
         if auth:
+
             try:
-                token = auth.split()[1]
 
-                decoded = jwt.decode(
-                    token,
-                    settings.SECRET_KEY,
-                    algorithms=["HS256"]
-                )
+                token_parts = auth.split()
 
-                user_id = decoded.get("user_id")
+                if len(token_parts) >= 2:
 
-                wishlist_ids = set(
-                    str(x)
-                    for x in Wishlist.objects.filter(
-                        user_id=user_id
-                    ).values_list(
-                        "property_uuid",
-                        flat=True
+                    token = token_parts[1]
+
+                    decoded = jwt.decode(
+                        token,
+                        settings.SECRET_KEY,
+                        algorithms=["HS256"]
                     )
-                )
+
+                    user_id = decoded.get("user_id")
+
+                    if user_id:
+
+                        wishlist_ids = set(
+                            str(x)
+                            for x in Wishlist.objects.filter(
+                                user_id=user_id
+                            ).values_list(
+                                "property_uuid",
+                                flat=True
+                            )
+                        )
 
             except Exception:
                 pass
 
+        # =====================================================
+        # SERIALIZER
+        # =====================================================
 
         serializer = CombinedPropertyListSerializer(
             combined,
@@ -8522,6 +9088,9 @@ class PropertySearchAPIView(APIView):
             }
         )
 
+        # =====================================================
+        # RESPONSE
+        # =====================================================
 
         return Response({
             "count": len(combined),
@@ -11836,6 +12405,51 @@ class UserPropertyDetailAPIView(APIView):
 
         }, status=status.HTTP_200_OK)
 
+
+# class AgentContactMessageCreateAPIView(APIView):
+
+#     authentication_classes = [AgentJWTAuthentication]
+#     permission_classes = [IsAuthenticated]
+
+#     def post(self, request):
+
+#         name = request.data.get("name")
+#         message = request.data.get("message")
+
+#         if not name:
+#             return Response({
+#                 "error": "name is required"
+#             }, status=400)
+
+#         if not message:
+#             return Response({
+#                 "error": "message is required"
+#             }, status=400)
+
+#         contact_message = AgentContactMessage.objects.create(
+#             agent=request.user,
+#             name=name,
+#             message=message
+#         )
+
+#         serializer = AgentContactMessageSerializer(
+#             contact_message
+#         )
+
+#         return Response({
+
+#             "status": True,
+#             "message": "Message sent successfully",
+
+#             "data": serializer.data
+
+#         })
+
+from django.core.exceptions import ValidationError
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+
 class AgentContactMessageCreateAPIView(APIView):
 
     authentication_classes = [AgentJWTAuthentication]
@@ -11846,22 +12460,61 @@ class AgentContactMessageCreateAPIView(APIView):
         name = request.data.get("name")
         message = request.data.get("message")
 
+        # ===============================
+        # REQUIRED VALIDATION
+        # ===============================
         if not name:
             return Response({
-                "error": "name is required"
+                "message": "name is required"
             }, status=400)
 
         if not message:
             return Response({
-                "error": "message is required"
+                "message": "message is required"
             }, status=400)
 
-        contact_message = AgentContactMessage.objects.create(
+        # ===============================
+        # CREATE OBJECT
+        # ===============================
+        contact_message = AgentContactMessage(
             agent=request.user,
             name=name,
             message=message
         )
 
+        # ===============================
+        # DATABASE / MODEL VALIDATION
+        # ===============================
+        try:
+
+            contact_message.full_clean()
+
+        except ValidationError as e:
+
+            errors = e.message_dict
+
+            # Return validation error in message field
+            first_error = next(
+                (
+                    error
+                    for field_errors in errors.values()
+                    for error in field_errors
+                ),
+                "Invalid data"
+            )
+
+            return Response({
+                "message": first_error
+            }, status=400)
+
+        # ===============================
+        # SAVE
+        # ===============================
+        contact_message.save()
+
+        # ===============================
+        # RESPONSE
+        # ===============================
         serializer = AgentContactMessageSerializer(
             contact_message
         )
@@ -11869,11 +12522,39 @@ class AgentContactMessageCreateAPIView(APIView):
         return Response({
 
             "status": True,
+
             "message": "Message sent successfully",
 
             "data": serializer.data
 
         })
+
+import uuid
+import re
+
+from datetime import timedelta
+
+from django.utils import timezone
+
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
+
+from users.models import (
+    Userplan,
+    UserProfile,
+    UserCreate
+)
+
+from users.serializers import (
+    UserPlanActivateSerializer
+)
+
+from users.authentication import (
+    UserJWTAuthentication
+)
+
 
 class ActivateUserPlanAPIView(APIView):
 
@@ -14018,14 +14699,42 @@ class VerifyPaymentAPIView(APIView):
             payment.payment_status = "success"
             payment.paid_at = timezone.now()
             payment.save()
-            # ==========================================
-            # REEL PURCHASE NOTIFICATION
-            # ==========================================
 
             if payment.plan_type in [
                 "short_reel",
                 "cinematic_reel"
             ]:
+
+                # =========================================================
+                # REEL PACKAGE
+                # =========================================================
+
+                reel_package = payment.reel_package
+
+                # ---------------------------------------------------------
+                # Get reel package details
+                # ---------------------------------------------------------
+
+                if reel_package:
+
+                    plan_name = reel_package.name
+
+                    plan_price = reel_package.price_per_day
+
+                    plan_validity = ""
+
+                else:
+
+                    plan_name = ""
+
+                    plan_price = payment.amount
+
+                    plan_validity = ""
+
+
+                # =========================================================
+                # CREATE REEL PURCHASE NOTIFICATION
+                # =========================================================
 
                 ReelPurchaseNotification.objects.create(
 
@@ -14034,7 +14743,11 @@ class VerifyPaymentAPIView(APIView):
                     message=(
                         f"{payment.agent.username} "
                         f"purchased "
-                        f"{payment.reel_package.name}"
+                        f"{reel_package.name}"
+                        if reel_package
+                        else
+                        f"{payment.agent.username} "
+                        f"purchased a reel package"
                     ),
 
                     notification_type="reel_purchase",
@@ -14043,36 +14756,139 @@ class VerifyPaymentAPIView(APIView):
 
                     agent=payment.agent
                 )
-                plan_details = self.get_plan_details(payment)
 
-                return Response({
 
-                    "status": True,
+                # =========================================================
+                # PAYMENT RESPONSE
+                # =========================================================
 
-                    "message": "Payment verified successfully. Our team will contact you shortly to discuss your reel requirements.",
+                return Response(
+                    {
+                        "status": True,
 
-                    "payment": {
+                        "message": (
+                            "Payment verified successfully. "
+                            "Our team will contact you shortly "
+                            "to discuss your reel requirements."
+                        ),
 
-                        "payment_db_id": str(payment.id),
+                        "payment": {
 
-                        "paid_by": payment.agent.username,
+                            # -------------------------------------------------
+                            # Payment ID
+                            # -------------------------------------------------
 
-                        "paid_email": payment.agent.email,
+                            "payment_db_id": str(
+                                payment.id
+                            ),
 
-                        "plan_type": payment.plan_type,
+                            # -------------------------------------------------
+                            # Agent details
+                            # -------------------------------------------------
 
-                        "plan_name": plan_details["name"],
+                            "paid_by": (
+                                payment.agent.username
+                                if payment.agent
+                                else ""
+                            ),
 
-                        "plan_price": plan_details["price"],
+                            "paid_email": (
+                                payment.agent.email
+                                if payment.agent
+                                else ""
+                            ),
 
-                        "payment_status": payment.payment_status,
+                            # -------------------------------------------------
+                            # Plan details
+                            # -------------------------------------------------
 
-                        "paid_at": payment.paid_at,
+                            "plan_type": payment.plan_type,
 
-                        "created_at": payment.created_at,
-                    }
+                            "plan_name": plan_name,
 
-                }, status=200)
+                            "plan_validity": plan_validity,
+
+                            # -------------------------------------------------
+                            # Payment amount
+                            # -------------------------------------------------
+
+                            "plan_price": plan_price,
+
+                            "amount_paid": str(
+                                payment.amount
+                            ),
+
+                            # -------------------------------------------------
+                            # Payment status
+                            # -------------------------------------------------
+
+                            "payment_status": (
+                                payment.payment_status
+                            ),
+
+                            "paid_at": payment.paid_at,
+
+                            "created_at": payment.created_at
+                        }
+                    },
+
+                    status=status.HTTP_200_OK
+                )
+            # ==========================================
+            # REEL PURCHASE NOTIFICATION
+            # ==========================================
+
+            # if payment.plan_type in [
+            #     "short_reel",
+            #     "cinematic_reel"
+            # ]:
+
+            #     ReelPurchaseNotification.objects.create(
+
+            #         title="New Reel Package Purchased",
+
+            #         message=(
+            #             f"{payment.agent.username} "
+            #             f"purchased "
+            #             f"{payment.reel_package.name}"
+            #         ),
+
+            #         notification_type="reel_purchase",
+
+            #         payment=payment,
+
+            #         agent=payment.agent
+            #     )
+            #     plan_details = self.get_plan_details(payment)
+
+            #     return Response({
+
+            #         "status": True,
+
+            #         "message": "Payment verified successfully. Our team will contact you shortly to discuss your reel requirements.",
+
+            #         "payment": {
+
+            #             "payment_db_id": str(payment.id),
+
+            #             "paid_by": payment.agent.username,
+
+            #             "paid_email": payment.agent.email,
+
+            #             "plan_type": payment.plan_type,
+
+            #             "plan_name": plan_details["name"],
+
+            #             "plan_price": plan_details["price"],
+
+            #             "payment_status": payment.payment_status,
+
+            #             "paid_at": payment.paid_at,
+
+            #             "created_at": payment.created_at,
+            #         }
+
+            #     }, status=200)
             # =================================================
             # SINGLE PROPERTY PAYMENT
             # =================================================

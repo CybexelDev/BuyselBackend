@@ -85,6 +85,10 @@ class AgentUserProfile(models.Model):
     facebook = models.URLField(null=True, blank=True)
     website = models.URLField(null=True, blank=True)
 
+    total_property_used = models.PositiveIntegerField(
+        default=0
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
     agent_code = models.CharField(max_length=20, unique=True, blank=True, null=True)
 
@@ -206,13 +210,6 @@ class AgentUserProfile(models.Model):
         self.paid = True
         self.save()
 
-    # def is_plan_active(self):
-    #     if self.plan_expiry_date:
-    #         if timezone.now() > self.plan_expiry_date:
-    #             self.check_and_downgrade_plan()
-    #             return False
-    #         return True
-    #     return False
     def is_plan_active(self):
         if self.plan_expiry_date:
             return timezone.now() <= self.plan_expiry_date
@@ -268,89 +265,7 @@ class AgentUserProfile(models.Model):
             )
 
         return 0, 0, 0
-
-    # def sync_subscription(self):
-
-    #     today = timezone.now().date()
-
-    #     # Mark expired subscriptions
-    #     self.subscriptions.filter(
-    #         end_date__lt=today,
-    #         is_active=True
-    #     ).update(
-    #         is_active=False
-    #     )
-
-    #     # Get latest active subscription
-    #     active_subscription = (
-    #         self.subscriptions
-    #         .filter(
-    #             is_active=True,
-    #             end_date__gte=today
-    #         )
-    #         .order_by("-start_date", "-end_date")
-    #         .first()
-    #     )
-
-    #     if active_subscription:
-
-    #         self.plan = None
-    #         self.elite_plan = None
-
-    #         if active_subscription.plan_type == "basic":
-
-    #             self.agent_type = "basic"
-
-    #         elif active_subscription.plan_type == "premium":
-
-    #             from developer.models import PremiumPlan
-
-    #             premium = PremiumPlan.objects.filter(
-    #                 name=active_subscription.plan_name
-    #             ).first()
-
-    #             self.plan = premium
-    #             self.agent_type = "premium"
-
-    #         elif active_subscription.plan_type == "elite":
-
-    #             from developer.models import ElitePlan
-
-    #             elite = ElitePlan.objects.filter(
-    #                 name=active_subscription.plan_name
-    #             ).first()
-
-    #             self.elite_plan = elite
-    #             self.agent_type = "elite"
-
-    #         self.paid = True
-    #         self.plan_start_date = active_subscription.start_date
-    #         self.plan_expiry_date = active_subscription.end_date
-
-    #     else:
-
-    #         # NO ACTIVE SUBSCRIPTION
-
-    #         self.plan = None
-    #         self.elite_plan = None
-    #         self.paid = False
-    #         self.plan_start_date = None
-    #         self.plan_expiry_date = None
-
-    #         # DO NOT CHANGE AGENT TYPE
-    #         # self.agent_type remains whatever it was
-
-    #     self.save(
-    #         update_fields=[
-    #             "plan",
-    #             "elite_plan",
-    #             "paid",
-    #             "plan_start_date",
-    #             "plan_expiry_date",
-    #             "agent_type",
-    #         ]
-    #     )
-
+    
     from datetime import datetime, time
     from django.utils import timezone
 
@@ -485,175 +400,6 @@ class AgentUserProfile(models.Model):
                 "agent_type",
             ]
         )
-    
-    # def sync_subscription(self):
-    #     from developer.models import Subscription
-    #     from agents.models import ExpireAgents
-    #     from django.utils import timezone
-
-    #     today = timezone.now().date()
-
-    #     # Mark expired subscriptions
-    #     self.subscriptions.filter(
-    #         end_date__lt=today,
-    #         is_active=True
-    #     ).update(is_active=False)
-
-    #     active_subscription = (
-    #         self.subscriptions
-    #         .filter(
-    #             is_active=True,
-    #             end_date__gte=today
-    #         )
-    #         .order_by("-end_date")
-    #         .first()
-    #     )
-    #     print("Active Subscription:", active_subscription)
-    #     if active_subscription:
-    #         print("Agent has active subscription")
-    #         self.plan = None
-    #         self.elite_plan = None
-
-    #         if active_subscription.plan_type == "premium":
-
-    #             from developer.models import PremiumPlan
-
-    #             self.plan = PremiumPlan.objects.filter(
-    #                 name=active_subscription.plan_name
-    #             ).first()
-
-    #             self.agent_type = "premium"
-
-    #         elif active_subscription.plan_type == "elite":
-
-    #             from developer.models import ElitePlan
-
-    #             self.elite_plan = ElitePlan.objects.filter(
-    #                 name=active_subscription.plan_name
-    #             ).first()
-
-    #             self.agent_type = "elite"
-
-    #         else:
-
-    #             self.agent_type = "basic"
-
-    #         self.paid = True
-    #         self.plan_start_date = active_subscription.start_date
-    #         self.plan_expiry_date = active_subscription.end_date
-
-    #         # Remove from expired table
-    #         ExpireAgents.objects.filter(
-    #             agent=self
-    #         ).delete()
-
-    #     else:
-    #         print("Creating expired record")
-    #         self.plan = None
-    #         self.elite_plan = None
-
-    #         self.paid = False
-
-    #         self.plan_start_date = None
-    #         self.plan_expiry_date = None
-
-    #         ExpireAgents.objects.get_or_create(
-    #             agent=self,
-    #             defaults={
-    #                 "expired_on": timezone.now(),
-    #             }
-    #         )
-
-    #     self.save(
-    #         update_fields=[
-    #             "plan",
-    #             "elite_plan",
-    #             "paid",
-    #             "plan_start_date",
-    #             "plan_expiry_date",
-    #             "agent_type",
-    #         ]
-    #     )
-
-    # def sync_subscription(self):
-
-    #     today = timezone.now().date()
-
-    #     # Expire old subscriptions
-    #     self.subscriptions.filter(
-    #         end_date__lt=today,
-    #         is_active=True
-    #     ).update(
-    #         is_active=False
-    #     )
-
-    #     # Latest active subscription
-    #     active_subscription = (
-    #         self.subscriptions.filter(
-    #             is_active=True,
-    #             end_date__gte=today
-    #         )
-    #         .order_by("-end_date", "-start_date")
-    #         .first()
-    #     )
-
-    #     if not active_subscription:
-
-    #         self.plan = None
-    #         self.elite_plan = None
-    #         self.paid = False
-    #         self.plan_start_date = None
-    #         self.plan_expiry_date = None
-
-    #         self.save(
-    #             update_fields=[
-    #                 "plan",
-    #                 "elite_plan",
-    #                 "paid",
-    #                 "plan_start_date",
-    #                 "plan_expiry_date",
-    #             ]
-    #         )
-    #         return
-
-    #     from developer.models import PremiumPlan, ElitePlan
-
-    #     elite = ElitePlan.objects.filter(
-    #         name=active_subscription.plan_name
-    #     ).first()
-
-    #     if elite:
-
-    #         self.elite_plan = elite
-    #         self.plan = None
-    #         self.agent_type = "elite"
-
-    #     else:
-
-    #         premium = PremiumPlan.objects.filter(
-    #             name=active_subscription.plan_name
-    #         ).first()
-
-    #         self.plan = premium
-    #         self.elite_plan = None
-
-    #         if premium:
-    #             self.agent_type = "premium"
-
-    #     self.paid = True
-    #     self.plan_start_date = active_subscription.start_date
-    #     self.plan_expiry_date = active_subscription.end_date
-
-    #     self.save(
-    #         update_fields=[
-    #             "plan",
-    #             "elite_plan",
-    #             "paid",
-    #             "plan_start_date",
-    #             "plan_expiry_date",
-    #             "agent_type",
-    #         ]
-    #     )
 
     def save(self, *args, **kwargs):
 
@@ -851,49 +597,7 @@ class PendingAgentRegistration(models.Model):
         elif self.agent_type == "elite":
             return self.elite_plan
         return None
-
-   
-    # def save(self, *args, **kwargs):
-
-    #     self.full_clean()  
-
-    #     # Hash password
-    #     if self.password and not self.password.startswith('pbkdf2_'):
-    #         self.password = make_password(self.password)
-
-    #     super().save(*args, **kwargs)
-
     
-    #     if self.status == 'approved':
-    #         if not AgentUserProfile.objects.filter(email=self.email).exists():
-
-              
-    #             base_username = self.email.split("@")[0]
-    #             username = base_username
-    #             counter = 1
-
-    #             while AgentUserProfile.objects.filter(username=username).exists():
-    #                 username = f"{base_username}{counter}"
-    #                 counter += 1
-
-    #             agent = AgentUserProfile.objects.create(
-    #                 username=username,
-    #                 email=self.email,
-    #                 phone_number=self.phone_number,
-    #                 whatsapp_number=self.phone_number,
-    #                 city=self.city,
-    #                 pin_code=int(self.pin_code) if self.pin_code else 0,
-    #                 address=self.address,
-    #                 agent_type=self.agent_type,
-    #                 is_agent=True,
-    #                 password=self.password
-    #             )
-
-    #             if self.agent_type == "premium" and self.premium_plan:
-    #                 agent.activate_premium_plan(self.premium_plan)
-
-    #             elif self.agent_type == "elite" and self.elite_plan:
-    #                 agent.activate_elite_plan(self.elite_plan)
     def save(self, *args, **kwargs):
 
         self.full_clean()
@@ -1154,6 +858,8 @@ class AgentProperty(models.Model):
     )
 
     land_area = models.CharField(
+        blank=True,
+        null=True,
         max_length=255,
         validators=[validate_safe_text]
     )
@@ -1231,6 +937,7 @@ class AgentProperty(models.Model):
     )
 
     pincode = models.CharField(
+        null=True,blank=True,
         max_length=50,
         validators=[validate_pincode]
     )
@@ -1277,6 +984,20 @@ class AgentProperty(models.Model):
 
     paid = models.BooleanField(default=False)
 
+    added_by=models.CharField(
+            max_length=255,
+            blank=True,
+            null=True,
+            validators=[validate_safe_text]
+        )
+    
+    market_staff=models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        validators=[validate_safe_text]
+    )
+
     is_featured = models.BooleanField(default=False)
 
     notes = models.CharField(
@@ -1308,47 +1029,51 @@ class AgentProperty(models.Model):
         auto_now_add=True
     )
 
+    updated_at=models.DateTimeField(
+            auto_now=True
+        )
+
     # ============================================================
     # VALIDATION
     # ============================================================
 
     def clean(self):
 
-        purpose_name = ""
+        # purpose_name = ""
 
-        if self.purpose:
-            purpose_name = self.purpose.name.lower().strip()
+        # if self.purpose:
+        #     purpose_name = self.purpose.name.lower().strip()
 
-        if purpose_name == "sale":
+        # if purpose_name == "sale":
 
-            if not self.price:
-                raise ValidationError({
-                    "price": "Price is required for sale"
-                })
+        #     if not self.price:
+        #         raise ValidationError({
+        #             "price": "Price is required for sale"
+        #         })
 
-            if not self.perprice:
-                raise ValidationError({
-                    "perprice": "Per price is required for sale"
-                })
+        #     if not self.perprice:
+        #         raise ValidationError({
+        #             "perprice": "Per price is required for sale"
+        #         })
 
-        elif purpose_name == "rent":
+        # elif purpose_name == "rent":
 
-            if not self.price:
-                raise ValidationError({
-                    "price": "Rent amount is required"
-                })
+        #     if not self.price:
+        #         raise ValidationError({
+        #             "price": "Rent amount is required"
+        #         })
 
-            if not self.deposit:
-                raise ValidationError({
-                    "deposit": "Deposit is required for rent"
-                })
+        #     if not self.deposit:
+        #         raise ValidationError({
+        #             "deposit": "Deposit is required for rent"
+        #         })
 
-        elif purpose_name == "lease":
+        # elif purpose_name == "lease":
 
-            if not self.price:
-                raise ValidationError({
-                    "price": "Price is required for lease"
-                })
+        #     if not self.price:
+        #         raise ValidationError({
+        #             "price": "Price is required for lease"
+        #         })
 
         # ========================================================
         # DURATION VALIDATION
@@ -1619,6 +1344,8 @@ class AgentProperty(models.Model):
             is_featured=self.is_featured,
 
             notes=self.notes,
+            added_by=self.added_by,
+            market_staff=self.market_staff,
 
             subscription=self.subscription,
 
@@ -1927,6 +1654,8 @@ class ExpiredAgentProperty(models.Model):
     )
 
     pincode = models.CharField(
+        blank=True,
+        null=True,
         max_length=50,
         validators=[validate_pincode]
     )
@@ -1986,6 +1715,20 @@ class ExpiredAgentProperty(models.Model):
         validators=[validate_safe_message]
     )
 
+    added_by=models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        validators=[validate_safe_text]
+    )
+        
+    market_staff=models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        validators=[validate_safe_text]
+    )
+
     subscription = models.ForeignKey(
         "developer.Subscription",
         on_delete=models.SET_NULL,
@@ -2004,55 +1747,56 @@ class ExpiredAgentProperty(models.Model):
         auto_now_add=True
     )
 
-    def clean(self):
 
-        purpose_name = ""
+    # def clean(self):
 
-        if self.purpose:
-            purpose_name = self.purpose.name.lower().strip()
+        # purpose_name = ""
 
-        # =========================
-        # SALE
-        # =========================
+        # if self.purpose:
+        #     purpose_name = self.purpose.name.lower().strip()
 
-        if purpose_name == "sale":
+        # # =========================
+        # # SALE
+        # # =========================
 
-            if not self.price:
-                raise ValidationError({
-                    "price": "Price is required for sale"
-                })
+        # if purpose_name == "sale":
 
-            if not self.perprice:
-                raise ValidationError({
-                    "perprice": "Per price is required for sale"
-                })
+        #     if not self.price:
+        #         raise ValidationError({
+        #             "price": "Price is required for sale"
+        #         })
 
-        # =========================
-        # RENT
-        # =========================
+        #     if not self.perprice:
+        #         raise ValidationError({
+        #             "perprice": "Per price is required for sale"
+        #         })
 
-        elif purpose_name == "rent":
+        # # =========================
+        # # RENT
+        # # =========================
 
-            if not self.price:
-                raise ValidationError({
-                    "price": "Rent amount is required"
-                })
+        # elif purpose_name == "rent":
 
-            if not self.deposit:
-                raise ValidationError({
-                    "deposit": "Deposit is required for rent"
-                })
+        #     if not self.price:
+        #         raise ValidationError({
+        #             "price": "Rent amount is required"
+        #         })
 
-        # =========================
-        # LEASE
-        # =========================
+        #     if not self.deposit:
+        #         raise ValidationError({
+        #             "deposit": "Deposit is required for rent"
+        #         })
 
-        elif purpose_name == "lease":
+        # # =========================
+        # # LEASE
+        # # =========================
 
-            if not self.price:
-                raise ValidationError({
-                    "price": "Price is required for lease"
-                })
+        # elif purpose_name == "lease":
+
+        #     if not self.price:
+        #         raise ValidationError({
+        #             "price": "Price is required for lease"
+        #         })
 
     def __str__(self):
         return f"{self.label} - {self.city}"

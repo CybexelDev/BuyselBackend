@@ -1,9 +1,68 @@
 from django.contrib.auth import authenticate, login
-from django.shortcuts import render, redirect
+from uuid import UUID
+from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.cache import never_cache
+from django.contrib.auth.decorators import user_passes_test
+from django.contrib.auth.models import AnonymousUser
+import json
+import openpyxl
+from django.views.decorators.http import require_http_methods
+from django.core.exceptions import ValidationError
+from django.views.decorators.http import require_POST
+from django.contrib import messages
+from django.core.paginator import Paginator
+from django.http import HttpResponse
+from django.shortcuts import render, redirect
+from django.utils import timezone
+from django.http import JsonResponse, HttpResponse
+import re
+from django.contrib import messages
+from itertools import chain
+from django.contrib.auth.decorators import login_required
+from django.db import IntegrityError
+from django.utils import timezone
+from .forms import AgentPropertyForm
+from agents.models import (
+        AgentProperty,
+        AgentPropertyImage,
+        AgentPropertyFieldValue,
+        AgentPropertySellingPoint,
+        AgentPropertyLandmark,
+        AgentUserProfile,
+    )
+from developer.models import (
+        Category,
+        Purpose,
+        Amenities,
+        SubcategoryField,
+        AgentUserProfile,
+    )
+from django.views.decorators.csrf import csrf_exempt
+from developer.models import (
+        ExpiredProperty,
+        PropertyImage,
+        ExpiredPropertyFeature,
+        Amenities,
+        Category,
+        Subcategory,
+        Purpose,
+        SubcategoryField,
+    )
+from .forms import AgentPropertyForm
+    # Update this import according to your project structure
+from developer.models import (
+        ExpiredProperty,
+        Property,
+        PropertyFeature,
+        PropertyImage,
+    )
+from django.http import HttpResponse
+import traceback
+from .models import Category, Subcategory, SubcategoryField, Purpose, Amenities
+from django.urls import reverse
+from django.contrib.auth import logout
 from .forms import SuperuserLoginForm
 from django.contrib import messages
-from django.contrib.auth.decorators import user_passes_test
 from .models import *
 from agents.models import *
 from django.shortcuts import render, redirect, get_object_or_404, redirect
@@ -18,6 +77,9 @@ from django.contrib.auth.hashers import make_password
 from agents.models import AgentUserProfile
 from decimal import Decimal
 from .models import AdminNotification
+from django.utils import timezone
+from django.contrib.auth import get_user_model
+from datetime import timedelta
 from django.http import JsonResponse
 from collections import defaultdict
 from django.db.models import Count
@@ -299,7 +361,7 @@ def superuser_login_view(request):
 def superuser_required(user):
     return user.is_authenticated and user.is_superuser
 
-# added by mehreena
+#added by mehreena
 # dashboard
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
@@ -537,72 +599,16 @@ def Dashboard(request):
         "unread_count": unread_count,
     }
 
-    return render(request, "dashboard/dashboard.html", context)
+    return render(
+        request,
+        "dashboard/dashboard.html",
+        context
+    )
 
 def superuser_logout_view(request):
     logout(request)
     return redirect("superuser_login_view")
 
-@never_cache
-@user_passes_test(superuser_required, login_url="superuser_login_view")
-def create_blog(request):
-    if request.method == "POST":
-        blog_head = request.POST.get("blog_head")
-        # modal_head = request.POST.get("modal_head")
-        date = request.POST.get("date")
-        card_paragraph = request.POST.get("card_paragraph")
-        # modal_paragraph = request.POST.get("modal_paragraph")
-        image = request.FILES.get("image")
-
-        Blog.objects.create(
-            blog_head=blog_head,
-            # modal_head=modal_head,
-            date=date,
-            card_paragraph=card_paragraph,
-            # modal_paragraph=modal_paragraph,
-            image=image,
-        )
-        create_admin_notification(
-            "Blog Added",
-            f"Blog • {blog_head or 'Untitled Blog'} was added successfully.",
-            "success",
-        )
-        return redirect(reverse("create_blog"))
-
-    #  Pagination
-    blog_list = Blog.objects.all().order_by("-id")  # latest first
-    paginator = Paginator(blog_list, 10)  # 5 blogs per page
-
-    page_number = request.GET.get("page")
-    blog_page = paginator.get_page(page_number)
-
-    return render(request, "content/blogs.html", {"blog": blog_page})
-
-@never_cache
-@user_passes_test(superuser_required, login_url="superuser_login_view")
-def update_blog(request, blog_id):
-    blog = get_object_or_404(Blog, id=blog_id)
-    if request.method == "POST":
-        blog.blog_head = request.POST.get("blog_head")
-        blog.modal_head = request.POST.get("modal_head")
-        blog.date = request.POST.get("date")
-        blog.card_paragraph = request.POST.get("card_paragraph")
-        blog.modal_paragraph = request.POST.get("modal_paragraph")
-        if request.FILES.get("image"):
-            blog.image = request.FILES.get("image")
-        blog.save()
-        return redirect("create_blog")
-    return redirect("create_blog")
-
-@never_cache
-@user_passes_test(superuser_required, login_url="superuser_login_view")
-@require_POST
-def delete_blog(request, pk):
-    blog = get_object_or_404(Blog, pk=pk)
-    blog.delete()
-    return redirect("create_blog")
-
-# categories add , edit
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 def categories(request):
@@ -964,6 +970,7 @@ def categories(request):
             "amenities": amenities,  # ✅ IMPORTANT
         },
     )
+
 
 def parse_listing(listing):
     if not listing:
@@ -1552,6 +1559,7 @@ def get_user_details(request, user_id):
 
         return JsonResponse({"status": False, "message": "User not found."})
 
+
 def get_user_details(request, user_id):
     user = get_object_or_404(UserCreate, id=user_id)
 
@@ -1819,6 +1827,7 @@ def edit_property(request, property_id):
         amenity_ids = request.POST.getlist("amenities")
 
         property_obj.amenities.set(Amenities.objects.filter(id__in=amenity_ids))
+
         # ====================================
         # REMOVE SELECTED IMAGES
         # ====================================
@@ -1861,6 +1870,244 @@ def edit_property(request, property_id):
 
     return redirect("add_property")
 
+
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib import messages
+from django.views.decorators.cache import never_cache
+from django.contrib.auth.decorators import user_passes_test
+
+
+@never_cache
+@user_passes_test(lambda u: u.is_superuser, login_url="superuser_login_view")
+def delete_property(request, property_id):
+
+    property_obj = get_object_or_404(Property, id=property_id)
+
+    try:
+
+        property_obj.delete()
+
+        messages.success(request, "Property deleted successfully.")
+
+    except Exception as e:
+
+        messages.error(request, str(e))
+
+    return redirect("add_property")
+
+
+# @never_cache
+# @user_passes_test(
+#     superuser_required,
+#     login_url='superuser_login_view'
+# )
+# @require_POST
+# def edit_property(request, property_id):
+
+#     prop = get_object_or_404(
+#         Property,
+#         id=property_id
+#     )
+
+#     # BASIC FIELDS
+
+#     prop.label = request.POST.get("label")
+#     prop.land_area = request.POST.get("land_area")
+#     prop.sq_ft = request.POST.get("sq_ft")
+
+#     prop.description = request.POST.get(
+#         "description"
+#     )
+
+#     prop.message = request.POST.get(
+#         "message"
+#     )
+
+#     prop.perprice = request.POST.get(
+#         "perprice"
+#     )
+
+#     prop.price = request.POST.get(
+#         "price"
+#     )
+
+#     prop.whatsapp = request.POST.get(
+#         "whatsapp"
+#     )
+
+#     prop.phone = request.POST.get(
+#         "phone"
+#     )
+
+#     prop.location = request.POST.get(
+#         "location"
+#     )
+
+#     prop.city = request.POST.get(
+#         "city"
+#     )
+
+#     prop.district = request.POST.get(
+#         "district"
+#     )
+
+#     prop.village = request.POST.get(
+#         "village"
+#     )
+
+#     prop.taluk = request.POST.get(
+#         "taluk"
+#     )
+
+#     prop.state = request.POST.get(
+#         "state"
+#     )
+
+#     prop.pincode = request.POST.get(
+#         "pincode"
+#     )
+
+#     prop.added_by = request.POST.get(
+#         "added_by"
+#     )
+
+#     prop.market_staff = request.POST.get(
+#         "market_staff"
+#     )
+
+#     # PAID
+
+#     prop.paid = request.POST.get(
+#         "paid",
+#         "no"
+#     )
+
+#     # CATEGORY
+
+#     category_id = request.POST.get(
+#         "category"
+#     )
+
+#     if category_id:
+
+#         prop.category = get_object_or_404(
+#             Category,
+#             id=category_id
+#         )
+
+#     # PURPOSE
+
+#     purpose_id = request.POST.get(
+#         "purpose"
+#     )
+
+#     if purpose_id:
+
+#         prop.purpose = get_object_or_404(
+#             Purpose,
+#             id=purpose_id
+#         )
+
+#     # OWNER
+
+#     owner_id = request.POST.get(
+#         "owner"
+#     )
+
+#     if owner_id:
+
+#         prop.owner = get_object_or_404(
+#             UserCreate,
+#             id=owner_id
+#         )
+
+#     # DURATION
+
+#     duration_days = request.POST.get(
+#         "duration_days"
+#     )
+
+#     if duration_days:
+
+#         try:
+#             prop.duration_days = int(
+#                 duration_days
+#             )
+
+#         except ValueError:
+#             pass
+
+#     # SCREENSHOT
+
+#     screenshot_file = request.FILES.get(
+#         "manual_screenshot"
+#     )
+
+#     if screenshot_file:
+
+#         prop.screenshot = screenshot_file
+
+#     # SAVE
+
+#     prop.save()
+
+#     # AMENITIES
+
+#     amenity_ids = request.POST.getlist(
+#         "amenities"
+#     )
+
+#     if amenity_ids:
+
+#         amenities_qs = Amenities.objects.filter(
+#             id__in=amenity_ids
+#         )
+
+#         prop.amenities.set(
+#             amenities_qs
+#         )
+
+#     # ADD NEW IMAGES
+
+#     new_images = request.FILES.getlist(
+#         "images"
+#     )
+
+#     for img in new_images:
+
+#         PropertyImage.objects.create(
+#             property=prop,
+#             image=img
+#         )
+
+#     # DELETE IMAGES
+
+#     delete_images = request.POST.getlist(
+#         "delete_images"
+#     )
+
+#     for img_id in delete_images:
+
+#         PropertyImage.objects.filter(
+#             id=img_id,
+#             property=prop
+#         ).delete()
+
+#     messages.success(
+#         request,
+#         "Property updated successfully."
+#     )
+
+#     return redirect("add_property")
+
+
+# @never_cache
+# @user_passes_test(superuser_required, login_url='superuser_login_view')
+# @require_POST
+# def delete_property(request, pk):
+#     prop = get_object_or_404(Property, pk=pk)
+#     prop.delete()
+#     return redirect('add_property')
 
 
 @never_cache
@@ -2099,7 +2346,6 @@ def admin_agents(request):
         },
     )
 
-# agent add function
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 def add_admin_agent(request):
@@ -2551,10 +2797,7 @@ def delete_requestforms(request, pk):
     messages.success(request, "🗑️ Property deleted successfully!")
     return redirect("requestforms")
 
-# Required models already imported in your project:
-# ExpiredProperty, PropertyImage, Category, Purpose, Amenities
-# Required helper already available:
-# superuser_required
+
 def _safe_int(value, default=0):
     try:
         return int(value or default)
@@ -2611,7 +2854,6 @@ def expired_property(request):
             "amenities": Amenities.objects.all(),
         },
     )
-
 
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
@@ -2889,193 +3131,6 @@ def property_live_search(request):
 
     return JsonResponse({"results": results})
 
-def blog_register(request):
-    if request.method == "POST":
-        username = request.POST.get("username")
-        password = request.POST.get("password")
-
-        if Blogadmin.objects.filter(username=username).exists():
-            messages.error(request, "Username already exists")
-            return redirect("blog_register")
-
-        Blogadmin.objects.create(username=username, password=make_password(password))
-
-        messages.success(request, "Account created successfully")
-        return redirect("blog_login")
-
-    return render(request, "blogregister.html")
-
-MAX_ATTEMPTS = 5
-BLOCK_HOURS = 2
-
-def blog_login(request):
-    if request.method == "POST":
-        username = request.POST.get("username")
-        password = request.POST.get("password")
-
-        cache_key = f"login_attempts_{username}"
-        block_key = f"login_block_{username}"
-
-        # 🚫 Check if user is blocked
-        if cache.get(block_key):
-            messages.error(
-                request, "Too many failed attempts. Try again after 2 hours."
-            )
-            return render(request, "bloglogin.html")
-
-        try:
-            user = Blogadmin.objects.get(username=username)
-
-            if check_password(password, user.password):
-                # ✅ Successful login → clear attempts
-                cache.delete(cache_key)
-                cache.delete(block_key)
-
-                request.session["user_id"] = user.id
-                request.session["username"] = user.username
-
-                return redirect("blog_dashboard")
-
-            else:
-                raise Blogadmin.DoesNotExist  # Treat as failed attempt
-
-        except Blogadmin.DoesNotExist:
-            # ❌ Failed attempt
-            attempts = cache.get(cache_key, 0) + 1
-            cache.set(cache_key, attempts, timeout=60 * 60 * BLOCK_HOURS)
-
-            remaining = MAX_ATTEMPTS - attempts
-
-            if attempts >= MAX_ATTEMPTS:
-                cache.set(block_key, True, timeout=60 * 60 * BLOCK_HOURS)
-                messages.error(
-                    request,
-                    "Account locked due to 5 failed attempts. Try again in 2 hours.",
-                )
-            else:
-                messages.error(
-                    request, f"Invalid credentials. {remaining} attempts remaining."
-                )
-
-    return render(request, "bloglogin.html")
-
-@never_cache
-def blog_dashboard(request):
-    user_id = request.session.get("user_id")
-    if not user_id:
-        return redirect("blog_login")
-
-    blogs_qs = Blog.objects.order_by("-id")  # latest first
-
-    paginator = Paginator(blogs_qs, 10)  # 🔹 5 posts per page
-    page_number = request.GET.get("page")
-    blogs = paginator.get_page(page_number)
-
-    return render(
-        request,
-        "blogdashboard.html",
-        {
-            "blogs": blogs,
-            "username": request.session.get("username"),
-        },
-    )
-
-def blog_logout(request):
-    request.session.flush()
-    return redirect("blog_login")
-
-MAX_IMAGE_SIZE = 100 * 1024  # 100 KB
-
-@never_cache
-def blog_dashboard_create(request):
-    user_id = request.session.get("user_id")
-    if not user_id:
-        return redirect("blog_login")
-
-    if request.method == "POST":
-        image = request.FILES.get("image")
-
-        if image:
-            # Size check
-            if image.size > MAX_IMAGE_SIZE:
-                messages.error(
-                    request,
-                    f"Image size must be 100 KB or less. Current size: {round(image.size / 1024)} KB",
-                )
-                return redirect("blog_dashboard")
-
-            # Real image validation
-            try:
-                img = Image.open(image)
-                img.verify()
-                image.seek(0)  # 🔥 CRITICAL LINE
-            except Exception:
-                messages.error(request, "Only valid image files are allowed.")
-                return redirect("blog_dashboard")
-
-        Blog.objects.create(
-            blog_head=request.POST.get("blog_head"),
-            modal_head=request.POST.get("modal_head"),
-            date=request.POST.get("date"),
-            card_paragraph=request.POST.get("card_paragraph"),
-            modal_paragraph=request.POST.get("modal_paragraph"),
-            image=image,
-        )
-
-        messages.success(request, "Blog post created successfully.")
-
-    return redirect("blog_dashboard")
-
-@never_cache
-@require_POST
-def blog_dashboard_update(request, blog_id):
-    user_id = request.session.get("user_id")
-    if not user_id:
-        return redirect("blog_login")
-
-    blog = get_object_or_404(Blog, id=blog_id)
-
-    blog.blog_head = request.POST.get("blog_head")
-    blog.modal_head = request.POST.get("modal_head")
-    blog.date = request.POST.get("date")
-    blog.card_paragraph = request.POST.get("card_paragraph")
-    blog.modal_paragraph = request.POST.get("modal_paragraph")
-
-    image = request.FILES.get("image")
-    if image:
-        if image.size > MAX_IMAGE_SIZE:
-            messages.error(
-                request,
-                f"Image size must be 100 KB or less. Current size: {round(image.size / 1024)} KB",
-            )
-            return redirect("blog_dashboard")
-
-        try:
-            img = Image.open(image)
-            img.verify()
-            image.seek(0)  # 🔥 REQUIRED
-        except Exception:
-            messages.error(request, "Only valid image files are allowed.")
-            return redirect("blog_dashboard")
-
-        blog.image = image
-
-    blog.save()
-    messages.success(request, "Blog post updated successfully.")
-    return redirect("blog_dashboard")
-
-@never_cache
-@require_POST
-def blog_dashboard_delete(request, blog_id):
-    user_id = request.session.get("user_id")
-    if not user_id:
-        return redirect("blog_login")
-
-    blog = get_object_or_404(Blog, id=blog_id)
-    blog.delete()
-    return redirect("blog_dashboard")
-
-# buysel users
 def AddUser(request):
 
     success = None
@@ -3283,7 +3338,6 @@ def AddUser(request):
         },
     )
 
-# plans
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 def plans(request):
@@ -3657,6 +3711,7 @@ def plans(request):
         },
     )
 
+
 def export_users_excel(request):
 
     workbook = openpyxl.Workbook()
@@ -3814,7 +3869,6 @@ def pending_agents_list_view(request):
         request, "agents/pending_agents.html", {"pending_agents": pending_agents}
     )
 
-# pending agent approved
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 @require_POST
@@ -3882,7 +3936,7 @@ def reject_agent(request, agent_id):
     messages.info(request, f"{agent_request.full_name} has been rejected.")
     return redirect("pending_agents_list")
 
-# Testimonial
+
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 def testimonial_admin_view(request):
@@ -3960,7 +4014,7 @@ def edit_testimonial(request, id):
 
     return render(request, "edit_testimonial.html", {"t": testimonial, "users": users})
 
-# userprofile edit
+
 def userprofile_list_view(request):
 
     # =========================================================
@@ -4028,7 +4082,6 @@ def userprofile_list_view(request):
 
     return render(request, "users/user_profiles.html", {"profiles": profiles})
 
-# userprofile delete
 def delete_userprofile(request, id):
 
     try:
@@ -4117,7 +4170,6 @@ def edit_userprofile(request, id):
 
     return render(request, "edit_userprofile.html", {"profile": profile})
 
-# promotional plan adverstmnt , reels add , edit
 def package_dashboard(request):
 
     if request.method == "POST":
@@ -4345,7 +4397,6 @@ def blog_dashboard(request):
 
     return render(request, "blogs/admin_blog.html", context)
 
-# edit blog function
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 def edit_blog(request, id):
@@ -4419,7 +4470,9 @@ def ads_dashboard(request):
 
     return render(request, "ads/ads_dashboard.html", context)
 
-# added by mehreena
+
+
+# added by mehreena 
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 @require_POST
@@ -4748,6 +4801,7 @@ def advertisement_notifications(request):
 # ============================================================
 # MARK AS READ
 # ============================================================
+
 # @login_required
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
@@ -5156,7 +5210,6 @@ def delete_agent_property(request, id):
 
     return redirect("agent_property/agent_property_dashboard")
 
-# agent registration add
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 @require_POST
@@ -5249,7 +5302,24 @@ def add_agent_property(request):
         # NOTES
         # -------------------------------------------------
 
-        property_obj.notes = request.POST.get("notes", "").strip()
+        property_obj.notes = request.POST.get(
+            "notes",
+            ""
+        ).strip()
+
+        property_obj.added_by = request.POST.get(
+            "added_by",
+            ""
+        ).strip()
+
+        # -------------------------------------------------
+        # MARKET STAFF
+        # -------------------------------------------------
+
+        property_obj.market_staff = request.POST.get(
+            "market_staff",
+            ""
+        ).strip()
 
         # -------------------------------------------------
         # DEFAULT DURATION
@@ -5258,8 +5328,13 @@ def add_agent_property(request):
         # Your AgentProperty model uses duration_days.
         # There is NO expiry_date/status field in the model.
 
-        if not property_obj.duration_days:
-            property_obj.duration_days = 30
+        duration_days = request.POST.get("duration_days")
+
+        if duration_days:
+            property_obj.duration_days = int(duration_days)
+
+        # if not property_obj.duration_days:
+        #     property_obj.duration_days = 30
 
         # -------------------------------------------------
         # VALIDATE INSTANCE
@@ -5273,7 +5348,15 @@ def add_agent_property(request):
 
         property_obj.save()
 
-        print("PROPERTY CREATED:", property_obj.id)
+        print(
+            "PROPERTY CREATED:",
+            property_obj.id
+        )
+
+        print(
+            "SAVED DURATION DAYS:",
+            property_obj.duration_days
+        )
 
         # =================================================
         # AMENITIES
@@ -5433,7 +5516,12 @@ def add_agent_property(request):
 
         messages.error(request, f"Unable to add property: {str(e)}")
 
-        return redirect("agent_property_dashboard")
+        return redirect(
+            "agent_property_dashboard"
+        )
+
+
+# new code added by mehreena
 
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
@@ -5506,6 +5594,8 @@ def get_agent_property(request, id):
             "pincode": property.pincode or "",
             "location": property.location or "",
             "notes": property.notes or "",
+            "added_by": property.added_by or "",
+            "market_staff": property.market_staff or "",
             "paid": property.paid,
             "is_featured": property.is_featured,
             "agent": str(property.agent.id) if property.agent else "",
@@ -5518,7 +5608,7 @@ def get_agent_property(request, id):
         }
     )
 
-# agent registration edit
+
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 @require_POST
@@ -5545,9 +5635,25 @@ def edit_agent_property(request, id):
 
             property.label = request.POST.get("label", "")
 
-            property.land_area = request.POST.get("land_area")
+            # ------------------------------------------
+            # LAND AREA
+            # Only update if a value was entered
+            # ------------------------------------------
 
-            property.sq_ft = request.POST.get("sq_ft")
+            land_area = request.POST.get("land_area")
+
+            if land_area is not None and land_area.strip() != "":
+                property.land_area = land_area.strip()
+
+            # ------------------------------------------
+            # SQ FT
+            # Only update if a value was entered
+            # ------------------------------------------
+
+            sq_ft = request.POST.get("sq_ft")
+
+            if sq_ft is not None and sq_ft.strip() != "":
+                property.sq_ft = sq_ft.strip()
 
             # ==========================================
             # DURATION DAYS
@@ -5555,19 +5661,20 @@ def edit_agent_property(request, id):
 
             duration_raw = request.POST.get("duration_days")
 
-            if duration_raw in (None, ""):
-
+            if duration_raw is None or duration_raw.strip() == "":
                 duration_days = 30
 
             else:
 
                 try:
-
-                    duration_days = int(duration_raw)
+                    duration_days = int(duration_raw.strip())
 
                 except (TypeError, ValueError):
 
-                    messages.error(request, "Duration days must be a valid number.")
+                    messages.error(
+                        request,
+                        "Duration days must be a valid number."
+                    )
 
                     return redirect("agent_property_dashboard")
 
@@ -5575,7 +5682,10 @@ def edit_agent_property(request, id):
 
             if duration_days < 0:
 
-                messages.error(request, "Duration days cannot be negative.")
+                messages.error(
+                    request,
+                    "Duration days cannot be negative."
+                )
 
                 return redirect("agent_property_dashboard")
 
@@ -5585,11 +5695,32 @@ def edit_agent_property(request, id):
             # PRICE
             # ==========================================
 
-            property.price = request.POST.get("price")
+            # ------------------------------------------
+            # PRICE
+            # ------------------------------------------
 
-            property.perprice = request.POST.get("perprice")
+            price = request.POST.get("price")
 
-            property.deposit = request.POST.get("deposit")
+            if price is not None and price.strip() != "":
+                property.price = price.strip()
+
+            # ------------------------------------------
+            # PER PRICE
+            # ------------------------------------------
+
+            perprice = request.POST.get("perprice")
+
+            if perprice is not None and perprice.strip() != "":
+                property.perprice = perprice.strip()
+
+            # ------------------------------------------
+            # DEPOSIT
+            # ------------------------------------------
+
+            deposit = request.POST.get("deposit")
+
+            if deposit is not None and deposit.strip() != "":
+                property.deposit = deposit.strip()
 
             # ==========================================
             # DESCRIPTION
@@ -5621,7 +5752,15 @@ def edit_agent_property(request, id):
 
             property.village = request.POST.get("village")
 
-            property.pincode = request.POST.get("pincode")
+            # ------------------------------------------
+            # PINCODE
+            # Only update if entered
+            # ------------------------------------------
+
+            pincode = request.POST.get("pincode")
+
+            if pincode is not None and pincode.strip() != "":
+                property.pincode = pincode.strip()
 
             property.location = request.POST.get("location")
 
@@ -5630,6 +5769,26 @@ def edit_agent_property(request, id):
             # ==========================================
 
             property.notes = request.POST.get("notes", "")
+
+            property.added_by = (
+                request.POST.get(
+                    "added_by",
+                    ""
+                ).strip()
+                or None
+            )
+
+            # ==========================================
+            # MARKET STAFF
+            # ==========================================
+
+            property.market_staff = (
+                request.POST.get(
+                    "market_staff",
+                    ""
+                ).strip()
+                or None
+            )
 
             # ==========================================
             # STATUS
@@ -5662,17 +5821,23 @@ def edit_agent_property(request, id):
                 if not key.startswith("field_"):
                     continue
 
-                if value == "":
+                # Ignore empty or whitespace values
+
+                if value is None or value.strip() == "":
                     continue
 
                 field_id = key.replace("field_", "")
 
                 try:
 
-                    field = SubcategoryField.objects.get(id=field_id)
+                    field = SubcategoryField.objects.get(
+                        id=field_id
+                    )
 
                     AgentPropertyFieldValue.objects.create(
-                        property=property, field=field, value=value
+                        property=property,
+                        field=field,
+                        value=value.strip()
                     )
 
                 except SubcategoryField.DoesNotExist:
@@ -5688,7 +5853,6 @@ def edit_agent_property(request, id):
             amenities = request.POST.getlist("amenities")
 
             if amenities:
-
                 property.amenities.add(*amenities)
 
             # ==========================================
@@ -5697,7 +5861,9 @@ def edit_agent_property(request, id):
 
             property.selling_points.all().delete()
 
-            selling_points = request.POST.getlist("selling_points")
+            selling_points = request.POST.getlist(
+                "selling_points"
+            )
 
             for point in selling_points:
 
@@ -5706,7 +5872,10 @@ def edit_agent_property(request, id):
                 if not point:
                     continue
 
-                AgentPropertySellingPoint.objects.create(property=property, point=point)
+                AgentPropertySellingPoint.objects.create(
+                    property=property,
+                    point=point
+                )
 
             # ==========================================
             # LANDMARKS
@@ -5714,9 +5883,13 @@ def edit_agent_property(request, id):
 
             property.landmarks.all().delete()
 
-            names = request.POST.getlist("landmark_name")
+            names = request.POST.getlist(
+                "landmark_name"
+            )
 
-            distances = request.POST.getlist("landmark_distance")
+            distances = request.POST.getlist(
+                "landmark_distance"
+            )
 
             for index, name in enumerate(names):
 
@@ -5732,21 +5905,24 @@ def edit_agent_property(request, id):
                     distance = distances[index].strip()
 
                 AgentPropertyLandmark.objects.create(
-                    property=property, name=name, distance=distance
+                    property=property,
+                    name=name,
+                    distance=distance
                 )
 
             # ==========================================
             # IMAGES
             # ==========================================
 
-            existing = request.POST.getlist("old_images")
+            existing = request.POST.getlist(
+                "old_images"
+            )
 
             # Delete images removed from modal
 
             for image in property.images.all():
 
                 if str(image.id) not in existing:
-
                     image.delete()
 
             # Add newly uploaded images
@@ -5755,7 +5931,10 @@ def edit_agent_property(request, id):
 
             for image in images:
 
-                AgentPropertyImage.objects.create(property=property, image=image)
+                AgentPropertyImage.objects.create(
+                    property=property,
+                    image=image
+                )
 
         # ==========================================
         # SUCCESS
@@ -5769,18 +5948,45 @@ def edit_agent_property(request, id):
 
         messages.success(
             request,
-            (f"Property updated successfully. " f"Duration: {duration_days} days."),
+            (
+                f"Property updated successfully. "
+                f"Duration: {duration_days} days."
+            ),
         )
 
     except Exception as error:
 
-        print("EDIT AGENT PROPERTY ERROR:", repr(error))
+        print(
+            "EDIT AGENT PROPERTY ERROR:",
+            repr(error)
+        )
 
-        messages.error(request, f"Unable to update property: {error}")
+        messages.error(
+            request,
+            f"Unable to update property: {error}"
+        )
 
     return redirect("agent_property_dashboard")
 
-# expired properties edit
+
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from django.views.decorators.http import require_http_methods
+from django.views.decorators.csrf import csrf_exempt
+
+from developer.models import (
+    ExpiredProperty,
+    PropertyImage,
+    ExpiredPropertyFeature,
+    Amenities,
+    Category,
+    Subcategory,
+    Purpose,
+    SubcategoryField,
+)
+
+import json
+
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 @require_http_methods(["GET", "POST", "DELETE"])
@@ -5916,10 +6122,6 @@ def expired_property_edit_delete(request, id):
 
         return JsonResponse(data)
 
-    # =====================================================
-    # UPDATE
-    # =====================================================
-
     elif request.method == "POST":
 
         property_obj.category_id = request.POST.get("category")
@@ -5930,17 +6132,17 @@ def expired_property_edit_delete(request, id):
 
         property_obj.label = request.POST.get("label")
 
-        property_obj.land_area = request.POST.get("land_area")
+        property_obj.land_area = request.POST.get("land_area") or None
 
-        property_obj.sq_ft = request.POST.get("sq_ft")
+        property_obj.sq_ft = request.POST.get("sq_ft") or None
 
         property_obj.description = request.POST.get("description")
 
-        property_obj.perprice = request.POST.get("perprice")
+        property_obj.perprice = request.POST.get("perprice") or None
 
-        property_obj.price = request.POST.get("price")
+        property_obj.price = request.POST.get("price") 
 
-        property_obj.deposit = request.POST.get("deposit")
+        property_obj.deposit = request.POST.get("deposit") or None
 
         property_obj.owner = request.POST.get("owner")
 
@@ -6479,6 +6681,8 @@ def expired_agent_property_detail(request, property_id):
         "paid": property_obj.paid,
         "is_featured": property_obj.is_featured,
         "notes": property_obj.notes,
+        "added_by": property_obj.added_by or "",
+        "market_staff": property_obj.market_staff or "",
         "duration_days": property_obj.duration_days,
         "image": (property_obj.image.url if property_obj.image else None),
         "screenshot": (
@@ -6518,7 +6722,7 @@ def expired_agent_property_detail(request, property_id):
 
     return JsonResponse(data)
 
-# Expired Agent Properties edit
+
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 @require_POST
@@ -6687,6 +6891,8 @@ def edit_expired_agent_property(request, property_id):
         "village",
         "state",
         "notes",
+        "added_by",
+        "market_staff",
     ]
 
     for field_name in string_fields:
@@ -7250,6 +7456,8 @@ def restore_expired_agent_property(request, property_id):
         paid=expired.paid,
         is_featured=expired.is_featured,
         notes=expired.notes,
+        added_by=expired.added_by,
+        market_staff=expired.market_staff,
         subscription=expired.subscription,
         # IMPORTANT
         #

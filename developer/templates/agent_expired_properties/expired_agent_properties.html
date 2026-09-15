@@ -1777,7 +1777,7 @@
                         </td>
 
 
-                        <td>
+                        <!-- <td>
                             <div class="expired-agent-property-image no-image">
                                 {% if property.image %}
                                     <img
@@ -1787,6 +1787,30 @@
                                     <i class="fa-regular fa-image"></i>
                                 {% endif %}
                             </div>
+                        </td> -->
+
+                        <td>
+                            {% with first_image=property.images.all|first %}
+                                {% if first_image and first_image.image %}
+                                    <div class="expired-agent-property-image">
+                                        <img
+                                            src="{{ first_image.image.url }}"
+                                            alt="{{ property.label|default:'Property' }}"
+                                            loading="lazy">
+                                    </div>
+                                {% elif property.image %}
+                                    <div class="expired-agent-property-image">
+                                        <img
+                                            src="{{ property.image.url }}"
+                                            alt="{{ property.label|default:'Property' }}"
+                                            loading="lazy">
+                                    </div>
+                                {% else %}
+                                    <div class="expired-agent-property-image no-image">
+                                        <i class="fa-regular fa-image"></i>
+                                    </div>
+                                {% endif %}
+                            {% endwith %}
                         </td>
 
 
@@ -2817,6 +2841,53 @@
 
                     </div>
 
+                    <div class="bg-white border rounded-xl p-4 mb-4">
+
+    <h3 class="font-semibold text-base mb-3">
+        Staff Details
+    </h3>
+
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+
+
+        <div>
+
+            <label class="label">
+                Added By
+            </label>
+
+            <input
+                type="text"
+                id="expiredAddedBy"
+                name="added_by"
+                class="input w-full"
+                maxlength="255">
+
+        </div>
+
+
+
+        <div>
+
+            <label class="label">
+                Marketing Staff
+            </label>
+
+            <input
+                type="text"
+                id="expiredMarketStaff"
+                name="market_staff"
+                class="input w-full"
+                maxlength="255">
+
+        </div>
+
+
+    </div>
+
+</div>
+
 
 
                     <!-- =================================================
@@ -2914,14 +2985,14 @@
                             <div>
 
                                 <label class="label">
-                                    Pincode *
+                                    Pincode 
                                 </label>
 
                                 <input
                                     id="expiredPincode"
                                     name="pincode"
                                     class="input w-full"
-                                    required>
+                                    >
 
                             </div>
 
@@ -3822,6 +3893,16 @@ async function populateExpiredPropertyForm(property) {
     setExpiredValue(
         "expiredNotes",
         property.notes
+    );
+
+    setExpiredValue(
+        "expiredAddedBy",
+        property.added_by
+    );
+
+    setExpiredValue(
+        "expiredMarketStaff",
+        property.market_staff
     );
 
 
@@ -6446,6 +6527,17 @@ function collectExpiredPropertyData() {
                 "expiredNotes"
             )?.value || "",
 
+        added_by:
+            expiredElement(
+                "expiredAddedBy"
+            )?.value || "",
+
+
+        marketing_staff:
+            expiredElement(
+                "expiredMarketStaff"
+            )?.value || "",
+
 
         paid:
             Boolean(
@@ -6803,6 +6895,16 @@ function initializeExpiredForm() {
             formData.append(
                 "notes",
                 data.notes
+            );
+
+            formData.append(
+                "added_by",
+                expiredElement("expiredAddedBy")?.value || ""
+            );
+
+            formData.append(
+                "market_staff",
+                expiredElement("expiredMarketStaff")?.value || ""
             );
 
 

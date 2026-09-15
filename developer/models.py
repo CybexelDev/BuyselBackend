@@ -20,10 +20,9 @@ from django.conf import settings
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.contrib.auth.models import AbstractUser
-
-from django.db import models
-from django.contrib.auth.models import AbstractUser
-
+from django.core.exceptions import ValidationError
+from agents.models import AgentUserProfile, PendingAgentRegistration
+from .validators import validate_safe_text
 from .validators import *
 
 class CustomUser(AbstractUser):
@@ -1335,6 +1334,7 @@ class UserProfile(models.Model):
             "residential_property_used",
             "commercial_property_used"
         ])
+
     def __str__(self):
 
         return self.username
@@ -1352,12 +1352,6 @@ class Purpose(models.Model):
 
     def __str__(self):
         return self.name
-
-
-from django.db import models
-from cloudinary.models import CloudinaryField
-from .validators import validate_safe_text
-
 
 class Amenities(models.Model):
     name = models.CharField(
@@ -1503,13 +1497,6 @@ class FieldOption(models.Model):
 
     def __str__(self):
         return f"{self.field.field_name} - {self.name}"
-
-import uuid
-
-from django.db import models
-from django.core.exceptions import ValidationError
-
-from .validators import validate_safe_text
 
 
 class Userplan(models.Model):
@@ -2379,6 +2366,7 @@ class ReelPackage(models.Model):
             f"{self.name} - ₹{self.price_per_day}"
         )
 
+
 def generate_global_property_uuid():
     from agents.models import AgentProperty
     from developer.models import Property
@@ -2560,6 +2548,7 @@ class Property(models.Model):
     )
 
     pincode=models.CharField(
+        null=True,blank=True,
         max_length=10,
         validators=[validate_pincode]
     )
@@ -2802,6 +2791,7 @@ class Property(models.Model):
             self.property_code=(
                 self.generate_property_code()
             )
+
         super().save(*args,**kwargs)
 
         if is_new and self.user:
@@ -3011,6 +3001,7 @@ class PropertyFeature(models.Model):
             })
 
     def save(self,*args,**kwargs):
+
         self.full_clean()
         super().save(*args,**kwargs)
 
@@ -3110,6 +3101,8 @@ class PropertyImage(models.Model):
             )
 
         return "Property Image"
+
+
 class ExpiredProperty(models.Model):
 
     id = models.UUIDField(
@@ -3275,6 +3268,7 @@ class ExpiredProperty(models.Model):
     )
 
     pincode = models.CharField(
+        null=True,blank=True,
         max_length=10,
         validators=[validate_pincode]
     )
@@ -3657,6 +3651,7 @@ class ExpireAgents(models.Model):
 
     def __str__(self):
         return f"{self.agent.username} - Expired"
+
 class AgentsImage(models.Model):
     agents = models.ForeignKey("Agents", on_delete=models.CASCADE, related_name="images", null=True, blank=True)
     expired_agents = models.ForeignKey("ExpireAgents", on_delete=models.CASCADE, related_name="images", null=True, blank=True)
@@ -3797,9 +3792,6 @@ class SliderAd(models.Model):
 
     def __str__(self):
         return f"Banner {self.id}"
-    
-
-from django.core.exceptions import ValidationError
 
 def validate_png(image):
     if not image.name.lower().endswith('.png'):
@@ -3833,22 +3825,6 @@ class BannerAd(models.Model):
 
     def __str__(self):
         return f"Hero Image {self.id}"
-
-import uuid
-
-from django.db import models
-from django.utils import timezone
-
-from developer.models import UserCreate
-from agents.models import AgentUserProfile, PendingAgentRegistration, PendingAgentRegistration
-
-from developer.models import (
-    Userplan,
-    PremiumPlan,
-    ElitePlan,
-    AgentPlan
-)
-
 
 class Payment(models.Model):
 
@@ -4056,11 +4032,14 @@ class Subscription(models.Model):
     )
 
     def clean(self):
+
+
         if self.used_listings > self.property_limit:
 
             raise ValidationError(
                 "Used listings cannot exceed property limit."
             )
+
 
     def save(self, *args, **kwargs):
 

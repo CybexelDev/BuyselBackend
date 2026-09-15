@@ -744,6 +744,8 @@ class AgentLoginSerializer(serializers.Serializer):
 
         data["user"] = user
         return data
+
+
 class PendingAgentRegistrationSerializer(
     serializers.ModelSerializer
 ):
@@ -1261,6 +1263,7 @@ class PendingAgentRegistrationSerializer(
 
         return registration
 
+
 class AgentProfileSerializer(serializers.ModelSerializer):
 
     agent_id = serializers.CharField(source='agent_code', read_only=True)
@@ -1380,15 +1383,56 @@ class AgentPlanSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+
+
 class PremiumPlanSerializer(serializers.ModelSerializer):
+
+    validity = serializers.SerializerMethodField()
+    total_listing = serializers.SerializerMethodField()
+    residential_limit = serializers.SerializerMethodField()
+    commercial_limit = serializers.SerializerMethodField()
+
     class Meta:
         model = PremiumPlan
-        fields = '__all__'
+        fields = "__all__"
+
+    def get_validity(self, obj):
+        return f"{obj.validity} days"
+
+    def get_total_listing(self, obj):
+        return f"{obj.total_listing} total listings"
+
+    def get_residential_limit(self, obj):
+        return f"{obj.residential_limit} residential listings"
+
+    def get_commercial_limit(self, obj):
+        return f"{obj.commercial_limit} commercial listings"
+
+
+
 
 class ElitePlanSerializer(serializers.ModelSerializer):
+
+    plan_validity_days = serializers.SerializerMethodField()
+    total_property_listings = serializers.SerializerMethodField()
+    featured_listings_limit = serializers.SerializerMethodField()
+
     class Meta:
         model = ElitePlan
-        fields = '__all__'
+        fields = "__all__"
+
+    def get_plan_validity_days(self, obj):
+        return f"{obj.plan_validity_days} days"
+
+    def get_total_property_listings(self, obj):
+        count = obj.total_property_listings
+        return f"{count} total property listing" if count == 1 else f"{count} total property listings"
+
+    def get_featured_listings_limit(self, obj):
+        count = obj.featured_listings_limit
+        return f"{count} featured property listing" if count == 1 else f"{count} featured property listings"
+
+
 
 class CurrentPlanSerializer(serializers.Serializer):
     status = serializers.CharField()
@@ -1455,6 +1499,12 @@ class AgentPropertySerializer(serializers.ModelSerializer):
     )
 
     purpose = serializers.CharField(
+        required=False,
+        allow_null=True,
+        allow_blank=True
+    )
+
+    pincode = serializers.CharField(
         required=False,
         allow_null=True,
         allow_blank=True
@@ -1537,12 +1587,13 @@ class AgentPropertySerializer(serializers.ModelSerializer):
             "subcategory",
             "purpose",
             "description",
-            "sq_ft",
+            # "sq_ft",
+            # "pincode",
             "whatsapp",
             "phone",
             "state",
             "district",
-            "pincode",
+            "city",
             "phone"
 
         ]
@@ -1667,34 +1718,49 @@ class AgentPropertySerializer(serializers.ModelSerializer):
             if str(sp).strip()
         ]
 
-        if not cleaned_selling_points:
+        # if not cleaned_selling_points:
 
-            raise serializers.ValidationError({
+        #     raise serializers.ValidationError({
 
-                "selling_points": (
-                    "Selling points cannot be empty."
-                )
+        #         "selling_points": (
+        #             "Selling points cannot be empty."
+        #         )
 
-            })
+        #     })
 
         # =========================================
         # LANDMARKS VALIDATION
         # =========================================
+
+        # landmarks_list = self.context.get(
+        #     "landmarks_list",
+        #     []
+        # )
+
+        # if not landmarks_list:
+
+        #     raise serializers.ValidationError({
+
+        #         "landmarks": (
+        #             "Landmarks cannot be empty."
+        #         )
+
+        #     })
         landmarks_list = self.context.get(
             "landmarks_list",
             []
         )
 
         # Empty list check
-        if not landmarks_list:
+        # if not landmarks_list:
 
-            raise serializers.ValidationError({
+        #     raise serializers.ValidationError({
 
-                "landmarks": (
-                    "Landmarks cannot be empty."
-                )
+        #         "landmarks": (
+        #             "Landmarks cannot be empty."
+        #         )
 
-            })
+        #     })
 
         # Validate each landmark
         cleaned_landmarks = []
@@ -1726,15 +1792,15 @@ class AgentPropertySerializer(serializers.ModelSerializer):
             })
 
         # Final validation
-        if not cleaned_landmarks:
+        # if not cleaned_landmarks:
 
-            raise serializers.ValidationError({
+        #     raise serializers.ValidationError({
 
-                "landmarks": (
-                    "Valid landmarks are required."
-                )
+        #         "landmarks": (
+        #             "Valid landmarks are required."
+        #         )
 
-            })
+        #     })
 
         # Save cleaned data back
         self.context["landmarks_list"] = cleaned_landmarks
@@ -1757,15 +1823,15 @@ class AgentPropertySerializer(serializers.ModelSerializer):
             []
         )
 
-        if not field_values:
+        # if not field_values:
 
-            raise serializers.ValidationError({
+        #     raise serializers.ValidationError({
 
-                "features": (
-                    "Features cannot be empty."
-                )
+        #         "features": (
+        #             "Features cannot be empty."
+        #         )
 
-            })
+        #     })
 
         # =========================================
         # AMENITIES VALIDATION
@@ -1776,15 +1842,15 @@ class AgentPropertySerializer(serializers.ModelSerializer):
             []
         )
 
-        if not amenities_list:
+        # if not amenities_list:
 
-            raise serializers.ValidationError({
+        #     raise serializers.ValidationError({
 
-                "amenities": (
-                    "Amenities cannot be empty."
-                )
+        #         "amenities": (
+        #             "Amenities cannot be empty."
+        #         )
 
-            })
+        #     })
 
         purpose_obj = None
 
@@ -2298,29 +2364,229 @@ class AgentPropertySerializer(serializers.ModelSerializer):
             for lm in obj.landmarks.all()
         ]
 
+
+    # =====================================================
+    # FEATURES
+    # =====================================================
+
     def get_features(self, obj):
 
         result = {}
 
         request = self.context.get("request")
 
-        for fv in obj.field_values.select_related("field"):
+        # ============================================================
+        # SUPPORT BOTH Property AND AgentProperty
+        # ============================================================
+
+        if hasattr(obj, "property_features"):
+
+            feature_values = obj.property_features.select_related(
+                "field"
+            ).prefetch_related(
+                "field__options"
+            )
+
+        elif hasattr(obj, "field_values"):
+
+            feature_values = obj.field_values.select_related(
+                "field"
+            ).prefetch_related(
+                "field__options"
+            )
+
+        else:
+
+            feature_values = []
+
+
+        # ============================================================
+        # PROCESS ALL FEATURES
+        # ============================================================
+
+        for fv in feature_values:
 
             field = fv.field
+
+            # --------------------------------------------------------
+            # Safely decode JSON
+            # --------------------------------------------------------
 
             try:
 
                 data = json.loads(fv.value)
 
+            except Exception:
+
+                data = None
+
+
+            # ========================================================
+            # [
+            #   {"option": "sleeping area", "value": "2"},
+            #   {"option": "parking", "value": "1"},
+            #   {"option": "outdoor area", "value": "3"}
+            # ]
+            # ========================================================
+
+            if isinstance(data, list):
+
+                for item in data:
+
+                    if not isinstance(item, dict):
+                        continue
+
+                    option = item.get("option")
+
+                    # Support both "value" and old "count"
+                    value = item.get("value")
+
+                    if value is None:
+                        value = item.get("count", "")
+
+
+                    # ------------------------------------------------
+                    # Use FieldOption.icon
+                    # ------------------------------------------------
+
+                    if option:
+
+                        option = str(option).strip()
+
+                        option_obj = None
+
+                        # First use prefetched options
+                        for option_item in field.options.all():
+
+                            if (
+                                option_item.name
+                                and option_item.name.strip().lower()
+                                == option.lower()
+                            ):
+
+                                option_obj = option_item
+                                break
+
+
+                        option_icon = None
+
+                        if option_obj and option_obj.icon:
+
+                            try:
+
+                                option_icon = (
+                                    request.build_absolute_uri(
+                                        option_obj.icon.url
+                                    )
+                                    if request
+                                    else option_obj.icon.url
+                                )
+
+                            except Exception:
+
+                                option_icon = option_obj.icon.url
+
+
+                        result[option] = {
+                            "value": value,
+                            "icon": option_icon
+                        }
+
+                        continue
+
+
+                    # ------------------------------------------------
+                    # NO OPTION
+                    #
+                    # Use SubcategoryField.icon
+                    # ------------------------------------------------
+
+                    if field.icon:
+
+                        try:
+
+                            icon = (
+                                request.build_absolute_uri(
+                                    field.icon.url
+                                )
+                                if request
+                                else field.icon.url
+                            )
+
+                        except Exception:
+
+                            icon = field.icon.url
+
+                    else:
+
+                        icon = None
+
+
+                    # ------------------------------------------------
+                    # Countable field
+                    # ------------------------------------------------
+
+                    if field.field_type == "countable":
+
+                        try:
+
+                            value = int(value)
+
+                        except Exception:
+
+                            value = 0
+
+
+                    result[field.field_name] = {
+                        "value": value,
+                        "icon": icon
+                    }
+
+
+                # Finished processing this FieldValue
+                continue
+
+
+            # ========================================================
+            # {"option": "Bed", "value": 1}
+            # {"option": "Bed", "count": 1}
+            # ========================================================
+
+            if isinstance(data, dict):
+
                 option = data.get("option")
-                count = data.get("count", 0)
+
+                # Support value
+                value = data.get("value")
+
+                # Support old count format
+                if value is None:
+
+                    value = data.get("count", None)
+
+
+                # ----------------------------------------------------
+                # OPTION EXISTS
+                # ----------------------------------------------------
 
                 if option:
 
-                    option_obj = FieldOption.objects.filter(
-                        field=field,
-                        name__iexact=option
-                    ).first()
+                    option = str(option).strip()
+
+                    option_obj = None
+
+                    # Use prefetched FieldOptions
+                    for option_item in field.options.all():
+
+                        if (
+                            option_item.name
+                            and option_item.name.strip().lower()
+                            == option.lower()
+                        ):
+
+                            option_obj = option_item
+                            break
+
 
                     option_icon = None
 
@@ -2340,18 +2606,93 @@ class AgentPropertySerializer(serializers.ModelSerializer):
 
                             option_icon = option_obj.icon.url
 
+
                     result[option] = {
-                        "value": count,
+                        "value": (
+                            value
+                            if value is not None
+                            else ""
+                        ),
                         "icon": option_icon
                     }
 
                     continue
 
-            except Exception:
-                pass
+
+                # ----------------------------------------------------
+                # NO OPTION
+                #
+                # Use SubcategoryField.icon
+                # ----------------------------------------------------
+
+                if field.field_name.lower() == "flat furnishings":
+
+                    continue
+
+
+                if field.icon:
+
+                    try:
+
+                        icon = (
+                            request.build_absolute_uri(
+                                field.icon.url
+                            )
+                            if request
+                            else field.icon.url
+                        )
+
+                    except Exception:
+
+                        icon = field.icon.url
+
+                else:
+
+                    icon = None
+
+
+                # ----------------------------------------------------
+                # Countable field
+                # ----------------------------------------------------
+
+                if field.field_type == "countable":
+
+                    try:
+
+                        value = int(
+                            value
+                            if value is not None
+                            else 0
+                        )
+
+                    except Exception:
+
+                        value = 0
+
+                else:
+
+                    if value is None:
+
+                        value = ""
+
+
+                result[field.field_name] = {
+                    "value": value,
+                    "icon": icon
+                }
+
+                continue
+
+
+            # ========================================================
+            # CASE 3:
+            # "4BHK"
+            # ========================================================
 
             if field.field_name.lower() == "flat furnishings":
+
                 continue
+
 
             if field.icon:
 
@@ -2373,21 +2714,35 @@ class AgentPropertySerializer(serializers.ModelSerializer):
 
                 icon = None
 
+
+            # --------------------------------------------------------
+            # Countable field
+            # --------------------------------------------------------
+
             if field.field_type == "countable":
 
                 try:
+
                     value = int(fv.value)
 
                 except Exception:
+
                     value = 0
 
             else:
+
                 value = fv.value
+
 
             result[field.field_name] = {
                 "value": value,
                 "icon": icon
             }
+
+
+        # ============================================================
+        # FINAL RESPONSE
+        # ============================================================
 
         return [
             {
@@ -2397,7 +2752,6 @@ class AgentPropertySerializer(serializers.ModelSerializer):
             }
             for key, value in result.items()
         ]
-
     # =====================================================
     # OTHER FIELDS
     # =====================================================
@@ -2518,6 +2872,52 @@ class PropertyCardSerializer(serializers.ModelSerializer):
 
         # ✅ SAFE UUID COMPARISON
         return str(obj.pk) in wishlist_ids
+
+
+class AgentPropertyCardSerializer(serializers.ModelSerializer):
+
+    id = serializers.UUIDField(source="pk", read_only=True)
+    owner = serializers.SerializerMethodField()
+    images = serializers.SerializerMethodField()
+    is_wishlisted = serializers.SerializerMethodField()
+
+    class Meta:
+        model = AgentProperty
+        fields = [
+            "id",
+            "label",
+            "city",
+            "perprice",
+            "price",
+            "sq_ft",
+            "land_area",
+            "owner",
+            "whatsapp",
+            "phone",
+            "location",
+            "images",
+            "is_wishlisted"
+        ]
+
+    def get_owner(self, obj):
+        return obj.owner or ""
+
+    def get_images(self, obj):
+        return [
+            img.image.url
+            for img in obj.images.all()[:2]
+            if img.image
+        ]
+
+    def get_is_wishlisted(self, obj):
+        wishlist_ids = self.context.get(
+            "wishlist_ids",
+            set()
+        )
+
+        return str(obj.pk) in wishlist_ids
+
+
 
 class WishlistSerializer(serializers.ModelSerializer):
 
@@ -3178,6 +3578,7 @@ class PropertyDetailSerializer(serializers.ModelSerializer):
             "pincode": obj.pincode,
         }
 
+
 class PropertyEnquirySerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -3191,6 +3592,7 @@ class PropertyEnquirySerializer(serializers.ModelSerializer):
             "created_at",
         ]
         read_only_fields = ["id", "created_at"]
+
 
 class RelatedPropertySerializer(serializers.ModelSerializer):
     id=serializers.SerializerMethodField()
@@ -3328,6 +3730,8 @@ class SingleBlogSerializer(serializers.ModelSerializer):
             return request.build_absolute_uri(url)
 
         return url
+    
+
 class UserProfileUpdateSerializer(serializers.Serializer):
 
     full_name = serializers.CharField(required=False, allow_blank=True)
@@ -3767,106 +4171,139 @@ class RecentAgentEnquirySerializer(serializers.ModelSerializer):
             "%B %d, %Y %I:%M %p"
         )
 
+
 class CombinedPropertyListSerializer(serializers.Serializer):
 
-    id=serializers.SerializerMethodField()
-    property_type=serializers.SerializerMethodField()
+    id = serializers.SerializerMethodField()
+    property_type = serializers.SerializerMethodField()
 
-    label=serializers.SerializerMethodField()
-    city=serializers.SerializerMethodField()
-    perprice=serializers.SerializerMethodField()
-    price=serializers.SerializerMethodField()
-    sq_ft=serializers.SerializerMethodField()
-    land_area=serializers.SerializerMethodField()
+    label = serializers.SerializerMethodField()
+    city = serializers.SerializerMethodField()
+    perprice = serializers.SerializerMethodField()
+    price = serializers.SerializerMethodField()
+    sq_ft = serializers.SerializerMethodField()
+    land_area = serializers.SerializerMethodField()
 
-    owner=serializers.SerializerMethodField()
+    owner = serializers.SerializerMethodField()
 
-    whatsapp=serializers.SerializerMethodField()
-    phone=serializers.SerializerMethodField()
+    whatsapp = serializers.SerializerMethodField()
+    phone = serializers.SerializerMethodField()
 
-    location=serializers.SerializerMethodField()
+    location = serializers.SerializerMethodField()
 
-    images=serializers.SerializerMethodField()
+    images = serializers.SerializerMethodField()
 
-    is_wishlisted=serializers.SerializerMethodField()
+    is_wishlisted = serializers.SerializerMethodField()
 
+    # =========================================================
+    # ID
+    # =========================================================
 
-    def get_id(self,obj):
+    def get_id(self, obj):
         return str(obj.id)
 
+    # =========================================================
+    # PROPERTY TYPE
+    # =========================================================
 
-    def get_property_type(self,obj):
-        if isinstance(obj,Property):
+    def get_property_type(self, obj):
+
+        if isinstance(obj, Property):
             return "user"
-        return "agent"
 
+        if isinstance(obj, AgentProperty):
+            return "agent"
 
-    def get_label(self,obj):
+        return None
+
+    # =========================================================
+    # BASIC DETAILS
+    # =========================================================
+
+    def get_label(self, obj):
         return obj.label
 
-
-    def get_city(self,obj):
+    def get_city(self, obj):
         return obj.city
 
-
-    def get_perprice(self,obj):
+    def get_perprice(self, obj):
         return obj.perprice
 
-
-    def get_price(self,obj):
+    def get_price(self, obj):
         return obj.price
 
+    def get_sq_ft(self, obj):
 
-    def get_sq_ft(self,obj):
-        return str(obj.sq_ft) if obj.sq_ft else None
+        if obj.sq_ft is not None:
+            return str(obj.sq_ft)
 
+        return None
 
-    def get_land_area(self,obj):
+    def get_land_area(self, obj):
         return obj.land_area
 
+    # =========================================================
+    # OWNER
+    # =========================================================
 
     def get_owner(self, obj):
 
+        # =====================================================
+        # USER PROPERTY
+        # =====================================================
+
         if isinstance(obj, Property):
 
-            # manual owner name
+            # Manual owner name
             if obj.owner:
                 return obj.owner
 
-            # fallback to user
+            # Fallback to user
             if obj.user:
 
-                # most correct case
-                if hasattr(obj.user, "name"):
+                if hasattr(obj.user, "name") and obj.user.name:
                     return obj.user.name
 
-                # fallback cases
-                if hasattr(obj.user, "full_name"):
+                if hasattr(obj.user, "full_name") and obj.user.full_name:
                     return obj.user.full_name
 
-                if hasattr(obj.user, "username"):
+                if hasattr(obj.user, "username") and obj.user.username:
                     return obj.user.username
 
-                if hasattr(obj.user, "email"):
+                if hasattr(obj.user, "email") and obj.user.email:
                     return obj.user.email
 
             return None
 
+        # =====================================================
         # AGENT PROPERTY
+        # =====================================================
+
         if isinstance(obj, AgentProperty):
 
-            # if manual owner string exists
+            # Manual owner name
             if obj.owner:
                 return obj.owner
 
-            # fallback to agent
+            # Fallback to agent
             if obj.agent:
 
-                # most correct case
+                # Agent linked user
                 if hasattr(obj.agent, "user") and obj.agent.user:
-                    return obj.agent.user.name
 
-                # fallback cases (safe)
+                    if hasattr(obj.agent.user, "name"):
+                        return obj.agent.user.name
+
+                    if hasattr(obj.agent.user, "full_name"):
+                        return obj.agent.user.full_name
+
+                    if hasattr(obj.agent.user, "username"):
+                        return obj.agent.user.username
+
+                    if hasattr(obj.agent.user, "email"):
+                        return obj.agent.user.email
+
+                # Agent profile name
                 if hasattr(obj.agent, "full_name"):
                     return obj.agent.full_name
 
@@ -3875,56 +4312,121 @@ class CombinedPropertyListSerializer(serializers.Serializer):
 
             return None
 
+        return None
 
-    def get_whatsapp(self,obj):
+    # =========================================================
+    # CONTACT
+    # =========================================================
+
+    def get_whatsapp(self, obj):
         return obj.whatsapp
 
-
-    def get_phone(self,obj):
+    def get_phone(self, obj):
         return obj.phone
 
+    # =========================================================
+    # LOCATION
+    # =========================================================
 
-    def get_location(self,obj):
+    def get_location(self, obj):
         return obj.location
 
+    # =========================================================
+    # IMAGES
+    # =========================================================
+    #
+    # USER PROPERTY:
+    #
+    #     PropertyImage
+    #
+    # AGENT PROPERTY:
+    #
+    #     AgentProperty.image          -> main image
+    #     AgentPropertyImage           -> multiple images
+    #
+    # =========================================================
 
-    # IMPORTANT FIX
-    def get_images(self,obj):
+    def get_images(self, obj):
 
-        request=self.context.get(
-            "request"
-        )
+        request = self.context.get("request")
 
-        urls=[]
+        urls = []
+        seen_urls = set()
 
+        # =====================================================
+        # HELPER
+        # =====================================================
 
-        # USER PROPERTY MULTIPLE IMAGES
-        if isinstance(obj,Property):
+        def add_image(image_field):
 
-            if hasattr(obj,"images"):
-                for img in obj.images.all()[:2]:
-                    if img.image:
-                        url=img.image.url
+            if not image_field:
+                return
 
-                        if request:
-                            url=request.build_absolute_uri(url)
+            try:
 
-                        urls.append(url)
+                url = image_field.url
 
+            except Exception:
 
-        # AGENT PROPERTY SINGLE IMAGE
-        elif isinstance(obj,AgentProperty):
+                return
 
-            if obj.image:
-                url=obj.image.url
+            if not url:
+                return
 
-                if request:
-                    url=request.build_absolute_uri(url)
+            # Build absolute URL
+            if request:
+                url = request.build_absolute_uri(url)
 
+            # Prevent duplicate image URLs
+            if url not in seen_urls:
+
+                seen_urls.add(url)
                 urls.append(url)
 
+        # =====================================================
+        # USER PROPERTY
+        # =====================================================
+
+        if isinstance(obj, Property):
+
+            # Property has multiple images
+            if hasattr(obj, "images"):
+
+                for img in obj.images.all()[:2]:
+
+                    if img.image:
+                        add_image(img.image)
+
+        # =====================================================
+        # AGENT PROPERTY
+        # =====================================================
+
+        elif isinstance(obj, AgentProperty):
+
+            # -------------------------------------------------
+            # 1. MAIN AGENT PROPERTY IMAGE
+            # -------------------------------------------------
+
+            if obj.image:
+                add_image(obj.image)
+
+            # -------------------------------------------------
+            # 2. MULTIPLE AGENT PROPERTY IMAGES
+            # -------------------------------------------------
+
+            if hasattr(obj, "images"):
+
+                for img in obj.images.all()[:2]:
+
+                    if img.image:
+                        add_image(img.image)
 
         return urls
+
+    # =========================================================
+    # WISHLIST
+    # =========================================================
+
     def get_is_wishlisted(self, obj):
 
         wishlist_ids = self.context.get(
@@ -3932,9 +4434,9 @@ class CombinedPropertyListSerializer(serializers.Serializer):
             set()
         )
 
-        # compare UUIDs now
         return str(obj.id) in wishlist_ids
-    
+
+
 class UserPropertySerializer(serializers.ModelSerializer):
 
     id = serializers.UUIDField(
@@ -3976,6 +4478,7 @@ class UserPropertySerializer(serializers.ModelSerializer):
         allow_blank=False
     )
 
+
     # =====================================================
     # OPTIONAL FIELDS
     # =====================================================
@@ -4008,12 +4511,12 @@ class UserPropertySerializer(serializers.ModelSerializer):
         blank=True,
         null=True
     )
-    district = models.CharField(
-        max_length=255,
-        blank=True,
-        null=True,
-        validators=[validate_safe_text]
-    )
+    # district = models.CharField(
+    #     max_length=255,
+    #     blank=True,
+    #     null=True,
+    #     validators=[validate_safe_text]
+    # )
 
     class Meta:
 
@@ -4100,6 +4603,10 @@ class UserPropertySerializer(serializers.ModelSerializer):
             "category",
             "subcategory",
             "purpose",
+            "city",
+            "district",
+            "state",
+            "label",
         ]
 
         for field in required_fields:
@@ -4665,6 +5172,49 @@ class UserPropertySerializer(serializers.ModelSerializer):
 
         return []
 
+    # def get_features(self, obj):
+
+    #     data = []
+
+    #     for f in obj.property_features.select_related("field"):
+
+    #         try:
+    #             value = json.loads(f.value)
+
+    #         except Exception:
+
+    #             value = {
+    #                 "value": f.value
+    #             }
+
+    #         feature_name = (
+    #             value.get("option")
+    #             if value.get("option")
+    #             else f.field.field_name
+    #         )
+
+    #         feature_value = value.get("value")
+
+    #         if feature_value is None:
+    #             feature_value = ""
+
+    #         data.append({
+
+    #             "name": feature_name,
+
+    #             "value": str(feature_value),
+
+    #             "icon": (
+    #                 f.field.icon.url
+    #                 if f.field.icon
+    #                 else None
+    #             )
+    #         })
+
+    #     return data
+
+    
+    
     def get_features(self, obj):
 
         data = []
@@ -4680,16 +5230,51 @@ class UserPropertySerializer(serializers.ModelSerializer):
                     "value": f.value
                 }
 
+            # =================================================
+            # FEATURE NAME
+            # =================================================
+
             feature_name = (
                 value.get("option")
                 if value.get("option")
                 else f.field.field_name
             )
 
+            # =================================================
+            # FEATURE VALUE
+            # =================================================
+
             feature_value = value.get("value")
 
             if feature_value is None:
                 feature_value = ""
+
+            # =================================================
+            # FEATURE ICON
+            # =================================================
+
+            icon_url = None
+
+            option_name = value.get("option")
+
+            if option_name:
+
+                option_obj = FieldOption.objects.filter(
+                    field=f.field,
+                    name__iexact=str(option_name).strip()
+                ).first()
+
+                if option_obj and option_obj.icon:
+
+                    icon_url = option_obj.icon.url
+
+            elif f.field.icon:
+
+                icon_url = f.field.icon.url
+
+            # =================================================
+            # OUTPUT
+            # =================================================
 
             data.append({
 
@@ -4697,14 +5282,14 @@ class UserPropertySerializer(serializers.ModelSerializer):
 
                 "value": str(feature_value),
 
-                "icon": (
-                    f.field.icon.url
-                    if f.field.icon
-                    else None
-                )
+                "icon": icon_url
             })
 
         return data
+
+
+
+
 
     def get_images(self, obj):
 

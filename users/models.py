@@ -2,7 +2,7 @@ from django.db import models
 from developer.models import *
 from developer.validators import *
 import uuid
-# Create your models here.
+
 class Wishlist(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

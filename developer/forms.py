@@ -1,4 +1,17 @@
 from django import forms
+from .models import (
+    PendingAgentRegistration,
+    AgentPlan,
+)
+from agents.models import (
+    AgentProperty,
+    AgentPropertyImage,
+    AgentPropertyFieldValue,
+    AgentPropertySellingPoint,
+    AgentPropertyLandmark
+)
+from .models import BannerAd, SliderAd
+from .models import Blog
 
 class SuperuserLoginForm(forms.Form):
     username = forms.CharField(
@@ -14,11 +27,6 @@ class SuperuserLoginForm(forms.Form):
             'style': 'text-align: center;'
         })
     )
-
-
-from django import forms
-from .models import PendingAgentRegistration
-
 
 INPUT_STYLE = (
     "w-full h-14 "
@@ -52,14 +60,6 @@ SELECT_STYLE = (
     "focus:ring-[#8bc83f] "
     "focus:border-[#8bc83f]"
 )
-
-from django import forms
-
-from .models import (
-    PendingAgentRegistration,
-    AgentPlan,
-)
-
 
 class PendingAgentRegistrationForm(forms.ModelForm):
 
@@ -351,11 +351,6 @@ class PendingAgentRegistrationForm(forms.ModelForm):
 
         return cleaned_data
 
-
-from django import forms
-from .models import Blog
-
-
 INPUT_STYLE = (
     "w-full h-14 px-5 rounded-2xl "
     "border border-gray-200 bg-gray-50 "
@@ -448,11 +443,6 @@ class BlogForm(forms.ModelForm):
 
         }
 
-
-from django import forms
-from .models import BannerAd, SliderAd
-
-
 class BannerAdForm(forms.ModelForm):
     class Meta:
         model = BannerAd
@@ -465,15 +455,6 @@ class SliderAdForm(forms.ModelForm):
         fields = ["image", "is_active"]
 
 
-from django import forms
-
-from agents.models import (
-    AgentProperty,
-    AgentPropertyImage,
-    AgentPropertyFieldValue,
-    AgentPropertySellingPoint,
-    AgentPropertyLandmark
-)
 
 #new code added by mehreena
 class AgentPropertyForm(forms.ModelForm):

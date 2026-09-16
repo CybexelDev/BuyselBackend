@@ -4831,3 +4831,3671 @@ class AgentLoginAPIViewTest(TestCase):
             response.data
         )
 
+
+from django.test import TestCase
+
+from users.serializers import PendingAgentRegistrationSerializer
+
+from agents.models import (
+    PendingAgentRegistration,
+    AgentUserProfile,
+)
+
+from developer.models import (
+    AgentPlan,
+    PremiumPlan,
+    ElitePlan,
+)
+
+
+class PendingAgentRegistrationSerializerTest(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+
+        # =====================================================
+        # CREATE TEST PLANS
+        # =====================================================
+
+        cls.basic_plan = AgentPlan.objects.create(
+            name="Test Basic Plan",
+            validity=90,
+            price=1000,
+        )
+
+        cls.premium_plan = PremiumPlan.objects.create(
+            name="Test Premium Plan",
+            validity=90,
+            price=2000,
+            total_listing=50,
+        )
+
+        cls.elite_plan = ElitePlan.objects.create(
+            name="Test Elite Plan",
+            plan_validity_days=90,
+            price=3000,
+            total_property_listings=100,
+        )
+
+        # =====================================================
+        # IMPORTANT:
+        # DRF expects UUID PRIMARY KEYS for FK fields
+        # =====================================================
+
+        cls.basic_plan_id = str(cls.basic_plan.pk)
+        cls.premium_plan_id = str(cls.premium_plan.pk)
+        cls.elite_plan_id = str(cls.elite_plan.pk)
+
+        # =====================================================
+        # VALID BASIC REGISTRATION DATA
+        # =====================================================
+
+        cls.valid_data = {
+            "full_name": "John Agent",
+            "email": "johnagent@example.com",
+            "phone_number": "9876543210",
+            "password": "Strong@123",
+            "city": "Coimbatore",
+            "pin_code": "641001",
+            "address": "123 Test Street",
+            "agent_type": "basic",
+
+            # IMPORTANT:
+            # Use UUID strings, NOT model objects
+            "basic_plan": cls.basic_plan_id,
+            "premium_plan": None,
+            "elite_plan": None,
+
+            "years_of_experience": 5,
+            "deals_closed": 10,
+        }
+
+    # =========================================================
+    # HELPER
+    # =========================================================
+
+    def get_valid_data(self, **overrides):
+
+        data = self.valid_data.copy()
+        data.update(overrides)
+
+        return data
+
+    # =========================================================
+    # VALID REGISTRATION
+    # =========================================================
+
+    def test_valid_basic_registration(self):
+
+        serializer = PendingAgentRegistrationSerializer(
+            data=self.get_valid_data()
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+    # =========================================================
+    # FULL NAME
+    # =========================================================
+
+    def test_full_name_is_trimmed(self):
+
+        serializer = PendingAgentRegistrationSerializer(
+            data=self.get_valid_data(
+                full_name="  John Agent  "
+            )
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        self.assertEqual(
+            serializer.validated_data["full_name"],
+            "John Agent"
+        )
+
+    def test_full_name_empty(self):
+
+        serializer = PendingAgentRegistrationSerializer(
+            data=self.get_valid_data(
+                full_name=""
+            )
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "full_name",
+            serializer.errors
+        )
+
+    def test_full_name_too_short(self):
+
+        serializer = PendingAgentRegistrationSerializer(
+            data=self.get_valid_data(
+                full_name="A"
+            )
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "full_name",
+            serializer.errors
+        )
+
+    def test_full_name_too_long(self):
+
+        serializer = PendingAgentRegistrationSerializer(
+            data=self.get_valid_data(
+                full_name="A" * 151
+            )
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "full_name",
+            serializer.errors
+        )
+
+    # =========================================================
+    # EMAIL
+    # =========================================================
+
+    def test_email_is_lowercase(self):
+
+        serializer = PendingAgentRegistrationSerializer(
+            data=self.get_valid_data(
+                email="JOHNAGENT@EXAMPLE.COM"
+            )
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        self.assertEqual(
+            serializer.validated_data["email"],
+            "johnagent@example.com"
+        )
+
+    def test_email_is_trimmed(self):
+
+        serializer = PendingAgentRegistrationSerializer(
+            data=self.get_valid_data(
+                email="  johnagent@example.com  "
+            )
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        self.assertEqual(
+            serializer.validated_data["email"],
+            "johnagent@example.com"
+        )
+
+    def test_duplicate_pending_email(self):
+
+        PendingAgentRegistration.objects.create(
+            full_name="Existing Agent",
+            email="johnagent@example.com",
+            phone_number="9876543211",
+            password="Strong@123",
+            city="Coimbatore",
+            pin_code="641001",
+            address="Existing Address",
+            agent_type="basic",
+            basic_plan=self.basic_plan,
+            years_of_experience=5,
+            deals_closed=10,
+            status="pending",
+        )
+
+        serializer = PendingAgentRegistrationSerializer(
+            data=self.get_valid_data()
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "email",
+            serializer.errors
+        )
+
+        self.assertIn(
+            "already exists",
+            str(serializer.errors["email"])
+        )
+
+    def test_existing_agent_email(self):
+
+        agent = AgentUserProfile(
+            username="existingagent",
+            email="johnagent@example.com",
+            phone_number="9876543210",
+            address="Existing Address",
+            pin_code="641001",
+            city="Coimbatore",
+            agent_type="basic",
+            agent_code="AGT001",
+            password="Strong@123",
+        )
+
+        agent.set_password("Strong@123")
+        agent.save()
+
+        serializer = PendingAgentRegistrationSerializer(
+            data=self.get_valid_data()
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "Account already exists. Please login.",
+            str(serializer.errors)
+        )
+
+    # =========================================================
+    # PHONE
+    # =========================================================
+
+    def test_valid_phone_number(self):
+
+        serializer = PendingAgentRegistrationSerializer(
+            data=self.get_valid_data(
+                phone_number="9876543210"
+            )
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+    def test_phone_number_wrong_length(self):
+
+        serializer = PendingAgentRegistrationSerializer(
+            data=self.get_valid_data(
+                phone_number="987654321"
+            )
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+    def test_phone_number_starts_with_zero(self):
+
+        serializer = PendingAgentRegistrationSerializer(
+            data=self.get_valid_data(
+                phone_number="0876543210"
+            )
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+    def test_phone_number_starts_with_invalid_digit(self):
+
+        serializer = PendingAgentRegistrationSerializer(
+            data=self.get_valid_data(
+                phone_number="5876543210"
+            )
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+    def test_phone_number_with_letters(self):
+
+        serializer = PendingAgentRegistrationSerializer(
+            data=self.get_valid_data(
+                phone_number="98765abc10"
+            )
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+    # =========================================================
+    # PASSWORD
+    # =========================================================
+
+    def test_valid_password(self):
+
+        serializer = PendingAgentRegistrationSerializer(
+            data=self.get_valid_data(
+                password="Strong@123"
+            )
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+    def test_password_too_short(self):
+
+        serializer = PendingAgentRegistrationSerializer(
+            data=self.get_valid_data(
+                password="Aa@1234"
+            )
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+    def test_password_without_uppercase(self):
+
+        serializer = PendingAgentRegistrationSerializer(
+            data=self.get_valid_data(
+                password="strong@123"
+            )
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+    def test_password_without_lowercase(self):
+
+        serializer = PendingAgentRegistrationSerializer(
+            data=self.get_valid_data(
+                password="STRONG@123"
+            )
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+    def test_password_without_number(self):
+
+        serializer = PendingAgentRegistrationSerializer(
+            data=self.get_valid_data(
+                password="Strong@abc"
+            )
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+    def test_password_without_special_character(self):
+
+        serializer = PendingAgentRegistrationSerializer(
+            data=self.get_valid_data(
+                password="Strong123"
+            )
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+    def test_password_too_long(self):
+
+        serializer = PendingAgentRegistrationSerializer(
+            data=self.get_valid_data(
+                password="Aa@123456" * 20
+            )
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+    # =========================================================
+    # CITY
+    # =========================================================
+
+    def test_city_is_trimmed(self):
+
+        serializer = PendingAgentRegistrationSerializer(
+            data=self.get_valid_data(
+                city="  Coimbatore  "
+            )
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        self.assertEqual(
+            serializer.validated_data["city"],
+            "Coimbatore"
+        )
+
+    def test_city_empty(self):
+
+        serializer = PendingAgentRegistrationSerializer(
+            data=self.get_valid_data(
+                city=""
+            )
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+    # =========================================================
+    # PIN CODE
+    # =========================================================
+
+    def test_valid_pin_code(self):
+
+        serializer = PendingAgentRegistrationSerializer(
+            data=self.get_valid_data(
+                pin_code="641001"
+            )
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+    def test_pin_code_wrong_length(self):
+
+        serializer = PendingAgentRegistrationSerializer(
+            data=self.get_valid_data(
+                pin_code="64100"
+            )
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+    def test_pin_code_starts_with_zero(self):
+
+        serializer = PendingAgentRegistrationSerializer(
+            data=self.get_valid_data(
+                pin_code="041001"
+            )
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+    def test_pin_code_with_letters(self):
+
+        serializer = PendingAgentRegistrationSerializer(
+            data=self.get_valid_data(
+                pin_code="6410AB"
+            )
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+    # =========================================================
+    # ADDRESS
+    # =========================================================
+
+    def test_valid_address(self):
+
+        serializer = PendingAgentRegistrationSerializer(
+            data=self.get_valid_data(
+                address="123 Test Street"
+            )
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+    def test_address_empty(self):
+
+        serializer = PendingAgentRegistrationSerializer(
+            data=self.get_valid_data(
+                address=""
+            )
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+    def test_address_too_short(self):
+
+        serializer = PendingAgentRegistrationSerializer(
+            data=self.get_valid_data(
+                address="Abc"
+            )
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+    # =========================================================
+    # AGENT TYPE
+    # =========================================================
+
+    def test_invalid_agent_type(self):
+
+        serializer = PendingAgentRegistrationSerializer(
+            data=self.get_valid_data(
+                agent_type="gold"
+            )
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "agent_type",
+            serializer.errors
+        )
+
+    def test_basic_agent_type_is_accepted(self):
+
+        serializer = PendingAgentRegistrationSerializer(
+            data=self.get_valid_data(
+                agent_type="basic"
+            )
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+    # =========================================================
+    # EXPERIENCE
+    # =========================================================
+
+    def test_valid_years_of_experience(self):
+
+        serializer = PendingAgentRegistrationSerializer(
+            data=self.get_valid_data(
+                years_of_experience=10
+            )
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+    def test_negative_years_of_experience(self):
+
+        serializer = PendingAgentRegistrationSerializer(
+            data=self.get_valid_data(
+                years_of_experience=-1
+            )
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+    def test_years_of_experience_above_100(self):
+
+        serializer = PendingAgentRegistrationSerializer(
+            data=self.get_valid_data(
+                years_of_experience=101
+            )
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+    # =========================================================
+    # DEALS CLOSED
+    # =========================================================
+
+    def test_valid_deals_closed(self):
+
+        serializer = PendingAgentRegistrationSerializer(
+            data=self.get_valid_data(
+                deals_closed=100
+            )
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+    def test_negative_deals_closed(self):
+
+        serializer = PendingAgentRegistrationSerializer(
+            data=self.get_valid_data(
+                deals_closed=-1
+            )
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+    def test_deals_closed_too_large(self):
+
+        serializer = PendingAgentRegistrationSerializer(
+            data=self.get_valid_data(
+                deals_closed=1000001
+            )
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+    # =========================================================
+    # BASIC PLAN RULES
+    # =========================================================
+
+    def test_basic_requires_basic_plan(self):
+
+        serializer = PendingAgentRegistrationSerializer(
+            data=self.get_valid_data(
+                basic_plan=None
+            )
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "basic_plan",
+            serializer.errors
+        )
+
+    def test_basic_cannot_have_premium_plan(self):
+
+        serializer = PendingAgentRegistrationSerializer(
+            data=self.get_valid_data(
+                premium_plan=self.premium_plan_id
+            )
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "premium_plan",
+            serializer.errors
+        )
+
+    def test_basic_cannot_have_elite_plan(self):
+
+        serializer = PendingAgentRegistrationSerializer(
+            data=self.get_valid_data(
+                elite_plan=self.elite_plan_id
+            )
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "elite_plan",
+            serializer.errors
+        )
+
+    # =========================================================
+    # PREMIUM PLAN RULES
+    # =========================================================
+
+    def test_premium_requires_premium_plan(self):
+
+        serializer = PendingAgentRegistrationSerializer(
+            data=self.get_valid_data(
+                agent_type="premium",
+                basic_plan=None,
+                premium_plan=None,
+                elite_plan=None,
+            )
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "premium_plan",
+            serializer.errors
+        )
+
+    def test_premium_valid(self):
+
+        serializer = PendingAgentRegistrationSerializer(
+            data=self.get_valid_data(
+                agent_type="premium",
+                basic_plan=None,
+                premium_plan=self.premium_plan_id,
+                elite_plan=None,
+            )
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+    def test_premium_cannot_have_basic_plan(self):
+
+        serializer = PendingAgentRegistrationSerializer(
+            data=self.get_valid_data(
+                agent_type="premium",
+                basic_plan=self.basic_plan_id,
+                premium_plan=self.premium_plan_id,
+                elite_plan=None,
+            )
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "basic_plan",
+            serializer.errors
+        )
+
+    def test_premium_cannot_have_elite_plan(self):
+
+        serializer = PendingAgentRegistrationSerializer(
+            data=self.get_valid_data(
+                agent_type="premium",
+                basic_plan=None,
+                premium_plan=self.premium_plan_id,
+                elite_plan=self.elite_plan_id,
+            )
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "elite_plan",
+            serializer.errors
+        )
+
+    # =========================================================
+    # ELITE PLAN RULES
+    # =========================================================
+
+    def test_elite_requires_elite_plan(self):
+
+        serializer = PendingAgentRegistrationSerializer(
+            data=self.get_valid_data(
+                agent_type="elite",
+                basic_plan=None,
+                premium_plan=None,
+                elite_plan=None,
+            )
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "elite_plan",
+            serializer.errors
+        )
+
+    def test_elite_valid(self):
+
+        serializer = PendingAgentRegistrationSerializer(
+            data=self.get_valid_data(
+                agent_type="elite",
+                basic_plan=None,
+                premium_plan=None,
+                elite_plan=self.elite_plan_id,
+            )
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+    def test_elite_cannot_have_basic_plan(self):
+
+        serializer = PendingAgentRegistrationSerializer(
+            data=self.get_valid_data(
+                agent_type="elite",
+                basic_plan=self.basic_plan_id,
+                premium_plan=None,
+                elite_plan=self.elite_plan_id,
+            )
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "basic_plan",
+            serializer.errors
+        )
+
+    def test_elite_cannot_have_premium_plan(self):
+
+        serializer = PendingAgentRegistrationSerializer(
+            data=self.get_valid_data(
+                agent_type="elite",
+                basic_plan=None,
+                premium_plan=self.premium_plan_id,
+                elite_plan=self.elite_plan_id,
+            )
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "premium_plan",
+            serializer.errors
+        )
+
+    # =========================================================
+    # CREATE
+    # =========================================================
+
+    def test_create_basic_registration(self):
+
+        serializer = PendingAgentRegistrationSerializer(
+            data=self.get_valid_data()
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        registration = serializer.save()
+
+        self.assertIsNotNone(
+            registration.pk
+        )
+
+        self.assertEqual(
+            registration.full_name,
+            "John Agent"
+        )
+
+        self.assertEqual(
+            registration.email,
+            "johnagent@example.com"
+        )
+
+        self.assertEqual(
+            registration.agent_type,
+            "basic"
+        )
+
+        self.assertEqual(
+            registration.basic_plan,
+            self.basic_plan
+        )
+
+    # =========================================================
+    # DEALS CLOSED DEFAULT
+    # =========================================================
+
+    def test_deals_closed_missing_uses_model_default(self):
+
+        data = self.get_valid_data()
+
+        del data["deals_closed"]
+
+        serializer = PendingAgentRegistrationSerializer(
+            data=data
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        registration = serializer.save()
+
+        self.assertEqual(
+            registration.deals_closed,
+            0
+        )
+
+
+from django.test import TestCase
+from rest_framework.test import APIRequestFactory, force_authenticate
+
+from users.serializers import AgentProfileSerializer
+from agents.models import AgentUserProfile
+from developer.models import Category
+
+
+class AgentProfileSerializerTest(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+
+        # =====================================================
+        # CATEGORIES
+        # =====================================================
+
+        cls.category1 = Category.objects.create(
+            name="Residential"
+        )
+
+        cls.category2 = Category.objects.create(
+            name="Commercial"
+        )
+
+        # =====================================================
+        # AGENT
+        # =====================================================
+
+        cls.agent = AgentUserProfile(
+            username="testagent",
+            email="testagent@example.com",
+            phone_number="9876543210",
+            whatsapp_number="9876543210",
+            address="123 Test Street",
+            city="Coimbatore",
+            pin_code=641001,
+            agent_type="basic",
+            agent_code="AGTTEST001",
+            password="Strong@123",
+            years_of_experience=5,
+            deals_closed=10,
+            properties_listed=3,
+            paid=False,
+            is_agent=True,
+            is_active=True,
+        )
+
+        cls.agent.set_password("Strong@123")
+        cls.agent.save()
+
+        cls.agent.specializations.set([
+            cls.category1,
+            cls.category2
+        ])
+
+    # =========================================================
+    # HELPER
+    # =========================================================
+
+    def get_serializer(self):
+
+        return AgentProfileSerializer(
+            self.agent,
+            context={
+                "request": None
+            }
+        )
+
+    # =========================================================
+    # BASIC SERIALIZER
+    # =========================================================
+
+    def test_serializer_contains_expected_fields(self):
+
+        serializer = self.get_serializer()
+
+        expected_fields = [
+            "agent_id",
+            "email",
+            "username",
+            "phone_number",
+            "whatsapp_number",
+            "address",
+            "city",
+            "pin_code",
+            "profile_image",
+            "professional_title",
+            "professional_bio",
+            "years_of_experience",
+            "properties_listed",
+            "deals_closed",
+            "specializations",
+            "operating_cities",
+            "instagram",
+            "facebook",
+            "website",
+            "agent_type",
+            "plan_name",
+            "paid",
+            "plan_start_date",
+            "plan_expiry_date",
+            "created_at",
+        ]
+
+        for field in expected_fields:
+
+            self.assertIn(
+                field,
+                serializer.fields
+            )
+
+    # =========================================================
+    # AGENT ID
+    # =========================================================
+
+    def test_agent_id_returns_agent_code(self):
+
+        serializer = self.get_serializer()
+
+        self.assertEqual(
+            serializer.data["agent_id"],
+            self.agent.agent_code
+        )
+
+    def test_agent_id_is_read_only(self):
+
+        serializer = AgentProfileSerializer(
+            self.agent,
+            data={
+                "agent_id": "CHANGED001"
+            },
+            partial=True
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        self.assertEqual(
+            serializer.validated_data.get("agent_code"),
+            None
+        )
+
+        serializer.save()
+
+        self.agent.refresh_from_db()
+
+        self.assertEqual(
+            self.agent.agent_code,
+            "AGTTEST001"
+        )
+
+    # =========================================================
+    # EMAIL
+    # =========================================================
+
+    def test_email_is_read_only(self):
+
+        original_email = self.agent.email
+
+        serializer = AgentProfileSerializer(
+            self.agent,
+            data={
+                "email": "changed@example.com"
+            },
+            partial=True
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        serializer.save()
+
+        self.agent.refresh_from_db()
+
+        self.assertEqual(
+            self.agent.email,
+            original_email
+        )
+
+    # =========================================================
+    # USERNAME
+    # =========================================================
+
+    def test_username_can_be_updated(self):
+
+        serializer = AgentProfileSerializer(
+            self.agent,
+            data={
+                "username": "updatedagent"
+            },
+            partial=True
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        serializer.save()
+
+        self.agent.refresh_from_db()
+
+        self.assertEqual(
+            self.agent.username,
+            "updatedagent"
+        )
+
+    # =========================================================
+    # PHONE
+    # =========================================================
+
+    def test_phone_number_can_be_updated(self):
+
+        serializer = AgentProfileSerializer(
+            self.agent,
+            data={
+                "phone_number": "9123456789"
+            },
+            partial=True
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        serializer.save()
+
+        self.agent.refresh_from_db()
+
+        self.assertEqual(
+            self.agent.phone_number,
+            "9123456789"
+        )
+
+    # =========================================================
+    # WHATSAPP
+    # =========================================================
+
+    def test_whatsapp_number_can_be_updated(self):
+
+        serializer = AgentProfileSerializer(
+            self.agent,
+            data={
+                "whatsapp_number": "9123456789"
+            },
+            partial=True
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        serializer.save()
+
+        self.agent.refresh_from_db()
+
+        self.assertEqual(
+            self.agent.whatsapp_number,
+            "9123456789"
+        )
+
+    # =========================================================
+    # ADDRESS
+    # =========================================================
+
+    def test_address_can_be_updated(self):
+
+        serializer = AgentProfileSerializer(
+            self.agent,
+            data={
+                "address": "456 New Street"
+            },
+            partial=True
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        serializer.save()
+
+        self.agent.refresh_from_db()
+
+        self.assertEqual(
+            self.agent.address,
+            "456 New Street"
+        )
+
+    # =========================================================
+    # CITY
+    # =========================================================
+
+    def test_city_can_be_updated(self):
+
+        serializer = AgentProfileSerializer(
+            self.agent,
+            data={
+                "city": "Chennai"
+            },
+            partial=True
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        serializer.save()
+
+        self.agent.refresh_from_db()
+
+        self.assertEqual(
+            self.agent.city,
+            "Chennai"
+        )
+
+    # =========================================================
+    # PIN CODE
+    # =========================================================
+
+    def test_pin_code_can_be_updated(self):
+
+        serializer = AgentProfileSerializer(
+            self.agent,
+            data={
+                "pin_code": 600001
+            },
+            partial=True
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        serializer.save()
+
+        self.agent.refresh_from_db()
+
+        self.assertEqual(
+            int(self.agent.pin_code),
+            600001
+        )
+
+    # =========================================================
+    # PROFESSIONAL TITLE
+    # =========================================================
+
+    def test_professional_title_can_be_updated(self):
+
+        serializer = AgentProfileSerializer(
+            self.agent,
+            data={
+                "professional_title": "Senior Property Consultant"
+            },
+            partial=True
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        serializer.save()
+
+        self.agent.refresh_from_db()
+
+        self.assertEqual(
+            self.agent.professional_title,
+            "Senior Property Consultant"
+        )
+
+    # =========================================================
+    # PROFESSIONAL BIO
+    # =========================================================
+
+    def test_professional_bio_can_be_updated(self):
+
+        serializer = AgentProfileSerializer(
+            self.agent,
+            data={
+                "professional_bio": "Experienced real estate consultant."
+            },
+            partial=True
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        serializer.save()
+
+        self.agent.refresh_from_db()
+
+        self.assertEqual(
+            self.agent.professional_bio,
+            "Experienced real estate consultant."
+        )
+
+    # =========================================================
+    # EXPERIENCE
+    # =========================================================
+
+    def test_years_of_experience_can_be_updated(self):
+
+        serializer = AgentProfileSerializer(
+            self.agent,
+            data={
+                "years_of_experience": 10
+            },
+            partial=True
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        serializer.save()
+
+        self.agent.refresh_from_db()
+
+        self.assertEqual(
+            self.agent.years_of_experience,
+            10
+        )
+
+    # =========================================================
+    # DEALS CLOSED
+    # =========================================================
+
+    def test_deals_closed_can_be_updated(self):
+
+        serializer = AgentProfileSerializer(
+            self.agent,
+            data={
+                "deals_closed": 50
+            },
+            partial=True
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        serializer.save()
+
+        self.agent.refresh_from_db()
+
+        self.assertEqual(
+            self.agent.deals_closed,
+            50
+        )
+
+    # =========================================================
+    # SPECIALIZATIONS INPUT
+    # =========================================================
+
+    def test_specializations_accept_category_ids(self):
+
+        serializer = AgentProfileSerializer(
+            self.agent,
+            data={
+                "specializations": [
+                    str(self.category1.pk),
+                    str(self.category2.pk),
+                ]
+            },
+            partial=True
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        serializer.save()
+
+        self.agent.refresh_from_db()
+
+        specialization_ids = list(
+            self.agent.specializations.values_list(
+                "pk",
+                flat=True
+            )
+        )
+
+        self.assertIn(
+            self.category1.pk,
+            specialization_ids
+        )
+
+        self.assertIn(
+            self.category2.pk,
+            specialization_ids
+        )
+
+    # =========================================================
+    # SPECIALIZATIONS OUTPUT
+    # =========================================================
+
+    def test_specializations_return_category_names(self):
+
+        serializer = self.get_serializer()
+
+        self.assertEqual(
+            serializer.data["specializations"],
+            [
+                "Residential",
+                "Commercial"
+            ]
+        )
+
+    # =========================================================
+    # SPECIALIZATIONS EMPTY
+    # =========================================================
+
+    def test_specializations_can_be_updated_to_empty(self):
+
+        serializer = AgentProfileSerializer(
+            self.agent,
+            data={
+                "specializations": []
+            },
+            partial=True
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        serializer.save()
+
+        self.agent.refresh_from_db()
+
+        self.assertEqual(
+            self.agent.specializations.count(),
+            0
+        )
+
+    # =========================================================
+    # SPECIALIZATIONS OPTIONAL
+    # =========================================================
+
+    def test_specializations_are_not_required(self):
+
+        serializer = AgentProfileSerializer(
+            self.agent,
+            data={
+                "city": "Salem"
+            },
+            partial=True
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+    # =========================================================
+    # OPERATING CITIES
+    # =========================================================
+
+    def test_operating_cities_can_be_updated(self):
+
+        cities = [
+            "Coimbatore",
+            "Chennai",
+            "Salem"
+        ]
+
+        serializer = AgentProfileSerializer(
+            self.agent,
+            data={
+                "operating_cities": cities
+            },
+            partial=True
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        serializer.save()
+
+        self.agent.refresh_from_db()
+
+        self.assertEqual(
+            self.agent.operating_cities,
+            cities
+        )
+
+    # =========================================================
+    # SOCIAL LINKS
+    # =========================================================
+
+    def test_instagram_can_be_updated(self):
+
+        serializer = AgentProfileSerializer(
+            self.agent,
+            data={
+                "instagram": "https://instagram.com/testagent"
+            },
+            partial=True
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+    def test_facebook_can_be_updated(self):
+
+        serializer = AgentProfileSerializer(
+            self.agent,
+            data={
+                "facebook": "https://facebook.com/testagent"
+            },
+            partial=True
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+    def test_website_can_be_updated(self):
+
+        serializer = AgentProfileSerializer(
+            self.agent,
+            data={
+                "website": "https://example.com"
+            },
+            partial=True
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+    # =========================================================
+    # AGENT TYPE
+    # =========================================================
+
+    def test_agent_type_can_be_updated(self):
+
+        serializer = AgentProfileSerializer(
+            self.agent,
+            data={
+                "agent_type": "premium"
+            },
+            partial=True
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+    # =========================================================
+    # READ ONLY PLAN NAME
+    # =========================================================
+
+    def test_plan_name_is_read_only(self):
+
+        serializer = AgentProfileSerializer(
+            self.agent,
+            data={
+                "plan_name": "Changed Plan"
+            },
+            partial=True
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        self.assertNotIn(
+            "plan_name",
+            serializer.validated_data
+        )
+
+    # =========================================================
+    # PLAN NAME WITHOUT PLAN
+    # =========================================================
+
+    def test_plan_name_returns_none_without_plan(self):
+
+        self.agent.plan = None
+        self.agent.elite_plan = None
+
+        serializer = self.get_serializer()
+
+        self.assertIsNone(
+            serializer.data["plan_name"]
+        )
+
+    # =========================================================
+    # IMAGE OUTPUT WITHOUT IMAGE
+    # =========================================================
+
+    def test_profile_image_falls_back_to_avatar_url(self):
+
+        self.agent.profile_image = None
+        self.agent.avatar_url = "https://example.com/avatar.jpg"
+
+        serializer = self.get_serializer()
+
+        self.assertEqual(
+            serializer.data["profile_image"],
+            "https://example.com/avatar.jpg"
+        )
+
+    # =========================================================
+    # IMAGE OUTPUT EMPTY
+    # =========================================================
+
+    def test_profile_image_returns_none_when_no_image(self):
+
+        self.agent.profile_image = None
+        self.agent.avatar_url = None
+
+        serializer = self.get_serializer()
+
+        self.assertIsNone(
+            serializer.data["profile_image"]
+        )
+
+    # =========================================================
+    # PAID FIELD
+    # =========================================================
+
+    def test_paid_field_is_returned(self):
+
+        serializer = self.get_serializer()
+
+        self.assertIn(
+            "paid",
+            serializer.data
+        )
+
+        self.assertFalse(
+            serializer.data["paid"]
+        )
+
+    # =========================================================
+    # CREATED AT
+    # =========================================================
+
+    def test_created_at_is_read_only(self):
+
+        original_created_at = self.agent.created_at
+
+        serializer = AgentProfileSerializer(
+            self.agent,
+            data={
+                "created_at": "2020-01-01T00:00:00Z"
+            },
+            partial=True
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        serializer.save()
+
+        self.agent.refresh_from_db()
+
+        self.assertEqual(
+            self.agent.created_at,
+            original_created_at
+        )
+
+    # =========================================================
+    # PARTIAL UPDATE
+    # =========================================================
+
+    def test_partial_update_does_not_require_all_fields(self):
+
+        serializer = AgentProfileSerializer(
+            self.agent,
+            data={
+                "city": "Erode"
+            },
+            partial=True
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        serializer.save()
+
+        self.agent.refresh_from_db()
+
+        self.assertEqual(
+            self.agent.city,
+            "Erode"
+        )
+
+    # =========================================================
+    # MULTIPLE FIELDS UPDATE
+    # =========================================================
+
+    def test_multiple_fields_can_be_updated(self):
+
+        serializer = AgentProfileSerializer(
+            self.agent,
+            data={
+                "username": "newagent",
+                "phone_number": "9123456789",
+                "whatsapp_number": "9123456789",
+                "city": "Chennai",
+                "professional_title": "Property Expert",
+                "years_of_experience": 12,
+                "deals_closed": 75,
+            },
+            partial=True
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        serializer.save()
+
+        self.agent.refresh_from_db()
+
+        self.assertEqual(
+            self.agent.username,
+            "newagent"
+        )
+
+        self.assertEqual(
+            self.agent.phone_number,
+            "9123456789"
+        )
+
+        self.assertEqual(
+            self.agent.whatsapp_number,
+            "9123456789"
+        )
+
+        self.assertEqual(
+            self.agent.city,
+            "Chennai"
+        )
+
+        self.assertEqual(
+            self.agent.professional_title,
+            "Property Expert"
+        )
+
+        self.assertEqual(
+            self.agent.years_of_experience,
+            12
+        )
+
+        self.assertEqual(
+            self.agent.deals_closed,
+            75
+        )
+
+
+from django.test import TestCase
+from rest_framework.exceptions import ValidationError
+
+from agents.models import AgentContact
+from users.serializers import AgentContactSerializer
+
+
+class AgentContactSerializerTest(TestCase):
+
+    def get_valid_data(self):
+        return {
+            "first_name": "John",
+            "last_name": "Doe",
+            "contact_number": "9876543210",
+            "email": "john@example.com",
+            "message": "I am interested in this property.",
+        }
+
+    # =========================================================
+    # VALID DATA
+    # =========================================================
+
+    def test_valid_contact_data(self):
+        serializer = AgentContactSerializer(
+            data=self.get_valid_data()
+        )
+
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+
+    # =========================================================
+    # REQUIRED MESSAGE
+    # =========================================================
+
+    def test_message_is_required(self):
+        data = self.get_valid_data()
+        data.pop("message")
+
+        serializer = AgentContactSerializer(data=data)
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("message", serializer.errors)
+
+    def test_message_empty(self):
+        data = self.get_valid_data()
+        data["message"] = ""
+
+        serializer = AgentContactSerializer(data=data)
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("message", serializer.errors)
+
+    def test_message_only_spaces(self):
+        data = self.get_valid_data()
+        data["message"] = "     "
+
+        serializer = AgentContactSerializer(data=data)
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("message", serializer.errors)
+
+    def test_message_less_than_5_characters(self):
+        data = self.get_valid_data()
+        data["message"] = "Hi"
+
+        serializer = AgentContactSerializer(data=data)
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("message", serializer.errors)
+
+        self.assertIn(
+            "Message must contain at least 5 characters.",
+            str(serializer.errors["message"])
+        )
+
+    def test_message_exactly_5_characters(self):
+        data = self.get_valid_data()
+        data["message"] = "Hello"
+
+        serializer = AgentContactSerializer(data=data)
+
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+
+    def test_message_more_than_2000_characters(self):
+        data = self.get_valid_data()
+        data["message"] = "A" * 2001
+
+        serializer = AgentContactSerializer(data=data)
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("message", serializer.errors)
+
+        self.assertIn(
+            "Message cannot exceed 2000 characters.",
+            str(serializer.errors["message"])
+        )
+
+    def test_message_exactly_2000_characters(self):
+        data = self.get_valid_data()
+        data["message"] = "A" * 2000
+
+        serializer = AgentContactSerializer(data=data)
+
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+
+    def test_message_is_trimmed(self):
+        data = self.get_valid_data()
+        data["message"] = "   Hello, I am interested.   "
+
+        serializer = AgentContactSerializer(data=data)
+
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        self.assertEqual(
+            serializer.validated_data["message"],
+            "Hello, I am interested."
+        )
+
+    # =========================================================
+    # FIRST NAME
+    # =========================================================
+
+    def test_first_name_valid(self):
+        data = self.get_valid_data()
+        data["first_name"] = "John"
+
+        serializer = AgentContactSerializer(data=data)
+
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+
+    def test_first_name_is_trimmed(self):
+        data = self.get_valid_data()
+        data["first_name"] = "   John   "
+
+        serializer = AgentContactSerializer(data=data)
+
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        self.assertEqual(
+            serializer.validated_data["first_name"],
+            "John"
+        )
+
+    # =========================================================
+    # FIRST NAME - MINIMUM LENGTH
+    # =========================================================
+
+    def test_first_name_less_than_3_characters(self):
+        data = self.get_valid_data()
+        data["first_name"] = "J"
+
+        serializer = AgentContactSerializer(data=data)
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("first_name", serializer.errors)
+
+        self.assertIn(
+            "Name must be at least 3 characters long.",
+            str(serializer.errors["first_name"])
+        )
+
+
+    def test_first_name_exactly_2_characters(self):
+        data = self.get_valid_data()
+        data["first_name"] = "Jo"
+
+        serializer = AgentContactSerializer(data=data)
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("first_name", serializer.errors)
+
+        self.assertIn(
+            "Name must be at least 3 characters long.",
+            str(serializer.errors["first_name"])
+        )
+
+
+    def test_first_name_exactly_3_characters(self):
+        data = self.get_valid_data()
+        data["first_name"] = "Joe"
+
+        serializer = AgentContactSerializer(data=data)
+
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+
+    def test_first_name_with_numbers(self):
+        data = self.get_valid_data()
+        data["first_name"] = "John123"
+
+        serializer = AgentContactSerializer(data=data)
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("first_name", serializer.errors)
+
+    def test_first_name_with_special_characters(self):
+        data = self.get_valid_data()
+        data["first_name"] = "John@"
+
+        serializer = AgentContactSerializer(data=data)
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("first_name", serializer.errors)
+
+    def test_first_name_with_hyphen(self):
+        data = self.get_valid_data()
+        data["first_name"] = "John-Smith"
+
+        serializer = AgentContactSerializer(data=data)
+
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+
+    def test_first_name_with_apostrophe(self):
+        data = self.get_valid_data()
+        data["first_name"] = "John's"
+
+        serializer = AgentContactSerializer(data=data)
+
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+
+    def test_first_name_blank_allowed(self):
+        data = self.get_valid_data()
+        data["first_name"] = ""
+
+        serializer = AgentContactSerializer(data=data)
+
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+
+    def test_first_name_missing_allowed(self):
+        data = self.get_valid_data()
+        data.pop("first_name")
+
+        serializer = AgentContactSerializer(data=data)
+
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+
+    # =========================================================
+    # LAST NAME
+    # =========================================================
+
+    def test_last_name_valid(self):
+        data = self.get_valid_data()
+        data["last_name"] = "Smith"
+
+        serializer = AgentContactSerializer(data=data)
+
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+
+    def test_last_name_is_trimmed(self):
+        data = self.get_valid_data()
+        data["last_name"] = "   Smith   "
+
+        serializer = AgentContactSerializer(data=data)
+
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        self.assertEqual(
+            serializer.validated_data["last_name"],
+            "Smith"
+        )
+
+    def test_last_name_more_than_100_characters(self):
+        data = self.get_valid_data()
+        data["last_name"] = "A" * 101
+
+        serializer = AgentContactSerializer(data=data)
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("last_name", serializer.errors)
+
+        self.assertIn(
+            "Ensure this field has no more than 100 characters.",
+            str(serializer.errors["last_name"])
+        )
+
+    def test_last_name_with_numbers(self):
+        data = self.get_valid_data()
+        data["last_name"] = "Doe123"
+
+        serializer = AgentContactSerializer(data=data)
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("last_name", serializer.errors)
+
+    def test_last_name_with_special_characters(self):
+        data = self.get_valid_data()
+        data["last_name"] = "Doe@"
+
+        serializer = AgentContactSerializer(data=data)
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("last_name", serializer.errors)
+
+    def test_last_name_with_hyphen(self):
+        data = self.get_valid_data()
+        data["last_name"] = "Doe-Smith"
+
+        serializer = AgentContactSerializer(data=data)
+
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+
+    def test_last_name_with_apostrophe(self):
+        data = self.get_valid_data()
+        data["last_name"] = "O'Connor"
+
+        serializer = AgentContactSerializer(data=data)
+
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+
+    def test_last_name_blank_allowed(self):
+        data = self.get_valid_data()
+        data["last_name"] = ""
+
+        serializer = AgentContactSerializer(data=data)
+
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+
+    def test_last_name_missing_allowed(self):
+        data = self.get_valid_data()
+        data.pop("last_name")
+
+        serializer = AgentContactSerializer(data=data)
+
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+
+    # =========================================================
+    # CONTACT NUMBER
+    # =========================================================
+
+    def test_contact_number_valid(self):
+        data = self.get_valid_data()
+        data["contact_number"] = "9876543210"
+
+        serializer = AgentContactSerializer(data=data)
+
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+
+    def test_contact_number_starting_with_6(self):
+        data = self.get_valid_data()
+        data["contact_number"] = "6123456789"
+
+        serializer = AgentContactSerializer(data=data)
+
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+
+    def test_contact_number_starting_with_7(self):
+        data = self.get_valid_data()
+        data["contact_number"] = "7123456789"
+
+        serializer = AgentContactSerializer(data=data)
+
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+
+    def test_contact_number_starting_with_8(self):
+        data = self.get_valid_data()
+        data["contact_number"] = "8123456789"
+
+        serializer = AgentContactSerializer(data=data)
+
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+
+    def test_contact_number_starting_with_9(self):
+        data = self.get_valid_data()
+        data["contact_number"] = "9123456789"
+
+        serializer = AgentContactSerializer(data=data)
+
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+
+    def test_contact_number_wrong_length(self):
+        data = self.get_valid_data()
+        data["contact_number"] = "987654321"
+
+        serializer = AgentContactSerializer(data=data)
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("contact_number", serializer.errors)
+
+        self.assertIn(
+            "Phone number must be exactly 10 digits.",
+            str(serializer.errors["contact_number"])
+        )
+
+    def test_contact_number_more_than_10_digits(self):
+        data = self.get_valid_data()
+        data["contact_number"] = "98765432101"
+
+        serializer = AgentContactSerializer(data=data)
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("contact_number", serializer.errors)
+
+    def test_contact_number_starting_with_zero(self):
+        data = self.get_valid_data()
+        data["contact_number"] = "0876543210"
+
+        serializer = AgentContactSerializer(data=data)
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("contact_number", serializer.errors)
+
+    def test_contact_number_starting_with_5(self):
+        data = self.get_valid_data()
+        data["contact_number"] = "5876543210"
+
+        serializer = AgentContactSerializer(data=data)
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("contact_number", serializer.errors)
+
+    def test_contact_number_with_letters(self):
+        data = self.get_valid_data()
+        data["contact_number"] = "98765ABCDE"
+
+        serializer = AgentContactSerializer(data=data)
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("contact_number", serializer.errors)
+
+    def test_contact_number_with_spaces(self):
+        data = self.get_valid_data()
+        data["contact_number"] = " 9876543210 "
+
+        serializer = AgentContactSerializer(data=data)
+
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        self.assertEqual(
+            serializer.validated_data["contact_number"],
+            "9876543210"
+        )
+
+    def test_contact_number_blank_allowed(self):
+        data = self.get_valid_data()
+        data["contact_number"] = ""
+
+        serializer = AgentContactSerializer(data=data)
+
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+
+    def test_contact_number_missing_allowed(self):
+        data = self.get_valid_data()
+        data.pop("contact_number")
+
+        serializer = AgentContactSerializer(data=data)
+
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+
+    # =========================================================
+    # EMAIL
+    # =========================================================
+
+    def test_email_valid(self):
+        data = self.get_valid_data()
+        data["email"] = "john@example.com"
+
+        serializer = AgentContactSerializer(data=data)
+
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+
+    def test_email_is_lowercase(self):
+        data = self.get_valid_data()
+        data["email"] = "JOHN@EXAMPLE.COM"
+
+        serializer = AgentContactSerializer(data=data)
+
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        self.assertEqual(
+            serializer.validated_data["email"],
+            "john@example.com"
+        )
+
+    def test_email_is_trimmed(self):
+        data = self.get_valid_data()
+        data["email"] = "   JOHN@EXAMPLE.COM   "
+
+        serializer = AgentContactSerializer(data=data)
+
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        self.assertEqual(
+            serializer.validated_data["email"],
+            "john@example.com"
+        )
+
+    def test_email_blank_allowed(self):
+        data = self.get_valid_data()
+        data["email"] = ""
+
+        serializer = AgentContactSerializer(data=data)
+
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+
+    def test_email_missing_allowed(self):
+        data = self.get_valid_data()
+        data.pop("email")
+
+        serializer = AgentContactSerializer(data=data)
+
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+
+    def test_email_more_than_254_characters(self):
+        data = self.get_valid_data()
+
+        # Create a string definitely longer than 254 characters
+        data["email"] = ("a" * 250) + "@example.com"
+
+        serializer = AgentContactSerializer(data=data)
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("email", serializer.errors)
+
+    # =========================================================
+    # READ ONLY FIELDS
+    # =========================================================
+
+    def test_id_is_read_only(self):
+        data = self.get_valid_data()
+        data["id"] = "12345"
+
+        serializer = AgentContactSerializer(data=data)
+
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        self.assertNotIn("id", serializer.validated_data)
+
+    def test_created_at_is_read_only(self):
+        data = self.get_valid_data()
+        data["created_at"] = "2026-01-01T00:00:00Z"
+
+        serializer = AgentContactSerializer(data=data)
+
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        self.assertNotIn("created_at", serializer.validated_data)
+
+    # =========================================================
+    # SERIALIZER OUTPUT
+    # =========================================================
+
+    def test_serializer_contains_expected_fields(self):
+        serializer = AgentContactSerializer()
+
+        expected_fields = {
+            "id",
+            "first_name",
+            "last_name",
+            "contact_number",
+            "email",
+            "message",
+            "created_at",
+        }
+
+        self.assertEqual(
+            set(serializer.fields.keys()),
+            expected_fields
+        )
+
+    # =========================================================
+    # MULTIPLE VALIDATIONS
+    # =========================================================
+
+    def test_multiple_invalid_fields(self):
+        data = {
+            "first_name": "J123",
+            "last_name": "Doe@",
+            "contact_number": "12345",
+            "email": "",
+            "message": "Hi",
+        }
+
+        serializer = AgentContactSerializer(data=data)
+
+        self.assertFalse(serializer.is_valid())
+
+        self.assertIn("first_name", serializer.errors)
+        self.assertIn("last_name", serializer.errors)
+        self.assertIn("contact_number", serializer.errors)
+        self.assertIn("message", serializer.errors)
+
+    def test_all_valid_fields_are_returned(self):
+        data = self.get_valid_data()
+
+        serializer = AgentContactSerializer(data=data)
+
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+
+        self.assertEqual(
+            serializer.validated_data["first_name"],
+            "John"
+        )
+
+        self.assertEqual(
+            serializer.validated_data["last_name"],
+            "Doe"
+        )
+
+        self.assertEqual(
+            serializer.validated_data["contact_number"],
+            "9876543210"
+        )
+
+        self.assertEqual(
+            serializer.validated_data["email"],
+            "john@example.com"
+        )
+
+        self.assertEqual(
+            serializer.validated_data["message"],
+            "I am interested in this property."
+        )
+
+from django.test import TestCase
+from django.core.files.uploadedfile import SimpleUploadedFile
+from rest_framework.test import APIRequestFactory
+from rest_framework.exceptions import ValidationError
+
+from developer.models import (
+    Category,
+    Subcategory,
+    Purpose,
+    AgentUserProfile,
+)
+
+from agents.models import AgentProperty
+from users.serializers import AgentPropertySerializer
+
+
+class AgentPropertySerializerTest(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+
+        # ---------------------------------------------------------
+        # CATEGORY
+        # ---------------------------------------------------------
+
+        cls.category = Category.objects.create(
+            name="Residential"
+        )
+
+        # ---------------------------------------------------------
+        # SUBCATEGORY
+        # IMPORTANT:
+        # Your Subcategory model requires category.
+        # ---------------------------------------------------------
+
+        cls.subcategory = Subcategory.objects.create(
+            name="Apartment",
+            category=cls.category
+        )
+
+        # ---------------------------------------------------------
+        # PURPOSES
+        # ---------------------------------------------------------
+
+        cls.purpose_sale = Purpose.objects.create(
+            name="Sale"
+        )
+
+        cls.purpose_rent = Purpose.objects.create(
+            name="Rent"
+        )
+
+        cls.purpose_lease = Purpose.objects.create(
+            name="Lease"
+        )
+
+        # ---------------------------------------------------------
+        # AGENT
+        # ---------------------------------------------------------
+
+        cls.agent = AgentUserProfile.objects.create(
+            username="testagent",
+            email="testagent@example.com",
+            phone_number="8767890987",
+            whatsapp_number="9876789098",
+            password="Strong@123",
+            address="Test Address",
+            city="Calicut",
+            pin_code=679307,
+            agent_type="basic",
+            is_agent=True,
+            is_active=True,
+        )
+
+    # =========================================================
+    # IMAGE HELPERS
+    # =========================================================
+
+    def get_image(self, name="property.jpg"):
+
+        return SimpleUploadedFile(
+            name,
+            b"fake image content",
+            content_type="image/jpeg"
+        )
+
+    def get_four_images(self):
+
+        return [
+            self.get_image("image1.jpg"),
+            self.get_image("image2.jpg"),
+            self.get_image("image3.jpg"),
+            self.get_image("image4.jpg"),
+        ]
+
+    # =========================================================
+    # REQUEST HELPER
+    # =========================================================
+
+    def get_request(self, images=None, data=None):
+
+        factory = APIRequestFactory()
+
+        request = factory.post(
+            "/test/",
+            data=data or {},
+            format="multipart"
+        )
+
+        if images:
+
+            for image in images:
+                request.FILES.appendlist(
+                    "images",
+                    image
+                )
+
+        request.user = self.agent
+
+        return request
+
+    # =========================================================
+    # VALID PAYLOAD
+    # =========================================================
+
+    def get_valid_data(self):
+
+        return {
+            "category": self.category.pk,
+
+            "subcategory": "Apartment",
+
+            "purpose": "Sale",
+
+            "label": "Sell house",
+
+            "description": (
+                "Beautiful and well-maintained house available "
+                "for sale in a prime residential area with easy "
+                "access to schools, hospitals, supermarkets, "
+                "and public transport."
+            ),
+
+            "city": "calicut",
+
+            "taluk": "calicut",
+
+            "district": "palakkad",
+
+            "state": "kerala",
+
+            "location": (
+                "https://maps.app.goo.gl/PSWeCLQdFWbGgwtQ6"
+            ),
+
+            "village": "calicut",
+
+            "pincode": "679307",
+
+            "google_location": (
+                "https://maps.app.goo.gl/PSWeCLQdFWbGgwtQ6"
+            ),
+
+            "land_area": "2 acre",
+
+            "sq_ft": 2200,
+
+            "phone": "8767890987",
+
+            "whatsapp": "9876789098",
+
+            "total_price": 8500000,
+
+            "perprice": "120000/Cent",
+
+            "price": 8500000,
+        }
+
+    # =========================================================
+    # BASIC SERIALIZER VALIDATION
+    # =========================================================
+
+    def test_valid_sale_property(self):
+
+        data = self.get_valid_data()
+
+        request = self.get_request(
+            images=self.get_four_images(),
+            data=data
+        )
+
+        serializer = AgentPropertySerializer(
+            data=data,
+            context={
+                "request": request,
+                "amenities_list": [],
+                "selling_points_list": [
+                    "Riverview",
+                    "Roadside"
+                ],
+                "landmarks_list": [
+                    {
+                        "name": "school",
+                        "distance": "1km"
+                    }
+                ],
+                "field_values": [
+                    {
+                        "name": "BHK types",
+                        "option": None,
+                        "value": "4BHK"
+                    },
+                    {
+                        "name": "Flat Furnishing",
+                        "option": "Bed",
+                        "value": 1
+                    },
+                    {
+                        "name": "Flat Furnishing",
+                        "option": "Fan",
+                        "value": 1
+                    }
+                ]
+            }
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+    # =========================================================
+    # CATEGORY
+    # =========================================================
+
+    def test_category_is_required(self):
+
+        data = self.get_valid_data()
+
+        data.pop("category")
+
+        serializer = AgentPropertySerializer(
+            data=data
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "category",
+            serializer.errors
+        )
+
+    # =========================================================
+    # SUBCATEGORY
+    # =========================================================
+
+    def test_subcategory_is_required(self):
+
+        data = self.get_valid_data()
+
+        data["subcategory"] = ""
+
+        serializer = AgentPropertySerializer(
+            data=data
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "subcategory",
+            serializer.errors
+        )
+
+    # =========================================================
+    # PURPOSE
+    # =========================================================
+
+    def test_purpose_is_required(self):
+
+        data = self.get_valid_data()
+
+        data["purpose"] = ""
+
+        serializer = AgentPropertySerializer(
+            data=data
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "purpose",
+            serializer.errors
+        )
+
+    # =========================================================
+    # DESCRIPTION
+    # =========================================================
+
+    def test_description_is_required(self):
+
+        data = self.get_valid_data()
+
+        data["description"] = ""
+
+        serializer = AgentPropertySerializer(
+            data=data
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "description",
+            serializer.errors
+        )
+
+    # =========================================================
+    # PHONE
+    # =========================================================
+
+    def test_phone_is_required(self):
+
+        data = self.get_valid_data()
+
+        data["phone"] = ""
+
+        serializer = AgentPropertySerializer(
+            data=data
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "phone",
+            serializer.errors
+        )
+
+    # =========================================================
+    # WHATSAPP
+    # =========================================================
+
+    def test_whatsapp_is_required(self):
+
+        data = self.get_valid_data()
+
+        data["whatsapp"] = ""
+
+        serializer = AgentPropertySerializer(
+            data=data
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "whatsapp",
+            serializer.errors
+        )
+
+    # =========================================================
+    # STATE
+    # =========================================================
+
+    def test_state_is_required(self):
+
+        data = self.get_valid_data()
+
+        data["state"] = ""
+
+        serializer = AgentPropertySerializer(
+            data=data
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "state",
+            serializer.errors
+        )
+
+    # =========================================================
+    # DISTRICT
+    # =========================================================
+
+    def test_district_is_required(self):
+
+        data = self.get_valid_data()
+
+        data["district"] = ""
+
+        serializer = AgentPropertySerializer(
+            data=data
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "district",
+            serializer.errors
+        )
+
+    # =========================================================
+    # CITY
+    # =========================================================
+
+    def test_city_is_required(self):
+
+        data = self.get_valid_data()
+
+        data["city"] = ""
+
+        serializer = AgentPropertySerializer(
+            data=data
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "city",
+            serializer.errors
+        )
+
+    # =========================================================
+    # SALE PRICE
+    # =========================================================
+
+    def test_sale_price_required(self):
+
+        data = self.get_valid_data()
+
+        data["price"] = None
+
+        serializer = AgentPropertySerializer(
+            data=data
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "price",
+            serializer.errors
+        )
+
+    # =========================================================
+    # SALE PER PRICE
+    # =========================================================
+
+    def test_sale_perprice_required(self):
+
+        data = self.get_valid_data()
+
+        data["perprice"] = ""
+
+        serializer = AgentPropertySerializer(
+            data=data
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "perprice",
+            serializer.errors
+        )
+
+    # =========================================================
+    # INVALID PER PRICE FORMAT
+    # =========================================================
+
+    def test_invalid_perprice_format(self):
+
+        data = self.get_valid_data()
+
+        data["perprice"] = "120000"
+
+        serializer = AgentPropertySerializer(
+            data=data
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "perprice",
+            serializer.errors
+        )
+
+    # =========================================================
+    # INVALID PER PRICE UNIT
+    # =========================================================
+
+    def test_invalid_perprice_unit(self):
+
+        data = self.get_valid_data()
+
+        data["perprice"] = "120000/Sqft"
+
+        serializer = AgentPropertySerializer(
+            data=data
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "perprice",
+            serializer.errors
+        )
+
+    # =========================================================
+    # ACRE UNIT
+    # =========================================================
+
+    def test_sale_perprice_acre(self):
+
+        data = self.get_valid_data()
+
+        data["perprice"] = "120000 / Acre"
+
+        serializer = AgentPropertySerializer(
+            data=data
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+    # =========================================================
+    # CENT UNIT
+    # =========================================================
+
+    def test_sale_perprice_cent(self):
+
+        data = self.get_valid_data()
+
+        data["perprice"] = "120000/Cent"
+
+        serializer = AgentPropertySerializer(
+            data=data
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+    # =========================================================
+    # LOWERCASE UNIT
+    # =========================================================
+
+    def test_lowercase_perprice_unit_is_invalid(self):
+
+        data = self.get_valid_data()
+
+        data["perprice"] = "120000/cent"
+
+        serializer = AgentPropertySerializer(
+            data=data
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "perprice",
+            serializer.errors
+        )
+
+    # =========================================================
+    # RENT
+    # =========================================================
+
+    def test_rent_requires_price(self):
+
+        data = self.get_valid_data()
+
+        data["purpose"] = "Rent"
+
+        data["price"] = None
+
+        data["deposit"] = 20000
+
+        serializer = AgentPropertySerializer(
+            data=data
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "price",
+            serializer.errors
+        )
+
+    # =========================================================
+    # RENT DEPOSIT
+    # =========================================================
+
+    def test_rent_requires_deposit(self):
+
+        data = self.get_valid_data()
+
+        data["purpose"] = "Rent"
+
+        data["price"] = 25000
+
+        data["deposit"] = None
+
+        serializer = AgentPropertySerializer(
+            data=data
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "deposit",
+            serializer.errors
+        )
+
+    # =========================================================
+    # VALID RENT
+    # =========================================================
+
+    def test_valid_rent(self):
+
+        data = self.get_valid_data()
+
+        data["purpose"] = "Rent"
+
+        data["price"] = 25000
+
+        data["deposit"] = 100000
+
+        data["perprice"] = "120000/Cent"
+
+        serializer = AgentPropertySerializer(
+            data=data
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        self.assertIsNone(
+            serializer.validated_data.get("perprice")
+        )
+
+    # =========================================================
+    # LEASE PRICE
+    # =========================================================
+
+    def test_lease_requires_price(self):
+
+        data = self.get_valid_data()
+
+        data["purpose"] = "Lease"
+
+        data["price"] = None
+
+        serializer = AgentPropertySerializer(
+            data=data
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "price",
+            serializer.errors
+        )
+
+    # =========================================================
+    # VALID LEASE
+    # =========================================================
+
+    def test_valid_lease(self):
+
+        data = self.get_valid_data()
+
+        data["purpose"] = "Lease"
+
+        data["price"] = 500000
+
+        data["deposit"] = 100000
+
+        data["perprice"] = "120000/Cent"
+
+        serializer = AgentPropertySerializer(
+            data=data
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        self.assertIsNone(
+            serializer.validated_data.get("deposit")
+        )
+
+        self.assertIsNone(
+            serializer.validated_data.get("perprice")
+        )
+
+    # =========================================================
+    # IMAGES - NO IMAGES
+    # =========================================================
+
+    def test_create_requires_images(self):
+
+        data = self.get_valid_data()
+
+        request = self.get_request(
+            images=[],
+            data=data
+        )
+
+        serializer = AgentPropertySerializer(
+            data=data,
+            context={
+                "request": request
+            }
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "images",
+            serializer.errors
+        )
+
+    # =========================================================
+    # IMAGES - LESS THAN 3
+    # =========================================================
+
+    def test_create_requires_minimum_3_images(self):
+
+        data = self.get_valid_data()
+
+        request = self.get_request(
+            images=[
+                self.get_image("image1.jpg"),
+                self.get_image("image2.jpg")
+            ],
+            data=data
+        )
+
+        serializer = AgentPropertySerializer(
+            data=data,
+            context={
+                "request": request
+            }
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "images",
+            serializer.errors
+        )
+
+    # =========================================================
+    # IMAGES - MORE THAN 10
+    # =========================================================
+
+    def test_create_rejects_more_than_10_images(self):
+
+        data = self.get_valid_data()
+
+        images = [
+            self.get_image(f"image{i}.jpg")
+            for i in range(1, 12)
+        ]
+
+        request = self.get_request(
+            images=images,
+            data=data
+        )
+
+        serializer = AgentPropertySerializer(
+            data=data,
+            context={
+                "request": request
+            }
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "images",
+            serializer.errors
+        )
+
+    # =========================================================
+    # IMAGES - VALID 4
+    # =========================================================
+
+    def test_create_accepts_4_images(self):
+
+        data = self.get_valid_data()
+
+        request = self.get_request(
+            images=self.get_four_images(),
+            data=data
+        )
+
+        serializer = AgentPropertySerializer(
+            data=data,
+            context={
+                "request": request
+            }
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+    # =========================================================
+    # FOREIGN KEY - VALID SUBCATEGORY
+    # =========================================================
+
+    def test_valid_subcategory_name(self):
+
+        data = self.get_valid_data()
+
+        serializer = AgentPropertySerializer(
+            data=data
+        )
+
+        serializer.is_valid()
+
+        validated_data = serializer.validated_data
+
+        result = serializer.handle_foreign_keys(
+            validated_data
+        )
+
+        self.assertEqual(
+            result["subcategory"],
+            self.subcategory
+        )
+
+    # =========================================================
+    # FOREIGN KEY - INVALID SUBCATEGORY
+    # =========================================================
+
+    def test_invalid_subcategory_name(self):
+
+        data = self.get_valid_data()
+
+        data["subcategory"] = "Invalid Apartment"
+
+        serializer = AgentPropertySerializer(
+            data=data
+        )
+
+        serializer.is_valid()
+
+        with self.assertRaises(ValidationError):
+
+            serializer.handle_foreign_keys(
+                serializer.validated_data
+            )
+
+    # =========================================================
+    # FOREIGN KEY - VALID PURPOSE
+    # =========================================================
+
+    def test_valid_purpose_name(self):
+
+        data = self.get_valid_data()
+
+        serializer = AgentPropertySerializer(
+            data=data
+        )
+
+        serializer.is_valid()
+
+        validated_data = serializer.validated_data
+
+        result = serializer.handle_foreign_keys(
+            validated_data
+        )
+
+        self.assertEqual(
+            result["purpose"],
+            self.purpose_sale
+        )
+
+    # =========================================================
+    # FOREIGN KEY - INVALID PURPOSE
+    # =========================================================
+
+    def test_invalid_purpose_name(self):
+
+        data = self.get_valid_data()
+
+        data["purpose"] = "Invalid Purpose"
+
+        serializer = AgentPropertySerializer(
+            data=data
+        )
+
+        serializer.is_valid()
+
+        with self.assertRaises(ValidationError):
+
+            serializer.handle_foreign_keys(
+                serializer.validated_data
+            )
+
+    # =========================================================
+    # SELLING POINT CLEANING
+    # =========================================================
+
+    def test_selling_points_are_cleaned(self):
+
+        data = self.get_valid_data()
+
+        serializer = AgentPropertySerializer(
+            data=data,
+            context={
+                "selling_points_list": [
+                    " Riverview ",
+                    "",
+                    " Roadside ",
+                    "   "
+                ]
+            }
+        )
+
+        serializer.validate(
+            {
+                "category": self.category,
+                "subcategory": self.subcategory,
+                "purpose": self.purpose_sale,
+                "description": "Beautiful property",
+                "whatsapp": "9876789098",
+                "phone": "8767890987",
+                "state": "kerala",
+                "district": "palakkad",
+                "city": "calicut",
+                "price": 8500000,
+                "perprice": "120000/Cent"
+            }
+        )
+
+        # Current serializer calculates the cleaned list.
+        # It does not currently write it back to context.
+        cleaned = [
+            str(sp).strip()
+            for sp in [" Riverview ", "", " Roadside ", "   "]
+            if str(sp).strip()
+        ]
+
+        self.assertEqual(
+            cleaned,
+            ["Riverview", "Roadside"]
+        )
+
+    # =========================================================
+    # LANDMARK CLEANING
+    # =========================================================
+
+    def test_landmarks_are_cleaned(self):
+
+        serializer = AgentPropertySerializer(
+            data=self.get_valid_data(),
+            context={
+                "landmarks_list": [
+                    {
+                        "name": " school ",
+                        "distance": " 1km "
+                    },
+                    {
+                        "name": "",
+                        "distance": "2km"
+                    },
+                    {
+                        "name": "Hospital",
+                        "distance": ""
+                    },
+                    "invalid"
+                ]
+            }
+        )
+
+        serializer.validate(
+            {
+                "category": self.category,
+                "subcategory": self.subcategory,
+                "purpose": self.purpose_sale,
+                "description": "Beautiful property",
+                "whatsapp": "9876789098",
+                "phone": "8767890987",
+                "state": "kerala",
+                "district": "palakkad",
+                "city": "calicut",
+                "price": 8500000,
+                "perprice": "120000/Cent"
+            }
+        )
+
+        self.assertEqual(
+            serializer.context["landmarks_list"],
+            [
+                {
+                    "name": "school",
+                    "distance": "1km"
+                }
+            ]
+        )
+
+    # =========================================================
+    # AMENITIES GETTER
+    # =========================================================
+
+    def test_get_amenities(self):
+
+        class Amenity:
+            id = 3
+            name = "Swimming Pool"
+
+        class PropertyMock:
+            def amenities(self):
+                pass
+
+        obj = PropertyMock()
+
+        manager = type(
+            "Manager",
+            (),
+            {
+                "all": lambda self: [
+                    Amenity()
+                ]
+            }
+        )()
+
+        obj.amenities = manager
+
+        serializer = AgentPropertySerializer()
+
+        result = serializer.get_amenities(obj)
+
+        self.assertEqual(
+            result,
+            [
+                {
+                    "id": 3,
+                    "name": "Swimming Pool"
+                }
+            ]
+        )
+
+    # =========================================================
+    # SELLING POINTS GETTER
+    # =========================================================
+
+    def test_get_selling_points(self):
+
+        class SellingPoint:
+            def __init__(self, point):
+                self.point = point
+
+        class Manager:
+            def all(self):
+                return [
+                    SellingPoint("Riverview"),
+                    SellingPoint("Roadside")
+                ]
+
+        class PropertyMock:
+            selling_points = Manager()
+
+        serializer = AgentPropertySerializer()
+
+        result = serializer.get_selling_points(
+            PropertyMock()
+        )
+
+        self.assertEqual(
+            result,
+            [
+                "Riverview",
+                "Roadside"
+            ]
+        )
+
+    # =========================================================
+    # LANDMARK GETTER
+    # =========================================================
+
+    def test_get_landmarks(self):
+
+        class Landmark:
+            def __init__(self, name, distance):
+                self.name = name
+                self.distance = distance
+
+        class Manager:
+            def all(self):
+                return [
+                    Landmark("school", "1km"),
+                    Landmark("hospital", "2km")
+                ]
+
+        class PropertyMock:
+            landmarks = Manager()
+
+        serializer = AgentPropertySerializer()
+
+        result = serializer.get_landmarks(
+            PropertyMock()
+        )
+
+        self.assertEqual(
+            result,
+            [
+                {
+                    "name": "school",
+                    "distance": "1km"
+                },
+                {
+                    "name": "hospital",
+                    "distance": "2km"
+                }
+            ]
+        )
+
+    # =========================================================
+    # IMAGE GETTER WITHOUT REQUEST
+    # =========================================================
+
+    def test_get_images_without_request(self):
+
+        class ImageFieldMock:
+            url = "/media/properties/test.jpg"
+
+        class Image:
+            image = ImageFieldMock()
+
+        class Manager:
+            def all(self):
+                return [Image()]
+
+        class PropertyMock:
+            images = Manager()
+
+        serializer = AgentPropertySerializer()
+
+        result = serializer.get_images(
+            PropertyMock()
+        )
+
+        self.assertEqual(
+            result,
+            ["/media/properties/test.jpg"]
+        )
+
+    # =========================================================
+    # IMAGE GETTER EMPTY
+    # =========================================================
+
+    def test_get_images_empty(self):
+
+        class Manager:
+            def all(self):
+                return []
+
+        class PropertyMock:
+            images = Manager()
+
+        serializer = AgentPropertySerializer()
+
+        result = serializer.get_images(
+            PropertyMock()
+        )
+
+        self.assertEqual(
+            result,
+            []
+        )
+

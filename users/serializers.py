@@ -2108,9 +2108,29 @@ class CurrentPlanSerializer(serializers.Serializer):
 
     is_active = serializers.BooleanField()
 
+# class AgentContactSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = AgentContact
+#         fields = [
+#             'id',
+#             'first_name',
+#             'last_name',
+#             'contact_number',
+#             'email',
+#             'message',
+#             'created_at'
+#         ]
+#         read_only_fields = ['id', 'created_at']
+
+import re
+from rest_framework import serializers
+from agents.models import AgentContact
+
 class AgentContactSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = AgentContact
+
         fields = [
             'id',
             'first_name',
@@ -2120,7 +2140,130 @@ class AgentContactSerializer(serializers.ModelSerializer):
             'message',
             'created_at'
         ]
+
         read_only_fields = ['id', 'created_at']
+
+        extra_kwargs = {
+            'first_name': {
+                'required': False,
+                'allow_blank': True,
+            },
+            'last_name': {
+                'required': False,
+                'allow_blank': True,
+            },
+            'contact_number': {
+                'required': False,
+                'allow_blank': True,
+            },
+            'email': {
+                'required': False,
+                'allow_blank': True,
+            },
+            'message': {
+                'required': True,
+                'allow_blank': False,
+            },
+        }
+
+    # -----------------------------------------
+    # FIRST NAME
+    # -----------------------------------------
+    def validate_first_name(self, value):
+
+        value = value.strip()
+
+        if value and len(value) < 2:
+            raise serializers.ValidationError(
+                "First name must contain at least 2 characters."
+            )
+
+        if value and len(value) > 100:
+            raise serializers.ValidationError(
+                "First name cannot exceed 100 characters."
+            )
+
+        if value and not re.fullmatch(r"[A-Za-z]+(?:[ '-][A-Za-z]+)*", value):
+            raise serializers.ValidationError(
+                "First name can contain only letters, spaces, apostrophes and hyphens."
+            )
+
+        return value
+
+    # -----------------------------------------
+    # LAST NAME
+    # -----------------------------------------
+    def validate_last_name(self, value):
+
+        value = value.strip()
+
+        if value and len(value) > 100:
+            raise serializers.ValidationError(
+                "Last name cannot exceed 100 characters."
+            )
+
+        if value and not re.fullmatch(r"[A-Za-z]+(?:[ '-][A-Za-z]+)*", value):
+            raise serializers.ValidationError(
+                "Last name can contain only letters, spaces, apostrophes and hyphens."
+            )
+
+        return value
+
+    # -----------------------------------------
+    # CONTACT NUMBER
+    # -----------------------------------------
+    def validate_contact_number(self, value):
+
+        value = value.strip()
+
+        if not value:
+            return value
+
+        # Indian 10-digit mobile number
+        if not re.fullmatch(r"[6-9]\d{9}", value):
+            raise serializers.ValidationError(
+                "Enter a valid 10-digit Indian mobile number."
+            )
+
+        return value
+
+    # -----------------------------------------
+    # EMAIL
+    # -----------------------------------------
+    def validate_email(self, value):
+
+        value = value.strip().lower()
+
+        if value and len(value) > 254:
+            raise serializers.ValidationError(
+                "Email address is too long."
+            )
+
+        return value
+
+    # -----------------------------------------
+    # MESSAGE
+    # -----------------------------------------
+    def validate_message(self, value):
+
+        value = value.strip()
+
+        if not value:
+            raise serializers.ValidationError(
+                "Message is required."
+            )
+
+        if len(value) < 5:
+            raise serializers.ValidationError(
+                "Message must contain at least 5 characters."
+            )
+
+        if len(value) > 2000:
+            raise serializers.ValidationError(
+                "Message cannot exceed 2000 characters."
+            )
+
+        return value
 
 class ChangePasswordSerializer(serializers.Serializer):
     current_password = serializers.CharField(required=True)

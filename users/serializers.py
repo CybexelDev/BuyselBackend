@@ -15,6 +15,7 @@ from cloudinary.utils import cloudinary_url
 from django.utils import timezone
 import pytz
 import json
+from developer.validators import *
 
 class PropertySerializer(serializers.ModelSerializer):
 
@@ -3659,6 +3660,26 @@ class AgentPropertySerializer(serializers.ModelSerializer):
 
 class AgentPropertyEnquirySerializer(serializers.ModelSerializer):
 
+    name = serializers.CharField(
+        max_length=150,
+        validators=[validate_agent_name]
+    )
+
+    email = serializers.EmailField(
+        validators=[validate_email]
+    )
+
+    phone = serializers.CharField(
+        max_length=15,
+        validators=[validate_phone_number]
+    )
+
+    message = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        validators=[validate_safe_message]
+    )
+
     class Meta:
         model = AgentPropertyEnquiry
         fields = [
@@ -3670,6 +3691,85 @@ class AgentPropertyEnquirySerializer(serializers.ModelSerializer):
             "created_at",
         ]
         read_only_fields = ["id", "created_at"]
+
+    def validate_name(self, value):
+        value = value.strip()
+
+        if not value:
+            raise serializers.ValidationError(
+                "Name is required."
+            )
+
+        if not any(char.isalpha() for char in value):
+            raise serializers.ValidationError(
+                "Name must contain at least one letter."
+            )
+
+        return value
+
+
+class PropertyEnquirySerializer(serializers.ModelSerializer):
+
+    name = serializers.CharField(
+        max_length=150,
+        validators=[validate_agent_name]
+    )
+
+    phone = serializers.CharField(
+        max_length=15,
+        validators=[validate_phone_number]
+    )
+
+    email = serializers.EmailField(
+        validators=[validate_email]
+    )
+
+    message = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        validators=[validate_safe_message]
+    )
+
+    class Meta:
+        model = PropertyEnquiry
+        fields = [
+            "id",
+            "name",
+            "phone",
+            "email",
+            "message",
+            "created_at",
+        ]
+        read_only_fields = ["id", "created_at"]
+
+    def validate_name(self, value):
+        value = value.strip()
+
+        if not value:
+            raise serializers.ValidationError(
+                "Name is required."
+            )
+
+        if not any(char.isalpha() for char in value):
+            raise serializers.ValidationError(
+                "Name must contain at least one letter."
+            )
+
+        return value
+
+# class AgentPropertyEnquirySerializer(serializers.ModelSerializer):
+
+#     class Meta:
+#         model = AgentPropertyEnquiry
+#         fields = [
+#             "id",
+#             "name",
+#             "email",
+#             "phone",
+#             "message",
+#             "created_at",
+#         ]
+#         read_only_fields = ["id", "created_at"]
 
 
 
@@ -4503,19 +4603,19 @@ class PropertyDetailSerializer(serializers.ModelSerializer):
         }
 
 
-class PropertyEnquirySerializer(serializers.ModelSerializer):
+# class PropertyEnquirySerializer(serializers.ModelSerializer):
 
-    class Meta:
-        model = PropertyEnquiry
-        fields = [
-            "id",
-            "name",
-            "phone",
-            "email",
-            "message",
-            "created_at",
-        ]
-        read_only_fields = ["id", "created_at"]
+#     class Meta:
+#         model = PropertyEnquiry
+#         fields = [
+#             "id",
+#             "name",
+#             "phone",
+#             "email",
+#             "message",
+#             "created_at",
+#         ]
+#         read_only_fields = ["id", "created_at"]
 
 
 class RelatedPropertySerializer(serializers.ModelSerializer):

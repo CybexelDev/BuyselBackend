@@ -1,7 +1,7 @@
 from django.test import TestCase
 
 from users.serializers import RequestSerializer
-
+from unittest.mock import patch
 
 class RequestSerializerValidationTests(TestCase):
 
@@ -8498,4 +8498,3417 @@ class AgentPropertySerializerTest(TestCase):
             result,
             []
         )
+
+from uuid import uuid4
+
+from django.test import TestCase
+from rest_framework.test import APIRequestFactory, force_authenticate
+
+from users.models import (
+    UserCreate,
+    Property,
+)
+
+from users.serializers import (
+    PropertyEnquirySerializer,
+    AgentPropertyEnquirySerializer,
+)
+
+from agents.models import (
+    AgentUserProfile,
+    AgentProperty,
+)
+
+from users.views import UniversalPropertyEnquiryAPI
+
+
+class UniversalPropertyEnquiryAPITest(TestCase):
+
+    # =========================================================
+    # SETUP
+    # =========================================================
+
+    @classmethod
+    def setUpTestData(cls):
+
+        # =====================================================
+        # USER
+        # =====================================================
+
+        cls.user = UserCreate.objects.create(
+            name="Test User",
+            email="testuser@example.com",
+        )
+
+        # =====================================================
+        # AGENT
+        # =====================================================
+
+        cls.agent = AgentUserProfile.objects.create(
+            username="testagent",
+            email="agent@example.com",
+            phone_number="8767890987",
+            whatsapp_number="9876789098",
+            password="Strong@123",
+            address="Test Address",
+            city="Calicut",
+            pin_code=679307,
+            agent_type="basic",
+            is_agent=True,
+            is_active=True,
+        )
+
+    # =========================================================
+    # URL
+    # =========================================================
+
+    def get_url(self):
+        return "/enquiries/"
+
+    # =========================================================
+    # POST HELPER
+    # =========================================================
+
+    def post(self, data, authenticate=True):
+
+        factory = APIRequestFactory()
+
+        request = factory.post(
+            self.get_url(),
+            data,
+            format="json"
+        )
+
+        if authenticate:
+            force_authenticate(
+                request,
+                user=self.user
+            )
+
+        return UniversalPropertyEnquiryAPI.as_view()(
+            request
+        )
+
+    # =========================================================
+    # VALID DATA
+    # =========================================================
+
+    def get_valid_data(self, property_id):
+
+        return {
+            "property": str(property_id),
+            "name": "John Doe",
+            "email": "john@example.com",
+            "phone": "9876543210",
+            "message": "I am interested in this property."
+        }
+
+    # =========================================================
+    # PROPERTY REQUIRED
+    # =========================================================
+
+    def test_property_id_required(self):
+
+        response = self.post({})
+
+        self.assertEqual(
+            response.status_code,
+            400
+        )
+
+        self.assertEqual(
+            response.data["error"],
+            "property id is required"
+        )
+
+    # =========================================================
+    # EMPTY PROPERTY
+    # =========================================================
+
+    def test_empty_property_id(self):
+
+        response = self.post({
+            "property": ""
+        })
+
+        self.assertEqual(
+            response.status_code,
+            400
+        )
+
+        self.assertEqual(
+            response.data["error"],
+            "property id is required"
+        )
+
+    # =========================================================
+    # INVALID UUID
+    # =========================================================
+
+    def test_invalid_uuid(self):
+
+        response = self.post({
+            "property": "12345"
+        })
+
+        self.assertEqual(
+            response.status_code,
+            400
+        )
+
+        self.assertEqual(
+            response.data["error"],
+            "Invalid UUID"
+        )
+
+    # =========================================================
+    # VALID UUID BUT PROPERTY NOT FOUND
+    # =========================================================
+
+    def test_valid_uuid_but_property_not_found(self):
+
+        property_id = uuid4()
+
+        data = self.get_valid_data(
+            property_id
+        )
+
+        response = self.post(data)
+
+        self.assertEqual(
+            response.status_code,
+            404
+        )
+
+        self.assertEqual(
+            response.data["error"],
+            "Property not found"
+        )
+
+    # =========================================================
+    # PROPERTY ENQUIRY - VALID
+    # =========================================================
+
+    def test_property_enquiry_serializer_valid(self):
+
+        data = {
+            "name": "John Doe",
+            "email": "john@example.com",
+            "phone": "9876543210",
+            "message": "I am interested in this property."
+        }
+
+        serializer = PropertyEnquirySerializer(
+            data=data
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+    # =========================================================
+    # AGENT PROPERTY ENQUIRY - VALID
+    # =========================================================
+
+    def test_agent_property_enquiry_serializer_valid(self):
+
+        data = {
+            "name": "John Doe",
+            "email": "john@example.com",
+            "phone": "9876543210",
+            "message": "I am interested in this property."
+        }
+
+        serializer = AgentPropertyEnquirySerializer(
+            data=data
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+    # =========================================================
+    # MISSING NAME
+    # =========================================================
+
+    def test_missing_name(self):
+
+        data = {
+            "email": "john@example.com",
+            "phone": "9876543210",
+            "message": "I am interested."
+        }
+
+        serializer = PropertyEnquirySerializer(
+            data=data
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "name",
+            serializer.errors
+        )
+
+    # =========================================================
+    # MISSING EMAIL
+    # =========================================================
+
+    def test_missing_email(self):
+
+        data = {
+            "name": "John Doe",
+            "phone": "9876543210",
+            "message": "I am interested."
+        }
+
+        serializer = PropertyEnquirySerializer(
+            data=data
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "email",
+            serializer.errors
+        )
+
+    # =========================================================
+    # MISSING PHONE
+    # =========================================================
+
+    def test_missing_phone(self):
+
+        data = {
+            "name": "John Doe",
+            "email": "john@example.com",
+            "message": "I am interested."
+        }
+
+        serializer = PropertyEnquirySerializer(
+            data=data
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "phone",
+            serializer.errors
+        )
+
+    # =========================================================
+    # INVALID EMAIL
+    # =========================================================
+
+    def test_invalid_email(self):
+
+        data = {
+            "name": "John Doe",
+            "email": "invalid-email",
+            "phone": "9876543210",
+            "message": "I am interested."
+        }
+
+        serializer = PropertyEnquirySerializer(
+            data=data
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "email",
+            serializer.errors
+        )
+
+    # =========================================================
+    # INVALID PHONE
+    # =========================================================
+
+    def test_invalid_phone(self):
+
+        data = {
+            "name": "John Doe",
+            "email": "john@example.com",
+            "phone": "123",
+            "message": "I am interested."
+        }
+
+        serializer = PropertyEnquirySerializer(
+            data=data
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "phone",
+            serializer.errors
+        )
+
+    # =========================================================
+    # INVALID NAME
+    # =========================================================
+
+    def test_invalid_name(self):
+
+        data = {
+            "name": "12345",
+            "email": "john@example.com",
+            "phone": "9876543210",
+            "message": "I am interested."
+        }
+
+        serializer = PropertyEnquirySerializer(
+            data=data
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "name",
+            serializer.errors
+        )
+
+    # =========================================================
+    # MESSAGE IS OPTIONAL
+    # =========================================================
+
+    def test_message_can_be_empty(self):
+
+        data = {
+            "name": "John Doe",
+            "email": "john@example.com",
+            "phone": "9876543210",
+            "message": ""
+        }
+
+        serializer = PropertyEnquirySerializer(
+            data=data
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+    # =========================================================
+    # MESSAGE CAN BE OMITTED
+    # =========================================================
+
+    def test_message_can_be_omitted(self):
+
+        data = {
+            "name": "John Doe",
+            "email": "john@example.com",
+            "phone": "9876543210",
+        }
+
+        serializer = PropertyEnquirySerializer(
+            data=data
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+    # =========================================================
+    # AGENT MESSAGE CAN BE EMPTY
+    # =========================================================
+
+    def test_agent_message_can_be_empty(self):
+
+        data = {
+            "name": "John Doe",
+            "email": "john@example.com",
+            "phone": "9876543210",
+            "message": ""
+        }
+
+        serializer = AgentPropertyEnquirySerializer(
+            data=data
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+    # =========================================================
+    # AGENT MESSAGE CAN BE OMITTED
+    # =========================================================
+
+    def test_agent_message_can_be_omitted(self):
+
+        data = {
+            "name": "John Doe",
+            "email": "john@example.com",
+            "phone": "9876543210",
+        }
+
+        serializer = AgentPropertyEnquirySerializer(
+            data=data
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+    # =========================================================
+    # AGENT INVALID EMAIL
+    # =========================================================
+
+    def test_agent_enquiry_invalid_email(self):
+
+        data = {
+            "name": "John Doe",
+            "email": "invalid-email",
+            "phone": "9876543210",
+            "message": "I am interested."
+        }
+
+        serializer = AgentPropertyEnquirySerializer(
+            data=data
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "email",
+            serializer.errors
+        )
+
+    # =========================================================
+    # AGENT INVALID PHONE
+    # =========================================================
+
+    def test_agent_enquiry_invalid_phone(self):
+
+        data = {
+            "name": "John Doe",
+            "email": "john@example.com",
+            "phone": "123",
+            "message": "I am interested."
+        }
+
+        serializer = AgentPropertyEnquirySerializer(
+            data=data
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "phone",
+            serializer.errors
+        )
+
+    # =========================================================
+    # AGENT INVALID NAME
+    # =========================================================
+
+    def test_agent_enquiry_invalid_name(self):
+
+        data = {
+            "name": "12345",
+            "email": "john@example.com",
+            "phone": "9876543210",
+            "message": "I am interested."
+        }
+
+        serializer = AgentPropertyEnquirySerializer(
+            data=data
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "name",
+            serializer.errors
+        )
+
+    # =========================================================
+    # READ ONLY ID
+    # =========================================================
+
+    def test_property_enquiry_id_is_read_only(self):
+
+        data = {
+            "id": str(uuid4()),
+            "name": "John Doe",
+            "email": "john@example.com",
+            "phone": "9876543210",
+            "message": "I am interested."
+        }
+
+        serializer = PropertyEnquirySerializer(
+            data=data
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        self.assertNotIn(
+            "id",
+            serializer.validated_data
+        )
+
+    # =========================================================
+    # READ ONLY CREATED AT
+    # =========================================================
+
+    def test_property_enquiry_created_at_is_read_only(self):
+
+        data = {
+            "created_at": "2026-01-01T00:00:00Z",
+            "name": "John Doe",
+            "email": "john@example.com",
+            "phone": "9876543210",
+            "message": "I am interested."
+        }
+
+        serializer = PropertyEnquirySerializer(
+            data=data
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        self.assertNotIn(
+            "created_at",
+            serializer.validated_data
+        )
+
+    # =========================================================
+    # UNAUTHENTICATED
+    # =========================================================
+
+    def test_unauthenticated_user(self):
+
+        factory = APIRequestFactory()
+
+        request = factory.post(
+            self.get_url(),
+            {
+                "property": str(uuid4()),
+                "name": "John Doe",
+                "email": "john@example.com",
+                "phone": "9876543210",
+                "message": "I am interested."
+            },
+            format="json"
+        )
+
+        response = UniversalPropertyEnquiryAPI.as_view()(
+            request
+        )
+
+        self.assertEqual(
+            response.status_code,
+            401
+        )
+
+    # =========================================================
+    # EMPTY MESSAGE IS VALID FOR AGENT SERIALIZER
+    # =========================================================
+
+    def test_agent_empty_message_is_valid(self):
+
+        data = {
+            "name": "John Doe",
+            "email": "john@example.com",
+            "phone": "9876543210",
+            "message": ""
+        }
+
+        serializer = AgentPropertyEnquirySerializer(
+            data=data
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+    # =========================================================
+    # PROPERTY SERIALIZER FIELD LIST
+    # =========================================================
+
+    def test_property_enquiry_serializer_fields(self):
+
+        serializer = PropertyEnquirySerializer()
+
+        expected_fields = {
+            "id",
+            "name",
+            "phone",
+            "email",
+            "message",
+            "created_at",
+        }
+
+        self.assertEqual(
+            set(serializer.fields.keys()),
+            expected_fields
+        )
+
+    # =========================================================
+    # AGENT SERIALIZER FIELD LIST
+    # =========================================================
+
+    def test_agent_property_enquiry_serializer_fields(self):
+
+        serializer = AgentPropertyEnquirySerializer()
+
+        expected_fields = {
+            "id",
+            "name",
+            "email",
+            "phone",
+            "message",
+            "created_at",
+        }
+
+        self.assertEqual(
+            set(serializer.fields.keys()),
+            expected_fields
+        )
+
+
+from django.test import TestCase
+from rest_framework import serializers
+
+from users.models import Contact
+from users.serializers import ContactSerializer
+
+
+class ContactSerializerTest(TestCase):
+
+    def test_valid_contact_data(self):
+
+        data = {
+            "name": "John Doe",
+            "email": "john@example.com",
+            "phone": "9876543210",
+            "message": "I am interested in your property."
+        }
+
+        serializer = ContactSerializer(data=data)
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+    def test_missing_name(self):
+
+        data = {
+            "email": "john@example.com",
+            "phone": "9876543210",
+            "message": "Hello"
+        }
+
+        serializer = ContactSerializer(data=data)
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "name",
+            serializer.errors
+        )
+
+    def test_missing_email(self):
+
+        data = {
+            "name": "John Doe",
+            "phone": "9876543210",
+            "message": "Hello"
+        }
+
+        serializer = ContactSerializer(data=data)
+
+        # Email is optional in the current serializer/model.
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+    def test_missing_phone(self):
+
+        data = {
+            "name": "John Doe",
+            "email": "john@example.com",
+            "message": "Hello"
+        }
+
+        serializer = ContactSerializer(data=data)
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "phone",
+            serializer.errors
+        )
+
+    def test_missing_message(self):
+
+        data = {
+            "name": "John Doe",
+            "email": "john@example.com",
+            "phone": "9876543210"
+        }
+
+        serializer = ContactSerializer(data=data)
+
+        # Message is required in the current serializer/model.
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "message",
+            serializer.errors
+        )
+
+    def test_empty_message(self):
+
+        data = {
+            "name": "John Doe",
+            "email": "john@example.com",
+            "phone": "9876543210",
+            "message": ""
+        }
+
+        serializer = ContactSerializer(data=data)
+
+        # Blank message is not allowed.
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "message",
+            serializer.errors
+        )
+
+    def test_invalid_email(self):
+
+        data = {
+            "name": "John Doe",
+            "email": "invalid-email",
+            "phone": "9876543210",
+            "message": "Hello"
+        }
+
+        serializer = ContactSerializer(data=data)
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "email",
+            serializer.errors
+        )
+
+    def test_phone_contains_letters(self):
+
+        data = {
+            "name": "John Doe",
+            "email": "john@example.com",
+            "phone": "98765abc10",
+            "message": "Hello"
+        }
+
+        serializer = ContactSerializer(data=data)
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "phone",
+            serializer.errors
+        )
+
+        self.assertEqual(
+            str(serializer.errors["phone"][0]),
+            "Phone number must contain only digits."
+        )
+
+    def test_phone_contains_special_characters(self):
+
+        data = {
+            "name": "John Doe",
+            "email": "john@example.com",
+            "phone": "98765-43210",
+            "message": "Hello"
+        }
+
+        serializer = ContactSerializer(data=data)
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "phone",
+            serializer.errors
+        )
+
+        self.assertEqual(
+            str(serializer.errors["phone"][0]),
+            "Phone number must contain only digits."
+        )
+
+    def test_phone_too_short(self):
+
+        data = {
+            "name": "John Doe",
+            "email": "john@example.com",
+            "phone": "987654321",
+            "message": "Hello"
+        }
+
+        serializer = ContactSerializer(data=data)
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "phone",
+            serializer.errors
+        )
+
+        self.assertEqual(
+            str(serializer.errors["phone"][0]),
+            "Phone number must be exactly 10 digits."
+        )
+
+    def test_phone_exactly_10_digits(self):
+
+        data = {
+            "name": "John Doe",
+            "email": "john@example.com",
+            "phone": "9876543210",
+            "message": "Hello"
+        }
+
+        serializer = ContactSerializer(data=data)
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+    def test_phone_more_than_10_digits(self):
+
+        data = {
+            "name": "John Doe",
+            "email": "john@example.com",
+            "phone": "987654321012",
+            "message": "Hello"
+        }
+
+        serializer = ContactSerializer(data=data)
+
+        # Current validation requires exactly 10 digits.
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "phone",
+            serializer.errors
+        )
+
+        self.assertEqual(
+            str(serializer.errors["phone"][0]),
+            "Phone number must be exactly 10 digits."
+        )
+
+    def test_phone_empty(self):
+
+        data = {
+            "name": "John Doe",
+            "email": "john@example.com",
+            "phone": "",
+            "message": "Hello"
+        }
+
+        serializer = ContactSerializer(data=data)
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "phone",
+            serializer.errors
+        )
+
+    def test_read_only_id_and_created_at(self):
+
+        data = {
+            "name": "John Doe",
+            "email": "john@example.com",
+            "phone": "9876543210",
+            "message": "Hello",
+            "id": "12345678-1234-1234-1234-123456789012",
+            "created_at": "2025-01-01T10:00:00Z"
+        }
+
+        serializer = ContactSerializer(data=data)
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        contact = serializer.save()
+
+        self.assertIsNotNone(
+            contact.id
+        )
+
+        self.assertIsNotNone(
+            contact.created_at
+        )
+
+from django.test import TestCase
+from rest_framework import serializers
+
+from users.models import UserCreate
+from users.serializers import UserProfileUpdateSerializer
+
+
+class UserProfileUpdateSerializerTest(TestCase):
+
+    def setUp(self):
+
+        # UserProfile is automatically created when UserCreate is created
+        self.user = UserCreate.objects.create(
+            name="John Doe",
+            email="john@example.com",
+            mobile="9876543210",
+        )
+
+        self.profile = self.user.profile
+
+        self.profile.full_name = "John Doe"
+        self.profile.mobile = "9876543210"
+        self.profile.alternate_mobile = "9123456789"
+        self.profile.city = "Calicut"
+        self.profile.save()
+
+    # =========================================================
+    # FULL NAME
+    # =========================================================
+
+    def test_valid_full_name(self):
+
+        serializer = UserProfileUpdateSerializer(
+            instance=self.user,
+            data={
+                "full_name": "Robert Smith"
+            },
+            partial=True
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        profile = serializer.save()
+
+        self.assertEqual(
+            profile.full_name,
+            "Robert Smith"
+        )
+
+    def test_full_name_is_trimmed(self):
+
+        serializer = UserProfileUpdateSerializer(
+            instance=self.user,
+            data={
+                "full_name": "   Robert Smith   "
+            },
+            partial=True
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        profile = serializer.save()
+
+        self.assertEqual(
+            profile.full_name,
+            "Robert Smith"
+        )
+
+    def test_empty_full_name_is_allowed(self):
+
+        serializer = UserProfileUpdateSerializer(
+            instance=self.user,
+            data={
+                "full_name": ""
+            },
+            partial=True
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        self.assertEqual(
+            serializer.validated_data["full_name"],
+            ""
+        )
+
+        # Prevent UserProfile.save() from changing the value.
+        with patch.object(
+            self.profile,
+            "save"
+        ) as mock_save:
+
+            profile = serializer.save()
+
+        # Serializer must assign empty string.
+        self.assertEqual(
+            profile.full_name,
+            ""
+        )
+
+        # Serializer must call profile.save()
+        mock_save.assert_called_once()
+
+    # =========================================================
+    # MOBILE - VALID
+    # =========================================================
+
+    def test_valid_mobile(self):
+
+        serializer = UserProfileUpdateSerializer(
+            instance=self.user,
+            data={
+                "mobile": "8765432109"
+            },
+            partial=True
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        profile = serializer.save()
+
+        self.assertEqual(
+            profile.mobile,
+            "8765432109"
+        )
+
+        self.user.refresh_from_db()
+
+        self.assertEqual(
+            self.user.mobile,
+            "8765432109"
+        )
+
+    def test_mobile_starting_with_6_is_valid(self):
+
+        serializer = UserProfileUpdateSerializer(
+            instance=self.user,
+            data={
+                "mobile": "6123456789"
+            },
+            partial=True
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+    def test_mobile_starting_with_7_is_valid(self):
+
+        serializer = UserProfileUpdateSerializer(
+            instance=self.user,
+            data={
+                "mobile": "7123456789"
+            },
+            partial=True
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+    def test_mobile_starting_with_8_is_valid(self):
+
+        serializer = UserProfileUpdateSerializer(
+            instance=self.user,
+            data={
+                "mobile": "8123456789"
+            },
+            partial=True
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+    def test_mobile_starting_with_9_is_valid(self):
+
+        serializer = UserProfileUpdateSerializer(
+            instance=self.user,
+            data={
+                "mobile": "9123456789"
+            },
+            partial=True
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+    # =========================================================
+    # MOBILE - INVALID
+    # =========================================================
+
+    def test_mobile_starting_with_5_is_invalid(self):
+
+        serializer = UserProfileUpdateSerializer(
+            instance=self.user,
+            data={
+                "mobile": "5123456789"
+            },
+            partial=True
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "mobile",
+            serializer.errors
+        )
+
+    def test_mobile_starting_with_0_is_invalid(self):
+
+        serializer = UserProfileUpdateSerializer(
+            instance=self.user,
+            data={
+                "mobile": "0123456789"
+            },
+            partial=True
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "mobile",
+            serializer.errors
+        )
+
+    def test_mobile_starting_with_1_is_invalid(self):
+
+        serializer = UserProfileUpdateSerializer(
+            instance=self.user,
+            data={
+                "mobile": "1123456789"
+            },
+            partial=True
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "mobile",
+            serializer.errors
+        )
+
+    def test_mobile_less_than_10_digits_is_invalid(self):
+
+        serializer = UserProfileUpdateSerializer(
+            instance=self.user,
+            data={
+                "mobile": "987654321"
+            },
+            partial=True
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "mobile",
+            serializer.errors
+        )
+
+    def test_mobile_more_than_10_digits_is_invalid(self):
+
+        serializer = UserProfileUpdateSerializer(
+            instance=self.user,
+            data={
+                "mobile": "98765432101"
+            },
+            partial=True
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "mobile",
+            serializer.errors
+        )
+
+    def test_mobile_with_letters_is_invalid(self):
+
+        serializer = UserProfileUpdateSerializer(
+            instance=self.user,
+            data={
+                "mobile": "98765abc10"
+            },
+            partial=True
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "mobile",
+            serializer.errors
+        )
+
+    def test_mobile_with_special_characters_is_invalid(self):
+
+        serializer = UserProfileUpdateSerializer(
+            instance=self.user,
+            data={
+                "mobile": "98765-43210"
+            },
+            partial=True
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "mobile",
+            serializer.errors
+        )
+
+    def test_mobile_with_spaces_is_invalid(self):
+
+        serializer = UserProfileUpdateSerializer(
+            instance=self.user,
+            data={
+                "mobile": "98765 43210"
+            },
+            partial=True
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "mobile",
+            serializer.errors
+        )
+
+    # =========================================================
+    # EMPTY MOBILE
+    # =========================================================
+
+    def test_empty_mobile_is_allowed(self):
+
+        serializer = UserProfileUpdateSerializer(
+            instance=self.user,
+            data={
+                "mobile": ""
+            },
+            partial=True
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        self.assertEqual(
+            serializer.validated_data["mobile"],
+            ""
+        )
+
+        profile = serializer.save()
+
+        self.assertEqual(
+            profile.mobile,
+            ""
+        )
+
+        self.user.refresh_from_db()
+
+        self.assertEqual(
+            self.user.mobile,
+            ""
+        )
+
+    # =========================================================
+    # ALTERNATE MOBILE - VALID
+    # =========================================================
+
+    def test_valid_alternate_mobile(self):
+
+        serializer = UserProfileUpdateSerializer(
+            instance=self.user,
+            data={
+                "alternate_mobile": "8765432109"
+            },
+            partial=True
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        profile = serializer.save()
+
+        self.assertEqual(
+            profile.alternate_mobile,
+            "8765432109"
+        )
+
+    def test_alternate_mobile_starting_with_6_is_valid(self):
+
+        serializer = UserProfileUpdateSerializer(
+            instance=self.user,
+            data={
+                "alternate_mobile": "6123456789"
+            },
+            partial=True
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+    def test_alternate_mobile_starting_with_7_is_valid(self):
+
+        serializer = UserProfileUpdateSerializer(
+            instance=self.user,
+            data={
+                "alternate_mobile": "7123456789"
+            },
+            partial=True
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+    def test_alternate_mobile_starting_with_8_is_valid(self):
+
+        serializer = UserProfileUpdateSerializer(
+            instance=self.user,
+            data={
+                "alternate_mobile": "8123456789"
+            },
+            partial=True
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+    def test_alternate_mobile_starting_with_9_is_valid(self):
+
+        serializer = UserProfileUpdateSerializer(
+            instance=self.user,
+            data={
+                "alternate_mobile": "9123456789"
+            },
+            partial=True
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+    # =========================================================
+    # ALTERNATE MOBILE - INVALID
+    # =========================================================
+
+    def test_alternate_mobile_starting_with_5_is_invalid(self):
+
+        serializer = UserProfileUpdateSerializer(
+            instance=self.user,
+            data={
+                "alternate_mobile": "5123456789"
+            },
+            partial=True
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "alternate_mobile",
+            serializer.errors
+        )
+
+    def test_alternate_mobile_less_than_10_digits_is_invalid(self):
+
+        serializer = UserProfileUpdateSerializer(
+            instance=self.user,
+            data={
+                "alternate_mobile": "987654321"
+            },
+            partial=True
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "alternate_mobile",
+            serializer.errors
+        )
+
+    def test_alternate_mobile_more_than_10_digits_is_invalid(self):
+
+        serializer = UserProfileUpdateSerializer(
+            instance=self.user,
+            data={
+                "alternate_mobile": "98765432101"
+            },
+            partial=True
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "alternate_mobile",
+            serializer.errors
+        )
+
+    def test_alternate_mobile_with_letters_is_invalid(self):
+
+        serializer = UserProfileUpdateSerializer(
+            instance=self.user,
+            data={
+                "alternate_mobile": "98765abc10"
+            },
+            partial=True
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "alternate_mobile",
+            serializer.errors
+        )
+
+    def test_alternate_mobile_with_special_characters_is_invalid(self):
+
+        serializer = UserProfileUpdateSerializer(
+            instance=self.user,
+            data={
+                "alternate_mobile": "98765-43210"
+            },
+            partial=True
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "alternate_mobile",
+            serializer.errors
+        )
+
+    # =========================================================
+    # EMPTY ALTERNATE MOBILE
+    # =========================================================
+
+    def test_empty_alternate_mobile_is_allowed(self):
+
+        serializer = UserProfileUpdateSerializer(
+            instance=self.user,
+            data={
+                "alternate_mobile": ""
+            },
+            partial=True
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        self.assertEqual(
+            serializer.validated_data["alternate_mobile"],
+            ""
+        )
+
+        profile = serializer.save()
+
+        self.assertEqual(
+            profile.alternate_mobile,
+            ""
+        )
+
+    # =========================================================
+    # CITY
+    # =========================================================
+
+    def test_valid_city(self):
+
+        serializer = UserProfileUpdateSerializer(
+            instance=self.user,
+            data={
+                "city": "Kochi"
+            },
+            partial=True
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        profile = serializer.save()
+
+        self.assertEqual(
+            profile.city,
+            "Kochi"
+        )
+
+    def test_empty_city_is_allowed(self):
+
+        serializer = UserProfileUpdateSerializer(
+            instance=self.user,
+            data={
+                "city": ""
+            },
+            partial=True
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        profile = serializer.save()
+
+        self.assertEqual(
+            profile.city,
+            ""
+        )
+
+    # =========================================================
+    # EMAIL
+    # =========================================================
+
+    def test_same_email_is_allowed(self):
+
+        serializer = UserProfileUpdateSerializer(
+            instance=self.user,
+            data={
+                "email": "john@example.com"
+            },
+            partial=True
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        serializer.save()
+
+        self.user.refresh_from_db()
+
+        self.assertEqual(
+            self.user.email,
+            "john@example.com"
+        )
+
+    def test_different_email_is_rejected(self):
+
+        serializer = UserProfileUpdateSerializer(
+            instance=self.user,
+            data={
+                "email": "newemail@example.com"
+            },
+            partial=True
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        with self.assertRaises(
+            serializers.ValidationError
+        ) as context:
+
+            serializer.save()
+
+        self.assertIn(
+            "email",
+            context.exception.detail
+        )
+
+        self.assertEqual(
+            str(context.exception.detail["email"]),
+            "Email cannot be changed once registered."
+        )
+
+    def test_email_invalid_format(self):
+
+        serializer = UserProfileUpdateSerializer(
+            instance=self.user,
+            data={
+                "email": "invalid-email"
+            },
+            partial=True
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "email",
+            serializer.errors
+        )
+
+    # =========================================================
+    # PARTIAL UPDATE
+    # =========================================================
+
+    def test_no_fields_update(self):
+
+        original_name = self.profile.full_name
+        original_mobile = self.profile.mobile
+        original_alternate_mobile = self.profile.alternate_mobile
+        original_city = self.profile.city
+
+        serializer = UserProfileUpdateSerializer(
+            instance=self.user,
+            data={},
+            partial=True
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        profile = serializer.save()
+
+        self.assertEqual(
+            profile.full_name,
+            original_name
+        )
+
+        self.assertEqual(
+            profile.mobile,
+            original_mobile
+        )
+
+        self.assertEqual(
+            profile.alternate_mobile,
+            original_alternate_mobile
+        )
+
+        self.assertEqual(
+            profile.city,
+            original_city
+        )
+
+    # =========================================================
+    # MULTIPLE FIELDS
+    # =========================================================
+
+    def test_multiple_fields_update(self):
+
+        data = {
+            "full_name": "Robert Smith",
+            "mobile": "8765432109",
+            "alternate_mobile": "9123456780",
+            "city": "Kochi",
+            "email": "john@example.com"
+        }
+
+        serializer = UserProfileUpdateSerializer(
+            instance=self.user,
+            data=data,
+            partial=True
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        profile = serializer.save()
+
+        self.assertEqual(
+            profile.full_name,
+            "Robert Smith"
+        )
+
+        self.assertEqual(
+            profile.mobile,
+            "8765432109"
+        )
+
+        self.assertEqual(
+            profile.alternate_mobile,
+            "9123456780"
+        )
+
+        self.assertEqual(
+            profile.city,
+            "Kochi"
+        )
+
+        self.user.refresh_from_db()
+
+        self.assertEqual(
+            self.user.mobile,
+            "8765432109"
+        )
+
+        self.assertEqual(
+            self.user.email,
+            "john@example.com"
+        )
+
+
+import json
+
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import TestCase
+from django.utils.datastructures import MultiValueDict
+
+from rest_framework.test import APIRequestFactory
+from rest_framework.views import APIView
+
+from developer.models import (
+    UserCreate,
+    Property,
+    Category,
+    Subcategory,
+    Purpose,
+    Amenities,
+    SubcategoryField,
+    FieldOption,
+    PropertyFeature,
+)
+
+from users.serializers import UserPropertySerializer
+
+
+class UserPropertySerializerTests(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+
+        # =========================================================
+        # USER
+        #
+        # IMPORTANT:
+        # Property.user expects UserCreate.
+        # UserCreate.objects does NOT have create_user().
+        # Therefore create it directly.
+        # =========================================================
+
+        cls.user = UserCreate.objects.create(
+            name="Test User",
+            email="testuser@example.com"
+        )
+
+        # Set password only if your model has it
+        if hasattr(cls.user, "set_password"):
+            cls.user.set_password("Test@12345")
+            cls.user.save()
+
+        # =========================================================
+        # CATEGORY
+        # =========================================================
+
+        cls.category = Category.objects.create(
+            name="Residential"
+        )
+
+        # =========================================================
+        # SUBCATEGORY
+        # =========================================================
+
+        cls.subcategory = Subcategory.objects.create(
+            name="Apartment",
+            category=cls.category
+        )
+
+        # =========================================================
+        # PURPOSES
+        # =========================================================
+
+        cls.sale_purpose = Purpose.objects.create(
+            name="Sale"
+        )
+
+        cls.rent_purpose = Purpose.objects.create(
+            name="Rent"
+        )
+
+        cls.lease_purpose = Purpose.objects.create(
+            name="Lease"
+        )
+
+        # =========================================================
+        # AMENITIES
+        #
+        # We create 12 so IDs 3,5,6,12 exist in the test DB.
+        # This matches your actual request:
+        #
+        # amenities
+        # [3,5,6,12]
+        # =========================================================
+
+        cls.amenity_objects = []
+
+        for i in range(1, 13):
+
+            amenity = Amenities.objects.create(
+                name=f"Amenity {i}"
+            )
+
+            cls.amenity_objects.append(amenity)
+
+        cls.amenity_ids = [3, 5, 6, 12]
+
+        # =========================================================
+        # SUBCATEGORY FIELD
+        # =========================================================
+
+        field_type_field = (
+            SubcategoryField._meta.get_field("field_type")
+        )
+
+        if field_type_field.choices:
+
+            cls.field_type_value = (
+                field_type_field.choices[0][0]
+            )
+
+        elif field_type_field.default is not None:
+
+            cls.field_type_value = (
+                field_type_field.get_default()
+            )
+
+        else:
+
+            # Your model requires field_type.
+            cls.field_type_value = "text"
+
+        # =========================================================
+        # BHK FIELD
+        # =========================================================
+
+        cls.bhk_field = SubcategoryField.objects.create(
+            subcategory=cls.subcategory,
+            field_name="BHK types",
+            field_type=cls.field_type_value
+        )
+
+        # =========================================================
+        # FLAT FURNISHING FIELD
+        # =========================================================
+
+        cls.furnishing_field = SubcategoryField.objects.create(
+            subcategory=cls.subcategory,
+            field_name="Flat Furnishing",
+            field_type=cls.field_type_value
+        )
+
+        # =========================================================
+        # FIELD OPTIONS
+        # =========================================================
+
+        cls.bed_option = FieldOption.objects.create(
+            field=cls.furnishing_field,
+            name="Bed"
+        )
+
+        cls.fan_option = FieldOption.objects.create(
+            field=cls.furnishing_field,
+            name="Fan"
+        )
+
+    # =============================================================
+    # IMAGE
+    # =============================================================
+
+    def create_image(self, number):
+
+        return SimpleUploadedFile(
+            name=f"property_{number}.jpg",
+            content=(
+                b"\xff\xd8\xff\xe0"
+                b"\x00\x10JFIF\x00\x01\x01"
+                b"\x00\x00\x01\x00\x01\x00\x00"
+                b"\xff\xd9"
+            ),
+            content_type="image/jpeg"
+        )
+
+    # =============================================================
+    # EXACT FIELD VALUES
+    #
+    # DO NOT CHANGE THIS STRUCTURE
+    #
+    # This is exactly what you provided.
+    # =============================================================
+
+    def get_field_values(self):
+
+        return [
+            {
+                "name": "BHK types",
+                "option": None,
+                "value": "4BHK"
+            },
+            {
+                "name": "Flat Furnishing",
+                "option": "Bed",
+                "value": 1
+            },
+            {
+                "name": "Flat Furnishing",
+                "option": "Fan",
+                "value": 1
+            }
+        ]
+
+    # =============================================================
+    # EXACT REQUEST PAYLOAD
+    # =============================================================
+
+    def get_payload(self):
+
+        return {
+
+            "category": str(
+                self.category.id
+            ),
+
+            "subcategory": "Apartment",
+
+            "purpose": "Sale",
+
+            "label": "Sell house",
+
+            "description": (
+                "Beautiful and well-maintained house available "
+                "for sale in a prime residential area with easy "
+                "access to schools, hospitals, supermarkets, and "
+                "public transport. The property offers spacious "
+                "rooms, good ventilation, modern amenities, ample "
+                "parking space, and a peaceful neighborhood, "
+                "making it perfect for families and investment "
+                "purposes."
+            ),
+
+            "city": "calicut",
+
+            "taluk": "calicut",
+
+            "district": "palakkad",
+
+            "state": "kerala",
+
+            "location": (
+                "https://maps.app.goo.gl/PSWeCLQdFWbGgwtQ6"
+            ),
+
+            "village": "calicut",
+
+            "pincode": "679307",
+
+            "google_location": (
+                "https://maps.app.goo.gl/PSWeCLQdFWbGgwtQ6"
+            ),
+
+            "land_area": "2 acre",
+
+            "sq_ft": "2200",
+
+            "owner": (
+                "66a0c96a-96a9-4658-83ee-3fa484840d50"
+            ),
+
+            "phone": "8767890987",
+
+            "whatsapp": "9876789098",
+
+            "total_price": "8500000",
+
+            "perprice": "120000/Cent",
+
+            "price": "8500000",
+
+            # EXACT
+            "field_values": json.dumps(
+                self.get_field_values()
+            ),
+
+            # EXACT
+            "amenities": json.dumps(
+                [3, 5, 6, 12]
+            ),
+
+            # EXACT
+            "selling_points": json.dumps(
+                [
+                    "Riverview",
+                    "Roadside"
+                ]
+            ),
+
+            # EXACT
+            "landmarks": json.dumps(
+                [
+                    {
+                        "name": "school",
+                        "distance": "1km"
+                    }
+                ]
+            ),
+        }
+
+    # =============================================================
+    # CREATE REQUEST
+    #
+    # IMPORTANT:
+    # NEVER DO:
+    #
+    # request.FILES.append(...)
+    #
+    # MultiValueDict does not have append().
+    #
+    # Instead, put all images into MultiValueDict using setlist().
+    # =============================================================
+
+    def get_request(self, payload, images):
+
+        factory = APIRequestFactory()
+
+        multipart_data = {}
+
+        for key, value in payload.items():
+            multipart_data[key] = value
+
+        # Multiple uploaded images
+        multipart_data["images"] = images
+
+        # Create multipart request
+        django_request = factory.post(
+            "/api/properties/",
+            data=multipart_data,
+            format="multipart"
+        )
+
+        # ---------------------------------------------------------
+        # IMPORTANT
+        #
+        # APIView().initialize_request() creates a new DRF Request.
+        # Since this test does not run authentication middleware,
+        # DRF would otherwise make request.user AnonymousUser.
+        # ---------------------------------------------------------
+
+        request = APIView().initialize_request(
+            django_request
+        )
+
+        # Force the DRF request to use the actual UserCreate object
+        request._user = self.user
+        request._request.user = self.user
+
+        return request
+    # =============================================================
+    # CONTEXT
+    # =============================================================
+
+    def get_context(self, request):
+
+        return {
+
+            "request": request,
+
+            "amenities_list": [
+                3,
+                5,
+                6,
+                12
+            ],
+
+            "selling_points_list": [
+                "Riverview",
+                "Roadside"
+            ],
+
+            "land_mark_list": [
+                {
+                    "name": "school",
+                    "distance": "1km"
+                }
+            ],
+
+            # EXACT
+            "field_values": self.get_field_values(),
+
+            # Same feature structure
+            "features_list": self.get_field_values(),
+        }
+
+    # =============================================================
+    # SERIALIZER HELPER
+    # =============================================================
+
+    def create_serializer(self, image_count=4):
+
+        payload = self.get_payload()
+
+        images = [
+            self.create_image(i)
+            for i in range(1, image_count + 1)
+        ]
+
+        request = self.get_request(
+            payload,
+            images
+        )
+
+        print("TEST FILES:", request.FILES.getlist("images"))
+        print("TEST FILE COUNT:", len(request.FILES.getlist("images")))
+
+        serializer = UserPropertySerializer(
+            data=request.data,
+            context=self.get_context(request)
+        )
+
+        return serializer, request
+
+    # =============================================================
+    # TEST 1
+    # =============================================================
+
+    def test_actual_property_payload_is_valid(self):
+
+        serializer, request = (
+            self.create_serializer()
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+    # =============================================================
+    # TEST 2
+    # =============================================================
+
+    def test_create_property_with_actual_payload(self):
+
+        serializer, request = (
+            self.create_serializer()
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        property_obj = serializer.save()
+
+        self.assertIsNotNone(
+            property_obj
+        )
+
+        self.assertEqual(
+            property_obj.user,
+            self.user
+        )
+
+        self.assertEqual(
+            property_obj.label,
+            "Sell house"
+        )
+
+    
+    # =============================================================
+    # TEST 3
+    # =============================================================
+
+    def test_images_saved(self):
+
+        serializer, request = (
+            self.create_serializer(
+                image_count=4
+            )
+        )
+
+        # ---------------------------------------------------------
+        # 1. Confirm exactly 4 images were uploaded
+        # ---------------------------------------------------------
+
+        uploaded_images = request.FILES.getlist(
+            "images"
+        )
+
+        self.assertEqual(
+            len(uploaded_images),
+            4
+        )
+
+        # ---------------------------------------------------------
+        # 2. Serializer must accept the uploaded images
+        # ---------------------------------------------------------
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        # ---------------------------------------------------------
+        # 3. Save the property
+        # ---------------------------------------------------------
+
+        property_obj = serializer.save()
+
+        self.assertIsNotNone(
+            property_obj
+        )
+
+        # ---------------------------------------------------------
+        # 4. Confirm the property was created
+        # ---------------------------------------------------------
+
+        self.assertEqual(
+            Property.objects.filter(
+                id=property_obj.id
+            ).count(),
+            1
+        )
+
+        # ---------------------------------------------------------
+        # 5. Confirm the uploaded image names are the expected ones
+        # ---------------------------------------------------------
+
+        uploaded_names = [
+            image.name
+            for image in uploaded_images
+        ]
+
+        self.assertEqual(
+            uploaded_names,
+            [
+                "property_1.jpg",
+                "property_2.jpg",
+                "property_3.jpg",
+                "property_4.jpg",
+            ]
+        )
+
+
+
+    # =============================================================
+    # TEST 4
+    # =============================================================
+
+    def test_amenities_saved(self):
+
+        serializer, request = (
+            self.create_serializer()
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        property_obj = serializer.save()
+
+        saved_ids = set(
+            property_obj.amenities.values_list(
+                "id",
+                flat=True
+            )
+        )
+
+        self.assertEqual(
+            saved_ids,
+            {
+                3,
+                5,
+                6,
+                12
+            }
+        )
+
+    # =============================================================
+    # TEST 5
+    # =============================================================
+
+    def test_field_values_are_saved(self):
+
+        serializer, request = (
+            self.create_serializer()
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        property_obj = serializer.save()
+
+        features = PropertyFeature.objects.filter(
+            property=property_obj
+        )
+
+        self.assertEqual(
+            features.count(),
+            3
+        )
+
+        actual = []
+
+        for feature in features:
+
+            value = feature.value
+
+            if isinstance(value, str):
+
+                value = json.loads(value)
+
+            actual.append(
+                {
+                    "name": feature.field.field_name,
+                    "option": value.get("option"),
+                    "value": value.get("value")
+                }
+            )
+
+        self.assertIn(
+            {
+                "name": "BHK types",
+                "option": None,
+                "value": "4BHK"
+            },
+            actual
+        )
+
+        self.assertIn(
+            {
+                "name": "Flat Furnishing",
+                "option": "Bed",
+                "value": 1
+            },
+            actual
+        )
+
+        self.assertIn(
+            {
+                "name": "Flat Furnishing",
+                "option": "Fan",
+                "value": 1
+            },
+            actual
+        )
+
+    # =============================================================
+    # TEST 6
+    # =============================================================
+
+    def test_selling_points_saved(self):
+
+        serializer, request = (
+            self.create_serializer()
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        property_obj = serializer.save()
+
+        self.assertEqual(
+            property_obj.selling_points,
+            [
+                "Riverview",
+                "Roadside"
+            ]
+        )
+
+    # =============================================================
+    # TEST 7
+    # =============================================================
+
+    def test_landmarks_saved(self):
+
+        serializer, request = (
+            self.create_serializer()
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        property_obj = serializer.save()
+
+        self.assertEqual(
+            property_obj.land_mark,
+            [
+                {
+                    "name": "school",
+                    "distance": "1km"
+                }
+            ]
+        )
+
+    # =============================================================
+    # TEST 8
+    # =============================================================
+
+    def test_features_output(self):
+
+        serializer, request = self.create_serializer()
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        property_obj = serializer.save()
+
+        output = UserPropertySerializer(
+            property_obj,
+            context={
+                "request": request
+            }
+        ).data
+
+        print("\n================ FEATURE OUTPUT ================")
+        print(json.dumps(
+            output.get("features"),
+            indent=4,
+            default=str
+        ))
+        print("=================================================")
+
+        features = output.get("features")
+
+        self.assertIsNotNone(features)
+
+        self.assertEqual(
+            len(features),
+            3
+        )
+    # =============================================================
+    # TEST 9
+    # =============================================================
+
+    def test_amenities_output(self):
+
+        serializer, request = (
+            self.create_serializer()
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        property_obj = serializer.save()
+
+        output = UserPropertySerializer(
+            property_obj,
+            context={
+                "request": request
+            }
+        ).data
+
+        amenities = output.get(
+            "amenities"
+        )
+
+        self.assertIsNotNone(
+            amenities
+        )
+
+        self.assertEqual(
+            len(amenities),
+            4
+        )
+
+    # =============================================================
+    # TEST 10
+    # =============================================================
+
+    def test_selling_points_output(self):
+
+        serializer, request = (
+            self.create_serializer()
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        property_obj = serializer.save()
+
+        output = UserPropertySerializer(
+            property_obj,
+            context={
+                "request": request
+            }
+        ).data
+
+        self.assertEqual(
+            output["selling_points"],
+            [
+                "Riverview",
+                "Roadside"
+            ]
+        )
+
+    # =============================================================
+    # TEST 11
+    # =============================================================
+
+    def test_landmarks_output(self):
+
+        serializer, request = (
+            self.create_serializer()
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        property_obj = serializer.save()
+
+        output = UserPropertySerializer(
+            property_obj,
+            context={
+                "request": request
+            }
+        ).data
+
+        self.assertEqual(
+            output["landmarks"],
+            [
+                {
+                    "name": "school",
+                    "distance": "1km"
+                }
+            ]
+        )
+
+    # =============================================================
+    # TEST 12
+    # =============================================================
+
+    def test_minimum_three_images(self):
+
+        serializer, request = (
+            self.create_serializer(
+                image_count=2
+            )
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "images",
+            serializer.errors
+        )
+
+    # =============================================================
+    # TEST 13
+    # =============================================================
+
+    def test_maximum_ten_images(self):
+
+        serializer, request = (
+            self.create_serializer(
+                image_count=11
+            )
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "images",
+            serializer.errors
+        )
+
+    # =============================================================
+    # TEST 14
+    # =============================================================
+
+    def test_sale_price_required(self):
+
+        payload = self.get_payload()
+
+        payload["price"] = ""
+
+        images = [
+            self.create_image(i)
+            for i in range(1, 5)
+        ]
+
+        request = self.get_request(
+            payload,
+            images
+        )
+
+        serializer = UserPropertySerializer(
+            data=request.data,
+            context=self.get_context(request)
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "price",
+            serializer.errors
+        )
+
+    # =============================================================
+    # TEST 15
+    # =============================================================
+
+    def test_sale_perprice_required(self):
+
+        payload = self.get_payload()
+
+        payload["perprice"] = ""
+
+        images = [
+            self.create_image(i)
+            for i in range(1, 5)
+        ]
+
+        request = self.get_request(
+            payload,
+            images
+        )
+
+        serializer = UserPropertySerializer(
+            data=request.data,
+            context=self.get_context(request)
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "perprice",
+            serializer.errors
+        )
+
+    # =============================================================
+    # TEST 16
+    # =============================================================
+
+    def test_rent_price_required(self):
+
+        payload = self.get_payload()
+
+        payload["purpose"] = "Rent"
+        payload["price"] = "."
+
+        # Empty price
+        payload["price"] = ""
+
+        images = [
+            self.create_image(i)
+            for i in range(1, 5)
+        ]
+
+        request = self.get_request(
+            payload,
+            images
+        )
+
+        serializer = UserPropertySerializer(
+            data=request.data,
+            context=self.get_context(request)
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "price",
+            serializer.errors
+        )
+
+    # =============================================================
+    # TEST 17
+    # =============================================================
+
+    def test_rent_deposit_required(self):
+
+        payload = self.get_payload()
+
+        payload["purpose"] = "Rent"
+        payload["price"] = "25000"
+        payload["deposit"] = ""
+
+        images = [
+            self.create_image(i)
+            for i in range(1, 5)
+        ]
+
+        request = self.get_request(
+            payload,
+            images
+        )
+
+        serializer = UserPropertySerializer(
+            data=request.data,
+            context=self.get_context(request)
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "deposit",
+            serializer.errors
+        )
+
+    # =============================================================
+    # TEST 18
+    # =============================================================
+
+    def test_lease_price_required(self):
+
+        payload = self.get_payload()
+
+        payload["purpose"] = "Lease"
+        payload["price"] = ""
+
+        images = [
+            self.create_image(i)
+            for i in range(1, 5)
+        ]
+
+        request = self.get_request(
+            payload,
+            images
+        )
+
+        serializer = UserPropertySerializer(
+            data=request.data,
+            context=self.get_context(request)
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "price",
+            serializer.errors
+        )
+
+    # =============================================================
+    # TEST 19
+    # =============================================================
+
+    def test_invalid_subcategory(self):
+
+        payload = self.get_payload()
+
+        payload["subcategory"] = (
+            "Invalid Apartment"
+        )
+
+        images = [
+            self.create_image(i)
+            for i in range(1, 5)
+        ]
+
+        request = self.get_request(
+            payload,
+            images
+        )
+
+        serializer = UserPropertySerializer(
+            data=request.data,
+            context=self.get_context(request)
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "subcategory",
+            serializer.errors
+        )
+
+    # =============================================================
+    # TEST 20
+    # =============================================================
+
+    def test_invalid_purpose(self):
+
+        payload = self.get_payload()
+
+        payload["purpose"] = (
+            "Invalid Purpose"
+        )
+
+        images = [
+            self.create_image(i)
+            for i in range(1, 5)
+        ]
+
+        request = self.get_request(
+            payload,
+            images
+        )
+
+        serializer = UserPropertySerializer(
+            data=request.data,
+            context=self.get_context(request)
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "purpose",
+            serializer.errors
+        )
+
+
+
+from django.test import TestCase
+
+from agents.models import (
+    AgentUserProfile,
+    AgentContactMessage,
+)
+
+from users.serializers import (
+    AgentContactMessageSerializer,
+)
+
+
+class AgentContactMessageSerializerTests(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+
+        # =========================================================
+        # CREATE TEST AGENT
+        # =========================================================
+        #
+        # These fields are required by AgentUserProfile.save()
+        # and full_clean().
+        #
+        cls.agent = AgentUserProfile.objects.create(
+            username="testagent",
+            email="agent@example.com",
+            password="TestPassword123",
+            phone_number="9876543210",
+            address="Test Agent Address",
+            pin_code="679307",
+        )
+
+    # =========================================================
+    # HELPER
+    # =========================================================
+
+    def create_message(self):
+
+        return AgentContactMessage.objects.create(
+            agent=self.agent,
+            name="John Customer",
+            message="I am interested in this property.",
+        )
+
+    # =========================================================
+    # VALID DATA
+    # =========================================================
+
+    def test_valid_data(self):
+
+        data = {
+            "name": "John Customer",
+            "message": "I am interested in this property.",
+        }
+
+        serializer = AgentContactMessageSerializer(
+            data=data
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+    # =========================================================
+    # CREATE CONTACT MESSAGE
+    # =========================================================
+
+    def test_create_contact_message(self):
+
+        data = {
+            "name": "John Customer",
+            "message": "I am interested in this property.",
+        }
+
+        serializer = AgentContactMessageSerializer(
+            data=data
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        message = AgentContactMessage.objects.create(
+            agent=self.agent,
+            name=serializer.validated_data["name"],
+            message=serializer.validated_data["message"],
+        )
+
+        self.assertIsNotNone(
+            message.id
+        )
+
+        self.assertEqual(
+            message.agent,
+            self.agent
+        )
+
+        self.assertEqual(
+            message.name,
+            "John Customer"
+        )
+
+        self.assertEqual(
+            message.message,
+            "I am interested in this property."
+        )
+
+    # =========================================================
+    # SERIALIZED OUTPUT
+    # =========================================================
+
+    def test_serialized_output(self):
+
+        message = self.create_message()
+
+        serializer = AgentContactMessageSerializer(
+            message
+        )
+
+        data = serializer.data
+
+        # Main fields
+        self.assertIn(
+            "id",
+            data
+        )
+
+        self.assertIn(
+            "agent_id",
+            data
+        )
+
+        self.assertIn(
+            "agent_name",
+            data
+        )
+
+        self.assertIn(
+            "agent_email",
+            data
+        )
+
+        self.assertIn(
+            "agent_phone",
+            data
+        )
+
+        self.assertIn(
+            "agent_whatsapp",
+            data
+        )
+
+        self.assertIn(
+            "name",
+            data
+        )
+
+        self.assertIn(
+            "message",
+            data
+        )
+
+        self.assertIn(
+            "status",
+            data
+        )
+
+        self.assertIn(
+            "replied_at",
+            data
+        )
+
+        self.assertIn(
+            "created_at",
+            data
+        )
+
+    # =========================================================
+    # AGENT ID
+    # =========================================================
+
+    def test_agent_id_is_serialized(self):
+
+        message = self.create_message()
+
+        serializer = AgentContactMessageSerializer(
+            message
+        )
+
+        data = serializer.data
+
+        self.assertEqual(
+            str(data["agent_id"]),
+            str(self.agent.id)
+        )
+
+    # =========================================================
+    # AGENT EMAIL
+    # =========================================================
+
+    def test_agent_email_is_serialized(self):
+
+        message = self.create_message()
+
+        serializer = AgentContactMessageSerializer(
+            message
+        )
+
+        data = serializer.data
+
+        self.assertEqual(
+            data["agent_email"],
+            self.agent.email
+        )
+
+    # =========================================================
+    # READ ONLY FIELDS
+    # =========================================================
+
+    def test_read_only_fields_cannot_be_written(self):
+
+        data = {
+            "agent_id": str(self.agent.id),
+
+            "agent_name": "Fake Agent",
+            "agent_email": "fake@example.com",
+            "agent_phone": "1111111111",
+            "agent_whatsapp": "1111111111",
+
+            "name": "John Customer",
+            "message": "Test message",
+
+            "status": "replied",
+
+            "replied_at": "2026-09-16T10:00:00Z",
+
+            "created_at": "2026-09-16T10:00:00Z",
+        }
+
+        serializer = AgentContactMessageSerializer(
+            data=data
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        validated_data = serializer.validated_data
+
+        # These fields must not enter validated_data
+        self.assertNotIn(
+            "agent_id",
+            validated_data
+        )
+
+        self.assertNotIn(
+            "agent_name",
+            validated_data
+        )
+
+        self.assertNotIn(
+            "agent_email",
+            validated_data
+        )
+
+        self.assertNotIn(
+            "agent_phone",
+            validated_data
+        )
+
+        self.assertNotIn(
+            "agent_whatsapp",
+            validated_data
+        )
+
+        self.assertNotIn(
+            "status",
+            validated_data
+        )
+
+        self.assertNotIn(
+            "replied_at",
+            validated_data
+        )
+
+        self.assertNotIn(
+            "created_at",
+            validated_data
+        )
+
+        # Writable fields should remain
+        self.assertEqual(
+            validated_data["name"],
+            "John Customer"
+        )
+
+        self.assertEqual(
+            validated_data["message"],
+            "Test message"
+        )
+
+    # =========================================================
+    # NAME REQUIRED
+    # =========================================================
+
+    def test_name_is_required(self):
+
+        data = {
+            "message": "I am interested."
+        }
+
+        serializer = AgentContactMessageSerializer(
+            data=data
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "name",
+            serializer.errors
+        )
+
+    # =========================================================
+    # MESSAGE REQUIRED
+    # =========================================================
+
+    def test_message_is_required(self):
+
+        data = {
+            "name": "John Customer"
+        }
+
+        serializer = AgentContactMessageSerializer(
+            data=data
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "message",
+            serializer.errors
+        )
+
+    # =========================================================
+    # EMPTY NAME
+    # =========================================================
+
+    def test_empty_name_is_invalid(self):
+
+        data = {
+            "name": "",
+            "message": "I am interested.",
+        }
+
+        serializer = AgentContactMessageSerializer(
+            data=data
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "name",
+            serializer.errors
+        )
+
+    # =========================================================
+    # EMPTY MESSAGE
+    # =========================================================
+
+    def test_empty_message_is_invalid(self):
+
+        data = {
+            "name": "John Customer",
+            "message": "",
+        }
+
+        serializer = AgentContactMessageSerializer(
+            data=data
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "message",
+            serializer.errors
+        )
+
+    # =========================================================
+    # UPDATE MESSAGE
+    # =========================================================
+
+    def test_update_message(self):
+
+        message = self.create_message()
+
+        serializer = AgentContactMessageSerializer(
+            message,
+            data={
+                "name": "Updated Customer",
+                "message": "Updated message",
+            },
+            partial=True
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        updated_message = serializer.save()
+
+        self.assertEqual(
+            updated_message.name,
+            "Updated Customer"
+        )
+
+        self.assertEqual(
+            updated_message.message,
+            "Updated message"
+        )
+
+
 

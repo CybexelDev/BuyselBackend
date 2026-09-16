@@ -739,7 +739,9 @@ class UserProfileSerializer(
 
     mobile = serializers.CharField(
         source="user.mobile",
-        required=False
+        required=False,
+        allow_blank=True,
+        allow_null=True
     )
 
     name = serializers.CharField(
@@ -998,11 +1000,98 @@ class AmenitiesSerializer(serializers.ModelSerializer):
             return obj.icon.url
         return None
 
+# class InboxSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Inbox
+#         fields = "__all__"
+#         read_only_fields = ["created_at", "is_read", "is_removed"]
+
 class InboxSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Inbox
         fields = "__all__"
-        read_only_fields = ["created_at", "is_read", "is_removed"]
+
+        read_only_fields = [
+            "id",
+            "created_at",
+            "is_read",
+            "is_removed",
+        ]
+
+    def validate_name(self, value):
+
+        value = value.strip()
+
+        if not value:
+            raise serializers.ValidationError(
+                "Name is required."
+            )
+
+        if len(value) > 50:
+            raise serializers.ValidationError(
+                "Name cannot exceed 50 characters."
+            )
+
+        return value
+
+    def validate_pin_code(self, value):
+
+        value = value.strip()
+
+        if not value:
+            raise serializers.ValidationError(
+                "Pin code is required."
+            )
+
+        if not value.isdigit():
+            raise serializers.ValidationError(
+                "Pin code must contain only numbers."
+            )
+
+        if len(value) != 6:
+            raise serializers.ValidationError(
+                "Pin code must be exactly 6 digits."
+            )
+
+        return value
+
+    def validate_contact(self, value):
+
+        value = value.strip()
+
+        if not value:
+            raise serializers.ValidationError(
+                "Contact number is required."
+            )
+
+        if not value.isdigit():
+            raise serializers.ValidationError(
+                "Contact number must contain only numbers."
+            )
+
+        if len(value) != 10:
+            raise serializers.ValidationError(
+                "Contact number must be exactly 10 digits."
+            )
+
+        return value
+
+    def validate_messages_text(self, value):
+
+        value = value.strip()
+
+        if not value:
+            raise serializers.ValidationError(
+                "Message cannot be empty."
+            )
+
+        if len(value) > 10000:
+            raise serializers.ValidationError(
+                "Message cannot exceed 10000 characters."
+            )
+
+        return value
 
 class AgentReviewSerializer(serializers.ModelSerializer):
 
@@ -1024,6 +1113,35 @@ class AgentReviewSerializer(serializers.ModelSerializer):
             "created_at",
             "is_owner"
         ]
+
+    def validate_rating(self, value):
+
+        if value is None:
+            raise serializers.ValidationError(
+                "Rating is required."
+            )
+
+        if value < 0 or value > 5:
+            raise serializers.ValidationError(
+                "Rating must be between 0 and 5."
+            )
+
+        return value
+
+    # =========================================================
+    # REVIEW VALIDATION
+    # =========================================================
+
+    def validate_review(self, value):
+
+        value = value.strip()
+
+        if not value:
+            raise serializers.ValidationError(
+                "Review cannot be empty."
+            )
+
+        return value
 
     def get_is_owner(self, obj):
         request = self.context.get("request")
@@ -1218,25 +1336,76 @@ class AgentRegisterSerializer(serializers.ModelSerializer):
 
         return agent
 
+# class AgentLoginSerializer(serializers.Serializer):
+#     email = serializers.EmailField()
+#     password = serializers.CharField(write_only=True)
+
+#     def validate_email(self, value):
+#         if value != value.strip():
+#             raise serializers.ValidationError(
+#                 "Email cannot contain leading or trailing spaces."
+#             )
+
+#         return value
+
+#     def validate(self, data):
+#         email = data.get("email")
+#         password = data.get("password")
+
+#         try:
+#             user = AgentUserProfile.objects.get(email=email)
+#         except AgentUserProfile.DoesNotExist:
+#             raise serializers.ValidationError({"error": "Invalid email"})
+
+#         if not user.check_password(password):
+#             raise serializers.ValidationError({"error": "Invalid password"})
+
+#         data["user"] = user
+#         return data
+
+
 class AgentLoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
 
     def validate(self, data):
+        # Get the original raw email from request data
+        raw_email = self.initial_data.get("email")
+
+        if raw_email is None:
+            raise serializers.ValidationError({
+                "email": "Email is required."
+            })
+
+        if not isinstance(raw_email, str):
+            raise serializers.ValidationError({
+                "email": "Invalid email."
+            })
+
+        # Reject leading/trailing spaces
+        if raw_email != raw_email.strip():
+            raise serializers.ValidationError({
+                "email": "Email cannot contain leading or trailing spaces."
+            })
+
         email = data.get("email")
         password = data.get("password")
 
         try:
             user = AgentUserProfile.objects.get(email=email)
         except AgentUserProfile.DoesNotExist:
-            raise serializers.ValidationError({"error": "Invalid email"})
+            raise serializers.ValidationError({
+                "error": "Invalid email"
+            })
 
         if not user.check_password(password):
-            raise serializers.ValidationError({"error": "Invalid password"})
+            raise serializers.ValidationError({
+                "error": "Invalid password"
+            })
 
         data["user"] = user
-        return data
 
+        return data
 
 class PendingAgentRegistrationSerializer(
     serializers.ModelSerializer
@@ -3386,6 +3555,7 @@ class PropertyCardSerializer(serializers.ModelSerializer):
     id = serializers.UUIDField(source="pk", read_only=True)
     # owner = serializers.CharField(source="owner.name")
     owner = serializers.CharField()
+    amenities = serializers.SerializerMethodField()
     images = serializers.SerializerMethodField()
     is_wishlisted = serializers.SerializerMethodField()
 
@@ -3399,6 +3569,8 @@ class PropertyCardSerializer(serializers.ModelSerializer):
             "price",
             "sq_ft",
             "land_area",
+            "description", 
+            "amenities",
             "owner",
             "whatsapp",
             "phone",
@@ -3414,6 +3586,22 @@ class PropertyCardSerializer(serializers.ModelSerializer):
             if img.image
         ]
 
+   
+    # =========================================================
+    # AMENITIES
+    # =========================================================
+
+    def get_amenities(self, obj):
+
+        if not hasattr(obj, "amenities"):
+            return ""
+
+        return ", ".join(
+            amenity.name
+            for amenity in obj.amenities.all()
+            if amenity.name
+        )
+
     def get_is_wishlisted(self, obj):
         wishlist_ids = self.context.get("wishlist_ids", set())
 
@@ -3426,6 +3614,7 @@ class AgentPropertyCardSerializer(serializers.ModelSerializer):
     id = serializers.UUIDField(source="pk", read_only=True)
     owner = serializers.SerializerMethodField()
     images = serializers.SerializerMethodField()
+    amenities = serializers.SerializerMethodField()
     is_wishlisted = serializers.SerializerMethodField()
 
     class Meta:
@@ -3438,6 +3627,8 @@ class AgentPropertyCardSerializer(serializers.ModelSerializer):
             "price",
             "sq_ft",
             "land_area",
+            "description", 
+            "amenities",
             "owner",
             "whatsapp",
             "phone",
@@ -3455,6 +3646,24 @@ class AgentPropertyCardSerializer(serializers.ModelSerializer):
             for img in obj.images.all()[:2]
             if img.image
         ]
+
+   
+    # =========================================================
+    # AMENITIES
+    # =========================================================
+
+    def get_amenities(self, obj):
+
+        if not hasattr(obj, "amenities"):
+            return ""
+
+        return ", ".join(
+            amenity.name
+            for amenity in obj.amenities.all()
+            if amenity.name
+        )
+
+
 
     def get_is_wishlisted(self, obj):
         wishlist_ids = self.context.get(
@@ -3475,6 +3684,8 @@ class WishlistSerializer(serializers.ModelSerializer):
     price = serializers.SerializerMethodField()
     sq_ft = serializers.SerializerMethodField()
     land_area = serializers.SerializerMethodField()
+    description = serializers.SerializerMethodField() 
+    amenities = serializers.SerializerMethodField()
     owner = serializers.SerializerMethodField()
     whatsapp = serializers.SerializerMethodField()
     phone = serializers.SerializerMethodField()
@@ -3492,6 +3703,8 @@ class WishlistSerializer(serializers.ModelSerializer):
             "price",
             "sq_ft",
             "land_area",
+            "description",
+            "amenities",
             "owner",
             "whatsapp",
             "phone",
@@ -3558,6 +3771,20 @@ class WishlistSerializer(serializers.ModelSerializer):
             return None
 
         return getattr(getattr(prop, "owner", None) or getattr(prop, "agent", None), "name", None)
+
+    def get_description(self, obj): 
+        prop = self.get_obj(obj) 
+        if not prop: 
+            return None 
+        return getattr(prop, "description", None) 
+    # ========================================================= # AMENITIES # ========================================================= 
+    def get_amenities(self, obj): 
+        prop = self.get_obj(obj) 
+        if not prop: 
+            return "" 
+        if not hasattr(prop, "amenities"): 
+            return "" 
+        return ", ".join( amenity.name for amenity in prop.amenities.all() if amenity.name )
 
     def get_whatsapp(self, obj):
         prop = self.get_obj(obj)
@@ -4758,6 +4985,8 @@ class CombinedPropertyListSerializer(serializers.Serializer):
     price = serializers.SerializerMethodField()
     sq_ft = serializers.SerializerMethodField()
     land_area = serializers.SerializerMethodField()
+    description = serializers.SerializerMethodField()
+    amenities = serializers.SerializerMethodField()
 
     owner = serializers.SerializerMethodField()
 
@@ -4816,6 +5045,28 @@ class CombinedPropertyListSerializer(serializers.Serializer):
 
     def get_land_area(self, obj):
         return obj.land_area
+
+    def get_description(self, obj):
+        return obj.description
+
+    
+    # =========================================================
+    # AMENITIES
+    # =========================================================
+
+    def get_amenities(self, obj):
+
+        if not hasattr(obj, "amenities"):
+            return ""
+
+        return ", ".join(
+            amenity.name
+            for amenity in obj.amenities.all()
+            if amenity.name
+        )
+
+
+
 
     # =========================================================
     # OWNER

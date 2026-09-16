@@ -2222,3 +2222,2612 @@ class UserLoginSerializerTest(TestCase):
         print("Input:", data)
         print("Valid:", serializer.is_valid())
         print("Errors:", serializer.errors)
+
+
+from django.test import TestCase
+
+from users.serializers import UserProfileSerializer
+
+
+class UserProfileSerializerValidationTest(TestCase):
+
+    # =========================================================
+    # FULL NAME - VALID INPUT
+    # =========================================================
+
+    def test_full_name_valid(self):
+
+        values = [
+            "John",
+            "John Smith",
+            "Test User",
+            "A",
+            "John Kumar"
+        ]
+
+        for value in values:
+
+            serializer = UserProfileSerializer(
+                data={
+                    "full_name": value
+                },
+                partial=True
+            )
+
+            self.assertTrue(
+                serializer.is_valid(),
+                serializer.errors
+            )
+
+            print("\n==============================")
+            print("FULL NAME - VALID")
+            print("==============================")
+            print("Input:", value)
+            print("Valid:", serializer.is_valid())
+            print("Errors:", serializer.errors)
+
+    # =========================================================
+    # FULL NAME - EMPTY
+    # =========================================================
+
+    def test_full_name_empty(self):
+
+        value = ""
+
+        serializer = UserProfileSerializer(
+            data={
+                "full_name": value
+            },
+            partial=True
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        print("\n==============================")
+        print("FULL NAME - EMPTY")
+        print("==============================")
+        print("Input:", value)
+        print("Valid:", serializer.is_valid())
+        print("Errors:", serializer.errors)
+
+    # =========================================================
+    # FULL NAME - ONLY SPACES
+    # =========================================================
+
+    def test_full_name_only_spaces(self):
+
+        value = "     "
+
+        serializer = UserProfileSerializer(
+            data={
+                "full_name": value
+            },
+            partial=True
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        print("\n==============================")
+        print("FULL NAME - ONLY SPACES")
+        print("==============================")
+        print("Input:", repr(value))
+        print("Valid:", serializer.is_valid())
+        print("Errors:", serializer.errors)
+
+    # =========================================================
+    # FULL NAME - MORE THAN 150 CHARACTERS
+    # =========================================================
+
+    def test_full_name_more_than_150(self):
+
+        value = "A" * 151
+
+        serializer = UserProfileSerializer(
+            data={
+                "full_name": value
+            },
+            partial=True
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        print("\n==============================")
+        print("FULL NAME - MORE THAN 150")
+        print("==============================")
+        print("Input Length:", len(value))
+        print("Valid:", serializer.is_valid())
+        print("Errors:", serializer.errors)
+
+    # =========================================================
+    # FULL NAME - EXACTLY 150 CHARACTERS
+    # =========================================================
+
+    def test_full_name_exactly_150(self):
+
+        value = "A" * 150
+
+        serializer = UserProfileSerializer(
+            data={
+                "full_name": value
+            },
+            partial=True
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        print("\n==============================")
+        print("FULL NAME - EXACTLY 150")
+        print("==============================")
+        print("Input Length:", len(value))
+        print("Valid:", serializer.is_valid())
+        print("Errors:", serializer.errors)
+
+    # =========================================================
+    # FULL NAME - SPACES AROUND VALUE
+    # =========================================================
+
+    def test_full_name_spaces_around(self):
+
+        value = "   John Smith   "
+
+        serializer = UserProfileSerializer(
+            data={
+                "full_name": value
+            },
+            partial=True
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        self.assertEqual(
+            serializer.validated_data["full_name"],
+            "John Smith"
+        )
+
+        print("\n==============================")
+        print("FULL NAME - SPACES AROUND")
+        print("==============================")
+        print("Input:", repr(value))
+        print("Validated:", serializer.validated_data)
+        print("Errors:", serializer.errors)
+
+    # =========================================================
+    # MOBILE - VALID INPUT
+    # =========================================================
+
+    def test_mobile_valid(self):
+
+        values = [
+            "9876543210",
+            "9876543211",
+            "9000000000",
+            "9999999999"
+        ]
+
+        for value in values:
+
+            serializer = UserProfileSerializer(
+                data={
+                    "mobile": value
+                },
+                partial=True
+            )
+
+            self.assertTrue(
+                serializer.is_valid(),
+                serializer.errors
+            )
+
+            print("\n==============================")
+            print("MOBILE - VALID")
+            print("==============================")
+            print("Input:", value)
+            print("Valid:", serializer.is_valid())
+            print("Errors:", serializer.errors)
+
+    # =========================================================
+    # MOBILE - LESS THAN 10 DIGITS
+    # =========================================================
+
+    def test_mobile_less_than_10_digits(self):
+
+        values = [
+            "1",
+            "12",
+            "12345",
+            "123456789"
+        ]
+
+        for value in values:
+
+            serializer = UserProfileSerializer(
+                data={
+                    "mobile": value
+                },
+                partial=True
+            )
+
+            self.assertFalse(
+                serializer.is_valid()
+            )
+
+            print("\n==============================")
+            print("MOBILE - LESS THAN 10")
+            print("==============================")
+            print("Input:", value)
+            print("Length:", len(value))
+            print("Valid:", serializer.is_valid())
+            print("Errors:", serializer.errors)
+
+    # =========================================================
+    # MOBILE - MORE THAN 10 DIGITS
+    # =========================================================
+
+    def test_mobile_more_than_10_digits(self):
+
+        values = [
+            "12345678901",
+            "123456789012",
+            "99999999999"
+        ]
+
+        for value in values:
+
+            serializer = UserProfileSerializer(
+                data={
+                    "mobile": value
+                },
+                partial=True
+            )
+
+            self.assertFalse(
+                serializer.is_valid()
+            )
+
+            print("\n==============================")
+            print("MOBILE - MORE THAN 10")
+            print("==============================")
+            print("Input:", value)
+            print("Length:", len(value))
+            print("Valid:", serializer.is_valid())
+            print("Errors:", serializer.errors)
+
+    # =========================================================
+    # MOBILE - LETTERS
+    # =========================================================
+
+    def test_mobile_letters(self):
+
+        values = [
+            "98765abc10",
+            "abcdefghij",
+            "98765A3210"
+        ]
+
+        for value in values:
+
+            serializer = UserProfileSerializer(
+                data={
+                    "mobile": value
+                },
+                partial=True
+            )
+
+            self.assertFalse(
+                serializer.is_valid()
+            )
+
+            print("\n==============================")
+            print("MOBILE - LETTERS")
+            print("==============================")
+            print("Input:", value)
+            print("Valid:", serializer.is_valid())
+            print("Errors:", serializer.errors)
+
+    # =========================================================
+    # MOBILE - SPECIAL CHARACTERS
+    # =========================================================
+
+    def test_mobile_special_characters(self):
+
+        values = [
+            "98765@3210",
+            "98765-3210",
+            "98765.3210",
+            "+919876543210"
+        ]
+
+        for value in values:
+
+            serializer = UserProfileSerializer(
+                data={
+                    "mobile": value
+                },
+                partial=True
+            )
+
+            self.assertFalse(
+                serializer.is_valid()
+            )
+
+            print("\n==============================")
+            print("MOBILE - SPECIAL CHARACTERS")
+            print("==============================")
+            print("Input:", value)
+            print("Valid:", serializer.is_valid())
+            print("Errors:", serializer.errors)
+
+    # =========================================================
+    # MOBILE - EMPTY
+    # =========================================================
+
+    def test_mobile_empty(self):
+
+        value = ""
+
+        serializer = UserProfileSerializer(
+            data={
+                "mobile": value
+            },
+            partial=True
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        print("\n==============================")
+        print("MOBILE - EMPTY")
+        print("==============================")
+        print("Input:", repr(value))
+        print("Valid:", serializer.is_valid())
+        print("Errors:", serializer.errors)
+
+    # =========================================================
+    # ALTERNATE MOBILE - VALID
+    # =========================================================
+
+    def test_alternate_mobile_valid(self):
+
+        values = [
+            "9876543210",
+            "9876543211",
+            "9000000000",
+            "9999999999"
+        ]
+
+        for value in values:
+
+            serializer = UserProfileSerializer(
+                data={
+                    "alternate_mobile": value
+                },
+                partial=True
+            )
+
+            self.assertTrue(
+                serializer.is_valid(),
+                serializer.errors
+            )
+
+            print("\n==============================")
+            print("ALTERNATE MOBILE - VALID")
+            print("==============================")
+            print("Input:", value)
+            print("Valid:", serializer.is_valid())
+            print("Errors:", serializer.errors)
+
+    # =========================================================
+    # ALTERNATE MOBILE - LESS THAN 10
+    # =========================================================
+
+    def test_alternate_mobile_less_than_10(self):
+
+        values = [
+            "1",
+            "12345",
+            "123456789"
+        ]
+
+        for value in values:
+
+            serializer = UserProfileSerializer(
+                data={
+                    "alternate_mobile": value
+                },
+                partial=True
+            )
+
+            self.assertFalse(
+                serializer.is_valid()
+            )
+
+            print("\n==============================")
+            print("ALTERNATE MOBILE - LESS THAN 10")
+            print("==============================")
+            print("Input:", value)
+            print("Length:", len(value))
+            print("Valid:", serializer.is_valid())
+            print("Errors:", serializer.errors)
+
+    # =========================================================
+    # ALTERNATE MOBILE - MORE THAN 10
+    # =========================================================
+
+    def test_alternate_mobile_more_than_10(self):
+
+        values = [
+            "12345678901",
+            "123456789012",
+            "99999999999"
+        ]
+
+        for value in values:
+
+            serializer = UserProfileSerializer(
+                data={
+                    "alternate_mobile": value
+                },
+                partial=True
+            )
+
+            self.assertFalse(
+                serializer.is_valid()
+            )
+
+            print("\n==============================")
+            print("ALTERNATE MOBILE - MORE THAN 10")
+            print("==============================")
+            print("Input:", value)
+            print("Length:", len(value))
+            print("Valid:", serializer.is_valid())
+            print("Errors:", serializer.errors)
+
+    # =========================================================
+    # ALTERNATE MOBILE - LETTERS
+    # =========================================================
+
+    def test_alternate_mobile_letters(self):
+
+        values = [
+            "98765abc10",
+            "abcdefghij",
+            "98765A3210"
+        ]
+
+        for value in values:
+
+            serializer = UserProfileSerializer(
+                data={
+                    "alternate_mobile": value
+                },
+                partial=True
+            )
+
+            self.assertFalse(
+                serializer.is_valid()
+            )
+
+            print("\n==============================")
+            print("ALTERNATE MOBILE - LETTERS")
+            print("==============================")
+            print("Input:", value)
+            print("Valid:", serializer.is_valid())
+            print("Errors:", serializer.errors)
+
+    # =========================================================
+    # ALTERNATE MOBILE - SPECIAL CHARACTERS
+    # =========================================================
+
+    def test_alternate_mobile_special_characters(self):
+
+        values = [
+            "98765@3210",
+            "98765-3210",
+            "98765.3210",
+            "+919876543210"
+        ]
+
+        for value in values:
+
+            serializer = UserProfileSerializer(
+                data={
+                    "alternate_mobile": value
+                },
+                partial=True
+            )
+
+            self.assertFalse(
+                serializer.is_valid()
+            )
+
+            print("\n==============================")
+            print("ALTERNATE MOBILE - SPECIAL")
+            print("==============================")
+            print("Input:", value)
+            print("Valid:", serializer.is_valid())
+            print("Errors:", serializer.errors)
+
+    # =========================================================
+    # ALTERNATE MOBILE - EMPTY
+    # =========================================================
+
+    def test_alternate_mobile_empty(self):
+
+        value = ""
+
+        serializer = UserProfileSerializer(
+            data={
+                "alternate_mobile": value
+            },
+            partial=True
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        print("\n==============================")
+        print("ALTERNATE MOBILE - EMPTY")
+        print("==============================")
+        print("Input:", repr(value))
+        print("Valid:", serializer.is_valid())
+        print("Errors:", serializer.errors)
+
+    # =========================================================
+    # CITY - VALID
+    # =========================================================
+
+    def test_city_valid(self):
+
+        values = [
+            "Coimbatore",
+            "Chennai",
+            "Bangalore",
+            "Mumbai",
+            "New Delhi"
+        ]
+
+        for value in values:
+
+            serializer = UserProfileSerializer(
+                data={
+                    "city": value
+                },
+                partial=True
+            )
+
+            self.assertTrue(
+                serializer.is_valid(),
+                serializer.errors
+            )
+
+            print("\n==============================")
+            print("CITY - VALID")
+            print("==============================")
+            print("Input:", value)
+            print("Valid:", serializer.is_valid())
+            print("Errors:", serializer.errors)
+
+    # =========================================================
+    # CITY - SPACES
+    # =========================================================
+
+    def test_city_spaces(self):
+
+        value = "   Coimbatore   "
+
+        serializer = UserProfileSerializer(
+            data={
+                "city": value
+            },
+            partial=True
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        self.assertEqual(
+            serializer.validated_data["city"],
+            "Coimbatore"
+        )
+
+        print("\n==============================")
+        print("CITY - SPACES")
+        print("==============================")
+        print("Input:", repr(value))
+        print("Validated:", serializer.validated_data)
+        print("Errors:", serializer.errors)
+
+    # =========================================================
+    # CITY - EMPTY
+    # =========================================================
+
+    def test_city_empty(self):
+
+        value = ""
+
+        serializer = UserProfileSerializer(
+            data={
+                "city": value
+            },
+            partial=True
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        print("\n==============================")
+        print("CITY - EMPTY")
+        print("==============================")
+        print("Input:", repr(value))
+        print("Valid:", serializer.is_valid())
+        print("Errors:", serializer.errors)
+
+    # =========================================================
+    # CITY - NULL
+    # =========================================================
+
+    def test_city_null(self):
+
+        value = None
+
+        serializer = UserProfileSerializer(
+            data={
+                "city": value
+            },
+            partial=True
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        print("\n==============================")
+        print("CITY - NULL")
+        print("==============================")
+        print("Input:", value)
+        print("Valid:", serializer.is_valid())
+        print("Errors:", serializer.errors)
+
+    # =========================================================
+    # CITY - MORE THAN 100 CHARACTERS
+    # =========================================================
+
+    def test_city_more_than_100(self):
+
+        value = "A" * 101
+
+        serializer = UserProfileSerializer(
+            data={
+                "city": value
+            },
+            partial=True
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        print("\n==============================")
+        print("CITY - MORE THAN 100")
+        print("==============================")
+        print("Input Length:", len(value))
+        print("Valid:", serializer.is_valid())
+        print("Errors:", serializer.errors)
+
+    # =========================================================
+    # CITY - EXACTLY 100 CHARACTERS
+    # =========================================================
+
+    def test_city_exactly_100(self):
+
+        value = "A" * 100
+
+        serializer = UserProfileSerializer(
+            data={
+                "city": value
+            },
+            partial=True
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        print("\n==============================")
+        print("CITY - EXACTLY 100")
+        print("==============================")
+        print("Input Length:", len(value))
+        print("Valid:", serializer.is_valid())
+        print("Errors:", serializer.errors)
+
+    # =========================================================
+    # EMPTY INPUT
+    # =========================================================
+
+    def test_empty_input(self):
+
+        serializer = UserProfileSerializer(
+            data={},
+            partial=True
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        print("\n==============================")
+        print("EMPTY INPUT")
+        print("==============================")
+        print("Input:", {})
+        print("Valid:", serializer.is_valid())
+        print("Errors:", serializer.errors)
+
+from django.test import TestCase
+from users.serializers import InboxSerializer
+
+
+class InboxSerializerValidationTest(TestCase):
+
+    # =========================================================
+    # NAME VALIDATION
+    # =========================================================
+
+    def test_name_valid(self):
+        valid_names = [
+            "John",
+            "John Smith",
+            "ABC",
+            "Test User",
+            "A" * 50,
+        ]
+
+        for name in valid_names:
+            serializer = InboxSerializer(
+                data={
+                    "name": name,
+                },
+                partial=True
+            )
+
+            self.assertTrue(
+                serializer.is_valid(),
+                serializer.errors
+            )
+
+    def test_name_empty(self):
+        serializer = InboxSerializer(
+            data={
+                "name": "",
+            },
+            partial=True
+        )
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("name", serializer.errors)
+
+    def test_name_spaces_only(self):
+        serializer = InboxSerializer(
+            data={
+                "name": "     ",
+            },
+            partial=True
+        )
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("name", serializer.errors)
+
+    def test_name_trim_spaces(self):
+        serializer = InboxSerializer(
+            data={
+                "name": "  John Smith  ",
+            },
+            partial=True
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        self.assertEqual(
+            serializer.validated_data["name"],
+            "John Smith"
+        )
+
+    def test_name_exactly_50_characters(self):
+        serializer = InboxSerializer(
+            data={
+                "name": "A" * 50,
+            },
+            partial=True
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+    def test_name_more_than_50_characters(self):
+        serializer = InboxSerializer(
+            data={
+                "name": "A" * 51,
+            },
+            partial=True
+        )
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("name", serializer.errors)
+
+
+    # =========================================================
+    # PIN CODE VALIDATION
+    # =========================================================
+
+    def test_pin_code_valid(self):
+        valid_pin_codes = [
+            "641001",
+            "600001",
+            "110001",
+            "400001",
+            "123456",
+        ]
+
+        for pin_code in valid_pin_codes:
+            serializer = InboxSerializer(
+                data={
+                    "pin_code": pin_code,
+                },
+                partial=True
+            )
+
+            self.assertTrue(
+                serializer.is_valid(),
+                serializer.errors
+            )
+
+    def test_pin_code_empty(self):
+        serializer = InboxSerializer(
+            data={
+                "pin_code": "",
+            },
+            partial=True
+        )
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("pin_code", serializer.errors)
+
+    def test_pin_code_spaces_only(self):
+        serializer = InboxSerializer(
+            data={
+                "pin_code": "     ",
+            },
+            partial=True
+        )
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("pin_code", serializer.errors)
+
+    def test_pin_code_less_than_6_digits(self):
+        serializer = InboxSerializer(
+            data={
+                "pin_code": "64100",
+            },
+            partial=True
+        )
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("pin_code", serializer.errors)
+
+    def test_pin_code_more_than_6_digits(self):
+        serializer = InboxSerializer(
+            data={
+                "pin_code": "6410012",
+            },
+            partial=True
+        )
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("pin_code", serializer.errors)
+
+    def test_pin_code_contains_letters(self):
+        serializer = InboxSerializer(
+            data={
+                "pin_code": "6410AB",
+            },
+            partial=True
+        )
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("pin_code", serializer.errors)
+
+    def test_pin_code_contains_special_characters(self):
+        serializer = InboxSerializer(
+            data={
+                "pin_code": "641-01",
+            },
+            partial=True
+        )
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("pin_code", serializer.errors)
+
+    def test_pin_code_trim_spaces(self):
+        serializer = InboxSerializer(
+            data={
+                "pin_code": " 641001 ",
+            },
+            partial=True
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        self.assertEqual(
+            serializer.validated_data["pin_code"],
+            "641001"
+        )
+
+
+    # =========================================================
+    # CONTACT VALIDATION
+    # =========================================================
+
+    def test_contact_valid(self):
+        valid_contacts = [
+            "9876543210",
+            "9123456789",
+            "9000000000",
+            "1234567890",
+        ]
+
+        for contact in valid_contacts:
+            serializer = InboxSerializer(
+                data={
+                    "contact": contact,
+                },
+                partial=True
+            )
+
+            self.assertTrue(
+                serializer.is_valid(),
+                serializer.errors
+            )
+
+    def test_contact_empty(self):
+        serializer = InboxSerializer(
+            data={
+                "contact": "",
+            },
+            partial=True
+        )
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("contact", serializer.errors)
+
+    def test_contact_spaces_only(self):
+        serializer = InboxSerializer(
+            data={
+                "contact": "     ",
+            },
+            partial=True
+        )
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("contact", serializer.errors)
+
+    def test_contact_less_than_10_digits(self):
+        serializer = InboxSerializer(
+            data={
+                "contact": "987654321",
+            },
+            partial=True
+        )
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("contact", serializer.errors)
+
+    def test_contact_more_than_10_digits(self):
+        serializer = InboxSerializer(
+            data={
+                "contact": "98765432101",
+            },
+            partial=True
+        )
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("contact", serializer.errors)
+
+    def test_contact_contains_letters(self):
+        serializer = InboxSerializer(
+            data={
+                "contact": "98765ABCDE",
+            },
+            partial=True
+        )
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("contact", serializer.errors)
+
+    def test_contact_contains_special_characters(self):
+        serializer = InboxSerializer(
+            data={
+                "contact": "98765-3210",
+            },
+            partial=True
+        )
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("contact", serializer.errors)
+
+    def test_contact_trim_spaces(self):
+        serializer = InboxSerializer(
+            data={
+                "contact": " 9876543210 ",
+            },
+            partial=True
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        self.assertEqual(
+            serializer.validated_data["contact"],
+            "9876543210"
+        )
+
+
+    # =========================================================
+    # MESSAGE VALIDATION
+    # =========================================================
+
+    def test_messages_text_valid(self):
+        valid_messages = [
+            "Hello",
+            "I am interested in this property.",
+            "Please contact me.",
+            "Need more information about the property.",
+            "A" * 10000,
+        ]
+
+        for message in valid_messages:
+            serializer = InboxSerializer(
+                data={
+                    "messages_text": message,
+                },
+                partial=True
+            )
+
+            self.assertTrue(
+                serializer.is_valid(),
+                serializer.errors
+            )
+
+    def test_messages_text_empty(self):
+        serializer = InboxSerializer(
+            data={
+                "messages_text": "",
+            },
+            partial=True
+        )
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn(
+            "messages_text",
+            serializer.errors
+        )
+
+    def test_messages_text_spaces_only(self):
+        serializer = InboxSerializer(
+            data={
+                "messages_text": "     ",
+            },
+            partial=True
+        )
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn(
+            "messages_text",
+            serializer.errors
+        )
+
+    def test_messages_text_trim_spaces(self):
+        serializer = InboxSerializer(
+            data={
+                "messages_text": "  Hello World  ",
+            },
+            partial=True
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        self.assertEqual(
+            serializer.validated_data["messages_text"],
+            "Hello World"
+        )
+
+    def test_messages_text_more_than_10000_characters(self):
+        serializer = InboxSerializer(
+            data={
+                "messages_text": "A" * 10001,
+            },
+            partial=True
+        )
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn(
+            "messages_text",
+            serializer.errors
+        )
+
+
+    # =========================================================
+    # OPTIONAL FIELD / PARTIAL VALIDATION
+    # =========================================================
+
+    def test_empty_input_with_partial_true(self):
+        serializer = InboxSerializer(
+            data={},
+            partial=True
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+
+from django.test import TestCase
+from unittest.mock import Mock
+from users.serializers import AgentReviewSerializer
+
+
+class AgentReviewSerializerTest(TestCase):
+
+    # =========================================================
+    # RATING VALIDATION
+    # =========================================================
+
+    def test_rating_zero(self):
+
+        serializer = AgentReviewSerializer(
+            data={
+                "rating": 0,
+                "review": "Good agent"
+            }
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+    def test_rating_one(self):
+
+        serializer = AgentReviewSerializer(
+            data={
+                "rating": 1,
+                "review": "Good agent"
+            }
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+    def test_rating_two_point_five(self):
+
+        serializer = AgentReviewSerializer(
+            data={
+                "rating": 2.5,
+                "review": "Average experience"
+            }
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+    def test_rating_four(self):
+
+        serializer = AgentReviewSerializer(
+            data={
+                "rating": 4,
+                "review": "Very good agent"
+            }
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+    def test_rating_five(self):
+
+        serializer = AgentReviewSerializer(
+            data={
+                "rating": 5,
+                "review": "Excellent agent"
+            }
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+    def test_rating_negative(self):
+
+        serializer = AgentReviewSerializer(
+            data={
+                "rating": -1,
+                "review": "Good agent"
+            }
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "rating",
+            serializer.errors
+        )
+
+    def test_rating_greater_than_five(self):
+
+        serializer = AgentReviewSerializer(
+            data={
+                "rating": 5.1,
+                "review": "Good agent"
+            }
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "rating",
+            serializer.errors
+        )
+
+    def test_rating_six(self):
+
+        serializer = AgentReviewSerializer(
+            data={
+                "rating": 6,
+                "review": "Good agent"
+            }
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "rating",
+            serializer.errors
+        )
+
+    def test_rating_ten(self):
+
+        serializer = AgentReviewSerializer(
+            data={
+                "rating": 10,
+                "review": "Good agent"
+            }
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "rating",
+            serializer.errors
+        )
+
+    def test_rating_string_number(self):
+
+        serializer = AgentReviewSerializer(
+            data={
+                "rating": "4",
+                "review": "Good agent"
+            }
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+    def test_rating_string_decimal(self):
+
+        serializer = AgentReviewSerializer(
+            data={
+                "rating": "4.5",
+                "review": "Good agent"
+            }
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+    def test_rating_invalid_text(self):
+
+        serializer = AgentReviewSerializer(
+            data={
+                "rating": "abc",
+                "review": "Good agent"
+            }
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "rating",
+            serializer.errors
+        )
+
+    def test_rating_special_characters(self):
+
+        serializer = AgentReviewSerializer(
+            data={
+                "rating": "@#$",
+                "review": "Good agent"
+            }
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "rating",
+            serializer.errors
+        )
+
+    def test_rating_empty(self):
+
+        serializer = AgentReviewSerializer(
+            data={
+                "rating": "",
+                "review": "Good agent"
+            }
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "rating",
+            serializer.errors
+        )
+
+    def test_rating_null(self):
+
+        serializer = AgentReviewSerializer(
+            data={
+                "rating": None,
+                "review": "Good agent"
+            }
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "rating",
+            serializer.errors
+        )
+
+
+    # =========================================================
+    # REVIEW VALIDATION
+    # =========================================================
+
+    def test_review_valid(self):
+
+        valid_reviews = [
+            "Good agent",
+            "Very helpful agent",
+            "Excellent service",
+            "Average experience",
+            "The agent was very professional.",
+            "A",
+        ]
+
+        for review in valid_reviews:
+
+            serializer = AgentReviewSerializer(
+                data={
+                    "rating": 5,
+                    "review": review
+                }
+            )
+
+            self.assertTrue(
+                serializer.is_valid(),
+                serializer.errors
+            )
+
+    def test_review_empty(self):
+
+        serializer = AgentReviewSerializer(
+            data={
+                "rating": 5,
+                "review": ""
+            }
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "review",
+            serializer.errors
+        )
+
+    def test_review_spaces_only(self):
+
+        serializer = AgentReviewSerializer(
+            data={
+                "rating": 5,
+                "review": "     "
+            }
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "review",
+            serializer.errors
+        )
+
+    def test_review_tabs_and_spaces_only(self):
+
+        serializer = AgentReviewSerializer(
+            data={
+                "rating": 5,
+                "review": "\t   "
+            }
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "review",
+            serializer.errors
+        )
+
+    def test_review_trim_spaces(self):
+
+        serializer = AgentReviewSerializer(
+            data={
+                "rating": 5,
+                "review": "  Very good agent  "
+            }
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        self.assertEqual(
+            serializer.validated_data["review"],
+            "Very good agent"
+        )
+
+    def test_review_single_character(self):
+
+        serializer = AgentReviewSerializer(
+            data={
+                "rating": 5,
+                "review": "A"
+            }
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+    def test_review_numbers(self):
+
+        serializer = AgentReviewSerializer(
+            data={
+                "rating": 5,
+                "review": "123456"
+            }
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+    def test_review_special_characters(self):
+
+        serializer = AgentReviewSerializer(
+            data={
+                "rating": 5,
+                "review": "@#$%^&*!"
+            }
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+    def test_review_unicode(self):
+
+        serializer = AgentReviewSerializer(
+            data={
+                "rating": 5,
+                "review": "Very good service 👍"
+            }
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+    def test_review_multiline(self):
+
+        serializer = AgentReviewSerializer(
+            data={
+                "rating": 5,
+                "review": "Very good agent.\nHelpful and professional."
+            }
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+
+    # =========================================================
+    # REQUIRED FIELD TESTS
+    # =========================================================
+
+    def test_rating_missing(self):
+
+        serializer = AgentReviewSerializer(
+            data={
+                "review": "Good agent"
+            }
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "rating",
+            serializer.errors
+        )
+
+    def test_review_missing(self):
+
+        serializer = AgentReviewSerializer(
+            data={
+                "rating": 5
+            }
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "review",
+            serializer.errors
+        )
+
+    def test_rating_and_review_missing(self):
+
+        serializer = AgentReviewSerializer(
+            data={}
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "rating",
+            serializer.errors
+        )
+
+        self.assertIn(
+            "review",
+            serializer.errors
+        )
+
+
+    # =========================================================
+    # COMPLETE VALID INPUT
+    # =========================================================
+
+    def test_complete_valid_data(self):
+
+        serializer = AgentReviewSerializer(
+            data={
+                "rating": 4.5,
+                "review": "Very good agent and excellent service."
+            }
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        self.assertEqual(
+            serializer.validated_data["rating"],
+            4.5
+        )
+
+        self.assertEqual(
+            serializer.validated_data["review"],
+            "Very good agent and excellent service."
+        )
+
+
+    # =========================================================
+    # READ-ONLY / METHOD FIELD TESTS
+    # =========================================================
+
+    def test_method_fields_are_present(self):
+
+        serializer = AgentReviewSerializer()
+
+        self.assertIn(
+            "user_name",
+            serializer.fields
+        )
+
+        self.assertIn(
+            "user_image",
+            serializer.fields
+        )
+
+        self.assertIn(
+            "total_likes",
+            serializer.fields
+        )
+
+        self.assertIn(
+            "created_at",
+            serializer.fields
+        )
+
+        self.assertIn(
+            "is_owner",
+            serializer.fields
+        )
+
+
+    # =========================================================
+    # GET USER NAME
+    # =========================================================
+
+    def test_get_user_name_with_user(self):
+
+        serializer = AgentReviewSerializer()
+
+        user = Mock()
+        user.name = "John"
+
+        obj = Mock()
+        obj.user = user
+
+        result = serializer.get_user_name(obj)
+
+        self.assertEqual(
+            result,
+            "John"
+        )
+
+    def test_get_user_name_without_user(self):
+
+        serializer = AgentReviewSerializer()
+
+        obj = Mock()
+        obj.user = None
+
+        result = serializer.get_user_name(obj)
+
+        self.assertEqual(
+            result,
+            "Anonymous"
+        )
+
+
+    # =========================================================
+    # GET USER IMAGE
+    # =========================================================
+
+    def test_get_user_image_without_user(self):
+
+        serializer = AgentReviewSerializer()
+
+        obj = Mock()
+        obj.user = None
+
+        result = serializer.get_user_image(obj)
+
+        self.assertIn(
+            "ui-avatars.com/api/",
+            result
+        )
+
+        self.assertIn(
+            "Anonymous",
+            result
+        )
+
+
+    # =========================================================
+    # GET TOTAL LIKES
+    # =========================================================
+
+    def test_get_total_likes(self):
+
+        serializer = AgentReviewSerializer()
+
+        likes = Mock()
+
+        likes.count.return_value = 5
+
+        obj = Mock()
+        obj.likes = likes
+
+        result = serializer.get_total_likes(obj)
+
+        self.assertEqual(
+            result,
+            5
+        )
+
+    def test_get_total_likes_zero(self):
+
+        serializer = AgentReviewSerializer()
+
+        likes = Mock()
+
+        likes.count.return_value = 0
+
+        obj = Mock()
+        obj.likes = likes
+
+        result = serializer.get_total_likes(obj)
+
+        self.assertEqual(
+            result,
+            0
+        )
+
+
+    # =========================================================
+    # GET CREATED AT
+    # =========================================================
+
+    def test_get_created_at(self):
+
+        serializer = AgentReviewSerializer()
+
+        from datetime import datetime
+
+        obj = Mock()
+
+        obj.created_at = datetime(
+            2026,
+            9,
+            16
+        )
+
+        result = serializer.get_created_at(obj)
+
+        self.assertEqual(
+            result,
+            "16-09-2026"
+        )
+
+
+    # =========================================================
+    # GET IS OWNER - NO REQUEST
+    # =========================================================
+
+    def test_get_is_owner_without_request(self):
+
+        serializer = AgentReviewSerializer(
+            context={}
+        )
+
+        obj = Mock()
+
+        result = serializer.get_is_owner(obj)
+
+        self.assertFalse(
+            result
+        )
+
+
+    # =========================================================
+    # GET IS OWNER - UNAUTHENTICATED USER
+    # =========================================================
+
+    def test_get_is_owner_unauthenticated(self):
+
+        request = Mock()
+
+        request.user = Mock()
+        request.user.is_authenticated = False
+
+        serializer = AgentReviewSerializer(
+            context={
+                "request": request
+            }
+        )
+
+        obj = Mock()
+
+        result = serializer.get_is_owner(obj)
+
+        self.assertFalse(
+            result
+        )
+
+
+    # =========================================================
+    # GET IS OWNER - AUTHENTICATED OWNER
+    # =========================================================
+
+    def test_get_is_owner_authenticated_owner(self):
+
+        request = Mock()
+
+        request.user = Mock()
+        request.user.is_authenticated = True
+        request.user.id = "user-123"
+
+        serializer = AgentReviewSerializer(
+            context={
+                "request": request
+            }
+        )
+
+        obj = Mock()
+
+        obj.user_id = "user-123"
+
+        result = serializer.get_is_owner(obj)
+
+        self.assertTrue(
+            result
+        )
+
+
+    # =========================================================
+    # GET IS OWNER - AUTHENTICATED DIFFERENT USER
+    # =========================================================
+
+    def test_get_is_owner_different_user(self):
+
+        request = Mock()
+
+        request.user = Mock()
+        request.user.is_authenticated = True
+        request.user.id = "user-123"
+
+        serializer = AgentReviewSerializer(
+            context={
+                "request": request
+            }
+        )
+
+        obj = Mock()
+
+        obj.user_id = "user-456"
+
+        result = serializer.get_is_owner(obj)
+
+        self.assertFalse(
+            result
+        )
+
+from django.test import TestCase
+from rest_framework.test import APIRequestFactory
+
+from agents.models import AgentUserProfile
+from users.serializers import AgentLoginSerializer
+from users.views import AgentLoginAPIView
+
+
+class AgentLoginSerializerTest(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+
+        cls.email = "agent@test.com"
+        cls.password = "TestPassword123"
+
+        cls.agent = AgentUserProfile(
+            username="testagent",
+            email=cls.email,
+            phone_number="9876543210",
+            address="Test Address",
+            pin_code="641001",
+            city="Coimbatore",
+            agent_type="basic",
+            agent_code="AGT001",
+        )
+
+        cls.agent.set_password(cls.password)
+
+        cls.agent.save()
+
+    # =========================================================
+    # VALID LOGIN
+    # =========================================================
+
+    def test_valid_login(self):
+
+        serializer = AgentLoginSerializer(
+            data={
+                "email": self.email,
+                "password": self.password,
+            }
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        self.assertIn(
+            "user",
+            serializer.validated_data
+        )
+
+        self.assertEqual(
+            serializer.validated_data["user"].id,
+            self.agent.id
+        )
+
+    # =========================================================
+    # INVALID EMAIL
+    # =========================================================
+
+    def test_invalid_email(self):
+
+        serializer = AgentLoginSerializer(
+            data={
+                "email": "wrong@test.com",
+                "password": self.password,
+            }
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "error",
+            serializer.errors
+        )
+
+        self.assertEqual(
+            str(serializer.errors["error"][0]),
+            "Invalid email"
+        )
+
+    # =========================================================
+    # INVALID PASSWORD
+    # =========================================================
+
+    def test_invalid_password(self):
+
+        serializer = AgentLoginSerializer(
+            data={
+                "email": self.email,
+                "password": "WrongPassword123",
+            }
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "error",
+            serializer.errors
+        )
+
+        self.assertEqual(
+            str(serializer.errors["error"][0]),
+            "Invalid password"
+        )
+
+    # =========================================================
+    # MISSING EMAIL
+    # =========================================================
+
+    def test_missing_email(self):
+
+        serializer = AgentLoginSerializer(
+            data={
+                "password": self.password,
+            }
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "email",
+            serializer.errors
+        )
+
+    # =========================================================
+    # MISSING PASSWORD
+    # =========================================================
+
+    def test_missing_password(self):
+
+        serializer = AgentLoginSerializer(
+            data={
+                "email": self.email,
+            }
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "password",
+            serializer.errors
+        )
+
+    # =========================================================
+    # BOTH FIELDS MISSING
+    # =========================================================
+
+    def test_missing_email_and_password(self):
+
+        serializer = AgentLoginSerializer(
+            data={}
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "email",
+            serializer.errors
+        )
+
+        self.assertIn(
+            "password",
+            serializer.errors
+        )
+
+    # =========================================================
+    # EMPTY EMAIL
+    # =========================================================
+
+    def test_empty_email(self):
+
+        serializer = AgentLoginSerializer(
+            data={
+                "email": "",
+                "password": self.password,
+            }
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "email",
+            serializer.errors
+        )
+
+    # =========================================================
+    # INVALID EMAIL FORMAT
+    # =========================================================
+
+    def test_invalid_email_format(self):
+
+        serializer = AgentLoginSerializer(
+            data={
+                "email": "agent",
+                "password": self.password,
+            }
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "email",
+            serializer.errors
+        )
+
+    # =========================================================
+    # EMPTY PASSWORD
+    # =========================================================
+
+    def test_empty_password(self):
+
+        serializer = AgentLoginSerializer(
+            data={
+                "email": self.email,
+                "password": "",
+            }
+        )
+
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "password",
+            serializer.errors
+        )
+
+    # =========================================================
+    # PASSWORD IS WRITE ONLY
+    # =========================================================
+
+    def test_password_is_write_only(self):
+
+        serializer = AgentLoginSerializer()
+
+        self.assertTrue(
+            serializer.fields["password"].write_only
+        )
+
+    # =========================================================
+    # USER ADDED TO VALIDATED DATA
+    # =========================================================
+
+    def test_user_added_to_validated_data(self):
+
+        serializer = AgentLoginSerializer(
+            data={
+                "email": self.email,
+                "password": self.password,
+            }
+        )
+
+        self.assertTrue(
+            serializer.is_valid(),
+            serializer.errors
+        )
+
+        user = serializer.validated_data["user"]
+
+        self.assertEqual(
+            user.id,
+            self.agent.id
+        )
+
+    # =========================================================
+    # EMAIL CASE SENSITIVITY
+    # =========================================================
+
+    def test_email_uppercase(self):
+
+        serializer = AgentLoginSerializer(
+            data={
+                "email": self.email.upper(),
+                "password": self.password,
+            }
+        )
+
+        # The serializer does not normalize email.
+        # AgentUserProfile.objects.get(email=email)
+        # therefore uses the exact value.
+        self.assertFalse(
+            serializer.is_valid()
+        )
+
+        self.assertIn(
+            "error",
+            serializer.errors
+        )
+
+    # =========================================================
+    # EMAIL WITH SPACES
+    # =========================================================
+
+    def test_email_with_spaces(self):
+        serializer = AgentLoginSerializer(data={
+            "email": f" {self.email} ",
+            "password": self.password
+        })
+
+        self.assertFalse(serializer.is_valid())
+
+        self.assertIn("email", serializer.errors)
+
+        self.assertIn(
+            "Email cannot contain leading or trailing spaces.",
+            str(serializer.errors["email"])
+        )
+
+
+class AgentLoginAPIViewTest(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+
+        cls.email = "agentapi@test.com"
+        cls.password = "TestPassword123"
+
+        cls.agent = AgentUserProfile(
+            username="apiagent",
+            email=cls.email,
+            phone_number="9876543210",
+            address="Test Address",
+            pin_code="641001",
+            city="Coimbatore",
+            agent_type="basic",
+            agent_code="AGT002",
+        )
+
+        cls.agent.set_password(cls.password)
+        cls.agent.save()
+
+    # =========================================================
+    # SUCCESSFUL API LOGIN
+    # =========================================================
+
+    def test_login_api_success(self):
+
+        factory = APIRequestFactory()
+
+        request = factory.post(
+            "/agent/login/",
+            {
+                "email": self.email,
+                "password": self.password,
+            },
+            format="json"
+        )
+
+        response = AgentLoginAPIView.as_view()(
+            request
+        )
+
+        self.assertEqual(
+            response.status_code,
+            200
+        )
+
+        self.assertEqual(
+            response.data["message"],
+            "Agent login successful"
+        )
+
+        self.assertIn(
+            "access",
+            response.data
+        )
+
+        self.assertIn(
+            "refresh",
+            response.data
+        )
+
+        self.assertIn(
+            "agent_details",
+            response.data
+        )
+
+        self.assertEqual(
+            response.data["login_as"],
+            "agent"
+        )
+
+    # =========================================================
+    # AGENT DETAILS
+    # =========================================================
+
+    def test_login_api_agent_details(self):
+
+        factory = APIRequestFactory()
+
+        request = factory.post(
+            "/agent/login/",
+            {
+                "email": self.email,
+                "password": self.password,
+            },
+            format="json"
+        )
+
+        response = AgentLoginAPIView.as_view()(
+            request
+        )
+
+        self.assertEqual(
+            response.status_code,
+            200
+        )
+
+        details = response.data["agent_details"]
+
+        self.assertEqual(
+            details["agent_id"],
+            self.agent.agent_code
+        )
+
+        self.assertEqual(
+            details["username"],
+            self.agent.username
+        )
+
+        self.assertEqual(
+            details["email"],
+            self.agent.email
+        )
+
+        self.assertEqual(
+            details["phone_number"],
+            self.agent.phone_number
+        )
+
+        self.assertEqual(
+            details["agent_type"],
+            self.agent.agent_type
+        )
+
+    # =========================================================
+    # INVALID EMAIL API
+    # =========================================================
+
+    def test_login_api_invalid_email(self):
+
+        factory = APIRequestFactory()
+
+        request = factory.post(
+            "/agent/login/",
+            {
+                "email": "wrong@test.com",
+                "password": self.password,
+            },
+            format="json"
+        )
+
+        response = AgentLoginAPIView.as_view()(
+            request
+        )
+
+        self.assertEqual(
+            response.status_code,
+            400
+        )
+
+        self.assertIn(
+            "error",
+            response.data
+        )
+
+        self.assertEqual(
+            str(response.data["error"][0]),
+            "Invalid email"
+        )
+
+    # =========================================================
+    # INVALID PASSWORD API
+    # =========================================================
+
+    def test_login_api_invalid_password(self):
+
+        factory = APIRequestFactory()
+
+        request = factory.post(
+            "/agent/login/",
+            {
+                "email": self.email,
+                "password": "WrongPassword123",
+            },
+            format="json"
+        )
+
+        response = AgentLoginAPIView.as_view()(
+            request
+        )
+
+        self.assertEqual(
+            response.status_code,
+            400
+        )
+
+        self.assertIn(
+            "error",
+            response.data
+        )
+
+        self.assertEqual(
+            str(response.data["error"][0]),
+            "Invalid password"
+        )
+
+    # =========================================================
+    # MISSING EMAIL API
+    # =========================================================
+
+    def test_login_api_missing_email(self):
+
+        factory = APIRequestFactory()
+
+        request = factory.post(
+            "/agent/login/",
+            {
+                "password": self.password,
+            },
+            format="json"
+        )
+
+        response = AgentLoginAPIView.as_view()(
+            request
+        )
+
+        self.assertEqual(
+            response.status_code,
+            400
+        )
+
+        self.assertIn(
+            "email",
+            response.data
+        )
+
+    # =========================================================
+    # MISSING PASSWORD API
+    # =========================================================
+
+    def test_login_api_missing_password(self):
+
+        factory = APIRequestFactory()
+
+        request = factory.post(
+            "/agent/login/",
+            {
+                "email": self.email,
+            },
+            format="json"
+        )
+
+        response = AgentLoginAPIView.as_view()(
+            request
+        )
+
+        self.assertEqual(
+            response.status_code,
+            400
+        )
+
+        self.assertIn(
+            "password",
+            response.data
+        )
+
+    # =========================================================
+    # INVALID EMAIL FORMAT API
+    # =========================================================
+
+    def test_login_api_invalid_email_format(self):
+
+        factory = APIRequestFactory()
+
+        request = factory.post(
+            "/agent/login/",
+            {
+                "email": "invalid-email",
+                "password": self.password,
+            },
+            format="json"
+        )
+
+        response = AgentLoginAPIView.as_view()(
+            request
+        )
+
+        self.assertEqual(
+            response.status_code,
+            400
+        )
+
+        self.assertIn(
+            "email",
+            response.data
+        )
+
+    # =========================================================
+    # EMPTY PASSWORD API
+    # =========================================================
+
+    def test_login_api_empty_password(self):
+
+        factory = APIRequestFactory()
+
+        request = factory.post(
+            "/agent/login/",
+            {
+                "email": self.email,
+                "password": "",
+            },
+            format="json"
+        )
+
+        response = AgentLoginAPIView.as_view()(
+            request
+        )
+
+        self.assertEqual(
+            response.status_code,
+            400
+        )
+
+        self.assertIn(
+            "password",
+            response.data
+        )
+

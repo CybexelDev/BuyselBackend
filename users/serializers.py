@@ -6,20 +6,15 @@ from django.contrib.auth.hashers import make_password
 from agents.models import *
 import shortuuid
 from agents.utils import check_agent_property_limit
-from agents.models import (
-    AgentProperty,
-    AgentPropertyImage,
-    AgentPropertyFieldValue,
-    SubcategoryField,
-    AgentPropertySellingPoint,
-    AgentPropertyLandmark,
-    Category,
-    Subcategory,
-    Purpose
-)
+from developer.models import *
 import re
 from django.db.models import Avg, Count
 import hashids
+from django.core.exceptions import ValidationError as DjangoValidationError
+from cloudinary.utils import cloudinary_url
+from django.utils import timezone
+import pytz
+import json
 
 class PropertySerializer(serializers.ModelSerializer):
 
@@ -68,8 +63,7 @@ class PropertySerializer(serializers.ModelSerializer):
 
         return images
 
-    from rest_framework import serializers
-    from .models import Premium
+    
 
     class PremiumLoginSerializer(serializers.Serializer):
 
@@ -138,9 +132,17 @@ class PremiumLoginSerializer(serializers.Serializer):
 
         return data
 
+
 class RequestSerializer(serializers.ModelSerializer):
 
+    message = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        allow_null=True
+    )
+
     class Meta:
+
         model = Request
 
         fields = [
@@ -154,36 +156,128 @@ class RequestSerializer(serializers.ModelSerializer):
 
         read_only_fields = ["id", "created_at"]
 
+    def to_internal_value(self, data):
+
+        errors = {}
+
+        # --------------------------------------------------
+        # NAME VALIDATION
+        # --------------------------------------------------
+        name = data.get("name")
+
+        if not name:
+            errors["name"] = "Name is required"
+        elif isinstance(name, str) and len(name.strip()) < 2:
+            errors["name"] = "Name must be at least 2 characters"
+
+        # --------------------------------------------------
+        # EMAIL VALIDATION
+        # --------------------------------------------------
+        email = data.get("email")
+
+        email_regex = r"^[\w.-]+@[\w.-]+\.\w+$"
+
+        if not email or not isinstance(email, str):
+            errors["email"] = "Enter a valid email address"
+        elif not re.match(email_regex, email):
+            errors["email"] = "Enter a valid email address"
+
+        # --------------------------------------------------
+        # PHONE VALIDATION
+        # --------------------------------------------------
+        phone = data.get("phone")
+
+        if not phone or not isinstance(phone, str):
+            errors["phone"] = "Enter a valid 10-digit phone number"
+        elif not re.match(r"^[6-9]\d{9}$", phone):
+            errors["phone"] = "Enter a valid 10-digit phone number"
+
+        # --------------------------------------------------
+        # MESSAGE VALIDATION
+        # --------------------------------------------------
+        if "message" in data:
+
+            message = data.get("message")
+
+            # None is allowed
+            if message is not None and isinstance(message, str):
+
+                # Empty string is allowed
+                if message != "":
+
+                    # Only spaces are NOT allowed
+                    if not message.strip():
+                        errors["message"] = (
+                            "Message cannot contain only spaces"
+                        )
+
+                    # Less than 5 characters
+                    elif len(message.strip()) < 5:
+                        errors["message"] = (
+                            "Message must be at least 5 characters"
+                        )
+
+        # --------------------------------------------------
+        # RETURN ALL ERRORS TOGETHER
+        # --------------------------------------------------
+        if errors:
+            raise serializers.ValidationError(errors)
+
+        # --------------------------------------------------
+        # NORMAL DRF CONVERSION
+        # --------------------------------------------------
+        return super().to_internal_value(data)
+
     def validate(self, data):
 
-        name = data.get("name")
-        email = data.get("email")
-        phone = data.get("phone")
-        message = data.get("message")
-
-        if not name or len(name.strip()) < 2:
-            raise serializers.ValidationError({
-                "name": "Name must be at least 2 characters"
-            })
-
-        email_regex = r"^[\w\.-]+@[\w\.-]+\.\w+$"
-
-        if not email or not re.match(email_regex, email):
-            raise serializers.ValidationError({
-                "email": "Enter a valid email address"
-            })
-
-        if not phone or not re.match(r"^[6-9]\d{9}$", phone):
-            raise serializers.ValidationError({
-                "phone": "Enter a valid 10-digit phone number"
-            })
-
-        if message and len(message.strip()) < 5:
-            raise serializers.ValidationError({
-                "message": "Message must be at least 5 characters"
-            })
-
         return data
+
+# class RequestSerializer(serializers.ModelSerializer):
+
+#     class Meta:
+#         model = Request
+
+#         fields = [
+#             "id",
+#             "name",
+#             "email",
+#             "phone",
+#             "message",
+#             "created_at"
+#         ]
+
+#         read_only_fields = ["id", "created_at"]
+
+#     def validate(self, data):
+
+#         name = data.get("name")
+#         email = data.get("email")
+#         phone = data.get("phone")
+#         message = data.get("message")
+
+#         if not name or len(name.strip()) < 2:
+#             raise serializers.ValidationError({
+#                 "name": "Name must be at least 2 characters"
+#             })
+
+#         email_regex = r"^[\w\.-]+@[\w\.-]+\.\w+$"
+
+#         if not email or not re.match(email_regex, email):
+#             raise serializers.ValidationError({
+#                 "email": "Enter a valid email address"
+#             })
+
+#         if not phone or not re.match(r"^[6-9]\d{9}$", phone):
+#             raise serializers.ValidationError({
+#                 "phone": "Enter a valid 10-digit phone number"
+#             })
+
+#         if message and len(message.strip()) < 5:
+#             raise serializers.ValidationError({
+#                 "message": "Message must be at least 5 characters"
+#             })
+
+#         return data
 
 class BudgetSerializer(serializers.ModelSerializer):
 
@@ -272,14 +366,85 @@ class AgentFormSerializer(serializers.ModelSerializer):
 
         return None
 
-from rest_framework import serializers
-from django.contrib.auth.hashers import make_password
-from users.models import UserCreate
 
+
+# class RegisterSerializer(serializers.ModelSerializer):
+
+#     confirm_password = serializers.CharField(write_only=True)
+
+#     class Meta:
+#         model = UserCreate
+#         fields = [
+#             "name",
+#             "email",
+#             "mobile",
+#             "password",
+#             "confirm_password"
+#         ]
+
+#         extra_kwargs = {
+#             "password": {"write_only": True}
+#         }
+
+#     def validate(self, attrs):
+
+#         password = attrs.get("password")
+#         confirm_password = attrs.get("confirm_password")
+#         email = attrs.get("email")
+
+#         # 1. Password match check
+#         if password != confirm_password:
+#             raise serializers.ValidationError({
+#                 "confirm_password": "Passwords do not match"
+#             })
+
+#         # 2. Email uniqueness check (case-insensitive)
+#         if UserCreate.objects.filter(email__iexact=email).exists():
+#             raise serializers.ValidationError({
+#                 "email": "Email already registered"
+#             })
+
+#         # 3. Password strength (optional but good)
+#         if len(password) < 6:
+#             raise serializers.ValidationError({
+#                 "password": "Password must be at least 6 characters long"
+#             })
+
+#         return attrs
+
+#     def create(self, validated_data):
+
+#         validated_data.pop("confirm_password")
+
+#         validated_data["password"] = make_password(
+#             validated_data["password"]
+#         )
+
+#         return UserCreate.objects.create(**validated_data)
 
 class RegisterSerializer(serializers.ModelSerializer):
 
-    confirm_password = serializers.CharField(write_only=True)
+    mobile = serializers.CharField(
+        required=True,
+        allow_blank=False
+    )
+
+    email = serializers.EmailField(
+        required=True,
+        validators=[]
+    )
+
+    password = serializers.CharField(
+        write_only=True,
+        required=True,
+        allow_blank=False
+    )
+
+    confirm_password = serializers.CharField(
+        write_only=True,
+        required=True,
+        allow_blank=False
+    )
 
     class Meta:
         model = UserCreate
@@ -291,29 +456,55 @@ class RegisterSerializer(serializers.ModelSerializer):
             "confirm_password"
         ]
 
-        extra_kwargs = {
-            "password": {"write_only": True}
-        }
-
     def validate(self, attrs):
 
         password = attrs.get("password")
         confirm_password = attrs.get("confirm_password")
         email = attrs.get("email")
 
-        # 1. Password match check
+        # ------------------------------------------
+        # PASSWORD REQUIRED
+        # ------------------------------------------
+
+        if not password:
+            raise serializers.ValidationError({
+                "password": "Password is required"
+            })
+
+        # ------------------------------------------
+        # CONFIRM PASSWORD REQUIRED
+        # ------------------------------------------
+
+        if not confirm_password:
+            raise serializers.ValidationError({
+                "confirm_password": "Confirm password is required"
+            })
+
+        # ------------------------------------------
+        # PASSWORD MATCH
+        # ------------------------------------------
+
         if password != confirm_password:
             raise serializers.ValidationError({
                 "confirm_password": "Passwords do not match"
             })
 
-        # 2. Email uniqueness check (case-insensitive)
-        if UserCreate.objects.filter(email__iexact=email).exists():
+        # ------------------------------------------
+        # EMAIL UNIQUENESS
+        # ------------------------------------------
+
+        if UserCreate.objects.filter(
+            email__iexact=email
+        ).exists():
+
             raise serializers.ValidationError({
                 "email": "Email already registered"
             })
 
-        # 3. Password strength (optional but good)
+        # ------------------------------------------
+        # PASSWORD LENGTH
+        # ------------------------------------------
+
         if len(password) < 6:
             raise serializers.ValidationError({
                 "password": "Password must be at least 6 characters long"
@@ -329,7 +520,9 @@ class RegisterSerializer(serializers.ModelSerializer):
             validated_data["password"]
         )
 
-        return UserCreate.objects.create(**validated_data)
+        return UserCreate.objects.create(
+            **validated_data
+        )
 
 
 class VerifyOTPSerializer(serializers.Serializer):
@@ -340,9 +533,27 @@ class VerifyOTPSerializer(serializers.Serializer):
             raise serializers.ValidationError("OTP must contain only numbers.")
         return value
 
+# class ForgotPasswordSerializer(serializers.Serializer):
+
+#     email = serializers.EmailField()
+
 class ForgotPasswordSerializer(serializers.Serializer):
 
-    email = serializers.EmailField()
+    email = serializers.EmailField(
+        required=True,
+        allow_blank=False
+    )
+
+    def validate_email(self, value):
+
+        value = value.strip().lower()
+
+        if not value:
+            raise serializers.ValidationError(
+                "Email is required."
+            )
+
+        return value
 
 
 class VerifyForgotOTPSerializer(serializers.Serializer):
@@ -386,11 +597,25 @@ class UserLoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField()
 
+    def validate_email(self, value):
 
+        value = value.strip().lower()
 
+        if not value:
+            raise serializers.ValidationError(
+                "Email is required."
+            )
 
+        return value
 
+    def validate_password(self, value):
 
+        if not value.strip():
+            raise serializers.ValidationError(
+                "Password is required."
+            )
+
+        return value
 
 
 class AgentNotificationSerializer(serializers.ModelSerializer):
@@ -401,10 +626,106 @@ class AgentNotificationSerializer(serializers.ModelSerializer):
 
 
 
-from cloudinary.utils import cloudinary_url
-from rest_framework import serializers
-from cloudinary.utils import cloudinary_url
-from .models import UserProfile
+# class UserProfileSerializer(
+#     serializers.ModelSerializer
+# ):
+
+#     email = serializers.CharField(
+#         source="user.email",
+#         read_only=True
+#     )
+
+#     mobile = serializers.CharField(
+#         source="user.mobile",
+#         required=False
+#     )
+
+#     name = serializers.CharField(
+#         source="user.name",
+#         read_only=True
+#     )
+
+#     city = serializers.CharField(
+#         required=False,
+#         allow_blank=True,
+#         allow_null=True
+#     )
+
+#     is_verified = serializers.BooleanField(
+#         source="user.is_verified",
+#         read_only=True
+#     )
+
+#     created_at = serializers.DateTimeField(
+#         format="%d-%m-%Y",
+#         read_only=True
+#     )
+
+#     image = serializers.SerializerMethodField()
+
+
+#     class Meta:
+#         model = UserProfile
+
+#         fields = [
+#             "custom_user_id",
+#             "email",
+#             "name",
+#             "username",
+#             "full_name",
+#             "mobile",
+#             "alternate_mobile",
+#             "city",
+#             "image",
+#             "auth_provider",
+#             "is_active",
+#             "is_verified",
+#             "created_at",
+#         ]
+
+
+#         read_only_fields = [
+#             "custom_user_id",
+#             "email",
+#             "name",
+#             "username",
+#             "auth_provider",
+#             "is_active",
+#             "created_at",
+#             "is_verified",
+#         ]
+
+
+#     def to_representation(
+#         self,
+#         instance
+#     ):
+#         data = super().to_representation(
+#             instance
+#         )
+
+#         data["city"] = (
+#             instance.city or ""
+#         )
+
+#         return data
+
+
+#     def get_image(
+#         self,
+#         obj
+#     ):
+#         if obj.image:
+#             try:
+#                 url,_ = cloudinary_url(
+#                     obj.image.public_id,
+#                     secure=True
+#                 )
+#                 return url
+#             except:
+#                 return None
+
+#         return None
 
 
 class UserProfileSerializer(
@@ -418,7 +739,9 @@ class UserProfileSerializer(
 
     mobile = serializers.CharField(
         source="user.mobile",
-        required=False
+        required=False,
+        allow_blank=True,
+        allow_null=True
     )
 
     name = serializers.CharField(
@@ -444,8 +767,8 @@ class UserProfileSerializer(
 
     image = serializers.SerializerMethodField()
 
-
     class Meta:
+
         model = UserProfile
 
         fields = [
@@ -464,7 +787,6 @@ class UserProfileSerializer(
             "created_at",
         ]
 
-
         read_only_fields = [
             "custom_user_id",
             "email",
@@ -476,11 +798,133 @@ class UserProfileSerializer(
             "is_verified",
         ]
 
+    def validate_full_name(self, value):
+
+        value = value.strip()
+
+        if not value:
+            raise serializers.ValidationError(
+                "Full name is required."
+            )
+
+        if len(value) > 150:
+            raise serializers.ValidationError(
+                "Full name cannot exceed 150 characters."
+            )
+
+        return value
+
+    # =========================================================
+    # MOBILE VALIDATION
+    # =========================================================
+
+    def validate_mobile(self, value):
+
+        if value is None:
+            return value
+
+        value = value.strip()
+
+        if value == "":
+            return ""
+
+        if not value.isdigit():
+            raise serializers.ValidationError(
+                "Mobile number must contain only numbers."
+            )
+
+        if len(value) != 10:
+            raise serializers.ValidationError(
+                "Mobile number must be exactly 10 digits."
+            )
+
+        return value
+
+    # =========================================================
+    # ALTERNATE MOBILE VALIDATION
+    # =========================================================
+
+    def validate_alternate_mobile(self, value):
+
+        if value is None:
+            return value
+
+        value = value.strip()
+
+        if value == "":
+            return ""
+
+        if not value.isdigit():
+            raise serializers.ValidationError(
+                "Alternate mobile number must contain only numbers."
+            )
+
+        if len(value) != 10:
+            raise serializers.ValidationError(
+                "Alternate mobile number must be exactly 10 digits."
+            )
+
+        return value
+
+    # =========================================================
+    # CITY VALIDATION
+    # =========================================================
+
+    def validate_city(self, value):
+
+        if value is None:
+            return None
+
+        value = value.strip()
+
+        if value == "":
+            return ""
+
+        if len(value) > 100:
+            raise serializers.ValidationError(
+                "City cannot exceed 100 characters."
+            )
+
+        return value
+
+    def update(
+        self,
+        instance,
+        validated_data
+    ):
+
+        user_data = validated_data.pop(
+            "user",
+            {}
+        )
+
+        # Update UserProfile fields
+        for attr, value in validated_data.items():
+
+            setattr(
+                instance,
+                attr,
+                value
+            )
+
+        instance.save()
+
+        # Update UserCreate fields
+        user = instance.user
+
+        if "mobile" in user_data:
+
+            user.mobile = user_data["mobile"]
+
+        user.save()
+
+        return instance
 
     def to_representation(
         self,
         instance
     ):
+
         data = super().to_representation(
             instance
         )
@@ -491,45 +935,163 @@ class UserProfileSerializer(
 
         return data
 
-
     def get_image(
         self,
         obj
     ):
+
         if obj.image:
+
             try:
-                url,_ = cloudinary_url(
+
+                url, _ = cloudinary_url(
                     obj.image.public_id,
                     secure=True
                 )
+
                 return url
-            except:
+
+            except Exception:
+
                 return None
 
         return None
 
-    
-class AmenitiesSerializer(serializers.ModelSerializer):
+#old code     
+# class AmenitiesSerializer(serializers.ModelSerializer):
 
+#     icon = serializers.SerializerMethodField()
+
+#     class Meta:
+#         model = Amenities
+#         fields = ["id", "name", "icon"]
+
+#     def get_icon(self, obj):
+#         if obj.icon:
+#             return obj.icon.url
+#         return None
+
+
+# added by mehreena
+class AmenitiesSerializer(serializers.ModelSerializer):
     icon = serializers.SerializerMethodField()
 
     class Meta:
         model = Amenities
         fields = ["id", "name", "icon"]
 
+    def validate_name(self, value):
+        value = value.strip()
+
+        if not value:
+            raise serializers.ValidationError(
+                "Name cannot be blank or spaces."
+            )
+
+        if Amenities.objects.filter(name__iexact=value).exists():
+            raise serializers.ValidationError(
+                "An amenity with this name already exists."
+            )
+
+        return value
+
     def get_icon(self, obj):
         if obj.icon:
             return obj.icon.url
         return None
 
-
-
+# class InboxSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Inbox
+#         fields = "__all__"
+#         read_only_fields = ["created_at", "is_read", "is_removed"]
 
 class InboxSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Inbox
         fields = "__all__"
-        read_only_fields = ["created_at", "is_read", "is_removed"]
+
+        read_only_fields = [
+            "id",
+            "created_at",
+            "is_read",
+            "is_removed",
+        ]
+
+    def validate_name(self, value):
+
+        value = value.strip()
+
+        if not value:
+            raise serializers.ValidationError(
+                "Name is required."
+            )
+
+        if len(value) > 50:
+            raise serializers.ValidationError(
+                "Name cannot exceed 50 characters."
+            )
+
+        return value
+
+    def validate_pin_code(self, value):
+
+        value = value.strip()
+
+        if not value:
+            raise serializers.ValidationError(
+                "Pin code is required."
+            )
+
+        if not value.isdigit():
+            raise serializers.ValidationError(
+                "Pin code must contain only numbers."
+            )
+
+        if len(value) != 6:
+            raise serializers.ValidationError(
+                "Pin code must be exactly 6 digits."
+            )
+
+        return value
+
+    def validate_contact(self, value):
+
+        value = value.strip()
+
+        if not value:
+            raise serializers.ValidationError(
+                "Contact number is required."
+            )
+
+        if not value.isdigit():
+            raise serializers.ValidationError(
+                "Contact number must contain only numbers."
+            )
+
+        if len(value) != 10:
+            raise serializers.ValidationError(
+                "Contact number must be exactly 10 digits."
+            )
+
+        return value
+
+    def validate_messages_text(self, value):
+
+        value = value.strip()
+
+        if not value:
+            raise serializers.ValidationError(
+                "Message cannot be empty."
+            )
+
+        if len(value) > 10000:
+            raise serializers.ValidationError(
+                "Message cannot exceed 10000 characters."
+            )
+
+        return value
 
 class AgentReviewSerializer(serializers.ModelSerializer):
 
@@ -551,6 +1113,35 @@ class AgentReviewSerializer(serializers.ModelSerializer):
             "created_at",
             "is_owner"
         ]
+
+    def validate_rating(self, value):
+
+        if value is None:
+            raise serializers.ValidationError(
+                "Rating is required."
+            )
+
+        if value < 0 or value > 5:
+            raise serializers.ValidationError(
+                "Rating must be between 0 and 5."
+            )
+
+        return value
+
+    # =========================================================
+    # REVIEW VALIDATION
+    # =========================================================
+
+    def validate_review(self, value):
+
+        value = value.strip()
+
+        if not value:
+            raise serializers.ValidationError(
+                "Review cannot be empty."
+            )
+
+        return value
 
     def get_is_owner(self, obj):
         request = self.context.get("request")
@@ -745,28 +1336,85 @@ class AgentRegisterSerializer(serializers.ModelSerializer):
 
         return agent
 
+# class AgentLoginSerializer(serializers.Serializer):
+#     email = serializers.EmailField()
+#     password = serializers.CharField(write_only=True)
+
+#     def validate_email(self, value):
+#         if value != value.strip():
+#             raise serializers.ValidationError(
+#                 "Email cannot contain leading or trailing spaces."
+#             )
+
+#         return value
+
+#     def validate(self, data):
+#         email = data.get("email")
+#         password = data.get("password")
+
+#         try:
+#             user = AgentUserProfile.objects.get(email=email)
+#         except AgentUserProfile.DoesNotExist:
+#             raise serializers.ValidationError({"error": "Invalid email"})
+
+#         if not user.check_password(password):
+#             raise serializers.ValidationError({"error": "Invalid password"})
+
+#         data["user"] = user
+#         return data
+
+
 class AgentLoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
 
     def validate(self, data):
+        # Get the original raw email from request data
+        raw_email = self.initial_data.get("email")
+
+        if raw_email is None:
+            raise serializers.ValidationError({
+                "email": "Email is required."
+            })
+
+        if not isinstance(raw_email, str):
+            raise serializers.ValidationError({
+                "email": "Invalid email."
+            })
+
+        # Reject leading/trailing spaces
+        if raw_email != raw_email.strip():
+            raise serializers.ValidationError({
+                "email": "Email cannot contain leading or trailing spaces."
+            })
+
         email = data.get("email")
         password = data.get("password")
 
         try:
             user = AgentUserProfile.objects.get(email=email)
         except AgentUserProfile.DoesNotExist:
-            raise serializers.ValidationError({"error": "Invalid email"})
+            raise serializers.ValidationError({
+                "error": "Invalid email"
+            })
 
         if not user.check_password(password):
-            raise serializers.ValidationError({"error": "Invalid password"})
+            raise serializers.ValidationError({
+                "error": "Invalid password"
+            })
 
         data["user"] = user
+
         return data
 
-class PendingAgentRegistrationSerializer(serializers.ModelSerializer):
+class PendingAgentRegistrationSerializer(
+    serializers.ModelSerializer
+):
+
     class Meta:
+
         model = PendingAgentRegistration
+
         fields = [
             "full_name",
             "email",
@@ -774,23 +1422,507 @@ class PendingAgentRegistrationSerializer(serializers.ModelSerializer):
             "password",
             "city",
             "pin_code",
+            "address",
             "agent_type",
-            "plan_name",
-            "address"
+
+            # ==========================================
+            # BASIC PLAN
+            # ==========================================
+            "basic_plan",
+
+            # ==========================================
+            # PREMIUM / ELITE
+            # ==========================================
+            "premium_plan",
+            "elite_plan",
+
+            "years_of_experience",
+            "deals_closed",
         ]
 
-    def validate_email(self, value):
-        # check duplicate email
-        if PendingAgentRegistration.objects.filter(email=value).exists():
+        extra_kwargs = {
+            "password": {
+                "write_only": True,
+                "min_length": 8,
+            },
+
+            "basic_plan": {
+                "required": False,
+                "allow_null": True,
+            },
+
+            "premium_plan": {
+                "required": False,
+                "allow_null": True,
+            },
+
+            "elite_plan": {
+                "required": False,
+                "allow_null": True,
+            },
+        }
+
+    # =================================================
+    # FULL NAME
+    # =================================================
+
+    def validate_full_name(self, value):
+
+        value = value.strip()
+
+        if not value:
+
             raise serializers.ValidationError(
-                "Email already exists."
+                "Full name is required."
             )
+
+        if len(value) < 2:
+
+            raise serializers.ValidationError(
+                "Full name must contain at least 2 characters."
+            )
+
+        if len(value) > 150:
+
+            raise serializers.ValidationError(
+                "Full name cannot exceed 150 characters."
+            )
+
         return value
 
+    # =================================================
+    # EMAIL
+    # =================================================
+
+    def validate_email(self, value):
+
+        value = value.strip().lower()
+
+        if not value:
+
+            raise serializers.ValidationError(
+                "Email is required."
+            )
+
+        if PendingAgentRegistration.objects.filter(
+            email__iexact=value,
+            status="pending"
+        ).exists():
+
+            raise serializers.ValidationError(
+                "You have already submitted a request."
+            )
+
+        if AgentUserProfile.objects.filter(
+            email__iexact=value
+        ).exists():
+
+            raise serializers.ValidationError(
+                "Account already exists. Please login."
+            )
+
+        return value
+
+    # =================================================
+    # PHONE
+    # =================================================
+
+    def validate_phone_number(self, value):
+
+        value = value.strip()
+
+        import re
+
+        if not re.fullmatch(
+            r"^[6-9]\d{9}$",
+            value
+        ):
+
+            raise serializers.ValidationError(
+                "Enter a valid 10-digit Indian mobile number."
+            )
+
+        return value
+
+    # =================================================
+    # PASSWORD
+    # =================================================
+
+    def validate_password(self, value):
+
+        if not value:
+
+            raise serializers.ValidationError(
+                "Password is required."
+            )
+
+        if len(value) < 8:
+
+            raise serializers.ValidationError(
+                "Password must contain at least 8 characters."
+            )
+
+        if len(value) > 128:
+
+            raise serializers.ValidationError(
+                "Password cannot exceed 128 characters."
+            )
+
+        if not any(
+            char.isupper()
+            for char in value
+        ):
+
+            raise serializers.ValidationError(
+                "Password must contain at least one uppercase letter."
+            )
+
+        if not any(
+            char.islower()
+            for char in value
+        ):
+
+            raise serializers.ValidationError(
+                "Password must contain at least one lowercase letter."
+            )
+
+        if not any(
+            char.isdigit()
+            for char in value
+        ):
+
+            raise serializers.ValidationError(
+                "Password must contain at least one number."
+            )
+
+        if not any(
+            char in "!@#$%^&*()-_=+[]{}|;:,.<>?/`~"
+            for char in value
+        ):
+
+            raise serializers.ValidationError(
+                "Password must contain at least one special character."
+            )
+
+        return value
+
+    # =================================================
+    # CITY
+    # =================================================
+
+    def validate_city(self, value):
+
+        value = value.strip()
+
+        if not value:
+
+            raise serializers.ValidationError(
+                "City is required."
+            )
+
+        return value
+
+    # =================================================
+    # PIN CODE
+    # =================================================
+
+    def validate_pin_code(self, value):
+
+        value = str(value).strip()
+
+        import re
+
+        if not re.fullmatch(
+            r"^\d{6}$",
+            value
+        ):
+
+            raise serializers.ValidationError(
+                "PIN code must contain exactly 6 digits."
+            )
+
+        if value.startswith("0"):
+
+            raise serializers.ValidationError(
+                "PIN code cannot start with zero."
+            )
+
+        return value
+
+    # =================================================
+    # ADDRESS
+    # =================================================
+
+    def validate_address(self, value):
+
+        value = value.strip()
+
+        if not value:
+
+            raise serializers.ValidationError(
+                "Address is required."
+            )
+
+        if len(value) < 5:
+
+            raise serializers.ValidationError(
+                "Address must contain at least 5 characters."
+            )
+
+        return value
+
+    # =================================================
+    # AGENT TYPE
+    # =================================================
+
+    def validate_agent_type(self, value):
+
+        value = value.strip().lower()
+
+        allowed_types = {
+            "basic",
+            "premium",
+            "elite"
+        }
+
+        if value not in allowed_types:
+
+            raise serializers.ValidationError(
+                "Invalid agent type."
+            )
+
+        return value
+
+    # =================================================
+    # BASIC PLAN
+    # =================================================
+
+    def validate_basic_plan(self, value):
+
+        if value is None:
+            return value
+
+        if not AgentPlan.objects.filter(
+            pk=value.pk
+        ).exists():
+
+            raise serializers.ValidationError(
+                "Selected basic plan does not exist."
+            )
+
+        return value
+
+    # =================================================
+    # PREMIUM PLAN
+    # =================================================
+
+    def validate_premium_plan(self, value):
+
+        if value is None:
+            return value
+
+        if not PremiumPlan.objects.filter(
+            pk=value.pk
+        ).exists():
+
+            raise serializers.ValidationError(
+                "Selected premium plan does not exist."
+            )
+
+        return value
+
+    # =================================================
+    # ELITE PLAN
+    # =================================================
+
+    def validate_elite_plan(self, value):
+
+        if value is None:
+            return value
+
+        if not ElitePlan.objects.filter(
+            pk=value.pk
+        ).exists():
+
+            raise serializers.ValidationError(
+                "Selected elite plan does not exist."
+            )
+
+        return value
+
+    # =================================================
+    # YEARS OF EXPERIENCE
+    # =================================================
+
+    def validate_years_of_experience(self, value):
+
+        if value is None:
+            return value
+
+        if value < 0:
+
+            raise serializers.ValidationError(
+                "Years of experience cannot be negative."
+            )
+
+        if value > 100:
+
+            raise serializers.ValidationError(
+                "Years of experience cannot exceed 100."
+            )
+
+        return value
+
+    # =================================================
+    # DEALS CLOSED
+    # =================================================
+
+    def validate_deals_closed(self, value):
+
+        if value is None:
+            return 0
+
+        if value < 0:
+
+            raise serializers.ValidationError(
+                "Deals closed cannot be negative."
+            )
+
+        if value > 1000000:
+
+            raise serializers.ValidationError(
+                "Deals closed value is too large."
+            )
+
+        return value
+
+    # =================================================
+    # CROSS FIELD VALIDATION
+    # =================================================
+
+    def validate(self, attrs):
+
+        agent_type = attrs.get(
+            "agent_type"
+        )
+
+        basic_plan = attrs.get(
+            "basic_plan"
+        )
+
+        premium_plan = attrs.get(
+            "premium_plan"
+        )
+
+        elite_plan = attrs.get(
+            "elite_plan"
+        )
+
+        # =================================================
+        # BASIC
+        # =================================================
+
+        if agent_type == "basic":
+
+            # Basic now MUST have a basic plan
+
+            if not basic_plan:
+
+                raise serializers.ValidationError({
+                    "basic_plan":
+                    "Basic plan is required for basic agent."
+                })
+
+            if premium_plan:
+
+                raise serializers.ValidationError({
+                    "premium_plan":
+                    "Basic agent cannot have a premium plan."
+                })
+
+            if elite_plan:
+
+                raise serializers.ValidationError({
+                    "elite_plan":
+                    "Basic agent cannot have an elite plan."
+                })
+
+        # =================================================
+        # PREMIUM
+        # =================================================
+
+        elif agent_type == "premium":
+
+            if not premium_plan:
+
+                raise serializers.ValidationError({
+                    "premium_plan":
+                    "Premium plan is required for premium agent."
+                })
+
+            if basic_plan:
+
+                raise serializers.ValidationError({
+                    "basic_plan":
+                    "Premium agent cannot have a basic plan."
+                })
+
+            if elite_plan:
+
+                raise serializers.ValidationError({
+                    "elite_plan":
+                    "Premium agent cannot have an elite plan."
+                })
+
+        # =================================================
+        # ELITE
+        # =================================================
+
+        elif agent_type == "elite":
+
+            if not elite_plan:
+
+                raise serializers.ValidationError({
+                    "elite_plan":
+                    "Elite plan is required for elite agent."
+                })
+
+            if basic_plan:
+
+                raise serializers.ValidationError({
+                    "basic_plan":
+                    "Elite agent cannot have a basic plan."
+                })
+
+            if premium_plan:
+
+                raise serializers.ValidationError({
+                    "premium_plan":
+                    "Elite agent cannot have a premium plan."
+                })
+
+        return attrs
+
+    # =================================================
+    # CREATE
+    # =================================================
+
     def create(self, validated_data):
-        # hash password
-        validated_data['password'] = make_password(validated_data['password'])
-        return PendingAgentRegistration.objects.create(**validated_data)
+
+        # submitted_by is intentionally NOT accepted
+        # from frontend.
+
+        submitted_by = validated_data.pop(
+            "submitted_by",
+            None
+        )
+
+        registration = PendingAgentRegistration.objects.create(
+            submitted_by=submitted_by,
+            **validated_data
+        )
+
+        return registration
 
 
 class AgentProfileSerializer(serializers.ModelSerializer):
@@ -912,16 +2044,55 @@ class AgentPlanSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+
+
 class PremiumPlanSerializer(serializers.ModelSerializer):
+
+    validity = serializers.SerializerMethodField()
+    total_listing = serializers.SerializerMethodField()
+    residential_limit = serializers.SerializerMethodField()
+    commercial_limit = serializers.SerializerMethodField()
+
     class Meta:
         model = PremiumPlan
-        fields = '__all__'
+        fields = "__all__"
+
+    def get_validity(self, obj):
+        return f"{obj.validity} days"
+
+    def get_total_listing(self, obj):
+        return f"{obj.total_listing} total listings"
+
+    def get_residential_limit(self, obj):
+        return f"{obj.residential_limit} residential listings"
+
+    def get_commercial_limit(self, obj):
+        return f"{obj.commercial_limit} commercial listings"
+
+
 
 
 class ElitePlanSerializer(serializers.ModelSerializer):
+
+    plan_validity_days = serializers.SerializerMethodField()
+    total_property_listings = serializers.SerializerMethodField()
+    featured_listings_limit = serializers.SerializerMethodField()
+
     class Meta:
         model = ElitePlan
-        fields = '__all__'
+        fields = "__all__"
+
+    def get_plan_validity_days(self, obj):
+        return f"{obj.plan_validity_days} days"
+
+    def get_total_property_listings(self, obj):
+        count = obj.total_property_listings
+        return f"{count} total property listing" if count == 1 else f"{count} total property listings"
+
+    def get_featured_listings_limit(self, obj):
+        count = obj.featured_listings_limit
+        return f"{count} featured property listing" if count == 1 else f"{count} featured property listings"
+
 
 
 class CurrentPlanSerializer(serializers.Serializer):
@@ -991,6 +2162,12 @@ class AgentPropertySerializer(serializers.ModelSerializer):
     )
 
     purpose = serializers.CharField(
+        required=False,
+        allow_null=True,
+        allow_blank=True
+    )
+
+    pincode = serializers.CharField(
         required=False,
         allow_null=True,
         allow_blank=True
@@ -1073,12 +2250,13 @@ class AgentPropertySerializer(serializers.ModelSerializer):
             "subcategory",
             "purpose",
             "description",
-            "sq_ft",
+            # "sq_ft",
+            # "pincode",
             "whatsapp",
             "phone",
             "state",
             "district",
-            "pincode",
+            "city",
             "phone"
 
         ]
@@ -1202,6 +2380,7 @@ class AgentPropertySerializer(serializers.ModelSerializer):
         #         )
 
         #     })
+
         cleaned_selling_points = [
 
             str(sp).strip()
@@ -1211,15 +2390,15 @@ class AgentPropertySerializer(serializers.ModelSerializer):
             if str(sp).strip()
         ]
 
-        if not cleaned_selling_points:
+        # if not cleaned_selling_points:
 
-            raise serializers.ValidationError({
+        #     raise serializers.ValidationError({
 
-                "selling_points": (
-                    "Selling points cannot be empty."
-                )
+        #         "selling_points": (
+        #             "Selling points cannot be empty."
+        #         )
 
-            })
+        #     })
 
         # =========================================
         # LANDMARKS VALIDATION
@@ -1245,15 +2424,15 @@ class AgentPropertySerializer(serializers.ModelSerializer):
         )
 
         # Empty list check
-        if not landmarks_list:
+        # if not landmarks_list:
 
-            raise serializers.ValidationError({
+        #     raise serializers.ValidationError({
 
-                "landmarks": (
-                    "Landmarks cannot be empty."
-                )
+        #         "landmarks": (
+        #             "Landmarks cannot be empty."
+        #         )
 
-            })
+        #     })
 
         # Validate each landmark
         cleaned_landmarks = []
@@ -1285,15 +2464,15 @@ class AgentPropertySerializer(serializers.ModelSerializer):
             })
 
         # Final validation
-        if not cleaned_landmarks:
+        # if not cleaned_landmarks:
 
-            raise serializers.ValidationError({
+        #     raise serializers.ValidationError({
 
-                "landmarks": (
-                    "Valid landmarks are required."
-                )
+        #         "landmarks": (
+        #             "Valid landmarks are required."
+        #         )
 
-            })
+        #     })
 
         # Save cleaned data back
         self.context["landmarks_list"] = cleaned_landmarks
@@ -1316,15 +2495,15 @@ class AgentPropertySerializer(serializers.ModelSerializer):
             []
         )
 
-        if not field_values:
+        # if not field_values:
 
-            raise serializers.ValidationError({
+        #     raise serializers.ValidationError({
 
-                "features": (
-                    "Features cannot be empty."
-                )
+        #         "features": (
+        #             "Features cannot be empty."
+        #         )
 
-            })
+        #     })
 
         # =========================================
         # AMENITIES VALIDATION
@@ -1335,15 +2514,15 @@ class AgentPropertySerializer(serializers.ModelSerializer):
             []
         )
 
-        if not amenities_list:
+        # if not amenities_list:
 
-            raise serializers.ValidationError({
+        #     raise serializers.ValidationError({
 
-                "amenities": (
-                    "Amenities cannot be empty."
-                )
+        #         "amenities": (
+        #             "Amenities cannot be empty."
+        #         )
 
-            })
+        #     })
 
         purpose_obj = None
 
@@ -1894,115 +3073,229 @@ class AgentPropertySerializer(serializers.ModelSerializer):
             for lm in obj.landmarks.all()
         ]
 
-    # def get_selling_points(self, obj):
-
-    #     if isinstance(
-    #         obj.selling_points,
-    #         list
-    #     ):
-    #         return obj.selling_points
-
-    #     return []
-
-    # def get_landmarks(self, obj):
-
-    #     if isinstance(
-    #         obj.land_mark,
-    #         list
-    #     ):
-    #         return obj.land_mark
-
-    #     return []
 
     # =====================================================
     # FEATURES
     # =====================================================
 
-    # def get_features(self, obj):
-
-    #     result = {}
-
-    #     for fv in obj.field_values.select_related(
-    #         "field"
-    #     ):
-
-    #         field = fv.field
-
-    #         icon = (
-    #             field.icon.url
-    #             if field.icon else None
-    #         )
-
-    #         try:
-
-    #             data = json.loads(fv.value)
-
-    #             option = data.get("option")
-
-    #             count = data.get("count", 0)
-
-    #             if option:
-
-    #                 result[option] = {
-    #                     "value": count,
-    #                     "icon": icon
-    #                 }
-
-    #                 continue
-
-    #         except Exception:
-    #             pass
-
-    #         if field.field_name.lower() == "flat furnishings":
-    #             continue
-
-    #         if field.field_type == "countable":
-
-    #             try:
-    #                 value = int(fv.value)
-
-    #             except:
-    #                 value = 0
-
-    #         else:
-    #             value = fv.value
-
-    #         result[field.field_name] = {
-    #             "value": value,
-    #             "icon": icon
-    #         }
-
-    #     return [
-    #         {
-    #             "name": k,
-    #             "value": v["value"],
-    #             "icon": v["icon"]
-    #         }
-    #         for k, v in result.items()
-    #     ]
     def get_features(self, obj):
 
         result = {}
 
         request = self.context.get("request")
 
-        for fv in obj.field_values.select_related("field"):
+        # ============================================================
+        # SUPPORT BOTH Property AND AgentProperty
+        # ============================================================
+
+        if hasattr(obj, "property_features"):
+
+            feature_values = obj.property_features.select_related(
+                "field"
+            ).prefetch_related(
+                "field__options"
+            )
+
+        elif hasattr(obj, "field_values"):
+
+            feature_values = obj.field_values.select_related(
+                "field"
+            ).prefetch_related(
+                "field__options"
+            )
+
+        else:
+
+            feature_values = []
+
+
+        # ============================================================
+        # PROCESS ALL FEATURES
+        # ============================================================
+
+        for fv in feature_values:
 
             field = fv.field
+
+            # --------------------------------------------------------
+            # Safely decode JSON
+            # --------------------------------------------------------
 
             try:
 
                 data = json.loads(fv.value)
 
+            except Exception:
+
+                data = None
+
+
+            # ========================================================
+            # [
+            #   {"option": "sleeping area", "value": "2"},
+            #   {"option": "parking", "value": "1"},
+            #   {"option": "outdoor area", "value": "3"}
+            # ]
+            # ========================================================
+
+            if isinstance(data, list):
+
+                for item in data:
+
+                    if not isinstance(item, dict):
+                        continue
+
+                    option = item.get("option")
+
+                    # Support both "value" and old "count"
+                    value = item.get("value")
+
+                    if value is None:
+                        value = item.get("count", "")
+
+
+                    # ------------------------------------------------
+                    # Use FieldOption.icon
+                    # ------------------------------------------------
+
+                    if option:
+
+                        option = str(option).strip()
+
+                        option_obj = None
+
+                        # First use prefetched options
+                        for option_item in field.options.all():
+
+                            if (
+                                option_item.name
+                                and option_item.name.strip().lower()
+                                == option.lower()
+                            ):
+
+                                option_obj = option_item
+                                break
+
+
+                        option_icon = None
+
+                        if option_obj and option_obj.icon:
+
+                            try:
+
+                                option_icon = (
+                                    request.build_absolute_uri(
+                                        option_obj.icon.url
+                                    )
+                                    if request
+                                    else option_obj.icon.url
+                                )
+
+                            except Exception:
+
+                                option_icon = option_obj.icon.url
+
+
+                        result[option] = {
+                            "value": value,
+                            "icon": option_icon
+                        }
+
+                        continue
+
+
+                    # ------------------------------------------------
+                    # NO OPTION
+                    #
+                    # Use SubcategoryField.icon
+                    # ------------------------------------------------
+
+                    if field.icon:
+
+                        try:
+
+                            icon = (
+                                request.build_absolute_uri(
+                                    field.icon.url
+                                )
+                                if request
+                                else field.icon.url
+                            )
+
+                        except Exception:
+
+                            icon = field.icon.url
+
+                    else:
+
+                        icon = None
+
+
+                    # ------------------------------------------------
+                    # Countable field
+                    # ------------------------------------------------
+
+                    if field.field_type == "countable":
+
+                        try:
+
+                            value = int(value)
+
+                        except Exception:
+
+                            value = 0
+
+
+                    result[field.field_name] = {
+                        "value": value,
+                        "icon": icon
+                    }
+
+
+                # Finished processing this FieldValue
+                continue
+
+
+            # ========================================================
+            # {"option": "Bed", "value": 1}
+            # {"option": "Bed", "count": 1}
+            # ========================================================
+
+            if isinstance(data, dict):
+
                 option = data.get("option")
-                count = data.get("count", 0)
+
+                # Support value
+                value = data.get("value")
+
+                # Support old count format
+                if value is None:
+
+                    value = data.get("count", None)
+
+
+                # ----------------------------------------------------
+                # OPTION EXISTS
+                # ----------------------------------------------------
 
                 if option:
 
-                    option_obj = FieldOption.objects.filter(
-                        field=field,
-                        name__iexact=option
-                    ).first()
+                    option = str(option).strip()
+
+                    option_obj = None
+
+                    # Use prefetched FieldOptions
+                    for option_item in field.options.all():
+
+                        if (
+                            option_item.name
+                            and option_item.name.strip().lower()
+                            == option.lower()
+                        ):
+
+                            option_obj = option_item
+                            break
+
 
                     option_icon = None
 
@@ -2022,18 +3315,93 @@ class AgentPropertySerializer(serializers.ModelSerializer):
 
                             option_icon = option_obj.icon.url
 
+
                     result[option] = {
-                        "value": count,
+                        "value": (
+                            value
+                            if value is not None
+                            else ""
+                        ),
                         "icon": option_icon
                     }
 
                     continue
 
-            except Exception:
-                pass
+
+                # ----------------------------------------------------
+                # NO OPTION
+                #
+                # Use SubcategoryField.icon
+                # ----------------------------------------------------
+
+                if field.field_name.lower() == "flat furnishings":
+
+                    continue
+
+
+                if field.icon:
+
+                    try:
+
+                        icon = (
+                            request.build_absolute_uri(
+                                field.icon.url
+                            )
+                            if request
+                            else field.icon.url
+                        )
+
+                    except Exception:
+
+                        icon = field.icon.url
+
+                else:
+
+                    icon = None
+
+
+                # ----------------------------------------------------
+                # Countable field
+                # ----------------------------------------------------
+
+                if field.field_type == "countable":
+
+                    try:
+
+                        value = int(
+                            value
+                            if value is not None
+                            else 0
+                        )
+
+                    except Exception:
+
+                        value = 0
+
+                else:
+
+                    if value is None:
+
+                        value = ""
+
+
+                result[field.field_name] = {
+                    "value": value,
+                    "icon": icon
+                }
+
+                continue
+
+
+            # ========================================================
+            # CASE 3:
+            # "4BHK"
+            # ========================================================
 
             if field.field_name.lower() == "flat furnishings":
+
                 continue
+
 
             if field.icon:
 
@@ -2055,21 +3423,35 @@ class AgentPropertySerializer(serializers.ModelSerializer):
 
                 icon = None
 
+
+            # --------------------------------------------------------
+            # Countable field
+            # --------------------------------------------------------
+
             if field.field_type == "countable":
 
                 try:
+
                     value = int(fv.value)
 
                 except Exception:
+
                     value = 0
 
             else:
+
                 value = fv.value
+
 
             result[field.field_name] = {
                 "value": value,
                 "icon": icon
             }
+
+
+        # ============================================================
+        # FINAL RESPONSE
+        # ============================================================
 
         return [
             {
@@ -2079,7 +3461,6 @@ class AgentPropertySerializer(serializers.ModelSerializer):
             }
             for key, value in result.items()
         ]
-
     # =====================================================
     # OTHER FIELDS
     # =====================================================
@@ -2174,6 +3555,7 @@ class PropertyCardSerializer(serializers.ModelSerializer):
     id = serializers.UUIDField(source="pk", read_only=True)
     # owner = serializers.CharField(source="owner.name")
     owner = serializers.CharField()
+    amenities = serializers.SerializerMethodField()
     images = serializers.SerializerMethodField()
     is_wishlisted = serializers.SerializerMethodField()
 
@@ -2187,6 +3569,8 @@ class PropertyCardSerializer(serializers.ModelSerializer):
             "price",
             "sq_ft",
             "land_area",
+            "description", 
+            "amenities",
             "owner",
             "whatsapp",
             "phone",
@@ -2202,10 +3586,91 @@ class PropertyCardSerializer(serializers.ModelSerializer):
             if img.image
         ]
 
+   
+    # =========================================================
+    # AMENITIES
+    # =========================================================
+
+    def get_amenities(self, obj):
+
+        if not hasattr(obj, "amenities"):
+            return ""
+
+        return ", ".join(
+            amenity.name
+            for amenity in obj.amenities.all()
+            if amenity.name
+        )
+
     def get_is_wishlisted(self, obj):
         wishlist_ids = self.context.get("wishlist_ids", set())
 
         # ✅ SAFE UUID COMPARISON
+        return str(obj.pk) in wishlist_ids
+
+
+class AgentPropertyCardSerializer(serializers.ModelSerializer):
+
+    id = serializers.UUIDField(source="pk", read_only=True)
+    owner = serializers.SerializerMethodField()
+    images = serializers.SerializerMethodField()
+    amenities = serializers.SerializerMethodField()
+    is_wishlisted = serializers.SerializerMethodField()
+
+    class Meta:
+        model = AgentProperty
+        fields = [
+            "id",
+            "label",
+            "city",
+            "perprice",
+            "price",
+            "sq_ft",
+            "land_area",
+            "description", 
+            "amenities",
+            "owner",
+            "whatsapp",
+            "phone",
+            "location",
+            "images",
+            "is_wishlisted"
+        ]
+
+    def get_owner(self, obj):
+        return obj.owner or ""
+
+    def get_images(self, obj):
+        return [
+            img.image.url
+            for img in obj.images.all()[:2]
+            if img.image
+        ]
+
+   
+    # =========================================================
+    # AMENITIES
+    # =========================================================
+
+    def get_amenities(self, obj):
+
+        if not hasattr(obj, "amenities"):
+            return ""
+
+        return ", ".join(
+            amenity.name
+            for amenity in obj.amenities.all()
+            if amenity.name
+        )
+
+
+
+    def get_is_wishlisted(self, obj):
+        wishlist_ids = self.context.get(
+            "wishlist_ids",
+            set()
+        )
+
         return str(obj.pk) in wishlist_ids
 
 
@@ -2219,6 +3684,8 @@ class WishlistSerializer(serializers.ModelSerializer):
     price = serializers.SerializerMethodField()
     sq_ft = serializers.SerializerMethodField()
     land_area = serializers.SerializerMethodField()
+    description = serializers.SerializerMethodField() 
+    amenities = serializers.SerializerMethodField()
     owner = serializers.SerializerMethodField()
     whatsapp = serializers.SerializerMethodField()
     phone = serializers.SerializerMethodField()
@@ -2236,6 +3703,8 @@ class WishlistSerializer(serializers.ModelSerializer):
             "price",
             "sq_ft",
             "land_area",
+            "description",
+            "amenities",
             "owner",
             "whatsapp",
             "phone",
@@ -2303,6 +3772,20 @@ class WishlistSerializer(serializers.ModelSerializer):
 
         return getattr(getattr(prop, "owner", None) or getattr(prop, "agent", None), "name", None)
 
+    def get_description(self, obj): 
+        prop = self.get_obj(obj) 
+        if not prop: 
+            return None 
+        return getattr(prop, "description", None) 
+    # ========================================================= # AMENITIES # ========================================================= 
+    def get_amenities(self, obj): 
+        prop = self.get_obj(obj) 
+        if not prop: 
+            return "" 
+        if not hasattr(prop, "amenities"): 
+            return "" 
+        return ", ".join( amenity.name for amenity in prop.amenities.all() if amenity.name )
+
     def get_whatsapp(self, obj):
         prop = self.get_obj(obj)
         return getattr(prop, "whatsapp", None)
@@ -2331,15 +3814,6 @@ class WishlistSerializer(serializers.ModelSerializer):
     def get_is_wishlisted(self, obj):
         return True
 
-
-
-from rest_framework import serializers
-import json
-
-from .models import (
-    Property,
-    PropertyFeature,
-)
 
 
 class PropertyDetailSerializer(serializers.ModelSerializer):
@@ -2886,29 +4360,6 @@ class PropertyDetailSerializer(serializers.ModelSerializer):
         }
 
 
-
-# from rest_framework import serializers
-# from .models import PropertyEnquiry
-
-
-# class PropertyEnquirySerializer(serializers.ModelSerializer):
-
-#     class Meta:
-#         model = PropertyEnquiry
-#         fields = [
-#             "id",
-#             "name",
-#             "phone",
-#             "email",
-#             "message",
-#             "created_at",
-#         ]
-
-#         read_only_fields = [
-#             "id",
-#             "created_at",
-#         ]
-
 class PropertyEnquirySerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -2923,71 +4374,6 @@ class PropertyEnquirySerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["id", "created_at"]
 
-# from rest_framework import serializers
-# from .models import Property
-# from users.models import UserCreate   # ✅ important
-# # from utils.hashids import hashids
-
-
-# class RelatedPropertySerializer(serializers.ModelSerializer):
-#     id = serializers.SerializerMethodField()
-#     images = serializers.SerializerMethodField()
-#     is_wishlisted = serializers.SerializerMethodField()
-
-#     class Meta:
-#         model = Property
-#         fields = [
-#             "id",
-#             "label",
-#             "city",
-#             "perprice",
-#             "price",
-#             "sq_ft",
-#             "land_area",
-#             "owner",
-#             "whatsapp",
-#             "phone",
-#             "location",
-#             "images",
-#             "is_wishlisted",
-#         ]
-
-#     # hashed id
-#     def get_id(self, obj):
-#         return hashids.encode(obj.id)
-
-#     # image list
-#     def get_images(self, obj):
-#         return [
-#             image.image.url
-#             for image in obj.images.all()[:2]
-#             if image.image
-#         ]
-
-#     # WORKS FOR BOTH LOGIN + NO LOGIN
-#     def get_is_wishlisted(self, obj):
-
-#         request = self.context.get("request", None)
-
-#         # No request → not wishlisted
-#         if not request:
-#             return False
-
-#         # User not logged in
-#         if not request.user.is_authenticated:
-#             return False
-
-#         # Convert AuthUser → UserCreate safely
-#         try:
-#             user_create = UserCreate.objects.get(user=request.user)
-#         except UserCreate.DoesNotExist:
-#             return False
-
-#         # Correct FK comparison
-#         return obj.wishlist_set.filter(
-#             user=user_create
-#         ).exists()
-    
 
 class RelatedPropertySerializer(serializers.ModelSerializer):
     id=serializers.SerializerMethodField()
@@ -3089,9 +4475,6 @@ class BlogListSerializer(serializers.ModelSerializer):
         return None
     
 
-from rest_framework import serializers
-from .models import Blog
-
 
 class SingleBlogSerializer(serializers.ModelSerializer):
     card_paragraph = serializers.SerializerMethodField()
@@ -3134,113 +4517,24 @@ class SingleBlogSerializer(serializers.ModelSerializer):
 
         return url
     
-# class BlogModalSerializer(serializers.ModelSerializer):
-#     image = serializers.SerializerMethodField()
-
-#     class Meta:
-#         model = Blog
-#         fields = [
-#             "modal_head",
-#             "date",
-#             "modal_paragraph",
-#             "image"
-#         ]
-
-#     def get_image(self,obj):
-#         request = self.context.get("request")
-
-#         if obj.image:
-#             image_url = obj.image.url
-#             if request:
-#                 return request.build_absolute_uri(image_url)
-#             return image_url
-#         return None
-    
-
-# from rest_framework import serializers
-# from .models import Blog
-
-
-# class BlogSerializer(serializers.ModelSerializer):
-#     # category = serializers.CharField(source="category.name")
-#     image = serializers.SerializerMethodField()
-
-#     class Meta:
-#         model = Blog
-#         fields = [
-#             "blog_head",
-#             # "modal_head",
-#             "date",
-#             "card_paragraph",
-#             # "modal_paragraph",
-#             "image",
-#             # "category",
-#         ]
-
-#     def get_image(self, obj):
-#         request = self.context.get("request")
-
-#         if not obj.image:
-#             return None
-
-#         url = obj.image.url
-#         if request:
-#             url = request.build_absolute_uri(url)
-
-#         return url
-
-
-
-# from rest_framework import serializers
-# from .models import UserProfile, UserCreate
-
-
-# class UserProfileUpdateSerializer(serializers.Serializer):
-
-#     full_name = serializers.CharField(required=False,allow_blank=True)
-#     email = serializers.EmailField(required=False)
-#     mobile = serializers.CharField(required=False)
-#     alternate_mobile = serializers.CharField(required=False)
-#     city = serializers.CharField(required=False)
-
-#     def update(self, user, validated_data):
-
-#         profile = user.profile
-
-#         # ❌ BLOCK EMAIL CHANGE
-#         if "email" in validated_data:
-#             new_email = validated_data["email"]
-
-#             if new_email != user.email:
-#                 raise serializers.ValidationError({
-#                     "email": "Email cannot be changed once registered."
-#                 })
-
-#         # ✅ UPDATE FIELDS ONLY IF PASSED
-#         if "full_name" in validated_data:
-#             profile.full_name = validated_data["full_name"].strip()
-
-#         if "mobile" in validated_data and validated_data["mobile"].strip():
-#             profile.mobile = validated_data["mobile"]
-#             user.mobile = validated_data["mobile"]
-#             user.save(update_fields=["mobile"])
-
-#         if "alternate_mobile" in validated_data:
-#             profile.alternate_mobile = validated_data["alternate_mobile"]
-
-#         if "city" in validated_data:
-#             profile.city = validated_data["city"]
-
-#         profile.save()
-
-#         return profile
 
 class UserProfileUpdateSerializer(serializers.Serializer):
 
     full_name = serializers.CharField(required=False, allow_blank=True)
     email = serializers.EmailField(required=False)
-    mobile = serializers.CharField(required=False, allow_blank=True)
-    alternate_mobile = serializers.CharField(required=False, allow_blank=True)
+    # mobile = serializers.CharField(required=False, allow_blank=True)
+    # alternate_mobile = serializers.CharField(required=False, allow_blank=True)
+    mobile = serializers.RegexField(
+    regex=r'^[6-9]\d{9}$',
+    required=False,
+    allow_blank=True
+    )
+
+    alternate_mobile = serializers.RegexField(
+        regex=r'^[6-9]\d{9}$',
+        required=False,
+        allow_blank=True
+    )
     city = serializers.CharField(required=False, allow_blank=True)
 
     def update(self, user, validated_data):
@@ -3338,9 +4632,6 @@ class BannerAdSerializer(serializers.ModelSerializer):
             return obj.image.url   
         return None
 
-
-from rest_framework import serializers
-import json
 
 class AgentDetailSerializer(serializers.ModelSerializer):
     # agent_id = serializers.CharField(source='agent_code', read_only=True)
@@ -3576,9 +4867,7 @@ class EnquiryDetailSerializer(serializers.ModelSerializer):
 
         return image
     
-from rest_framework import serializers
-from django.utils import timezone
-import pytz
+
 
 class RecentEnquirySerializer(serializers.ModelSerializer):
 
@@ -3684,126 +4973,163 @@ class RecentAgentEnquirySerializer(serializers.ModelSerializer):
             "%B %d, %Y %I:%M %p"
         )
 
-    
-from rest_framework import serializers
 
 class CombinedPropertyListSerializer(serializers.Serializer):
 
-    id=serializers.SerializerMethodField()
-    property_type=serializers.SerializerMethodField()
+    id = serializers.SerializerMethodField()
+    property_type = serializers.SerializerMethodField()
 
-    label=serializers.SerializerMethodField()
-    city=serializers.SerializerMethodField()
-    perprice=serializers.SerializerMethodField()
-    price=serializers.SerializerMethodField()
-    sq_ft=serializers.SerializerMethodField()
-    land_area=serializers.SerializerMethodField()
+    label = serializers.SerializerMethodField()
+    city = serializers.SerializerMethodField()
+    perprice = serializers.SerializerMethodField()
+    price = serializers.SerializerMethodField()
+    sq_ft = serializers.SerializerMethodField()
+    land_area = serializers.SerializerMethodField()
+    description = serializers.SerializerMethodField()
+    amenities = serializers.SerializerMethodField()
 
-    owner=serializers.SerializerMethodField()
+    owner = serializers.SerializerMethodField()
 
-    whatsapp=serializers.SerializerMethodField()
-    phone=serializers.SerializerMethodField()
+    whatsapp = serializers.SerializerMethodField()
+    phone = serializers.SerializerMethodField()
 
-    location=serializers.SerializerMethodField()
+    location = serializers.SerializerMethodField()
 
-    images=serializers.SerializerMethodField()
+    images = serializers.SerializerMethodField()
 
-    is_wishlisted=serializers.SerializerMethodField()
+    is_wishlisted = serializers.SerializerMethodField()
 
+    # =========================================================
+    # ID
+    # =========================================================
 
-    def get_id(self,obj):
+    def get_id(self, obj):
         return str(obj.id)
 
+    # =========================================================
+    # PROPERTY TYPE
+    # =========================================================
 
-    def get_property_type(self,obj):
-        if isinstance(obj,Property):
+    def get_property_type(self, obj):
+
+        if isinstance(obj, Property):
             return "user"
-        return "agent"
 
+        if isinstance(obj, AgentProperty):
+            return "agent"
 
-    def get_label(self,obj):
+        return None
+
+    # =========================================================
+    # BASIC DETAILS
+    # =========================================================
+
+    def get_label(self, obj):
         return obj.label
 
-
-    def get_city(self,obj):
+    def get_city(self, obj):
         return obj.city
 
-
-    def get_perprice(self,obj):
+    def get_perprice(self, obj):
         return obj.perprice
 
-
-    def get_price(self,obj):
+    def get_price(self, obj):
         return obj.price
 
+    def get_sq_ft(self, obj):
 
-    def get_sq_ft(self,obj):
-        return str(obj.sq_ft) if obj.sq_ft else None
+        if obj.sq_ft is not None:
+            return str(obj.sq_ft)
 
+        return None
 
-    def get_land_area(self,obj):
+    def get_land_area(self, obj):
         return obj.land_area
 
+    def get_description(self, obj):
+        return obj.description
 
-    # def get_owner(self,obj):
+    
+    # =========================================================
+    # AMENITIES
+    # =========================================================
 
-    #     if isinstance(obj,Property):
-    #         return (
-    #             obj.owner.name
-    #             if obj.owner else None
-    #         )
+    def get_amenities(self, obj):
 
-    #     return (
-    #         obj.owner
-    #         or obj.agent.name
-    #     )
+        if not hasattr(obj, "amenities"):
+            return ""
+
+        return ", ".join(
+            amenity.name
+            for amenity in obj.amenities.all()
+            if amenity.name
+        )
+
+
+
+
+    # =========================================================
+    # OWNER
+    # =========================================================
 
     def get_owner(self, obj):
 
-        # # USER PROPERTY
-        # if isinstance(obj, Property):
-        #     return obj.user if obj.user else None
+        # =====================================================
+        # USER PROPERTY
+        # =====================================================
 
         if isinstance(obj, Property):
 
-            # manual owner name
+            # Manual owner name
             if obj.owner:
                 return obj.owner
 
-            # fallback to user
+            # Fallback to user
             if obj.user:
 
-                # most correct case
-                if hasattr(obj.user, "name"):
+                if hasattr(obj.user, "name") and obj.user.name:
                     return obj.user.name
 
-                # fallback cases
-                if hasattr(obj.user, "full_name"):
+                if hasattr(obj.user, "full_name") and obj.user.full_name:
                     return obj.user.full_name
 
-                if hasattr(obj.user, "username"):
+                if hasattr(obj.user, "username") and obj.user.username:
                     return obj.user.username
 
-                if hasattr(obj.user, "email"):
+                if hasattr(obj.user, "email") and obj.user.email:
                     return obj.user.email
 
             return None
 
+        # =====================================================
         # AGENT PROPERTY
+        # =====================================================
+
         if isinstance(obj, AgentProperty):
 
-            # if manual owner string exists
+            # Manual owner name
             if obj.owner:
                 return obj.owner
 
-            # fallback to agent
+            # Fallback to agent
             if obj.agent:
 
-                # most correct case
+                # Agent linked user
                 if hasattr(obj.agent, "user") and obj.agent.user:
-                    return obj.agent.user.name
 
-                # fallback cases (safe)
+                    if hasattr(obj.agent.user, "name"):
+                        return obj.agent.user.name
+
+                    if hasattr(obj.agent.user, "full_name"):
+                        return obj.agent.user.full_name
+
+                    if hasattr(obj.agent.user, "username"):
+                        return obj.agent.user.username
+
+                    if hasattr(obj.agent.user, "email"):
+                        return obj.agent.user.email
+
+                # Agent profile name
                 if hasattr(obj.agent, "full_name"):
                     return obj.agent.full_name
 
@@ -3812,56 +5138,121 @@ class CombinedPropertyListSerializer(serializers.Serializer):
 
             return None
 
+        return None
 
-    def get_whatsapp(self,obj):
+    # =========================================================
+    # CONTACT
+    # =========================================================
+
+    def get_whatsapp(self, obj):
         return obj.whatsapp
 
-
-    def get_phone(self,obj):
+    def get_phone(self, obj):
         return obj.phone
 
+    # =========================================================
+    # LOCATION
+    # =========================================================
 
-    def get_location(self,obj):
+    def get_location(self, obj):
         return obj.location
 
+    # =========================================================
+    # IMAGES
+    # =========================================================
+    #
+    # USER PROPERTY:
+    #
+    #     PropertyImage
+    #
+    # AGENT PROPERTY:
+    #
+    #     AgentProperty.image          -> main image
+    #     AgentPropertyImage           -> multiple images
+    #
+    # =========================================================
 
-    # IMPORTANT FIX
-    def get_images(self,obj):
+    def get_images(self, obj):
 
-        request=self.context.get(
-            "request"
-        )
+        request = self.context.get("request")
 
-        urls=[]
+        urls = []
+        seen_urls = set()
 
+        # =====================================================
+        # HELPER
+        # =====================================================
 
-        # USER PROPERTY MULTIPLE IMAGES
-        if isinstance(obj,Property):
+        def add_image(image_field):
 
-            if hasattr(obj,"images"):
-                for img in obj.images.all()[:2]:
-                    if img.image:
-                        url=img.image.url
+            if not image_field:
+                return
 
-                        if request:
-                            url=request.build_absolute_uri(url)
+            try:
 
-                        urls.append(url)
+                url = image_field.url
 
+            except Exception:
 
-        # AGENT PROPERTY SINGLE IMAGE
-        elif isinstance(obj,AgentProperty):
+                return
 
-            if obj.image:
-                url=obj.image.url
+            if not url:
+                return
 
-                if request:
-                    url=request.build_absolute_uri(url)
+            # Build absolute URL
+            if request:
+                url = request.build_absolute_uri(url)
 
+            # Prevent duplicate image URLs
+            if url not in seen_urls:
+
+                seen_urls.add(url)
                 urls.append(url)
 
+        # =====================================================
+        # USER PROPERTY
+        # =====================================================
+
+        if isinstance(obj, Property):
+
+            # Property has multiple images
+            if hasattr(obj, "images"):
+
+                for img in obj.images.all()[:2]:
+
+                    if img.image:
+                        add_image(img.image)
+
+        # =====================================================
+        # AGENT PROPERTY
+        # =====================================================
+
+        elif isinstance(obj, AgentProperty):
+
+            # -------------------------------------------------
+            # 1. MAIN AGENT PROPERTY IMAGE
+            # -------------------------------------------------
+
+            if obj.image:
+                add_image(obj.image)
+
+            # -------------------------------------------------
+            # 2. MULTIPLE AGENT PROPERTY IMAGES
+            # -------------------------------------------------
+
+            if hasattr(obj, "images"):
+
+                for img in obj.images.all()[:2]:
+
+                    if img.image:
+                        add_image(img.image)
 
         return urls
+
+    # =========================================================
+    # WISHLIST
+    # =========================================================
+
     def get_is_wishlisted(self, obj):
 
         wishlist_ids = self.context.get(
@@ -3869,565 +5260,7 @@ class CombinedPropertyListSerializer(serializers.Serializer):
             set()
         )
 
-        # compare UUIDs now
         return str(obj.id) in wishlist_ids
-    
-
-# class UserPropertySerializer(serializers.ModelSerializer):
-
-#     id=serializers.UUIDField(
-#         read_only=True
-#     )
-
-#     images=serializers.SerializerMethodField()
-#     image=serializers.SerializerMethodField()
-#     amenities=serializers.SerializerMethodField()
-#     selling_points=serializers.SerializerMethodField()
-#     landmarks=serializers.SerializerMethodField()
-#     features=serializers.SerializerMethodField()
-
-#     # =====================================================
-#     # OWNER TEXT FIELD ONLY
-#     # =====================================================
-
-#     owner=serializers.CharField(
-#         required=False,
-#         allow_null=True,
-#         allow_blank=True
-#     )
-
-#     category=serializers.PrimaryKeyRelatedField(
-#         queryset=Category.objects.all()
-#     )
-
-#     subcategory=serializers.CharField(
-#         required=False,
-#         allow_null=True,
-#         allow_blank=True
-#     )
-
-#     purpose=serializers.CharField(
-#         required=False,
-#         allow_null=True,
-#         allow_blank=True
-#     )
-
-#     class Meta:
-
-#         model=Property
-
-#         fields="__all__"
-
-#         read_only_fields=[
-#             "user"
-#         ]
-
-#     # =====================================================
-#     # CREATE
-#     # =====================================================
-
-#     def get_subcategory_obj(self, sub):
-#         if not sub:
-#             return None
-
-#         return Subcategory.objects.filter(
-#             name__iexact=str(sub).strip()
-#         ).first()
-
-
-#     def get_purpose_obj(self, pur):
-#         if not pur:
-#             return None
-
-#         return Purpose.objects.filter(
-#             name__iexact=str(pur).strip()
-#         ).first()
-
-#     def create(self,validated_data):
-
-#         request=self.context.get("request")
-
-#         # =================================================
-#         # STORE LOGGED USER INTO USER FIELD
-#         # =================================================
-
-#         if request and request.user:
-
-#             validated_data["user"]=request.user
-
-#         # =================================================
-#         # OWNER TEXT FIELD
-#         # =================================================
-
-#         owner_name=self.initial_data.get("owner")
-
-#         if owner_name is not None:
-
-#             validated_data["owner"]=owner_name.strip()
-
-#         # =================================================
-#         # SUBCATEGORY
-#         # =================================================
-#         sub = self.initial_data.get("subcategory")
-#         sub_obj = self.get_subcategory_obj(sub)
-
-#         if sub_obj:
-#             validated_data["subcategory"] = sub_obj
-
-
-#         pur = self.initial_data.get("purpose")
-#         pur_obj = self.get_purpose_obj(pur)
-
-#         if pur_obj:
-#             validated_data["purpose"] = pur_obj
-
-#         # sub=self.initial_data.get("subcategory")
-
-#         # if sub:
-
-#         #     sub_obj=Subcategory.objects.filter(
-#         #         name__iexact=sub.strip()
-#         #     ).first()
-
-#         #     if sub_obj:
-#         #         validated_data["subcategory"]=sub_obj
-
-#         # # =================================================
-#         # # PURPOSE
-#         # # =================================================
-
-#         # pur=self.initial_data.get("purpose")
-
-#         # if pur:
-
-#         #     pur_obj=Purpose.objects.filter(
-#         #         name__iexact=pur.strip()
-#         #     ).first()
-
-#         #     if pur_obj:
-#         #         validated_data["purpose"]=pur_obj
-
-#         instance=Property.objects.create(
-#             **validated_data
-#         )
-
-#         self.handle_related(instance)
-
-#         return instance
-
-#     def update(self,instance,validated_data):
-#         request = self.context.get("request")
-
-#         if request:
-
-#             # old image urls
-#             old_images = request.data.getlist("images")
-
-#             # new uploaded files
-#             new_images = request.FILES.getlist("images")
-
-#             for img_obj in instance.images.all():
-
-#                 image_url = request.build_absolute_uri(
-#                     img_obj.image.url
-#                 )
-
-#                 if image_url not in old_images:
-#                     img_obj.delete()
-
-
-#             if new_images:
-
-#                 PropertyImage.objects.bulk_create([
-#                     PropertyImage(
-#                         property=instance,
-#                         image=img
-#                     )
-#                     for img in new_images
-#                 ])
-
-#         if request and request.FILES.get("image"):
-
-#             instance.image = request.FILES.get("image")
-    
-
-#         # =================================================
-#         # OWNER TEXT UPDATE ONLY
-#         # =================================================
-
-#         owner_name=self.initial_data.get("owner")
-
-#         if owner_name is not None:
-
-#             instance.owner=owner_name.strip()
-
-#         # =================================================
-#         # SUBCATEGORY UPDATE
-#         # =================================================
-#         sub = self.initial_data.get("subcategory")
-#         sub_obj = self.get_subcategory_obj(sub)
-
-#         if sub_obj:
-#             instance.subcategory = sub_obj
-
-#         # REMOVE FROM validated_data (CRITICAL FIX)
-#         validated_data.pop("subcategory", None)
-
-#         # ==============================
-#         # PURPOSE (FIXED)
-#         # ==============================
-#         pur = self.initial_data.get("purpose")
-#         pur_obj = self.get_purpose_obj(pur)
-
-#         if pur_obj:
-#             instance.purpose = pur_obj
-
-#         # REMOVE FROM validated_data (CRITICAL FIX)
-#         validated_data.pop("purpose", None)
-
-
-#         for k,v in validated_data.items():
-
-#             if k in ["owner","user"]:
-#                 continue
-
-#             setattr(instance,k,v)
-
-#         instance.save()
-
-#         self.handle_related(instance)
-
-#         return instance
-
-
-#     def handle_related(self, instance):
-
-#         # =================================================
-#         # AMENITIES
-#         # =================================================
-
-#         # amenities = self.context.get(
-#         #     "amenities_list",
-#         #     None
-#         # )
-
-#         # # ONLY UPDATE IF USER SENT AMENITIES
-#         # if amenities is not None:
-
-#         #     amenity_objects = Amenities.objects.filter(
-#         #         id__in=amenities
-#         #     )
-
-#         #     instance.amenities.set(
-#         #         amenity_objects
-#         #     )
-
-#         request = self.context.get("request")
-
-#         # ONLY RUN IF FIELD EXISTS IN REQUEST
-#         if (
-#             request
-#             and hasattr(request, "data")
-#             and "amenities" in request.data
-#         ):
-
-#             amenities = self.context.get(
-#                 "amenities_list",
-#                 []
-#             )
-
-#             # REMOVE EMPTY VALUES
-#             amenities = [
-#                 a for a in amenities
-#                 if a not in ["", None]
-#             ]
-
-#             # KEEP OLD AMENITIES IF EMPTY VALUE SENT
-#             if amenities:
-
-#                 amenity_objects = Amenities.objects.filter(
-#                     id__in=amenities
-#                 )
-
-#                 instance.amenities.set(
-#                     amenity_objects
-#                 )
-
-#         # =================================================
-#         # SELLING POINTS
-#         # =================================================
-
-#         sp = self.context.get(
-#             "selling_points_list",
-#             None
-#         )
-
-#         if sp is not None:
-
-#             instance.selling_points = sp
-
-#             instance.save(
-#                 update_fields=[
-#                     "selling_points"
-#                 ]
-#             )
-
-#         # =================================================
-#         # LANDMARKS
-#         # =================================================
-
-#         lm = self.context.get(
-#             "land_mark_list",
-#             None
-#         )
-
-#         if lm is not None:
-
-#             instance.land_mark = lm
-
-#             instance.save(
-#                 update_fields=[
-#                     "land_mark"
-#                 ]
-#             )
-
-#         # =================================================
-#         # FEATURES
-#         # =================================================
-
-#         fv_list = self.context.get(
-#             "field_values",
-#             None
-#         )
-
-#         # fallback support
-#         if fv_list is None:
-
-#             fv_list = self.context.get(
-#                 "features_list",
-#                 None
-#             )
-
-#         # ONLY UPDATE IF FEATURES SENT
-#         if fv_list is not None:
-
-#             # remove old
-#             PropertyFeature.objects.filter(
-#                 property=instance
-#             ).delete()
-
-#             for fv in fv_list:
-
-#                 if not isinstance(fv, dict):
-#                     continue
-
-#                 field_name = str(
-#                     fv.get("name", "")
-#                 ).strip()
-
-#                 if not field_name:
-#                     continue
-
-#                 field = SubcategoryField.objects.filter(
-#                     subcategory=instance.subcategory,
-#                     field_name__iexact=field_name
-#                 ).first()
-
-#                 if not field:
-#                     continue
-
-#                 PropertyFeature.objects.create(
-
-#                     property=instance,
-
-#                     field=field,
-
-#                     value=json.dumps({
-
-#                         "option": fv.get(
-#                             "option"
-#                         ),
-
-#                         "value": fv.get(
-#                             "value"
-#                         ),
-
-#                         "icon": fv.get(
-#                             "icon"
-#                         )
-#                     })
-#                 )
-
-#     # =====================================================
-#     # OUTPUT
-#     # =====================================================
-
-#     def to_representation(self,instance):
-
-#         data=super().to_representation(
-#             instance
-#         )
-
-#         data["owner"]=(
-#             instance.owner
-#             if instance.owner
-#             else None
-#         )
-
-#         return data
-
-#     def get_amenities(self,obj):
-
-#         return [
-#             {
-#                 "id":a.id,
-#                 "name":a.name
-#             }
-#             for a in obj.amenities.all()
-#         ]
-
-#     def get_selling_points(self,obj):
-
-#         if isinstance(
-#             obj.selling_points,
-#             list
-#         ):
-#             return obj.selling_points
-
-#         return []
-
-#     def get_landmarks(self,obj):
-
-#         if isinstance(
-#             obj.land_mark,
-#             list
-#         ):
-#             return obj.land_mark
-
-#         return []
-
-#     def get_features(self, obj):
-
-#         data = []
-
-#         for f in obj.property_features.select_related("field"):
-
-#             try:
-#                 value = json.loads(f.value)
-
-#             except:
-#                 value = {
-#                     "value": f.value
-#                 }
-
-#             # =========================================
-#             # USE OPTION NAME IF EXISTS
-#             # =========================================
-
-#             feature_name = (
-#                 value.get("option")
-#                 if value.get("option")
-#                 else f.field.field_name
-#             )
-
-#             # =========================================
-#             # CLEAN VALUE
-#             # =========================================
-
-#             feature_value = value.get("value")
-
-#             if feature_value is None:
-#                 feature_value = ""
-
-#             data.append({
-
-#                 "name": feature_name,
-
-#                 "value": str(feature_value),
-
-#                 "icon": (
-#                     f.field.icon.url
-#                     if f.field.icon
-#                     else None
-#                 )
-#             })
-
-#         return data
-
-#     def get_images(self, obj):
-
-#         request = self.context.get("request")
-
-#         images = obj.images.all()
-
-#         if not images:
-#             return []
-
-#         if request:
-
-#             return [
-#                 request.build_absolute_uri(i.image.url)
-#                 for i in images
-#                 if i.image
-#             ]
-
-#         return [
-#             i.image.url
-#             for i in images
-#             if i.image
-#         ]
-
-#     # def get_images(self,obj):
-
-#     #     request=self.context.get(
-#     #         "request"
-#     #     )
-
-#     #     return [
-
-#     #         request.build_absolute_uri(
-#     #             i.image.url
-#     #         )
-
-#     #         if request else i.image.url
-
-#     #         for i in obj.images.all()
-
-#     #         if i.image
-#     #     ]
-
-#     def get_image(self,obj):
-
-#         if not obj.image:
-#             return None
-
-#         request=self.context.get(
-#             "request"
-#         )
-
-#         return (
-#             request.build_absolute_uri(
-#                 obj.image.url
-#             )
-#             if request
-#             else obj.image.url
-#         )
-
-
-import json
-
-from rest_framework import serializers
-
-from developer.models import (
-    Property,
-    PropertyImage,
-    PropertyFeature,
-    Category,
-    Subcategory,
-    Purpose,
-    Amenities,
-    SubcategoryField
-)
 
 
 class UserPropertySerializer(serializers.ModelSerializer):
@@ -4471,6 +5304,7 @@ class UserPropertySerializer(serializers.ModelSerializer):
         allow_blank=False
     )
 
+
     # =====================================================
     # OPTIONAL FIELDS
     # =====================================================
@@ -4503,12 +5337,12 @@ class UserPropertySerializer(serializers.ModelSerializer):
         blank=True,
         null=True
     )
-    district = models.CharField(
-        max_length=255,
-        blank=True,
-        null=True,
-        validators=[validate_safe_text]
-    )
+    # district = models.CharField(
+    #     max_length=255,
+    #     blank=True,
+    #     null=True,
+    #     validators=[validate_safe_text]
+    # )
 
     class Meta:
 
@@ -4595,6 +5429,10 @@ class UserPropertySerializer(serializers.ModelSerializer):
             "category",
             "subcategory",
             "purpose",
+            "city",
+            "district",
+            "state",
+            "label",
         ]
 
         for field in required_fields:
@@ -5369,6 +6207,49 @@ class UserPropertySerializer(serializers.ModelSerializer):
 
         return []
 
+    # def get_features(self, obj):
+
+    #     data = []
+
+    #     for f in obj.property_features.select_related("field"):
+
+    #         try:
+    #             value = json.loads(f.value)
+
+    #         except Exception:
+
+    #             value = {
+    #                 "value": f.value
+    #             }
+
+    #         feature_name = (
+    #             value.get("option")
+    #             if value.get("option")
+    #             else f.field.field_name
+    #         )
+
+    #         feature_value = value.get("value")
+
+    #         if feature_value is None:
+    #             feature_value = ""
+
+    #         data.append({
+
+    #             "name": feature_name,
+
+    #             "value": str(feature_value),
+
+    #             "icon": (
+    #                 f.field.icon.url
+    #                 if f.field.icon
+    #                 else None
+    #             )
+    #         })
+
+    #     return data
+
+    
+    
     def get_features(self, obj):
 
         data = []
@@ -5384,16 +6265,51 @@ class UserPropertySerializer(serializers.ModelSerializer):
                     "value": f.value
                 }
 
+            # =================================================
+            # FEATURE NAME
+            # =================================================
+
             feature_name = (
                 value.get("option")
                 if value.get("option")
                 else f.field.field_name
             )
 
+            # =================================================
+            # FEATURE VALUE
+            # =================================================
+
             feature_value = value.get("value")
 
             if feature_value is None:
                 feature_value = ""
+
+            # =================================================
+            # FEATURE ICON
+            # =================================================
+
+            icon_url = None
+
+            option_name = value.get("option")
+
+            if option_name:
+
+                option_obj = FieldOption.objects.filter(
+                    field=f.field,
+                    name__iexact=str(option_name).strip()
+                ).first()
+
+                if option_obj and option_obj.icon:
+
+                    icon_url = option_obj.icon.url
+
+            elif f.field.icon:
+
+                icon_url = f.field.icon.url
+
+            # =================================================
+            # OUTPUT
+            # =================================================
 
             data.append({
 
@@ -5401,14 +6317,14 @@ class UserPropertySerializer(serializers.ModelSerializer):
 
                 "value": str(feature_value),
 
-                "icon": (
-                    f.field.icon.url
-                    if f.field.icon
-                    else None
-                )
+                "icon": icon_url
             })
 
         return data
+
+
+
+
 
     def get_images(self, obj):
 

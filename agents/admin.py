@@ -3,11 +3,12 @@ from . models import *
 # Register your models here.
 
 
-admin.site.register(UserProfile)
+# admin.site.register(AgentUserProfile)
 
 admin.site.register(Inbox)
 
 admin.site.register(AgentProperty)
+
 admin.site.register(PendingAgentRegistration)
 
 admin.site.register(AgentPropertyFieldValue)

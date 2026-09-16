@@ -1,4 +1,17 @@
 from django import forms
+from .models import (
+    PendingAgentRegistration,
+    AgentPlan,
+)
+from agents.models import (
+    AgentProperty,
+    AgentPropertyImage,
+    AgentPropertyFieldValue,
+    AgentPropertySellingPoint,
+    AgentPropertyLandmark
+)
+from .models import BannerAd, SliderAd
+from .models import Blog
 
 class SuperuserLoginForm(forms.Form):
     username = forms.CharField(
@@ -14,11 +27,6 @@ class SuperuserLoginForm(forms.Form):
             'style': 'text-align: center;'
         })
     )
-
-
-from django import forms
-from .models import PendingAgentRegistration
-
 
 INPUT_STYLE = (
     "w-full h-14 "
@@ -53,36 +61,35 @@ SELECT_STYLE = (
     "focus:border-[#8bc83f]"
 )
 
-# SELECT_STYLE = (
-#     "w-full h-14 "
-#     "px-5 pr-12 "
-#     "rounded-2xl "
-#     "border border-gray-300 "
-#     "bg-white "
-#     "text-gray-800 "
-#     "text-base "
-#     "font-medium "
-#     "shadow-sm "
-#     "appearance-none "
-#     "cursor-pointer "
-#     "outline-none "
-#     "transition-all duration-200 "
-#     "hover:border-[#8bc83f] "
-#     "focus:bg-white "
-#     "focus:border-[#8bc83f] "
-#     "focus:ring-4 "
-#     "focus:ring-[#8bc83f]/20"
-# )
-
-
 class PendingAgentRegistrationForm(forms.ModelForm):
+
+    # --------------------------------
+    # PASSWORD
+    # --------------------------------
 
     password = forms.CharField(
         widget=forms.PasswordInput(
             attrs={
                 "class": INPUT_STYLE,
                 "placeholder": "Enter password",
-                "autocomplete": "new-password"
+                "autocomplete": "new-password",
+            }
+        )
+    )
+
+
+    # --------------------------------
+    # BASIC PLAN
+    # --------------------------------
+
+    basic_plan = forms.ModelChoiceField(
+        queryset=AgentPlan.objects.all().order_by("name"),
+        required=False,
+        empty_label="Select Basic Plan",
+        widget=forms.Select(
+            attrs={
+                "class": SELECT_STYLE,
+                "id": "id_basic_plan",
             }
         )
     )
@@ -91,7 +98,6 @@ class PendingAgentRegistrationForm(forms.ModelForm):
     class Meta:
 
         model = PendingAgentRegistration
-
 
         fields = [
             "full_name",
@@ -102,6 +108,7 @@ class PendingAgentRegistrationForm(forms.ModelForm):
             "pin_code",
             "address",
             "agent_type",
+            "basic_plan",
             "premium_plan",
             "elite_plan",
             "years_of_experience",
@@ -112,47 +119,70 @@ class PendingAgentRegistrationForm(forms.ModelForm):
 
         widgets = {
 
+            # --------------------------------
+            # FULL NAME
+            # --------------------------------
 
             "full_name": forms.TextInput(
                 attrs={
                     "class": INPUT_STYLE,
-                    "placeholder": "Enter full name"
+                    "placeholder": "Enter full name",
                 }
             ),
 
+
+            # --------------------------------
+            # EMAIL
+            # --------------------------------
 
             "email": forms.EmailInput(
                 attrs={
                     "class": INPUT_STYLE,
                     "placeholder": "Enter email address",
-                    "autocomplete": "off"
+                    "autocomplete": "off",
                 }
             ),
 
+
+            # --------------------------------
+            # PHONE
+            # --------------------------------
 
             "phone_number": forms.TextInput(
                 attrs={
                     "class": INPUT_STYLE,
-                    "placeholder": "Enter phone number"
+                    "placeholder": "Enter phone number",
                 }
             ),
 
+
+            # --------------------------------
+            # CITY
+            # --------------------------------
 
             "city": forms.TextInput(
                 attrs={
                     "class": INPUT_STYLE,
-                    "placeholder": "Enter city"
+                    "placeholder": "Enter city",
                 }
             ),
 
+
+            # --------------------------------
+            # PIN CODE
+            # --------------------------------
 
             "pin_code": forms.TextInput(
                 attrs={
                     "class": INPUT_STYLE,
-                    "placeholder": "Enter pin code"
+                    "placeholder": "Enter pin code",
                 }
             ),
 
+
+            # --------------------------------
+            # ADDRESS
+            # --------------------------------
 
             "address": forms.Textarea(
                 attrs={
@@ -170,75 +200,120 @@ class PendingAgentRegistrationForm(forms.ModelForm):
                         "focus:ring-[#8bc83f] "
                         "focus:border-[#8bc83f]",
                     "placeholder": "Enter complete address",
-                    "rows": 5
+                    "rows": 5,
                 }
             ),
 
+
+            # --------------------------------
+            # AGENT TYPE
+            # --------------------------------
 
             "agent_type": forms.Select(
                 attrs={
                     "class": SELECT_STYLE,
-                    "id": "id_agent_type"
+                    "id": "id_agent_type",
                 }
             ),
 
+
+            # --------------------------------
+            # PREMIUM PLAN
+            # --------------------------------
 
             "premium_plan": forms.Select(
                 attrs={
                     "class": SELECT_STYLE,
-                    "id": "id_premium_plan"
+                    "id": "id_premium_plan",
                 }
             ),
 
+
+            # --------------------------------
+            # ELITE PLAN
+            # --------------------------------
 
             "elite_plan": forms.Select(
                 attrs={
                     "class": SELECT_STYLE,
-                    "id": "id_elite_plan"
+                    "id": "id_elite_plan",
                 }
             ),
 
+
+            # --------------------------------
+            # EXPERIENCE
+            # --------------------------------
 
             "years_of_experience": forms.NumberInput(
                 attrs={
                     "class": INPUT_STYLE,
-                    "placeholder": "Years of experience"
+                    "placeholder": "Years of experience",
                 }
             ),
 
+
+            # --------------------------------
+            # DEALS CLOSED
+            # --------------------------------
 
             "deals_closed": forms.NumberInput(
                 attrs={
                     "class": INPUT_STYLE,
-                    "placeholder": "Number of deals"
+                    "placeholder": "Number of deals",
                 }
             ),
 
+
+            # --------------------------------
+            # STATUS
+            # --------------------------------
 
             "status": forms.Select(
                 attrs={
-                    "class": SELECT_STYLE
+                    "class": SELECT_STYLE,
                 }
             ),
-
         }
 
 
+    # =====================================
+    # VALIDATION
+    # =====================================
 
     def clean(self):
 
         cleaned_data = super().clean()
 
         agent_type = cleaned_data.get("agent_type")
+
+        basic = cleaned_data.get("basic_plan")
         premium = cleaned_data.get("premium_plan")
         elite = cleaned_data.get("elite_plan")
 
 
+        # --------------------------------
+        # BASIC
+        # --------------------------------
+
         if agent_type == "basic":
+
+            if not basic:
+
+                self.add_error(
+                    "basic_plan",
+                    "Please select a Basic Plan."
+                )
+
+            # Basic should not have other plans
 
             cleaned_data["premium_plan"] = None
             cleaned_data["elite_plan"] = None
 
+
+        # --------------------------------
+        # PREMIUM
+        # --------------------------------
 
         elif agent_type == "premium":
 
@@ -249,9 +324,15 @@ class PendingAgentRegistrationForm(forms.ModelForm):
                     "Please select a Premium Plan."
                 )
 
+            # Premium does not use Basic or Elite
 
+            cleaned_data["basic_plan"] = None
             cleaned_data["elite_plan"] = None
 
+
+        # --------------------------------
+        # ELITE
+        # --------------------------------
 
         elif agent_type == "elite":
 
@@ -262,17 +343,13 @@ class PendingAgentRegistrationForm(forms.ModelForm):
                     "Please select an Elite Plan."
                 )
 
+            # Elite does not use Basic or Premium
 
+            cleaned_data["basic_plan"] = None
             cleaned_data["premium_plan"] = None
 
 
         return cleaned_data
-
-
-
-from django import forms
-from .models import Blog
-
 
 INPUT_STYLE = (
     "w-full h-14 px-5 rounded-2xl "
@@ -366,11 +443,6 @@ class BlogForm(forms.ModelForm):
 
         }
 
-
-from django import forms
-from .models import BannerAd, SliderAd
-
-
 class BannerAdForm(forms.ModelForm):
     class Meta:
         model = BannerAd
@@ -383,31 +455,42 @@ class SliderAdForm(forms.ModelForm):
         fields = ["image", "is_active"]
 
 
-from django import forms
 
-from agents.models import (
-    AgentProperty,
-    AgentPropertyImage,
-    AgentPropertyFieldValue,
-    AgentPropertySellingPoint,
-    AgentPropertyLandmark
-)
-
-
+#new code added by mehreena
 class AgentPropertyForm(forms.ModelForm):
 
     class Meta:
         model = AgentProperty
 
-        exclude = (
-            "id",
-            "agent",
-            "property_hash_id",
-            "subscription",
-            "paid",
-            "created_at",
-            "is_featured",
-        )
+        fields = [
+            "category",
+            "subcategory",
+            "purpose",
+
+            "label",
+            "land_area",
+            "sq_ft",
+
+            "price",
+            "perprice",
+            "deposit",
+
+            "description",
+
+            "owner",
+            "phone",
+            "whatsapp",
+
+            "city",
+            "district",
+            "state",
+            "taluk",
+            "village",
+            "pincode",
+
+            "location",
+            "notes",
+        ]
 
         widgets = {
 
@@ -427,11 +510,9 @@ class AgentPropertyForm(forms.ModelForm):
                 attrs={
                     "rows": 2
                 }
-            )
+            ),
 
         }
-        
-
 
 class AgentPropertyImageForm(forms.ModelForm):
 

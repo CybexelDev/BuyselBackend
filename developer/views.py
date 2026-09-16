@@ -49,7 +49,6 @@ from developer.models import (
         SubcategoryField,
     )
 from .forms import AgentPropertyForm
-    # Update this import according to your project structure
 from developer.models import (
         ExpiredProperty,
         Property,
@@ -314,12 +313,6 @@ def create_admin_notification(title, message, notification_type="info"):
         notification_type=notification_type,
     )
 
-def base(request):
-    agenthouse = agenthouse.objects.all()
-
-    context = {"agenthouse": agenthouse}
-    return render(request, "base2.html", context)
-
 def superuser_login_view(request):
     User = get_user_model()
     form = SuperuserLoginForm(request.POST or None)
@@ -379,17 +372,6 @@ def Dashboard(request):
     # ALL PROPERTIES IN THE SYSTEM
     total_all = total_active + total_expired + total_agent_active + total_agent_expired
 
-    # active_by_purpose = (
-    #     Property.objects
-    #     .values("purpose__name")
-    #     .annotate(total=Count("id"))
-    #     .order_by("purpose__name")
-    # )
-    # ===========================
-    # ACTIVE PROPERTY COUNTS BY PURPOSE
-    # NORMAL + AGENT
-    # ===========================
-
     active_by_purpose_map = defaultdict(int)
 
     # Normal active properties
@@ -445,72 +427,6 @@ def Dashboard(request):
                 "purpose_map": purpose_map,
             }
         )
-
-    # # ==========================
-    # # NOTIFICATIONS
-    # # ==========================
-
-    # advertisement_notifications = (
-    #     AdvertisementRequestNotification.objects
-    #     .select_related(
-    #         "agent",
-    #         "advertisement_package"
-    #     )
-    #     .order_by("-created_at")
-    # )
-
-    # reel_notifications = (
-    #     ReelPurchaseNotification.objects
-    #     .select_related(
-    #         "agent",
-    #         "payment",
-    #         "payment__reel_package"
-    #     )
-    #     .order_by("-created_at")
-    # )
-
-    # notifications = []
-
-    # # Advertisement notifications
-    # for item in advertisement_notifications:
-
-    #     notifications.append(
-    #         {
-    #             "id": str(item.id),
-    #             "type": "advertisement",
-    #             "title": item.title,
-    #             "message": item.message,
-    #             "is_read": item.is_read,
-    #             "created_at": item.created_at,
-    #         }
-    #     )
-
-    # # Reel notifications
-    # for item in reel_notifications:
-
-    #     notifications.append(
-    #         {
-    #             "id": str(item.id),
-    #             "type": "reel",
-    #             "title": item.title,
-    #             "message": item.message,
-    #             "is_read": item.is_read,
-    #             "created_at": item.created_at,
-    #         }
-    #     )
-
-    # # Latest notification first
-    # notifications.sort(
-    #     key=lambda x: x["created_at"],
-    #     reverse=True
-    # )
-
-    # # Unread notification count
-    # unread_count = sum(
-    #     1
-    #     for notification in notifications
-    #     if not notification["is_read"]
-    # )
 
     # ==========================
     # NOTIFICATIONS
@@ -1896,220 +1812,6 @@ def delete_property(request, property_id):
     return redirect("add_property")
 
 
-# @never_cache
-# @user_passes_test(
-#     superuser_required,
-#     login_url='superuser_login_view'
-# )
-# @require_POST
-# def edit_property(request, property_id):
-
-#     prop = get_object_or_404(
-#         Property,
-#         id=property_id
-#     )
-
-#     # BASIC FIELDS
-
-#     prop.label = request.POST.get("label")
-#     prop.land_area = request.POST.get("land_area")
-#     prop.sq_ft = request.POST.get("sq_ft")
-
-#     prop.description = request.POST.get(
-#         "description"
-#     )
-
-#     prop.message = request.POST.get(
-#         "message"
-#     )
-
-#     prop.perprice = request.POST.get(
-#         "perprice"
-#     )
-
-#     prop.price = request.POST.get(
-#         "price"
-#     )
-
-#     prop.whatsapp = request.POST.get(
-#         "whatsapp"
-#     )
-
-#     prop.phone = request.POST.get(
-#         "phone"
-#     )
-
-#     prop.location = request.POST.get(
-#         "location"
-#     )
-
-#     prop.city = request.POST.get(
-#         "city"
-#     )
-
-#     prop.district = request.POST.get(
-#         "district"
-#     )
-
-#     prop.village = request.POST.get(
-#         "village"
-#     )
-
-#     prop.taluk = request.POST.get(
-#         "taluk"
-#     )
-
-#     prop.state = request.POST.get(
-#         "state"
-#     )
-
-#     prop.pincode = request.POST.get(
-#         "pincode"
-#     )
-
-#     prop.added_by = request.POST.get(
-#         "added_by"
-#     )
-
-#     prop.market_staff = request.POST.get(
-#         "market_staff"
-#     )
-
-#     # PAID
-
-#     prop.paid = request.POST.get(
-#         "paid",
-#         "no"
-#     )
-
-#     # CATEGORY
-
-#     category_id = request.POST.get(
-#         "category"
-#     )
-
-#     if category_id:
-
-#         prop.category = get_object_or_404(
-#             Category,
-#             id=category_id
-#         )
-
-#     # PURPOSE
-
-#     purpose_id = request.POST.get(
-#         "purpose"
-#     )
-
-#     if purpose_id:
-
-#         prop.purpose = get_object_or_404(
-#             Purpose,
-#             id=purpose_id
-#         )
-
-#     # OWNER
-
-#     owner_id = request.POST.get(
-#         "owner"
-#     )
-
-#     if owner_id:
-
-#         prop.owner = get_object_or_404(
-#             UserCreate,
-#             id=owner_id
-#         )
-
-#     # DURATION
-
-#     duration_days = request.POST.get(
-#         "duration_days"
-#     )
-
-#     if duration_days:
-
-#         try:
-#             prop.duration_days = int(
-#                 duration_days
-#             )
-
-#         except ValueError:
-#             pass
-
-#     # SCREENSHOT
-
-#     screenshot_file = request.FILES.get(
-#         "manual_screenshot"
-#     )
-
-#     if screenshot_file:
-
-#         prop.screenshot = screenshot_file
-
-#     # SAVE
-
-#     prop.save()
-
-#     # AMENITIES
-
-#     amenity_ids = request.POST.getlist(
-#         "amenities"
-#     )
-
-#     if amenity_ids:
-
-#         amenities_qs = Amenities.objects.filter(
-#             id__in=amenity_ids
-#         )
-
-#         prop.amenities.set(
-#             amenities_qs
-#         )
-
-#     # ADD NEW IMAGES
-
-#     new_images = request.FILES.getlist(
-#         "images"
-#     )
-
-#     for img in new_images:
-
-#         PropertyImage.objects.create(
-#             property=prop,
-#             image=img
-#         )
-
-#     # DELETE IMAGES
-
-#     delete_images = request.POST.getlist(
-#         "delete_images"
-#     )
-
-#     for img_id in delete_images:
-
-#         PropertyImage.objects.filter(
-#             id=img_id,
-#             property=prop
-#         ).delete()
-
-#     messages.success(
-#         request,
-#         "Property updated successfully."
-#     )
-
-#     return redirect("add_property")
-
-
-# @never_cache
-# @user_passes_test(superuser_required, login_url='superuser_login_view')
-# @require_POST
-# def delete_property(request, pk):
-#     prop = get_object_or_404(Property, pk=pk)
-#     prop.delete()
-#     return redirect('add_property')
-
-
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 @require_POST
@@ -2226,65 +1928,6 @@ def agents_login(request):
 
             return redirect("agents_login")
     return render(request, "agents/add_agent.html")
-
-
-@never_cache
-@user_passes_test(superuser_required, login_url="superuser_login_view")
-def admin_premiumagents(request):
-
-    search_query = request.GET.get("search", "").strip()
-    from_date = request.GET.get("from_date", "")
-    to_date = request.GET.get("to_date", "")
-
-    all_premium = Premium.objects.all()
-
-    # -------------------------
-    # 🔍 TEXT SEARCH
-    # -------------------------
-    if search_query:
-        all_premium = all_premium.annotate(
-            created_str=Cast("created_at", output_field=CharField()),
-            duration_str=Cast("duration_days", output_field=CharField()),
-        ).filter(
-            Q(name__icontains=search_query)
-            | Q(speacialised__icontains=search_query)
-            | Q(phone__icontains=search_query)
-            | Q(whatsapp__icontains=search_query)
-            | Q(email__icontains=search_query)
-            | Q(location__icontains=search_query)
-            | Q(city__icontains=search_query)
-            | Q(pincode__icontains=search_query)
-            | Q(username__icontains=search_query)
-            | Q(created_str__icontains=search_query)
-            | Q(duration_str__icontains=search_query)
-        )
-
-    # -------------------------
-    # 📅 DATE RANGE FILTER
-    # -------------------------
-    if from_date:
-        all_premium = all_premium.filter(created_at__date__gte=from_date)
-
-    if to_date:
-        all_premium = all_premium.filter(created_at__date__lte=to_date)
-
-    # Sort latest first
-    all_premium = all_premium.order_by("-created_at")
-
-    # Pagination
-    paginator = Paginator(all_premium, 20)
-    premium = paginator.get_page(request.GET.get("page", 1))
-
-    return render(
-        request,
-        "agents/premium_agents.html",
-        {
-            "premium": premium,
-            "search_query": search_query,
-            "from_date": from_date,
-            "to_date": to_date,
-        },
-    )
 
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
@@ -2558,33 +2201,6 @@ def delete_agent(request, pk):
     messages.success(request, "🗑️ Agent deleted successfully!")
     return redirect("admin_agents")
 
-@never_cache
-@user_passes_test(superuser_required, login_url="superuser_login_view")
-def edit_premium(request, pk):
-    premium = get_object_or_404(Premium, pk=pk)
-
-    if request.method == "POST":
-        premium.name = request.POST.get("name", premium.name)
-        premium.speacialised = request.POST.get("speacialised", premium.speacialised)
-        premium.phone = request.POST.get("phone", premium.phone)
-        premium.whatsapp = request.POST.get("whatsapp", premium.whatsapp)
-        premium.email = request.POST.get("email", premium.email)
-        premium.location = request.POST.get("location", premium.location)
-        premium.city = request.POST.get("city", premium.city)
-
-        # 🔥 Convert to int to avoid TypeError
-        premium.duration_days = int(
-            request.POST.get("duration_days") or premium.duration_days
-        )
-
-        if "image" in request.FILES:
-            premium.image = request.FILES["image"]
-
-        premium.save()  # triggers auto-move to ExpiredPremium if duration <= 0
-
-        return redirect("admin_premiumagents")
-
-    return render(request, "admin_premiumagents.html", {"premium": premium})
 
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
@@ -2713,50 +2329,6 @@ def delete_agent_reg(request, pk):
     agent.delete()
     messages.success(request, "🗑️ Agent deleted successfully!")
     return redirect("agent_reg")
-
-@never_cache
-@user_passes_test(superuser_required, login_url="superuser_login_view")
-def admin_property_list(request):
-    search_query = request.GET.get("search", "")
-    from_date = request.GET.get("from_date", "")
-    to_date = request.GET.get("to_date", "")
-
-    properties = Propertylist.objects.all().order_by("-created_at")
-
-    # Search filter
-    if search_query:
-        properties = properties.filter(
-            Q(categories__icontains=search_query)
-            | Q(purposes__icontains=search_query)
-            | Q(label__icontains=search_query)
-            | Q(owner__icontains=search_query)
-            | Q(locations__icontains=search_query)
-            | Q(city__icontains=search_query)
-            | Q(District__icontains=search_query)
-        )
-
-    # Date filter
-    if from_date:
-        properties = properties.filter(created_at__date__gte=from_date)
-
-    if to_date:
-        properties = properties.filter(created_at__date__lte=to_date)
-
-    # Pagination
-    paginator = Paginator(properties, 20)
-    page_number = request.GET.get("page")
-    page_obj = paginator.get_page(page_number)
-
-    return render(
-        request,
-        "properties/property_registerations.html",
-        {
-            "page_obj": page_obj,
-            "search_query": search_query,
-            "from_date": from_date,
-            "to_date": to_date,
-        },
-    )
 
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")

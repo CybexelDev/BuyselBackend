@@ -580,8 +580,7 @@
                         <div>
                             <p class="text-sm font-semibold text-[#24351e]">Registered Agents</p>
                             <p class="mt-0.5 text-xs font-normal text-slate-400">
-                                <span id="visibleAgentCount">{{ premium_report|length }}</span> visible record{{
-                                premium_report|length|pluralize }}
+                                <span id="visibleAgentCount">{{ premium_report|length }}</span> visible record
                             </p>
                         </div>
                     </div>
@@ -890,8 +889,6 @@
                                     window.location.href = "{% url 'add_property' %}?search=" + q;
                                 } else if (prop.type === 'expired') {
                                     window.location.href = "{% url 'expired_property' %}?search=" + q;
-                                } else if (prop.type === 'premium') {
-                                    window.location.href = "{% url 'admin_premiumagents' %}?search=" + q;
                                 } else if (prop.type === 'expired_premium') {
                                     window.location.href = "{% url 'expired_agent' %}?search=" + q;
                                 } else if (prop.type === 'agents') {

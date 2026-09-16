@@ -2,7 +2,6 @@ from django.urls import path, re_path
 from . import views
 
 urlpatterns = [
-    path("base2", views.base, name="base2"),
     path("superuser-login/", views.superuser_login_view, name="superuser_login_view"),
     path("logout/", views.superuser_logout_view, name="superuser_logout"),
     path("logout/", views.superuser_logout_view, name="logout"),
@@ -98,8 +97,6 @@ urlpatterns = [
         name="expired_agents_dashboard",
     ),
     path("agents_login", views.agents_login, name="agents_login"),
-    path("admin_premiumagents", views.admin_premiumagents, name="admin_premiumagents"),
-    path("admin_premium/<int:pk>/", views.edit_premium, name="edit_premium"),
     path("admin_premium/delete/<int:pk>/", views.delete_premium, name="delete_premium"),
     path("admin_agents", views.admin_agents, name="admin_agents"),
     path("admin_agents/add/", views.add_admin_agent, name="add_admin_agent"),
@@ -172,7 +169,6 @@ urlpatterns = [
         views.delete_agent_reg,
         name="delete_agent_reg",
     ),
-    path("property_list", views.admin_property_list, name="admin_property_list"),
     path(
         "property_list/delete/<int:pk>/",
         views.delete_property_list,

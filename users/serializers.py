@@ -597,11 +597,25 @@ class UserLoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField()
 
+    def validate_email(self, value):
 
+        value = value.strip().lower()
 
+        if not value:
+            raise serializers.ValidationError(
+                "Email is required."
+            )
 
+        return value
 
+    def validate_password(self, value):
 
+        if not value.strip():
+            raise serializers.ValidationError(
+                "Password is required."
+            )
+
+        return value
 
 
 class AgentNotificationSerializer(serializers.ModelSerializer):
@@ -610,6 +624,108 @@ class AgentNotificationSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+
+
+# class UserProfileSerializer(
+#     serializers.ModelSerializer
+# ):
+
+#     email = serializers.CharField(
+#         source="user.email",
+#         read_only=True
+#     )
+
+#     mobile = serializers.CharField(
+#         source="user.mobile",
+#         required=False
+#     )
+
+#     name = serializers.CharField(
+#         source="user.name",
+#         read_only=True
+#     )
+
+#     city = serializers.CharField(
+#         required=False,
+#         allow_blank=True,
+#         allow_null=True
+#     )
+
+#     is_verified = serializers.BooleanField(
+#         source="user.is_verified",
+#         read_only=True
+#     )
+
+#     created_at = serializers.DateTimeField(
+#         format="%d-%m-%Y",
+#         read_only=True
+#     )
+
+#     image = serializers.SerializerMethodField()
+
+
+#     class Meta:
+#         model = UserProfile
+
+#         fields = [
+#             "custom_user_id",
+#             "email",
+#             "name",
+#             "username",
+#             "full_name",
+#             "mobile",
+#             "alternate_mobile",
+#             "city",
+#             "image",
+#             "auth_provider",
+#             "is_active",
+#             "is_verified",
+#             "created_at",
+#         ]
+
+
+#         read_only_fields = [
+#             "custom_user_id",
+#             "email",
+#             "name",
+#             "username",
+#             "auth_provider",
+#             "is_active",
+#             "created_at",
+#             "is_verified",
+#         ]
+
+
+#     def to_representation(
+#         self,
+#         instance
+#     ):
+#         data = super().to_representation(
+#             instance
+#         )
+
+#         data["city"] = (
+#             instance.city or ""
+#         )
+
+#         return data
+
+
+#     def get_image(
+#         self,
+#         obj
+#     ):
+#         if obj.image:
+#             try:
+#                 url,_ = cloudinary_url(
+#                     obj.image.public_id,
+#                     secure=True
+#                 )
+#                 return url
+#             except:
+#                 return None
+
+#         return None
 
 
 class UserProfileSerializer(
@@ -649,8 +765,8 @@ class UserProfileSerializer(
 
     image = serializers.SerializerMethodField()
 
-
     class Meta:
+
         model = UserProfile
 
         fields = [
@@ -669,7 +785,6 @@ class UserProfileSerializer(
             "created_at",
         ]
 
-
         read_only_fields = [
             "custom_user_id",
             "email",
@@ -681,11 +796,133 @@ class UserProfileSerializer(
             "is_verified",
         ]
 
+    def validate_full_name(self, value):
+
+        value = value.strip()
+
+        if not value:
+            raise serializers.ValidationError(
+                "Full name is required."
+            )
+
+        if len(value) > 150:
+            raise serializers.ValidationError(
+                "Full name cannot exceed 150 characters."
+            )
+
+        return value
+
+    # =========================================================
+    # MOBILE VALIDATION
+    # =========================================================
+
+    def validate_mobile(self, value):
+
+        if value is None:
+            return value
+
+        value = value.strip()
+
+        if value == "":
+            return ""
+
+        if not value.isdigit():
+            raise serializers.ValidationError(
+                "Mobile number must contain only numbers."
+            )
+
+        if len(value) != 10:
+            raise serializers.ValidationError(
+                "Mobile number must be exactly 10 digits."
+            )
+
+        return value
+
+    # =========================================================
+    # ALTERNATE MOBILE VALIDATION
+    # =========================================================
+
+    def validate_alternate_mobile(self, value):
+
+        if value is None:
+            return value
+
+        value = value.strip()
+
+        if value == "":
+            return ""
+
+        if not value.isdigit():
+            raise serializers.ValidationError(
+                "Alternate mobile number must contain only numbers."
+            )
+
+        if len(value) != 10:
+            raise serializers.ValidationError(
+                "Alternate mobile number must be exactly 10 digits."
+            )
+
+        return value
+
+    # =========================================================
+    # CITY VALIDATION
+    # =========================================================
+
+    def validate_city(self, value):
+
+        if value is None:
+            return None
+
+        value = value.strip()
+
+        if value == "":
+            return ""
+
+        if len(value) > 100:
+            raise serializers.ValidationError(
+                "City cannot exceed 100 characters."
+            )
+
+        return value
+
+    def update(
+        self,
+        instance,
+        validated_data
+    ):
+
+        user_data = validated_data.pop(
+            "user",
+            {}
+        )
+
+        # Update UserProfile fields
+        for attr, value in validated_data.items():
+
+            setattr(
+                instance,
+                attr,
+                value
+            )
+
+        instance.save()
+
+        # Update UserCreate fields
+        user = instance.user
+
+        if "mobile" in user_data:
+
+            user.mobile = user_data["mobile"]
+
+        user.save()
+
+        return instance
 
     def to_representation(
         self,
         instance
     ):
+
         data = super().to_representation(
             instance
         )
@@ -696,19 +933,24 @@ class UserProfileSerializer(
 
         return data
 
-
     def get_image(
         self,
         obj
     ):
+
         if obj.image:
+
             try:
-                url,_ = cloudinary_url(
+
+                url, _ = cloudinary_url(
                     obj.image.public_id,
                     secure=True
                 )
+
                 return url
-            except:
+
+            except Exception:
+
                 return None
 
         return None

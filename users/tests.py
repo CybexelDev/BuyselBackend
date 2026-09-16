@@ -2001,143 +2001,223 @@ class VerifyForgotOTPSerializerTest(TestCase):
         print("Valid:", serializer.is_valid())
         print("Errors:", serializer.errors)
 
-
-from django.test import TestCase
-from agents.serializers import ChangePasswordSerializer
+from rest_framework.test import APIClient
 
 
-class ChangePasswordSerializerTest(TestCase):
+class ChangePasswordAPITest(TestCase):
 
-    def test_valid_passwords(self):
+    def setUp(self):
+        self.client = APIClient()
+        self.url = "/api/agent/change_password/"
+
+    def test_change_password(self):
+
         data = {
+            "current_password": "oldpass123",
             "new_password": "newpass123",
             "confirm_password": "newpass123"
         }
 
-        serializer = ChangePasswordSerializer(data=data)
+        response = self.client.post(
+            self.url,
+            data,
+            format="json"
+        )
+
+        print("\n==============================")
+        print("CHANGE PASSWORD API")
+        print("==============================")
+        print("POST URL:", self.url)
+        print("Input:", data)
+        print("Status Code:", response.status_code)
+
+        if hasattr(response, "data"):
+            print("Response:", response.data)
+        else:
+            print("Response:", response.content.decode())
+
+        self.assertEqual(response.status_code, 401)
+
+
+from django.test import TestCase
+from users.serializers import UserLoginSerializer
+
+
+class UserLoginSerializerTest(TestCase):
+
+    def test_valid_login_input(self):
+
+        data = {
+            "email": "test@example.com",
+            "password": "password123"
+        }
+
+        serializer = UserLoginSerializer(data=data)
 
         self.assertTrue(serializer.is_valid())
 
         print("\n==============================")
-        print("VALID PASSWORDS")
+        print("VALID LOGIN INPUT")
         print("==============================")
         print("Input:", data)
         print("Valid:", serializer.is_valid())
         print("Validated Data:", serializer.validated_data)
         print("Errors:", serializer.errors)
 
-    def test_passwords_do_not_match(self):
+    def test_invalid_email(self):
+
         data = {
-            "new_password": "newpass123",
-            "confirm_password": "different123"
+            "email": "invalid-email",
+            "password": "password123"
         }
 
-        serializer = ChangePasswordSerializer(data=data)
+        serializer = UserLoginSerializer(data=data)
 
         self.assertFalse(serializer.is_valid())
 
         print("\n==============================")
-        print("PASSWORDS DO NOT MATCH")
+        print("INVALID EMAIL")
         print("==============================")
         print("Input:", data)
         print("Valid:", serializer.is_valid())
         print("Errors:", serializer.errors)
 
-    def test_missing_new_password(self):
+    def test_missing_email(self):
+
         data = {
-            "confirm_password": "newpass123"
+            "password": "password123"
         }
 
-        serializer = ChangePasswordSerializer(data=data)
+        serializer = UserLoginSerializer(data=data)
 
         self.assertFalse(serializer.is_valid())
 
         print("\n==============================")
-        print("MISSING NEW PASSWORD")
+        print("MISSING EMAIL")
         print("==============================")
         print("Input:", data)
         print("Valid:", serializer.is_valid())
         print("Errors:", serializer.errors)
 
-    def test_missing_confirm_password(self):
+    def test_empty_email(self):
+
         data = {
-            "new_password": "newpass123"
+            "email": "",
+            "password": "password123"
         }
 
-        serializer = ChangePasswordSerializer(data=data)
+        serializer = UserLoginSerializer(data=data)
 
         self.assertFalse(serializer.is_valid())
 
         print("\n==============================")
-        print("MISSING CONFIRM PASSWORD")
+        print("EMPTY EMAIL")
         print("==============================")
         print("Input:", data)
         print("Valid:", serializer.is_valid())
         print("Errors:", serializer.errors)
 
-    def test_empty_new_password(self):
+    def test_missing_password(self):
+
         data = {
-            "new_password": "",
-            "confirm_password": "newpass123"
+            "email": "test@example.com"
         }
 
-        serializer = ChangePasswordSerializer(data=data)
+        serializer = UserLoginSerializer(data=data)
 
         self.assertFalse(serializer.is_valid())
 
         print("\n==============================")
-        print("EMPTY NEW PASSWORD")
+        print("MISSING PASSWORD")
         print("==============================")
         print("Input:", data)
         print("Valid:", serializer.is_valid())
         print("Errors:", serializer.errors)
 
-    def test_empty_confirm_password(self):
+    def test_empty_password(self):
+
         data = {
-            "new_password": "newpass123",
-            "confirm_password": ""
+            "email": "test@example.com",
+            "password": ""
         }
 
-        serializer = ChangePasswordSerializer(data=data)
+        serializer = UserLoginSerializer(data=data)
 
         self.assertFalse(serializer.is_valid())
 
         print("\n==============================")
-        print("EMPTY CONFIRM PASSWORD")
+        print("EMPTY PASSWORD")
         print("==============================")
         print("Input:", data)
         print("Valid:", serializer.is_valid())
         print("Errors:", serializer.errors)
 
-    def test_new_password_less_than_6_characters(self):
+    def test_password_only_spaces(self):
+
         data = {
-            "new_password": "12345",
-            "confirm_password": "12345"
+            "email": "test@example.com",
+            "password": "      "
         }
 
-        serializer = ChangePasswordSerializer(data=data)
+        serializer = UserLoginSerializer(data=data)
 
         self.assertFalse(serializer.is_valid())
 
         print("\n==============================")
-        print("NEW PASSWORD LESS THAN 6")
+        print("PASSWORD ONLY SPACES")
         print("==============================")
         print("Input:", data)
         print("Valid:", serializer.is_valid())
         print("Errors:", serializer.errors)
 
-    def test_confirm_password_less_than_6_characters(self):
+    def test_uppercase_email(self):
+
         data = {
-            "new_password": "123456",
-            "confirm_password": "12345"
+            "email": "TEST@EXAMPLE.COM",
+            "password": "password123"
         }
 
-        serializer = ChangePasswordSerializer(data=data)
+        serializer = UserLoginSerializer(data=data)
+
+        self.assertTrue(serializer.is_valid())
+
+        print("\n==============================")
+        print("UPPERCASE EMAIL")
+        print("==============================")
+        print("Input:", data)
+        print("Valid:", serializer.is_valid())
+        print("Validated Data:", serializer.validated_data)
+        print("Errors:", serializer.errors)
+
+    def test_email_with_spaces(self):
+
+        data = {
+            "email": "  test@example.com  ",
+            "password": "password123"
+        }
+
+        serializer = UserLoginSerializer(data=data)
+
+        self.assertTrue(serializer.is_valid())
+
+        print("\n==============================")
+        print("EMAIL WITH SPACES")
+        print("==============================")
+        print("Input:", data)
+        print("Valid:", serializer.is_valid())
+        print("Validated Data:", serializer.validated_data)
+        print("Errors:", serializer.errors)
+
+    def test_both_fields_missing(self):
+
+        data = {}
+
+        serializer = UserLoginSerializer(data=data)
 
         self.assertFalse(serializer.is_valid())
 
         print("\n==============================")
-        print("CONFIRM PASSWORD LESS THAN 6")
+        print("BOTH FIELDS MISSING")
         print("==============================")
         print("Input:", data)
         print("Valid:", serializer.is_valid())

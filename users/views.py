@@ -1848,10 +1848,8 @@ class VerifyOTPAPI(APIView):
                     "user": {
                         "id":
                         uuid.uuid4().hex[:10],
-
                         "name":
                         user.name,
-
                         "email":
                         user.email,
 

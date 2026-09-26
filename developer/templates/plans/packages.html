@@ -264,8 +264,26 @@
                     >
                         <i class="fa-regular fa-eye"></i>
                     </button>
-
+<!-- 
                     <button
+                        type="button"
+                        onclick="editReel(
+                            '{{ reel.id }}',
+                            '{{ reel.name|escapejs }}',
+                            '{{ reel.reel_type|escapejs }}',
+                            '{{ reel.price_per_day|escapejs }}',
+                            '{{ reel.duration|escapejs }}',
+                            '{{ reel.edited_video|escapejs }}',
+                            '{{ reel.reel_format|escapejs }}',
+                            '{{ reel.description|default:""|escapejs }}'
+                        )"
+                        class="package-action-btn package-edit-btn"
+                        title="Edit reel package"
+                    >
+                        <i class="fa-solid fa-pen-to-square"></i>
+                    </button> -->
+
+                    <!-- <button
                         type="button"
                         onclick="editReel(
                 '{{reel.id}}',
@@ -281,7 +299,22 @@
                         title="Edit reel package"
                     >
                         <i class="fa-solid fa-pen-to-square"></i>
-                    </button>
+                    </button> -->
+                    <button
+    type="button"
+    class="package-action-btn package-edit-btn js-edit-reel"
+    title="Edit reel package"
+    data-id="{{ reel.id }}"
+    data-name="{{ reel.name }}"
+    data-type="{{ reel.reel_type }}"
+    data-price="{{ reel.price_per_day }}"
+    data-duration="{{ reel.duration }}"
+    data-edited="{{ reel.edited_video }}"
+    data-format="{{ reel.reel_format }}"
+    data-description="{{ reel.description|default:'' }}"
+>
+    <i class="fa-solid fa-pen-to-square"></i>
+</button>
 
                     <button
                         type="button"
@@ -303,6 +336,29 @@
     </section>
 
 </div>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    document.querySelectorAll(".js-edit-reel").forEach(function (button) {
+
+        button.addEventListener("click", function () {
+
+            editReel(
+                button.dataset.id,
+                button.dataset.name,
+                button.dataset.type,
+                button.dataset.price,
+                button.dataset.duration,
+                button.dataset.edited,
+                button.dataset.format,
+                button.dataset.description
+            );
+
+        });
+
+    });
+
+});
 
 <!-- ================= PACKAGE MODAL ================= -->
 <div id="modal" class="package-modal hidden">
@@ -1718,6 +1774,29 @@ document.getElementById("modal").addEventListener("click", function (event) {
                     );
                 });
             });
+
+        // document
+        // .querySelectorAll(".package-delete-btn")
+        // .forEach(function (button) {
+
+        //     if (button.dataset.packageToastBound === "true") {
+        //         return;
+        //     }
+
+        //     button.dataset.packageToastBound = "true";
+
+        //     button.addEventListener("click", function (event) {
+        //         if (event.defaultPrevented) return;
+
+        //         const label = button.dataset.deleteLabel || "package";
+
+        //         showPackageToast(
+        //             `Deleting ${label}...`,
+        //             "delete",
+        //             2200
+        //         );
+        //     });
+        // });
     });
 })();
 </script>

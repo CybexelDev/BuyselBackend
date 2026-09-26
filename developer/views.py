@@ -117,12 +117,12 @@ def superuser_login_view(request):
     if request.method == "POST":
         if (
             holder
-            and holder.rate_limit >= 5
-            and timezone.now() < holder.last_failed_login + timedelta(hours=2)
+            and holder.rate_limit >= 10
+            and timezone.now() < holder.last_failed_login + timedelta(minutes=2)
         ):
             messages.error(request, "Too many failed attempts. Try again later.")
         else:
-            if holder and holder.rate_limit >= 5:
+            if holder and holder.rate_limit >= 10:
                 holder.rate_limit = 0
                 holder.save()
 

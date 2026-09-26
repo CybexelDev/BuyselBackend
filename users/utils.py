@@ -64,62 +64,250 @@ def capture_property_screenshot(property_obj):
 
 
 
+# logger = logging.getLogger(__name__)
+
+
+# def send_otp_email(to_email, otp):
+
+#     configuration = sib_api_v3_sdk.Configuration()
+#     configuration.api_key["api-key"] = settings.BREVO_API_KEY
+
+#     api_client = sib_api_v3_sdk.ApiClient(configuration)
+#     api_instance = sib_api_v3_sdk.TransactionalEmailsApi(api_client)
+
+#     subject = "Your Email Verification OTP"
+
+#     html_content = f"""
+#     <div style="font-family:Arial;padding:20px">
+#         <h2>Email Verification</h2>
+
+#         <p>Your OTP is:</p>
+
+#         <h1 style="color:#0ea5e9">{otp}</h1>
+
+#         <p>This OTP is valid for 5 minutes.</p>
+
+#         <hr>
+
+#         <small>If you didn't request this, please ignore this email.</small>
+#     </div>
+#     """
+
+#     send_email = sib_api_v3_sdk.SendSmtpEmail(
+#         sender={
+#             "email": settings.DEFAULT_FROM_EMAIL,
+#             "name": "BuySel",
+#         },
+#         to=[
+#             {
+#                 "email": to_email,
+#             }
+#         ],
+#         subject=subject,
+#         html_content=html_content,
+#     )
+
+#     try:
+#         response = api_instance.send_transac_email(send_email)
+#         logger.info("Brevo Email Sent: %s", response)
+#         return True
+
+#     except ApiException as e:
+#         logger.error("Brevo API Error: %s", e)
+#         return False
+
+#     except Exception as e:
+#         logger.exception("Unexpected Email Error: %s", e)
+#         return False
+
+
+
+
+import logging
+
+import sib_api_v3_sdk
+from sib_api_v3_sdk.rest import ApiException
+from django.conf import settings
+
 logger = logging.getLogger(__name__)
 
 
 def send_otp_email(to_email, otp):
+    """
+    Send OTP email through Brevo.
 
-    configuration = sib_api_v3_sdk.Configuration()
-    configuration.api_key["api-key"] = settings.BREVO_API_KEY
-
-    api_client = sib_api_v3_sdk.ApiClient(configuration)
-    api_instance = sib_api_v3_sdk.TransactionalEmailsApi(api_client)
-
-    subject = "Your Email Verification OTP"
-
-    html_content = f"""
-    <div style="font-family:Arial;padding:20px">
-        <h2>Email Verification</h2>
-
-        <p>Your OTP is:</p>
-
-        <h1 style="color:#0ea5e9">{otp}</h1>
-
-        <p>This OTP is valid for 5 minutes.</p>
-
-        <hr>
-
-        <small>If you didn't request this, please ignore this email.</small>
-    </div>
+    Returns:
+        True  -> email accepted by Brevo
+        False -> sending failed
     """
 
-    send_email = sib_api_v3_sdk.SendSmtpEmail(
-        sender={
-            "email": settings.DEFAULT_FROM_EMAIL,
-            "name": "BuySel",
-        },
-        to=[
-            {
-                "email": to_email,
-            }
-        ],
-        subject=subject,
-        html_content=html_content,
-    )
-
     try:
-        response = api_instance.send_transac_email(send_email)
-        logger.info("Brevo Email Sent: %s", response)
+        # -----------------------------------
+        # Validate configuration
+        # -----------------------------------
+        if not settings.BREVO_API_KEY:
+            logger.error("BREVO_API_KEY is missing")
+            return False
+
+        if not settings.DEFAULT_FROM_EMAIL:
+            logger.error("DEFAULT_FROM_EMAIL is missing")
+            return False
+
+        if not to_email:
+            logger.error("Recipient email is empty")
+            return False
+
+        if not otp:
+            logger.error("OTP is empty")
+            return False
+
+        # -----------------------------------
+        # Brevo configuration
+        # -----------------------------------
+        configuration = sib_api_v3_sdk.Configuration()
+
+        configuration.api_key["api-key"] = settings.BREVO_API_KEY
+
+        api_client = sib_api_v3_sdk.ApiClient(configuration)
+
+        api_instance = sib_api_v3_sdk.TransactionalEmailsApi(
+            api_client
+        )
+
+        # -----------------------------------
+        # Email content
+        # -----------------------------------
+        subject = "Your Buysel Email Verification OTP"
+
+        html_content = f"""
+        <!DOCTYPE html>
+        <html>
+        <body style="
+            margin:0;
+            padding:30px;
+            background:#f5f5f5;
+            font-family:Arial,sans-serif;
+        ">
+
+            <div style="
+                max-width:500px;
+                margin:auto;
+                background:#ffffff;
+                padding:30px;
+                border-radius:12px;
+            ">
+
+                <h2 style="color:#250f1e;">
+                    Buysel Email Verification
+                </h2>
+
+                <p>
+                    Your verification OTP is:
+                </p>
+
+                <div style="
+                    font-size:32px;
+                    font-weight:bold;
+                    letter-spacing:8px;
+                    text-align:center;
+                    padding:20px;
+                    background:#f5f5f5;
+                    border-radius:10px;
+                    margin:20px 0;
+                ">
+                    {otp}
+                </div>
+
+                <p>
+                    This OTP is valid for
+                    <strong>5 minutes</strong>.
+                </p>
+
+                <p style="color:#666;">
+                    If you did not request this OTP,
+                    please ignore this email.
+                </p>
+
+                <hr>
+
+                <p style="
+                    font-size:12px;
+                    color:#999;
+                ">
+                    © Buysel
+                </p>
+
+            </div>
+
+        </body>
+        </html>
+        """
+
+        # -----------------------------------
+        # Create Brevo email
+        # -----------------------------------
+        send_email = sib_api_v3_sdk.SendSmtpEmail(
+            sender={
+                "email": settings.DEFAULT_FROM_EMAIL,
+                "name": "Buysel",
+            },
+            to=[
+                {
+                    "email": to_email,
+                }
+            ],
+            subject=subject,
+            html_content=html_content,
+        )
+
+        # -----------------------------------
+        # Send
+        # -----------------------------------
+        response = api_instance.send_transac_email(
+            send_email
+        )
+
+        logger.info(
+            "Brevo OTP email sent successfully to %s. Response: %s",
+            to_email,
+            response,
+        )
+
         return True
 
     except ApiException as e:
-        logger.error("Brevo API Error: %s", e)
+
+        logger.error(
+            "Brevo API Error while sending OTP to %s",
+            to_email,
+        )
+
+        logger.error(
+            "Status: %s",
+            getattr(e, "status", "Unknown"),
+        )
+
+        logger.error(
+            "Reason: %s",
+            getattr(e, "reason", str(e)),
+        )
+
+        logger.error(
+            "Body: %s",
+            getattr(e, "body", "No response body"),
+        )
+
         return False
 
     except Exception as e:
-        logger.exception("Unexpected Email Error: %s", e)
-        return False
 
+        logger.exception(
+            "Unexpected error while sending OTP to %s: %s",
+            to_email,
+            str(e),
+        )
+
+        return False
 
 
 
@@ -270,7 +458,7 @@ def get_available_subscription(user, category_name):
             if commercial_match else 0
         )
 
-        if category_name in ["residential", "plot/land"]:
+        if category_name in ["residential", "land / plot"]:
 
             if (
                 subscription.residential_property_used

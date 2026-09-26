@@ -62,7 +62,8 @@ INSTALLED_APPS = [
 CSRF_TRUSTED_ORIGINS = [
     "https://buysel.in",
     "https://www.buysel.in",
-    "https://buyselbackend-1.onrender.com"
+    "https://buyselbackend-1.onrender.com",
+    "https://buyselbackend-4grp.onrender.com",
 ]
 
 CORS_ALLOWED_ORIGINS = [
@@ -239,7 +240,8 @@ SESSION_COOKIE_NAME = 'sessionid'  # The cookie name for sessions
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # Optional: Automatically clear session when the browser is closed
 SESSION_COOKIE_AGE = 60 * 30  # 30 minutes session timeout (in seconds)
 
-
+SESSION_COOKIE_SAMESITE = "None"
+SESSION_COOKIE_SECURE = True
 
 
 from decouple import config

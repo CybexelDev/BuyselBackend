@@ -11914,6 +11914,8 @@ class UnifiedEnquiryListAPIView(APIView):
             ).select_related("property")
 
             for e in enquiries:
+                local_time = timezone.localtime(e.created_at)
+
                 result.append({
                     "enquiry_id": str(e.id),
                     # "type": "user_property",
@@ -11922,7 +11924,8 @@ class UnifiedEnquiryListAPIView(APIView):
                     "phone": e.phone,
                     "property": e.property.label,
                     "price": e.property.price,
-                    "time": e.created_at.strftime("%Y-%m-%d %H:%M:%S")
+                    # "time": e.created_at.strftime("%Y-%m-%d %H:%M:%S")
+                    "time": local_time.strftime("%Y-%m-%d %H:%M:%S")
                 })
 
         elif isinstance(user, AgentUserProfile):
@@ -11932,6 +11935,8 @@ class UnifiedEnquiryListAPIView(APIView):
             ).select_related("property")
 
             for e in enquiries:
+                local_time = timezone.localtime(e.created_at)
+
                 result.append({
                     "enquiry_id": str(e.id),
                     # "type": "agent_property",
@@ -11940,7 +11945,8 @@ class UnifiedEnquiryListAPIView(APIView):
                     "phone": e.phone,
                     "property": e.property.label,
                     "price": e.property.price,
-                    "time": e.created_at.strftime("%Y-%m-%d %H:%M:%S")
+                    # "time": e.created_at.strftime("%Y-%m-%d %H:%M:%S")
+                    "time": local_time.strftime("%Y-%m-%d %H:%M:%S")
                 })
 
         return Response({
@@ -12003,7 +12009,10 @@ class EnquiryDetailAPIView(APIView):
                     "phone": enquiry.phone,
                     "message": enquiry.message,
 
-                    "created_at": enquiry.created_at.strftime("%B %d, %Y %I:%M %p"),
+                    # "created_at": enquiry.created_at.strftime("%B %d, %Y %I:%M %p"),
+                    "created_at": timezone.localtime(
+                            enquiry.created_at
+                        ).strftime("%B %d, %Y %I:%M %p"),
 
                     "property": {
                         "id": str(enquiry.property.id),
@@ -12053,7 +12062,10 @@ class EnquiryDetailAPIView(APIView):
                     "phone": enquiry.phone,
                     "message": enquiry.message,
 
-                    "created_at": enquiry.created_at.strftime("%B %d, %Y %I:%M %p"),
+                    # "created_at": enquiry.created_at.strftime("%B %d, %Y %I:%M %p"),
+                    "created_at": timezone.localtime(
+                            enquiry.created_at
+                        ).strftime("%B %d, %Y %I:%M %p"),
 
                     "property": {
                         "id": str(enquiry.property.id),

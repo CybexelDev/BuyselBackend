@@ -698,20 +698,6 @@ def get_property_remaining_counts(user):
             sub_commercial_remaining
         )
 
-    # ==========================================================
-    # FREE REMAINING
-    # ==========================================================
-
-    # IMPORTANT:
-    # This uses UserProfile.total_property_used.
-    #
-    # If a property is deleted:
-    #
-    # Property.objects.count()  -> decreases
-    #
-    # profile.total_property_used -> stays the same
-    #
-    # Therefore remaining_property will NOT increase.
 
     free_remaining = max(
         FREE_PROPERTY_LIMIT - free_total_used,
@@ -728,96 +714,8 @@ def get_property_remaining_counts(user):
         + commercial_remaining
     )
 
-    # ==========================================================
-    # HISTORICAL PROPERTY LISTED
-    # ==========================================================
-
-    # DO NOT use:
-    #
-    # total_properties = user_properties.count()
-    #
-    # because deletion will decrease it.
-    #
-    # Use the historical UserProfile counter instead.
 
     property_listed = free_total_used
-
-    # ==========================================================
-    # DEBUG
-    # ==========================================================
-
-    print("\n================ COUNT DEBUG ================")
-
-    print(
-        "Profile Total Property Used :",
-        free_total_used
-    )
-
-    print(
-        "Profile Residential Used :",
-        free_residential_used
-    )
-
-    print(
-        "Profile Commercial Used :",
-        free_commercial_used
-    )
-
-    print(
-        "Residential Used :",
-        residential_used
-    )
-
-    print(
-        "Commercial Used :",
-        commercial_used
-    )
-
-    print(
-        "Residential Limit :",
-        residential_limit
-    )
-
-    print(
-        "Commercial Limit :",
-        commercial_limit
-    )
-
-    print(
-        "Residential Remaining :",
-        residential_remaining
-    )
-
-    print(
-        "Commercial Remaining :",
-        commercial_remaining
-    )
-
-    print(
-        "Free Remaining :",
-        free_remaining
-    )
-
-    print(
-        "Total Remaining :",
-        remaining_property
-    )
-
-    print(
-        "Property Listed :",
-        property_listed
-    )
-
-    print(
-        "Active Subscriptions :",
-        subscriptions.count()
-    )
-
-    print("============================================")
-
-    # ==========================================================
-    # RESPONSE
-    # ==========================================================
 
     return {
         "remaining_property": remaining_property,
@@ -851,48 +749,6 @@ def get_property_remaining_counts(user):
 
         "active_subscription_count": subscriptions.count(),
     }
-
-
-# def get_edit_remaining_count(user):
-
-#     profile = user.profile
-
-#     subscriptions = (
-#         UserPlanSubscription.objects
-#         .filter(
-#             user=user,
-#             is_active=True,
-#             expiry_date__gt=timezone.now()
-#         )
-#         .select_related("plan")
-#     )
-
-#     if not subscriptions.exists():
-
-#         return {
-#             "remaining_edit": 0,
-#             "has_unlimited_edit": False
-#         }
-
-#     total_limit = 0
-#     total_used = 0
-
-#     for sub in subscriptions:
-
-#         if sub.is_unlimited_edit:
-
-#             return {
-#                 "remaining_edit": "Unlimited",
-#                 "has_unlimited_edit": True
-#             }
-
-#         total_limit += sub.edit_limit_count or 0
-#         total_used += sub.edit_used
-
-#     return {
-#         "remaining_edit": max(total_limit - total_used, 0),
-#         "has_unlimited_edit": False
-#     }
 
 
 def get_edit_remaining_count(user):

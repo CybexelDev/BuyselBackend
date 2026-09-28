@@ -1303,192 +1303,6 @@ class AgentFormView(APIView):
             }
         )
 
-# class RegisterAPI(APIView):
-
-#     def post(self, request):
-
-#         email = request.data.get("email")
-
-#         existing_user = UserCreate.objects.filter(email=email).first()
-
-#         if existing_user:
-
-#             # If already verified
-#             if existing_user.is_verified:
-#                 return Response(
-#                     {"error": "Email already registered"},
-#                     status=400
-#                 )
-
-#             # Block frequent OTP requests (30 seconds)
-#             if existing_user.otp_created_at and timezone.now() < existing_user.otp_created_at + timedelta(seconds=30):
-#                 return Response(
-#                     {"error": "Please wait before requesting OTP again"},
-#                     status=429
-#                 )
-
-#             # If OTP expired (2 minutes) delete user
-#             if existing_user.otp_created_at and timezone.now() > existing_user.otp_created_at + timedelta(minutes=2):
-#                 existing_user.delete()
-#                 existing_user = None
-
-#             else:
-#                 return Response(
-#                     {"error": "OTP already sent. Please verify within 2 minutes."},
-#                     status=400
-#                 )
-
-#         serializer = RegisterSerializer(data=request.data)
-
-#         if serializer.is_valid():
-
-#             user = serializer.save()
-
-#             otp = str(random.randint(100000, 999999))
-#             user.otp = otp
-#             user.otp_created_at = timezone.now()
-#             user.save()
-
-#             send_otp_email(user.email, otp)
-
-#             return Response(
-#                 {
-#                     "message": "OTP sent to email",
-#                     "email" : email,
-
-#                  },
-#                 status=status.HTTP_201_CREATED
-#             )
-
-#         return Response(serializer.errors, status=400)
-
-# class VerifyOTPAPI(APIView):
-
-#     authentication_classes = []
-#     permission_classes = []
-
-#     def post(self, request):
-
-#         serializer = VerifyOTPSerializer(data=request.data)
-
-#         if serializer.is_valid():
-
-#             email = serializer.validated_data["email"]
-#             entered_otp = serializer.validated_data["otp"]
-
-#             try:
-#                 user = UserCreate.objects.get(email=email)
-
-#                 if not user.otp or not user.otp_created_at:
-#                     return Response({"error": "OTP not generated"}, status=400)
-
-#                 # OTP expiry (2 minutes)
-#                 if timezone.now() > user.otp_created_at + timedelta(minutes=2):
-#                     user.delete()
-#                     return Response(
-#                         {"error": "OTP expired. Please register again."},
-#                         status=400
-#                     )
-
-#                 # Invalid OTP
-#                 if user.otp != entered_otp:
-#                     return Response({"error": "Invalid OTP"}, status=400)                          
-
-#                 # Successful verification
-#                 user.is_verified = True
-#                 user.otp = None
-#                 user.otp_created_at = None
-#                 user.save()
-
-#                 refresh = RefreshToken.for_user(user)
-
-#                 # ✅ Ensure profile exists
-#                 profile, created = UserProfile.objects.get_or_create(user=user)
-
-#                 # ✅ Get image safely
-#                 # if profile.image:
-#                 #     if hasattr(profile.image, "url"):
-#                 #         image_url = profile.image.url
-#                 #     else:
-#                 #         image_url, _ = cloudinary_url(profile.image)
-#                 # else:
-#                 #     image_url, _ = cloudinary_url("Vector_te4oj7")
-
-#                 image_url = profile.profile_image_url
-
-#                 response = Response({
-#                     "message": "Email verified successfully",
-#                     "access": str(refresh.access_token),
-#                     "refresh": str(refresh),
-#                     "user": {
-#                         "id": uuid.uuid4().hex[:10],
-#                         "name": user.name,
-#                         "email": user.email,
-#                         "mobile": user.mobile,
-#                         "image": image_url
-#                     }
-#                 })
-
-
-#                 return response
-
-#             except UserCreate.DoesNotExist:
-#                 return Response({"error": "User not found"}, status=404)
-
-#         return Response(serializer.errors, status=400)
-
-
-# class ResendOTPAPI(APIView):
-
-#     authentication_classes = []
-#     permission_classes = []
-
-#     def post(self, request):
-
-#         email = request.data.get("email")
-
-#         try:
-#             user = UserCreate.objects.get(email=email)
-
-#             if user.is_verified:
-#                 return Response(
-#                     {"error": "User already verified"},
-#                     status=400
-#                 )
-
-#             if not user.otp_created_at:
-#                 return Response(
-#                     {"error": "OTP not generated yet"},
-#                     status=400
-#                 )
-
-#             # Prevent frequent resend (30 seconds)
-#             if timezone.now() < user.otp_created_at + timedelta(seconds=30):
-#                 return Response(
-#                     {"error": "Please wait before requesting OTP again"},
-#                     status=429
-#                 )
-
-#             # Generate new OTP
-#             otp = str(random.randint(100000, 999999))
-
-#             user.otp = otp
-#             user.otp_created_at = timezone.now()
-#             user.save()
-
-#             send_otp_email(user.email, otp)
-
-#             return Response(
-#                 {"message": "OTP resent successfully"},
-#                 status=200
-#             )
-
-#         except UserCreate.DoesNotExist:
-#             return Response(
-#                 {"error": "User not found"},
-#                 status=404
-#             )
-
 class RegisterAPI(APIView):
 
     authentication_classes = []
@@ -2720,45 +2534,6 @@ class GoogleLoginView(APIView):
                         profile.is_profile_complete
                     ),
 
-                    # # =================================
-                    # # PROPERTY COUNTS
-                    # # =================================
-
-                    # "remaining_property": (
-                    #     property_counts.get(
-                    #         "remaining_property",
-                    #         0
-                    #     )
-                    # ),
-
-                    # "residential_remaining": (
-                    #     property_counts.get(
-                    #         "residential_remaining",
-                    #         0
-                    #     )
-                    # ),
-
-                    # "commercial_remaining": (
-                    #     property_counts.get(
-                    #         "commercial_remaining",
-                    #         0
-                    #     )
-                    # ),
-
-                    # "residential_used": (
-                    #     property_counts.get(
-                    #         "residential_used",
-                    #         0
-                    #     )
-                    # ),
-
-                    # "commercial_used": (
-                    #     property_counts.get(
-                    #         "commercial_used",
-                    #         0
-                    #     )
-                    # ),
-
                     "total_properties": (
                         property_counts.get(
                             "total_properties",
@@ -2769,20 +2544,6 @@ class GoogleLoginView(APIView):
                         "remaining_property",
                         0
                     ),
-
-                    # "total_residential_limit": (
-                    #     property_counts.get(
-                    #         "total_residential_limit",
-                    #         0
-                    #     )
-                    # ),
-
-                    # "total_commercial_limit": (
-                    #     property_counts.get(
-                    #         "total_commercial_limit",
-                    #         0
-                    #     )
-                    # )
                 }
 
             }, status=200)
@@ -6438,7 +6199,6 @@ class AgentPropertyAPIView(APIView):
                 try:
                     decoded = json.loads(v)
                 except Exception as e:
-                    print(f"{field_name} JSON PARSE ERROR:", e)
                     continue
             else:
                 decoded = v
@@ -6503,18 +6263,6 @@ class AgentPropertyAPIView(APIView):
             for subscription in active_subscriptions
         )
 
-        # total_limit = 0
-        # total_used = 0
-
-        # for subscription in active_subscriptions:
-
-        #     total_limit += subscription.property_limit
-
-        #     used = AgentProperty.objects.filter(
-        #         subscription=subscription
-        #     ).count()
-
-        #     total_used += used
         total_used = sum(
             sub.used_listings
             for sub in active_subscriptions
@@ -6554,15 +6302,6 @@ class AgentPropertyAPIView(APIView):
             for subscription in active_subscriptions:
 
                 if subscription.plan_type == "elite":
-
-                    # Elite plan logic
-                    # used = AgentProperty.objects.filter(
-                    #     subscription=subscription
-                    # ).count()
-
-                    # if used < subscription.property_limit:
-                    #     selected_subscription = subscription
-                    #     break
                     if subscription.used_listings < subscription.property_limit:
                         selected_subscription = subscription
                         break
@@ -6702,13 +6441,6 @@ class AgentPropertyAPIView(APIView):
 
             if subscription.plan_type == "elite":
 
-                # used = AgentProperty.objects.filter(
-                #     subscription=subscription
-                # ).count()
-
-                # if used < subscription.property_limit:
-                #     selected_subscription = subscription
-                #     break
                 if subscription.used_listings < subscription.property_limit:
                     selected_subscription = subscription
                     break
@@ -6777,17 +6509,6 @@ class AgentPropertyAPIView(APIView):
             agent.save(
                 update_fields=["total_property_used"]
             )
-
-        # property_obj = serializer.save(
-        #     subscription=selected_subscription,
-        #     paid = True
-        # )
-        # selected_subscription.used_listings += 1
-
-        # selected_subscription.save(
-        #     update_fields=["used_listings"]
-        # )
-        # FEATURED LISTING
 
         selected_featured_subscription = None
 
@@ -7591,8 +7312,8 @@ class DashboardAPIView(APIView):
 
         agent_properties = AgentProperty.objects.filter(agent=user)
 
-        # total_properties = agent_properties.count()
-        total_properties = user.total_property_used or 0
+        total_properties = agent_properties.count()
+        # total_properties = user.total_property_used or 0
 
         # enquiries_qs = AgentPropertyEnquiry.objects.filter(
         #     agent_property__agent=user
@@ -7614,22 +7335,6 @@ class DashboardAPIView(APIView):
 
         total_limit = 0
         total_used = 0
-
-        # for subscription in active_subscriptions:
-
-        #     total_limit += subscription.property_limit
-
-        #     used = AgentProperty.objects.filter(
-        #         subscription=subscription
-        #     ).count()
-
-        #     total_used += used
-
-        # remaining_listings = max(
-        #     total_limit - total_used,
-        #     0
-        # )
-        # total_properties = properties.count()
 
         active_subscriptions = Subscription.objects.filter(
             agent=user,
@@ -14171,15 +13876,9 @@ class UserPropertyCreateAPIView(APIView):
 
             }, status=400)
 
-        # print("DEBUG: Checking Residential Condition")
-        # print("DEBUG:", category_name, "in", ["residential", "plot/land"], "=", category_name in ["residential", "plot/land"])
-
         if category_name in ["residential", "land / plot"]:
-            # print("DEBUG: Residential category matched")
 
             if residential_remaining <= 0:
-                # print("DEBUG: Residential limit exceeded")
-
 
                 return Response({
 
@@ -14191,16 +13890,9 @@ class UserPropertyCreateAPIView(APIView):
                     "commercial_remaining": commercial_remaining
 
                 }, status=400)
-            else:
 
-                print("DEBUG: Residential property can be created")
-
-        # print("DEBUG: Checking Commercial Condition")
-        # print("DEBUG:", category_name, "in", ["commercial", "industrial"], "=", category_name in ["commercial", "industrial"])
         if category_name in ["commercial", "industrial"]:
-            # print("DEBUG: Commercial category matched")
             if commercial_remaining <= 0:
-                # print("DEBUG: Commercial limit exceeded")
                 return Response({
 
                     "status": False,
@@ -14211,9 +13903,6 @@ class UserPropertyCreateAPIView(APIView):
                     "commercial_remaining": commercial_remaining
 
                 }, status=400)
-            else:
-                print("DEBUG: Commercial property can be created")
-        print("DEBUG: Passed all limit checks")
 
         # =================================================
         # SERIALIZER
@@ -14959,30 +14648,6 @@ class CreatePaymentAPIView(APIView):
                         "required": 2
                     }, status=400)
 
-            # if role == "user":
-
-            #     # User is already becoming an agent
-            #     if pending_registration:
-            #         pass
-
-            #     # Normal user -> require minimum properties
-            #     else:
-            #         user_property_count = Property.objects.filter(
-            #             user=user
-            #         ).count()
-
-            #         if user_property_count < 2:
-            #             return Response({
-            #                 "status": False,
-            #                 "message": "You must add at least 2 properties before selecting a plan",
-            #                 "property_count": user_property_count,
-            #                 "required": 2
-            #             }, status=400)
-
-            # =================================================
-            # INPUT
-            # =================================================
-
             plan_id = request.data.get(
                 "plan_id"
             )
@@ -15068,53 +14733,7 @@ class CreatePaymentAPIView(APIView):
                         "message": "Maximum 2 active agent plans allowed"
 
                     }, status=400)
-            # =================================================
-            # PENDING AGENT REGISTRATION CHECK
-            # =================================================
-
-            # pending_registration = None
-
-            # if role == "user" and plan_type in [
-            #     "basic",
-            #     "premium",
-            #     "elite"
-            # ]:
-
-            #     pending_registration = PendingAgentRegistration.objects.filter(
-            #         email=user.email,
-            #         status="pending"
-            #     ).first()
-
-            #     if not pending_registration:
-
-            #         return Response({
-            #             "status": False,
-            #             "message": (
-            #                 "Agent registration request not found. "
-            #                 "Submit agent registration first."
-            #             )
-            #         }, status=400)
-
-            # if role == "user" and plan_type == "owner_plan":
-
-            #     subscription_count = UserPlanSubscription.objects.filter(
-            #         user=user,
-            #         is_active=True
-            #     ).count()
-
-            #     if subscription_count >= 2:
-
-            #         return Response({
-            #             "status": False,
-            #             "message": "Your plan limit reached"
-            #         }, status=400)
-
-            # if not plan:
-
-            #     return Response({
-            #         "status": False,
-            #         "message": "Plan not found"
-            #     }, status=404)
+            
             if role == "user" and plan_type == "owner_plan":
 
                 # ==========================================
@@ -15610,64 +15229,6 @@ class VerifyPaymentAPIView(APIView):
 
                     status=status.HTTP_200_OK
                 )
-            # ==========================================
-            # REEL PURCHASE NOTIFICATION
-            # ==========================================
-
-            # if payment.plan_type in [
-            #     "short_reel",
-            #     "cinematic_reel"
-            # ]:
-
-            #     ReelPurchaseNotification.objects.create(
-
-            #         title="New Reel Package Purchased",
-
-            #         message=(
-            #             f"{payment.agent.username} "
-            #             f"purchased "
-            #             f"{payment.reel_package.name}"
-            #         ),
-
-            #         notification_type="reel_purchase",
-
-            #         payment=payment,
-
-            #         agent=payment.agent
-            #     )
-            #     plan_details = self.get_plan_details(payment)
-
-            #     return Response({
-
-            #         "status": True,
-
-            #         "message": "Payment verified successfully. Our team will contact you shortly to discuss your reel requirements.",
-
-            #         "payment": {
-
-            #             "payment_db_id": str(payment.id),
-
-            #             "paid_by": payment.agent.username,
-
-            #             "paid_email": payment.agent.email,
-
-            #             "plan_type": payment.plan_type,
-
-            #             "plan_name": plan_details["name"],
-
-            #             "plan_price": plan_details["price"],
-
-            #             "payment_status": payment.payment_status,
-
-            #             "paid_at": payment.paid_at,
-
-            #             "created_at": payment.created_at,
-            #         }
-
-            #     }, status=200)
-            # =================================================
-            # SINGLE PROPERTY PAYMENT
-            # =================================================
 
             if payment.single_property_package:
 
@@ -15778,50 +15339,6 @@ class VerifyPaymentAPIView(APIView):
 
                     single_property_edit_used=0
                 )
-                # try:
-                #     if property_data.get("main_image"):
-
-                #         image_data = base64.b64decode(
-                #             property_data["main_image"]
-                #         )
-
-                #         property_obj.image.save(
-                #             property_data["main_image_name"],
-                #             ContentFile(
-                #                 image_data,
-                #                 name=property_data["main_image_name"]
-                #             ),
-                #             save=True
-                #         )
-
-                # except Exception as e:
-                #     print("MAIN IMAGE ERROR:", e)
-                #     raise
-
-                # try:
-
-                #     for img in property_data.get("multiple_images", []):
-
-                #         image_data = base64.b64decode(
-                #             img["content"]
-                #         )
-
-                #         property_image = PropertyImage(
-                #             property=property_obj
-                #         )
-
-                #         property_image.image.save(
-                #             img["name"],
-                #             ContentFile(image_data),
-                #             save=False
-                #         )
-
-                #         property_image.save()
-
-                # except Exception as e:
-
-                #     print("MULTIPLE IMAGE ERROR:", str(e))
-                
 
                 for img in property_data.get("multiple_images", []):
 
@@ -15927,10 +15444,6 @@ class VerifyPaymentAPIView(APIView):
                 payment.user.profile.increase_property_usage(
                     property_obj.category.name
                 )
-                # print("Calling increase_property_usage")
-                # print("Payment User:", payment.user.id)
-                # print("Property Category:", property_obj.category.name)
-                # print("Profile Exists:", hasattr(payment.user, "profile"))
                 cache.delete(cache_key)
                 return Response({
 
@@ -16057,141 +15570,6 @@ class VerifyPaymentAPIView(APIView):
                     is_active=True
                 )
 
-            # if payment.pending_registration:
-
-            #     pending = payment.pending_registration
-
-            #     if pending.status == "pending":
-
-            #         pending.status = "approved"
-
-            #         pending.save()
-            #         # agent = pending.agent
-            #         pending.refresh_from_db()
-
-            #         agent = AgentUserProfile.objects.filter(
-
-            #             email=pending.email
-
-            #         ).first()
-
-            #         if not agent:
-
-            #             return Response({
-
-            #                 "status": False,
-
-            #                 "message": "Agent profile creation failed"
-
-            #             }, status=400) 
-
-            #         self.deactivate_expired_agent_plans(agent)
-
-            #         active_subscriptions = Subscription.objects.filter(
-
-            #             agent=agent,
-
-            #             is_active=True,
-
-            #             end_date__gt=timezone.now().date()
-
-            #         )
-
-            #         if active_subscriptions.count() >= 2:
-
-            #             return Response({
-
-            #                 "status": False,
-
-            #                 "message": "Maximum 2 active agent plans allowed"
-
-            #             }, status=400)
-
-            #         plan_name = "Agent Plan"
-
-            #         validity_days = 30
-
-            #         property_limit = 0
-            #         featured_limit = 0
-
-            #         if pending.premium_plan:
-            #             plan_type = "premium"
-            #             plan_name = pending.premium_plan.name
-
-            #             validity_days = pending.premium_plan.validity
-
-            #             property_limit = pending.premium_plan.total_listing
-
-            #         elif pending.elite_plan:
-            #             plan_type = "elite"
-            #             plan_name = pending.elite_plan.name
-
-            #             validity_days = pending.elite_plan.plan_validity_days
-
-            #             property_limit = pending.elite_plan.total_property_listings
-            #             featured_limit = pending.elite_plan.featured_listings_limit
-
-            #         elif payment.agent_plan:
-            #             plan_type = "basic"
-            #             plan_name = payment.agent_plan.name
-
-            #             validity_days = getattr(
-
-            #                 payment.agent_plan,
-
-            #                 "validity",
-
-            #                 30
-
-            #             )
-
-            #             property_limit = getattr(
-
-            #                 payment.agent_plan,
-
-            #                 "property_limit",
-
-            #                 0
-
-            #             )
-            #         edit_limit = 0
-
-            #         if pending.premium_plan and pending.premium_plan.edit:
-
-            #             match = re.search(
-            #                 r"(\d+)",
-            #                 str(pending.premium_plan.edit)
-            #             )
-
-            #             if match:
-            #                 edit_limit = int(match.group(1))
-
-            #         elif pending.elite_plan and pending.elite_plan.edit:
-
-            #             match = re.search(
-            #                 r"(\d+)",
-            #                 str(pending.elite_plan.edit)
-            #             )
-
-            #             if match:
-            #                 edit_limit = int(match.group(1))
-
-            #         Subscription.objects.create(
-            #             payment=payment,
-            #             agent=agent,
-            #             plan_type=plan_type,
-            #             plan_name=plan_name,
-            #             property_limit=property_limit,
-            #             used_listings=0,
-            #             edit_limit=edit_limit,
-            #             edit_used=0,
-            #             featured_limit=featured_limit,
-            #             featured_used=0,
-            #             start_date=timezone.now().date(),
-            #             end_date=timezone.now().date() + timedelta(days=int(validity_days)),
-            #             is_active=True
-            #         )
-
 
             if payment.pending_registration:
 
@@ -16230,11 +15608,6 @@ class VerifyPaymentAPIView(APIView):
                             raise Exception(
                                 "Agent profile creation failed after approval."
                             )
-
-                        print(
-                            "AGENT CREATED:",
-                            agent.id
-                        )
 
                         # =================================================
                         # 3. EXPIRE OLD SUBSCRIPTIONS
@@ -16441,29 +15814,6 @@ class VerifyPaymentAPIView(APIView):
                                 is_active=True
                             )
 
-
-                        # =================================================
-                        # 13. SUCCESS
-                        # =================================================
-
-                        # return Response(
-                        #     {
-                        #         "status": True,
-                        #         "message": (
-                        #             "Payment successful. "
-                        #             "Agent profile and subscription "
-                        #             "created successfully."
-                        #         ),
-                        #         "agent_id": str(agent.id),
-                        #         "subscription_id": str(
-                        #             subscription.id
-                        #         ),
-                        #         "plan_type": plan_type,
-                        #         "plan_name": plan_name
-                        #     },
-                        #     status=status.HTTP_200_OK
-                        # )
-                        
 
                         return Response(
                             {

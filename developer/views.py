@@ -4811,6 +4811,69 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 
 
+# @never_cache
+# @user_passes_test(superuser_required, login_url="superuser_login_view")
+# def agent_property_dashboard(request):
+
+#     search = request.GET.get("search", "")
+
+#     properties = (
+#         AgentProperty.objects.select_related(
+#             "agent",
+#             "category",
+#             "subcategory",
+#             "purpose",
+#             "subscription",
+#         )
+#         .prefetch_related(
+#             "amenities",
+#             "images",
+#             "field_values",
+#             "selling_points",
+#             "landmarks",
+#         )
+#         .order_by("-created_at")
+#     )
+
+#     if search:
+
+#         properties = properties.filter(
+#             Q(label__icontains=search)
+#             | Q(city__icontains=search)
+#             | Q(district__icontains=search)
+#             | Q(state__icontains=search)
+#             | Q(agent__username__icontains=search)
+#         )
+
+#     paginator = Paginator(properties, 10)
+
+#     page_number = request.GET.get("page")
+
+#     page_obj = paginator.get_page(page_number)
+
+#     context = {
+#         # Table
+#         "page_obj": page_obj,
+#         "properties": page_obj,
+#         # Modal Data
+#         "agents": AgentUserProfile.objects.all().order_by("username"),
+#         "categories": Category.objects.all().order_by("name"),
+#         "purposes": Purpose.objects.all().order_by("name"),
+#         "amenities": Amenities.objects.all().order_by("name"),
+#         # Dashboard Counts
+#         "total_properties": AgentProperty.objects.count(),
+#         "featured_properties": AgentProperty.objects.filter(is_featured=True).count(),
+#         "paid_properties": AgentProperty.objects.filter(paid=True).count(),
+#         # Search
+#         "search": search,
+#     }
+
+#     return render(
+#         request,
+#         "agent_property/agent_property_dashboard.html",
+#         context,
+#     )
+
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 def agent_property_dashboard(request):
@@ -4851,19 +4914,62 @@ def agent_property_dashboard(request):
 
     page_obj = paginator.get_page(page_number)
 
+    # ============================================================
+    # DASHBOARD COUNTS
+    # ============================================================
+
+    total_count = AgentProperty.objects.count()
+
+    active_count = 0
+
+    today = timezone.now().date()
+
+    for property in AgentProperty.objects.select_related("agent"):
+
+        # --------------------------------------------------------
+        # Active subscription keeps property active
+        # --------------------------------------------------------
+
+        if property.has_active_subscription():
+
+            active_count += 1
+
+        # --------------------------------------------------------
+        # No active subscription
+        # Duration must still be available
+        # --------------------------------------------------------
+
+        elif property.duration_days > 0:
+
+            active_count += 1
+
+    expired_count = ExpiredAgentProperty.objects.count()
+
     context = {
         # Table
         "page_obj": page_obj,
         "properties": page_obj,
+
         # Modal Data
         "agents": AgentUserProfile.objects.all().order_by("username"),
         "categories": Category.objects.all().order_by("name"),
         "purposes": Purpose.objects.all().order_by("name"),
         "amenities": Amenities.objects.all().order_by("name"),
+
         # Dashboard Counts
-        "total_properties": AgentProperty.objects.count(),
-        "featured_properties": AgentProperty.objects.filter(is_featured=True).count(),
-        "paid_properties": AgentProperty.objects.filter(paid=True).count(),
+        "total_count": total_count,
+        "active_count": active_count,
+        "expired_count": expired_count,
+
+        # Existing Counts
+        "featured_properties": AgentProperty.objects.filter(
+            is_featured=True
+        ).count(),
+
+        "paid_properties": AgentProperty.objects.filter(
+            paid=True
+        ).count(),
+
         # Search
         "search": search,
     }

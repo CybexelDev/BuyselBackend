@@ -3222,6 +3222,391 @@ class AgentPropertySerializer(serializers.ModelSerializer):
     # FEATURES
     # =====================================================
 
+    # def get_features(self, obj):
+
+    #     result = {}
+
+    #     request = self.context.get("request")
+
+    #     # ============================================================
+    #     # SUPPORT BOTH Property AND AgentProperty
+    #     # ============================================================
+
+    #     if hasattr(obj, "property_features"):
+
+    #         feature_values = obj.property_features.select_related(
+    #             "field"
+    #         ).prefetch_related(
+    #             "field__options"
+    #         )
+
+    #     elif hasattr(obj, "field_values"):
+
+    #         feature_values = obj.field_values.select_related(
+    #             "field"
+    #         ).prefetch_related(
+    #             "field__options"
+    #         )
+
+    #     else:
+
+    #         feature_values = []
+
+
+    #     # ============================================================
+    #     # PROCESS ALL FEATURES
+    #     # ============================================================
+
+    #     for fv in feature_values:
+
+    #         field = fv.field
+
+    #         # --------------------------------------------------------
+    #         # Safely decode JSON
+    #         # --------------------------------------------------------
+
+    #         try:
+
+    #             data = json.loads(fv.value)
+
+    #         except Exception:
+
+    #             data = None
+
+
+    #         # ========================================================
+    #         # [
+    #         #   {"option": "sleeping area", "value": "2"},
+    #         #   {"option": "parking", "value": "1"},
+    #         #   {"option": "outdoor area", "value": "3"}
+    #         # ]
+    #         # ========================================================
+
+    #         if isinstance(data, list):
+
+    #             for item in data:
+
+    #                 if not isinstance(item, dict):
+    #                     continue
+
+    #                 option = item.get("option")
+
+    #                 # Support both "value" and old "count"
+    #                 value = item.get("value")
+
+    #                 if value is None:
+    #                     value = item.get("count", "")
+
+
+    #                 # ------------------------------------------------
+    #                 # Use FieldOption.icon
+    #                 # ------------------------------------------------
+
+    #                 if option:
+
+    #                     option = str(option).strip()
+
+    #                     option_obj = None
+
+    #                     # First use prefetched options
+    #                     for option_item in field.options.all():
+
+    #                         if (
+    #                             option_item.name
+    #                             and option_item.name.strip().lower()
+    #                             == option.lower()
+    #                         ):
+
+    #                             option_obj = option_item
+    #                             break
+
+
+    #                     option_icon = None
+
+    #                     if option_obj and option_obj.icon:
+
+    #                         try:
+
+    #                             option_icon = (
+    #                                 request.build_absolute_uri(
+    #                                     option_obj.icon.url
+    #                                 )
+    #                                 if request
+    #                                 else option_obj.icon.url
+    #                             )
+
+    #                         except Exception:
+
+    #                             option_icon = option_obj.icon.url
+
+
+    #                     result[option] = {
+    #                         "value": value,
+    #                         "icon": option_icon
+    #                     }
+
+    #                     continue
+
+
+    #                 # ------------------------------------------------
+    #                 # NO OPTION
+    #                 #
+    #                 # Use SubcategoryField.icon
+    #                 # ------------------------------------------------
+
+    #                 if field.icon:
+
+    #                     try:
+
+    #                         icon = (
+    #                             request.build_absolute_uri(
+    #                                 field.icon.url
+    #                             )
+    #                             if request
+    #                             else field.icon.url
+    #                         )
+
+    #                     except Exception:
+
+    #                         icon = field.icon.url
+
+    #                 else:
+
+    #                     icon = None
+
+
+    #                 # ------------------------------------------------
+    #                 # Countable field
+    #                 # ------------------------------------------------
+
+    #                 if field.field_type == "countable":
+
+    #                     try:
+
+    #                         value = int(value)
+
+    #                     except Exception:
+
+    #                         value = 0
+
+
+    #                 result[field.field_name] = {
+    #                     "value": value,
+    #                     "icon": icon
+    #                 }
+
+
+    #             # Finished processing this FieldValue
+    #             continue
+
+
+    #         # ========================================================
+    #         # {"option": "Bed", "value": 1}
+    #         # {"option": "Bed", "count": 1}
+    #         # ========================================================
+
+    #         if isinstance(data, dict):
+
+    #             option = data.get("option")
+
+    #             # Support value
+    #             value = data.get("value")
+
+    #             # Support old count format
+    #             if value is None:
+
+    #                 value = data.get("count", None)
+
+
+    #             # ----------------------------------------------------
+    #             # OPTION EXISTS
+    #             # ----------------------------------------------------
+
+    #             if option:
+
+    #                 option = str(option).strip()
+
+    #                 option_obj = None
+
+    #                 # Use prefetched FieldOptions
+    #                 for option_item in field.options.all():
+
+    #                     if (
+    #                         option_item.name
+    #                         and option_item.name.strip().lower()
+    #                         == option.lower()
+    #                     ):
+
+    #                         option_obj = option_item
+    #                         break
+
+
+    #                 option_icon = None
+
+    #                 if option_obj and option_obj.icon:
+
+    #                     try:
+
+    #                         option_icon = (
+    #                             request.build_absolute_uri(
+    #                                 option_obj.icon.url
+    #                             )
+    #                             if request
+    #                             else option_obj.icon.url
+    #                         )
+
+    #                     except Exception:
+
+    #                         option_icon = option_obj.icon.url
+
+
+    #                 result[option] = {
+    #                     "value": (
+    #                         value
+    #                         if value is not None
+    #                         else ""
+    #                     ),
+    #                     "icon": option_icon
+    #                 }
+
+    #                 continue
+
+
+    #             # ----------------------------------------------------
+    #             # NO OPTION
+    #             #
+    #             # Use SubcategoryField.icon
+    #             # ----------------------------------------------------
+
+    #             if field.field_name.lower() == "flat furnishings":
+
+    #                 continue
+
+
+    #             if field.icon:
+
+    #                 try:
+
+    #                     icon = (
+    #                         request.build_absolute_uri(
+    #                             field.icon.url
+    #                         )
+    #                         if request
+    #                         else field.icon.url
+    #                     )
+
+    #                 except Exception:
+
+    #                     icon = field.icon.url
+
+    #             else:
+
+    #                 icon = None
+
+
+    #             # ----------------------------------------------------
+    #             # Countable field
+    #             # ----------------------------------------------------
+
+    #             if field.field_type == "countable":
+
+    #                 try:
+
+    #                     value = int(
+    #                         value
+    #                         if value is not None
+    #                         else 0
+    #                     )
+
+    #                 except Exception:
+
+    #                     value = 0
+
+    #             else:
+
+    #                 if value is None:
+
+    #                     value = ""
+
+
+    #             result[field.field_name] = {
+    #                 "value": value,
+    #                 "icon": icon
+    #             }
+
+    #             continue
+
+
+    #         # ========================================================
+    #         # CASE 3:
+    #         # "4BHK"
+    #         # ========================================================
+
+    #         if field.field_name.lower() == "flat furnishings":
+
+    #             continue
+
+
+    #         if field.icon:
+
+    #             try:
+
+    #                 icon = (
+    #                     request.build_absolute_uri(
+    #                         field.icon.url
+    #                     )
+    #                     if request
+    #                     else field.icon.url
+    #                 )
+
+    #             except Exception:
+
+    #                 icon = field.icon.url
+
+    #         else:
+
+    #             icon = None
+
+
+    #         # --------------------------------------------------------
+    #         # Countable field
+    #         # --------------------------------------------------------
+
+    #         if field.field_type == "countable":
+
+    #             try:
+
+    #                 value = int(fv.value)
+
+    #             except Exception:
+
+    #                 value = 0
+
+    #         else:
+
+    #             value = fv.value
+
+
+    #         result[field.field_name] = {
+    #             "value": value,
+    #             "icon": icon
+    #         }
+
+
+    #     # ============================================================
+    #     # FINAL RESPONSE
+    #     # ============================================================
+
+    #     return [
+    #         {
+    #             "name": key,
+    #             "value": value["value"],
+    #             "icon": value["icon"]
+    #         }
+    #         for key, value in result.items()
+    #     ]
+
+
     def get_features(self, obj):
 
         result = {}
@@ -3254,6 +3639,363 @@ class AgentPropertySerializer(serializers.ModelSerializer):
 
 
         # ============================================================
+        # HELPER: NORMALIZE TEXT
+        # ============================================================
+
+        def normalize_text(value):
+
+            if value is None:
+                return ""
+
+            value = str(value).strip().lower()
+
+            value = value.replace("_", " ")
+            value = value.replace("-", " ")
+            value = value.replace("/", " ")
+
+            value = " ".join(
+                value.split()
+            )
+
+            return value
+
+
+        # ============================================================
+        # HELPER: REMOVE COUNT
+        #
+        # "storage area (5)"
+        # "Good receiving area (2)"
+        #
+        # becomes:
+        #
+        # "storage area"
+        # "Good receiving area"
+        # ============================================================
+
+        def remove_count(value):
+
+            if value is None:
+                return ""
+
+            value = str(value).strip()
+
+            import re
+
+            value = re.sub(
+                r"\s*\(\s*\d+\s*\)\s*$",
+                "",
+                value
+            )
+
+            return value.strip()
+
+
+        # ============================================================
+        # HELPER: GET FIELD OPTION ICON
+        #
+        # IMPORTANT:
+        # ICON IS TAKEN ONLY FROM FieldOption.icon
+        # ============================================================
+
+        def get_option_icon(option):
+
+            if not option:
+
+                return None
+
+            try:
+
+                icon = getattr(
+                    option,
+                    "icon",
+                    None
+                )
+
+                if not icon:
+
+                    return None
+
+                url = getattr(
+                    icon,
+                    "url",
+                    None
+                )
+
+                if not url:
+
+                    return None
+
+                url = str(
+                    url
+                ).strip()
+
+                if not url:
+
+                    return None
+
+                # Cloudinary URL is already absolute
+                if (
+                    url.startswith("http://")
+                    or url.startswith("https://")
+                ):
+
+                    return url
+
+                if request:
+
+                    return request.build_absolute_uri(
+                        url
+                    )
+
+                return url
+
+            except Exception:
+
+                return None
+
+
+        # ============================================================
+        # HELPER: FIND FIELD OPTION
+        #
+        # IMPORTANT:
+        #
+        # field_id
+        #     ↓
+        # SubcategoryField
+        #     ↓
+        # FieldOption
+        #
+        # This makes sure the option belongs to the
+        # exact field.
+        # ============================================================
+
+        def find_field_option(
+            field,
+            option_value
+        ):
+
+            if not field:
+                return None
+
+            if option_value is None:
+                return None
+
+
+            # ========================================================
+            # GET OPTIONS FOR EXACT FIELD
+            # ========================================================
+
+            try:
+
+                options = list(
+                    FieldOption.objects.filter(
+                        field_id=field.id
+                    )
+                )
+
+            except Exception:
+
+                options = []
+
+
+            if not options:
+
+                return None
+
+
+            # ========================================================
+            # ORIGINAL VALUE
+            # ========================================================
+
+            original_value = str(
+                option_value
+            ).strip()
+
+
+            # ========================================================
+            # VALUE WITHOUT COUNT
+            #
+            # "waiting area (4)"
+            #
+            # becomes:
+            #
+            # "waiting area"
+            # ========================================================
+
+            cleaned_value = remove_count(
+                original_value
+            )
+
+
+            normalized_original = normalize_text(
+                original_value
+            )
+
+            normalized_cleaned = normalize_text(
+                cleaned_value
+            )
+
+
+            # ========================================================
+            # 1. EXACT MATCH
+            # ========================================================
+
+            for option in options:
+
+                if not option.name:
+
+                    continue
+
+                option_name = normalize_text(
+                    option.name
+                )
+
+                if option_name == normalized_original:
+
+                    return option
+
+
+            # ========================================================
+            # 2. MATCH AFTER REMOVING COUNT
+            # ========================================================
+
+            for option in options:
+
+                if not option.name:
+
+                    continue
+
+                option_name = normalize_text(
+                    option.name
+                )
+
+                if option_name == normalized_cleaned:
+
+                    return option
+
+
+            # ========================================================
+            # 3. COMPACT MATCH
+            #
+            # Handles:
+            #
+            # Good receiving area
+            # Good-receiving-area
+            # good_receiving_area
+            # ========================================================
+
+            import re
+
+            def compact(value):
+
+                return re.sub(
+                    r"[^a-z0-9]+",
+                    "",
+                    normalize_text(value)
+                )
+
+
+            compact_value = compact(
+                cleaned_value
+            )
+
+
+            for option in options:
+
+                if not option.name:
+
+                    continue
+
+                compact_option = compact(
+                    option.name
+                )
+
+                if (
+                    compact_option
+                    and compact_option == compact_value
+                ):
+
+                    return option
+
+
+            # ========================================================
+            # 4. PREFIX / CONTAINS MATCH
+            # ========================================================
+
+            for option in options:
+
+                if not option.name:
+
+                    continue
+
+                option_name = normalize_text(
+                    option.name
+                )
+
+                if (
+                    option_name
+                    and normalized_cleaned
+                    and (
+                        option_name in normalized_cleaned
+                        or normalized_cleaned in option_name
+                    )
+                ):
+
+                    return option
+
+
+            # ========================================================
+            # 5. WORD MATCH
+            # ========================================================
+
+            value_words = set(
+                normalized_cleaned.split()
+            )
+
+            if value_words:
+
+                best_option = None
+                best_score = 0
+
+                for option in options:
+
+                    if not option.name:
+
+                        continue
+
+                    option_words = set(
+                        normalize_text(
+                            option.name
+                        ).split()
+                    )
+
+                    common_words = (
+                        value_words
+                        & option_words
+                    )
+
+                    score = len(
+                        common_words
+                    )
+
+                    if score > best_score:
+
+                        best_score = score
+                        best_option = option
+
+
+                if (
+                    best_option
+                    and best_score > 0
+                ):
+
+                    return best_option
+
+
+            return None
+
+
+        # ============================================================
         # PROCESS ALL FEATURES
         # ============================================================
 
@@ -3261,13 +4003,16 @@ class AgentPropertySerializer(serializers.ModelSerializer):
 
             field = fv.field
 
-            # --------------------------------------------------------
-            # Safely decode JSON
-            # --------------------------------------------------------
+
+            # ========================================================
+            # SAFELY DECODE JSON
+            # ========================================================
 
             try:
 
-                data = json.loads(fv.value)
+                data = json.loads(
+                    fv.value
+                )
 
             except Exception:
 
@@ -3275,10 +4020,17 @@ class AgentPropertySerializer(serializers.ModelSerializer):
 
 
             # ========================================================
+            # CASE 1:
+            #
             # [
-            #   {"option": "sleeping area", "value": "2"},
-            #   {"option": "parking", "value": "1"},
-            #   {"option": "outdoor area", "value": "3"}
+            #   {
+            #       "field_id": 44,
+            #       "value": "waiting area (4)"
+            #   },
+            #   {
+            #       "field_id": 44,
+            #       "value": "work area (5)"
+            #   }
             # ]
             # ========================================================
 
@@ -3287,201 +4039,468 @@ class AgentPropertySerializer(serializers.ModelSerializer):
                 for item in data:
 
                     if not isinstance(item, dict):
+
                         continue
 
-                    option = item.get("option")
 
-                    # Support both "value" and old "count"
-                    value = item.get("value")
+                    # =================================================
+                    # GET FIELD ID FROM JSON
+                    # =================================================
+
+                    field_id = item.get(
+                        "field_id"
+                    )
+
+                    if not field_id:
+
+                        field_id = item.get(
+                            "fieldId"
+                        )
+
+
+                    # -------------------------------------------------
+                    # FALLBACK TO FIELD VALUE FK
+                    # -------------------------------------------------
+
+                    if not field_id:
+
+                        field_id = getattr(
+                            fv,
+                            "field_id",
+                            None
+                        )
+
+
+                    # -------------------------------------------------
+                    # FINAL FALLBACK
+                    # -------------------------------------------------
+
+                    if not field_id:
+
+                        field_id = getattr(
+                            field,
+                            "id",
+                            None
+                        )
+
+
+                    # =================================================
+                    # GET EXACT SUBCATEGORY FIELD
+                    #
+                    # field_id
+                    #     ↓
+                    # SubcategoryField
+                    # =================================================
+
+                    exact_field = (
+                        SubcategoryField.objects
+                        .select_related(
+                            "subcategory",
+                            "subcategory__category"
+                        )
+                        .filter(
+                            pk=field_id
+                        )
+                        .first()
+                    )
+
+
+                    if exact_field:
+
+                        field = exact_field
+
+
+                    # =================================================
+                    # GET CATEGORY
+                    # =================================================
+
+                    category = getattr(
+                        field.subcategory,
+                        "category",
+                        None
+                    )
+
+
+                    category_name = None
+
+                    if category:
+
+                        category_name = getattr(
+                            category,
+                            "name",
+                            None
+                        )
+
+
+                    # =================================================
+                    # GET SUBCATEGORY
+                    # =================================================
+
+                    subcategory = getattr(
+                        field,
+                        "subcategory",
+                        None
+                    )
+
+
+                    subcategory_name = None
+
+                    if subcategory:
+
+                        subcategory_name = getattr(
+                            subcategory,
+                            "name",
+                            None
+                        )
+
+
+                    # =================================================
+                    # OPTION
+                    # =================================================
+
+                    option = item.get(
+                        "option"
+                    )
+
+
+                    # =================================================
+                    # SUPPORT BOTH VALUE AND COUNT
+                    # =================================================
+
+                    value = item.get(
+                        "value"
+                    )
 
                     if value is None:
-                        value = item.get("count", "")
+
+                        value = item.get(
+                            "count",
+                            ""
+                        )
 
 
-                    # ------------------------------------------------
-                    # Use FieldOption.icon
-                    # ------------------------------------------------
+                    # =================================================
+                    # FIND FIELD OPTION
+                    # =================================================
+
+                    option_obj = None
+
+
+                    # -------------------------------------------------
+                    # IF OPTION NAME EXISTS
+                    # -------------------------------------------------
 
                     if option:
 
-                        option = str(option).strip()
-
-                        option_obj = None
-
-                        # First use prefetched options
-                        for option_item in field.options.all():
-
-                            if (
-                                option_item.name
-                                and option_item.name.strip().lower()
-                                == option.lower()
-                            ):
-
-                                option_obj = option_item
-                                break
+                        option_obj = find_field_option(
+                            field,
+                            option
+                        )
 
 
-                        option_icon = None
-
-                        if option_obj and option_obj.icon:
-
-                            try:
-
-                                option_icon = (
-                                    request.build_absolute_uri(
-                                        option_obj.icon.url
-                                    )
-                                    if request
-                                    else option_obj.icon.url
-                                )
-
-                            except Exception:
-
-                                option_icon = option_obj.icon.url
-
-
-                        result[option] = {
-                            "value": value,
-                            "icon": option_icon
-                        }
-
-                        continue
-
-
-                    # ------------------------------------------------
-                    # NO OPTION
+                    # -------------------------------------------------
+                    # IF OPTION NAME NOT FOUND,
+                    # SEARCH VALUE
                     #
-                    # Use SubcategoryField.icon
-                    # ------------------------------------------------
+                    # Example:
+                    #
+                    # "Good receiving area (2)"
+                    # -------------------------------------------------
 
-                    if field.icon:
+                    if not option_obj:
 
-                        try:
+                        option_obj = find_field_option(
+                            field,
+                            value
+                        )
 
-                            icon = (
-                                request.build_absolute_uri(
-                                    field.icon.url
-                                )
-                                if request
-                                else field.icon.url
-                            )
 
-                        except Exception:
+                    # =================================================
+                    # GET ICON FROM FieldOption
+                    # =================================================
 
-                            icon = field.icon.url
+                    option_icon = get_option_icon(
+                        option_obj
+                    )
+
+
+                    # =================================================
+                    # OUTPUT NAME
+                    # =================================================
+
+                    if (
+                        option_obj
+                        and option_obj.name
+                    ):
+
+                        output_name = (
+                            option_obj.name
+                        )
+
+                    elif option:
+
+                        output_name = str(
+                            option
+                        ).strip()
 
                     else:
 
-                        icon = None
+                        output_name = remove_count(
+                            value
+                        )
 
 
-                    # ------------------------------------------------
-                    # Countable field
-                    # ------------------------------------------------
+                    # =================================================
+                    # OUTPUT VALUE
+                    #
+                    # "waiting area (4)"
+                    #
+                    # becomes:
+                    #
+                    # "4"
+                    # =================================================
+
+                    output_value = value
+
+                    if isinstance(
+                        value,
+                        str
+                    ):
+
+                        match = re.search(
+                            r"\(\s*(\d+)\s*\)\s*$",
+                            value.strip()
+                        )
+
+                        if match:
+
+                            output_value = (
+                                match.group(1)
+                            )
+
+
+                    # =================================================
+                    # COUNTABLE FIELD
+                    # =================================================
 
                     if field.field_type == "countable":
 
                         try:
 
-                            value = int(value)
+                            output_value = int(
+                                output_value
+                            )
 
                         except Exception:
 
-                            value = 0
+                            output_value = 0
 
 
-                    result[field.field_name] = {
-                        "value": value,
-                        "icon": icon
+                    # =================================================
+                    # SAVE RESULT
+                    # =================================================
+
+                    result[output_name] = {
+                        "value": output_value,
+                        "icon": option_icon
                     }
 
 
+                # ----------------------------------------------------
                 # Finished processing this FieldValue
+                # ----------------------------------------------------
+
                 continue
 
 
             # ========================================================
+            # CASE 2:
+            #
             # {"option": "Bed", "value": 1}
             # {"option": "Bed", "count": 1}
             # ========================================================
 
             if isinstance(data, dict):
 
-                option = data.get("option")
+                # ====================================================
+                # FIELD ID
+                # ====================================================
 
-                # Support value
-                value = data.get("value")
+                field_id = data.get(
+                    "field_id"
+                )
 
-                # Support old count format
+                if not field_id:
+
+                    field_id = data.get(
+                        "fieldId"
+                    )
+
+
+                if not field_id:
+
+                    field_id = getattr(
+                        fv,
+                        "field_id",
+                        None
+                    )
+
+
+                if not field_id:
+
+                    field_id = getattr(
+                        field,
+                        "id",
+                        None
+                    )
+
+
+                # ====================================================
+                # EXACT FIELD
+                # ====================================================
+
+                exact_field = (
+                    SubcategoryField.objects
+                    .select_related(
+                        "subcategory",
+                        "subcategory__category"
+                    )
+                    .filter(
+                        pk=field_id
+                    )
+                    .first()
+                )
+
+
+                if exact_field:
+
+                    field = exact_field
+
+
+                # ====================================================
+                # OPTION
+                # ====================================================
+
+                option = data.get(
+                    "option"
+                )
+
+
+                # ====================================================
+                # VALUE
+                # ====================================================
+
+                value = data.get(
+                    "value"
+                )
+
                 if value is None:
 
-                    value = data.get("count", None)
+                    value = data.get(
+                        "count",
+                        None
+                    )
 
 
-                # ----------------------------------------------------
+                # ====================================================
                 # OPTION EXISTS
-                # ----------------------------------------------------
+                # ====================================================
 
                 if option:
 
-                    option = str(option).strip()
-
-                    option_obj = None
-
-                    # Use prefetched FieldOptions
-                    for option_item in field.options.all():
-
-                        if (
-                            option_item.name
-                            and option_item.name.strip().lower()
-                            == option.lower()
-                        ):
-
-                            option_obj = option_item
-                            break
+                    option = str(
+                        option
+                    ).strip()
 
 
-                    option_icon = None
+                    # ------------------------------------------------
+                    # FIND OPTION FROM EXACT FIELD
+                    # ------------------------------------------------
 
-                    if option_obj and option_obj.icon:
+                    option_obj = find_field_option(
+                        field,
+                        option
+                    )
+
+
+                    # ------------------------------------------------
+                    # If not found, try value
+                    # ------------------------------------------------
+
+                    if not option_obj:
+
+                        option_obj = find_field_option(
+                            field,
+                            value
+                        )
+
+
+                    # ------------------------------------------------
+                    # ICON FROM FIELD OPTION
+                    # ------------------------------------------------
+
+                    option_icon = get_option_icon(
+                        option_obj
+                    )
+
+
+                    # ------------------------------------------------
+                    # VALUE
+                    # ------------------------------------------------
+
+                    if value is None:
+
+                        value = ""
+
+
+                    # ------------------------------------------------
+                    # COUNTABLE
+                    # ------------------------------------------------
+
+                    if field.field_type == "countable":
 
                         try:
 
-                            option_icon = (
-                                request.build_absolute_uri(
-                                    option_obj.icon.url
-                                )
-                                if request
-                                else option_obj.icon.url
+                            value = int(
+                                value
                             )
 
                         except Exception:
 
-                            option_icon = option_obj.icon.url
+                            value = 0
 
+
+                    # ------------------------------------------------
+                    # SAVE
+                    # ------------------------------------------------
 
                     result[option] = {
-                        "value": (
-                            value
-                            if value is not None
-                            else ""
-                        ),
+                        "value": value,
                         "icon": option_icon
                     }
 
                     continue
 
 
-                # ----------------------------------------------------
+                # ====================================================
                 # NO OPTION
-                #
-                # Use SubcategoryField.icon
-                # ----------------------------------------------------
+                # ====================================================
 
-                if field.field_name.lower() == "flat furnishings":
+                if (
+                    field.field_name
+                    and field.field_name.lower()
+                    == "flat furnishings"
+                ):
 
                     continue
 
+
+                # ====================================================
+                # FIELD ICON FOR NORMAL FIELD
+                #
+                # This is ONLY for fields that do not have
+                # a FieldOption.
+                # ====================================================
 
                 if field.icon:
 
@@ -3504,9 +4523,9 @@ class AgentPropertySerializer(serializers.ModelSerializer):
                     icon = None
 
 
-                # ----------------------------------------------------
-                # Countable field
-                # ----------------------------------------------------
+                # ====================================================
+                # COUNTABLE
+                # ====================================================
 
                 if field.field_type == "countable":
 
@@ -3539,13 +4558,26 @@ class AgentPropertySerializer(serializers.ModelSerializer):
 
             # ========================================================
             # CASE 3:
+            #
+            # SIMPLE VALUE
+            #
+            # Example:
+            #
             # "4BHK"
             # ========================================================
 
-            if field.field_name.lower() == "flat furnishings":
+            if (
+                field.field_name
+                and field.field_name.lower()
+                == "flat furnishings"
+            ):
 
                 continue
 
+
+            # ========================================================
+            # NORMAL FIELD ICON
+            # ========================================================
 
             if field.icon:
 
@@ -3568,15 +4600,17 @@ class AgentPropertySerializer(serializers.ModelSerializer):
                 icon = None
 
 
-            # --------------------------------------------------------
-            # Countable field
-            # --------------------------------------------------------
+            # ========================================================
+            # COUNTABLE
+            # ========================================================
 
             if field.field_type == "countable":
 
                 try:
 
-                    value = int(fv.value)
+                    value = int(
+                        fv.value
+                    )
 
                 except Exception:
 
@@ -3605,6 +4639,15 @@ class AgentPropertySerializer(serializers.ModelSerializer):
             }
             for key, value in result.items()
         ]
+
+
+
+
+
+
+
+
+
     # =====================================================
     # OTHER FIELDS
     # =====================================================
@@ -6449,7 +7492,8 @@ class UserPropertySerializer(serializers.ModelSerializer):
             return obj.land_mark
 
         return []
-
+    
+    
     # def get_features(self, obj):
 
     #     data = []
@@ -6465,16 +7509,51 @@ class UserPropertySerializer(serializers.ModelSerializer):
     #                 "value": f.value
     #             }
 
+    #         # =================================================
+    #         # FEATURE NAME
+    #         # =================================================
+
     #         feature_name = (
     #             value.get("option")
     #             if value.get("option")
     #             else f.field.field_name
     #         )
 
+    #         # =================================================
+    #         # FEATURE VALUE
+    #         # =================================================
+
     #         feature_value = value.get("value")
 
     #         if feature_value is None:
     #             feature_value = ""
+
+    #         # =================================================
+    #         # FEATURE ICON
+    #         # =================================================
+
+    #         icon_url = None
+
+    #         option_name = value.get("option")
+
+    #         if option_name:
+
+    #             option_obj = FieldOption.objects.filter(
+    #                 field=f.field,
+    #                 name__iexact=str(option_name).strip()
+    #             ).first()
+
+    #             if option_obj and option_obj.icon:
+
+    #                 icon_url = option_obj.icon.url
+
+    #         elif f.field.icon:
+
+    #             icon_url = f.field.icon.url
+
+    #         # =================================================
+    #         # OUTPUT
+    #         # =================================================
 
     #         data.append({
 
@@ -6482,89 +7561,450 @@ class UserPropertySerializer(serializers.ModelSerializer):
 
     #             "value": str(feature_value),
 
-    #             "icon": (
-    #                 f.field.icon.url
-    #                 if f.field.icon
-    #                 else None
-    #             )
+    #             "icon": icon_url
     #         })
 
     #     return data
 
-    
-    
     def get_features(self, obj):
 
         data = []
 
-        for f in obj.property_features.select_related("field"):
+        # ============================================================
+        # GET ALL PROPERTY FEATURES
+        # ============================================================
+
+        property_features = (
+            obj.property_features
+            .select_related("field")
+            .prefetch_related("field__options")
+        )
+
+        for f in property_features:
+
+            # ========================================================
+            # DEFAULT FIELD
+            # ========================================================
+
+            field = f.field
+
+            if not field:
+                continue
+
+            # ========================================================
+            # PARSE STORED VALUE
+            # ========================================================
 
             try:
-                value = json.loads(f.value)
+                parsed_value = json.loads(f.value)
 
-            except Exception:
+            except (TypeError, ValueError, json.JSONDecodeError):
 
-                value = {
+                parsed_value = {
                     "value": f.value
                 }
 
-            # =================================================
-            # FEATURE NAME
-            # =================================================
+            # ========================================================
+            # NORMALIZE INTO LIST
+            # ========================================================
 
-            feature_name = (
-                value.get("option")
-                if value.get("option")
-                else f.field.field_name
-            )
+            if isinstance(parsed_value, list):
 
-            # =================================================
-            # FEATURE VALUE
-            # =================================================
+                feature_items = parsed_value
 
-            feature_value = value.get("value")
+            else:
 
-            if feature_value is None:
-                feature_value = ""
+                feature_items = [parsed_value]
 
-            # =================================================
-            # FEATURE ICON
-            # =================================================
+            # ========================================================
+            # PROCESS EACH FEATURE
+            # ========================================================
 
-            icon_url = None
+            for item in feature_items:
 
-            option_name = value.get("option")
+                # ====================================================
+                # MAKE SURE ITEM IS A DICTIONARY
+                # ====================================================
 
-            if option_name:
+                if not isinstance(item, dict):
 
-                option_obj = FieldOption.objects.filter(
-                    field=f.field,
-                    name__iexact=str(option_name).strip()
-                ).first()
+                    item = {
+                        "value": item
+                    }
+
+                # ====================================================
+                # FIELD ID
+                # ====================================================
+
+                field_id = item.get("field_id")
+
+                current_field = field
+
+                if field_id:
+
+                    try:
+                        field_id = int(field_id)
+
+                    except (TypeError, ValueError):
+
+                        field_id = None
+
+                # ====================================================
+                # IF JSON CONTAINS FIELD ID
+                # ====================================================
+
+                if field_id and field_id != field.id:
+
+                    current_field = (
+                        SubcategoryField.objects
+                        .prefetch_related("options")
+                        .filter(id=field_id)
+                        .first()
+                    )
+
+                    if not current_field:
+                        continue
+
+                # ====================================================
+                # RAW VALUE
+                # ====================================================
+
+                feature_value = item.get("value")
+
+                if feature_value is None:
+
+                    feature_value = ""
+
+                feature_value = str(feature_value).strip()
+
+                # ====================================================
+                # EXPLICIT OPTION
+                # ====================================================
+
+                option_name = item.get("option")
+
+                # ====================================================
+                # FIND FIELD OPTION
+                # ====================================================
+
+                option_obj = None
+
+                options = list(
+                    current_field.options.all()
+                )
+
+                # ====================================================
+                # CASE 1:
+                # EXPLICIT OPTION EXISTS
+                #
+                # {
+                #     "option": "4BHK",
+                #     "value": "4BHK"
+                # }
+                # ====================================================
+
+                if option_name:
+
+                    option_name_clean = (
+                        str(option_name)
+                        .strip()
+                        .lower()
+                    )
+
+                    for option in options:
+
+                        if (
+                            option.name.strip().lower()
+                            == option_name_clean
+                        ):
+
+                            option_obj = option
+                            break
+
+                # ====================================================
+                # CASE 2:
+                # FIND OPTION FROM VALUE
+                # ====================================================
+
+                if not option_obj and feature_value:
+
+                    value_clean = feature_value.lower().strip()
+
+                    for option in options:
+
+                        option_clean = (
+                            option.name
+                            .strip()
+                            .lower()
+                        )
+
+                        # =================================================
+                        # EXACT MATCH
+                        #
+                        # 4BHK
+                        # Parking
+                        # Garden
+                        # etc.
+                        # =================================================
+
+                        if value_clean == option_clean:
+
+                            option_obj = option
+                            break
+
+                        # =================================================
+                        # COUNTABLE MATCH
+                        #
+                        # waiting area (4)
+                        # work area (5)
+                        # =================================================
+
+                        prefix = option_clean + " ("
+
+                        if value_clean.startswith(prefix):
+
+                            remaining = value_clean[
+                                len(option_clean):
+                            ]
+
+                            if (
+                                remaining.startswith(" (")
+                                and remaining.endswith(")")
+                            ):
+
+                                count_value = remaining[
+                                    2:-1
+                                ].strip()
+
+                                if count_value:
+
+                                    option_obj = option
+                                    break
+
+                # ====================================================
+                # FEATURE NAME
+                # ====================================================
+
+                if option_obj:
+
+                    # For select/multi-select/countable options,
+                    # the field name remains the feature name.
+                    #
+                    # Example:
+                    #
+                    # BHK types -> 4BHK
+                    # Bed       -> 1
+                    # Fan       -> 1
+
+                    feature_name = current_field.field_name
+
+                elif option_name:
+
+                    feature_name = str(option_name)
+
+                else:
+
+                    feature_name = current_field.field_name
+
+                # ====================================================
+                # FEATURE VALUE
+                # ====================================================
+
+                output_value = feature_value
+
+                # ====================================================
+                # FIELD TYPE
+                # ====================================================
+
+                field_type = current_field.field_type
+
+                # ====================================================
+                # COUNTABLE FIELD
+                #
+                # waiting area (4)
+                #        ↓
+                # value = 4
+                #
+                # work area (5)
+                #        ↓
+                # value = 5
+                # ====================================================
+
+                if field_type == "countable":
+
+                    if option_obj:
+
+                        option_clean = (
+                            option_obj.name.strip()
+                        )
+
+                        prefix = option_clean + " ("
+
+                        if (
+                            feature_value.lower().startswith(
+                                prefix.lower()
+                            )
+                            and feature_value.endswith(")")
+                        ):
+
+                            start_index = (
+                                len(option_clean) + 2
+                            )
+
+                            end_index = (
+                                len(feature_value) - 1
+                            )
+
+                            extracted_count = feature_value[
+                                start_index:end_index
+                            ].strip()
+
+                            if extracted_count:
+
+                                output_value = extracted_count
+
+                    else:
+
+                        # ------------------------------------------------
+                        # If no option is found, keep original value.
+                        # ------------------------------------------------
+
+                        output_value = feature_value
+
+                # ====================================================
+                # SELECT FIELD
+                #
+                # Example:
+                #
+                # Field:
+                # BHK types
+                #
+                # Option:
+                # 4BHK
+                #
+                # Response:
+                #
+                # name  = BHK types
+                # value = 4BHK
+                # ====================================================
+
+                elif field_type == "select":
+
+                    if option_obj:
+
+                        output_value = option_obj.name
+
+                    else:
+
+                        output_value = feature_value
+
+                # ====================================================
+                # MULTI SELECT FIELD
+                #
+                # Same behavior as select.
+                # ====================================================
+
+                elif field_type == "multi_select":
+
+                    if option_obj:
+
+                        output_value = option_obj.name
+
+                    else:
+
+                        output_value = feature_value
+
+                # ====================================================
+                # TEXT
+                # ====================================================
+
+                elif field_type == "text":
+
+                    output_value = feature_value
+
+                # ====================================================
+                # NUMBER
+                # ====================================================
+
+                elif field_type == "number":
+
+                    output_value = feature_value
+
+                # ====================================================
+                # BOOLEAN
+                # ====================================================
+
+                elif field_type == "boolean":
+
+                    output_value = feature_value
+
+                # ====================================================
+                # UNKNOWN FIELD TYPE
+                #
+                # Keep existing value unchanged.
+                # ====================================================
+
+                else:
+
+                    output_value = feature_value
+
+                # ====================================================
+                # FEATURE ICON
+                # ====================================================
+
+                icon_url = None
+
+                # ----------------------------------------------------
+                # OPTION ICON
+                # ----------------------------------------------------
 
                 if option_obj and option_obj.icon:
 
-                    icon_url = option_obj.icon.url
+                    try:
 
-            elif f.field.icon:
+                        icon_url = option_obj.icon.url
 
-                icon_url = f.field.icon.url
+                    except Exception:
 
-            # =================================================
-            # OUTPUT
-            # =================================================
+                        icon_url = None
 
-            data.append({
+                # ----------------------------------------------------
+                # FIELD ICON
+                # ----------------------------------------------------
 
-                "name": feature_name,
+                elif current_field.icon:
 
-                "value": str(feature_value),
+                    try:
 
-                "icon": icon_url
-            })
+                        icon_url = current_field.icon.url
+
+                    except Exception:
+
+                        icon_url = None
+
+                # ====================================================
+                # FIELD OPTION ID
+                # ====================================================
+
+                option_id = (
+                    option_obj.id
+                    if option_obj
+                    else None
+                )
+
+                # ====================================================
+                # FINAL OUTPUT
+                # ====================================================
+
+                data.append({
+                    "name": feature_name,
+
+                    "value": output_value,
+
+                    "icon": icon_url
+                })
 
         return data
-
 
 
 

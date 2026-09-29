@@ -39,7 +39,7 @@
                         <i class="fa-solid fa-magnifying-glass text-[13px]"></i>
                     </span>
 
-                    <input id="livePropertySearch" type="text" placeholder="Search properties or agents..."
+                    <input id="livePropertySearch" type="text" placeholder="Search properties..."
                         autocomplete="off" aria-label="Search properties and agents" aria-controls="searchDropdown"
                         aria-expanded="false"
                         class="h-11 w-full rounded-[14px] border border-[#dfe8d7] bg-white/80 py-2.5 pl-11 pr-14 text-[13px] font-medium text-[#46583e] shadow-[0_6px_20px_rgba(48,72,35,0.05)] outline-none transition-all duration-200 placeholder:text-slate-400 hover:border-[#cdddbf] hover:bg-white focus:border-[#8bc83f]/60 focus:bg-white focus:ring-4 focus:ring-[#8bc83f]/10 sm:h-12 sm:text-sm">
@@ -958,7 +958,7 @@
                 .replace(/'/g, '&#39;');
         }
 
-        const placeholders = ['Search property...', 'Search agents...'];
+        const placeholders = ['Search property...'];
         let placeholderIndex = 0;
         let rotateInterval = null;
         const ROTATE_MS = 2300;

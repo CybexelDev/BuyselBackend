@@ -6019,23 +6019,6 @@ class AgentPropertyListAPIView(APIView):
             many=True,
             context={'request': request}
         )
-
-        # =====================================================
-        # PLAN LIMIT
-        # =====================================================
-
-        # total_properties = properties.count()
-
-        # total_limit, residential_limit, commercial_limit = user.get_plan_limits()
-
-        # remaining_listings = max(
-        #     total_limit - total_properties,
-        #     0
-        # )
-        # =====================================================
-        # PLAN LIMIT
-        # =====================================================
-
         total_properties = properties.count()
 
         active_subscriptions = Subscription.objects.filter(
@@ -6093,37 +6076,6 @@ class AgentPropertyListAPIView(APIView):
                 "is_active":
                     subscription.is_active
             })
-
-        # =====================================================
-        # EDIT LIMIT
-        # =====================================================
-
-        # total_edit_limit = 0
-
-        # for sub in active_subscriptions:
-
-        #     premium = PremiumPlan.objects.filter(
-        #         name=sub.plan_name
-        #     ).first()
-
-        #     elite = ElitePlan.objects.filter(
-        #         name=sub.plan_name
-        #     ).first()
-
-        #     edit_value = None
-
-        #     if premium:
-        #         edit_value = premium.edit
-        #     elif elite:
-        #         edit_value = elite.edit
-
-        #     if not edit_value:
-        #         continue
-
-        #     match = re.search(r"\d+", str(edit_value))
-
-        #     if match:
-        #         total_edit_limit += int(match.group())
         total_edit_limit = 0
 
         for sub in active_subscriptions:
@@ -6155,14 +6107,6 @@ class AgentPropertyListAPIView(APIView):
 
             if match:
                 total_edit_limit += int(match.group())
-
-        # =====================================================
-        # EDIT USED (FIXED LOGIC)
-        # =====================================================
-
-        # IMPORTANT:
-        # If edit tracking is not per-property, you must store it somewhere.
-        # Best simple approach: count edits field in property
 
         total_used_edits = sum(
             s.edit_used for s in active_subscriptions
@@ -13735,6 +13679,79 @@ class UserPropertyListAPIView(APIView):
                 "request": request
             }
         )
+
+        remaining_property = counts.get(
+            "remaining_property",
+            0
+        )
+
+        total_property = counts.get(
+            "total_property",
+            remaining_property
+        )
+
+        used_property = max(
+            total_property - remaining_property,
+            0
+        )
+
+        # ==========================================
+        # RESIDENTIAL PROPERTY
+        # ==========================================
+
+        residential_remaining = counts.get(
+            "residential_remaining",
+            0
+        )
+
+        residential_total = counts.get(
+            "residential_total",
+            residential_remaining
+        )
+
+        residential_used = max(
+            residential_total - residential_remaining,
+            0
+        )
+
+        # ==========================================
+        # COMMERCIAL PROPERTY
+        # ==========================================
+
+        commercial_remaining = counts.get(
+            "commercial_remaining",
+            0
+        )
+
+        commercial_total = counts.get(
+            "commercial_total",
+            commercial_remaining
+        )
+
+        commercial_used = max(
+            commercial_total - commercial_remaining,
+            0
+        )
+
+        # ==========================================
+        # EDIT COUNT
+        # ==========================================
+
+        remaining_edit = edit_data.get(
+            "remaining_edit",
+            0
+        )
+
+        total_edit = edit_data.get(
+            "total_edit",
+            remaining_edit
+        )
+
+        used_edit = max(
+            total_edit - remaining_edit,
+            0
+        )
+
         property_edit_data = []
 
         for prop in properties:
@@ -13773,18 +13790,25 @@ class UserPropertyListAPIView(APIView):
             # PROPERTY LIMITS
             # ======================================
 
-            "remaining_property":
-            counts["remaining_property"],
+            # "remaining_property":
+            # counts["remaining_property"],
 
-            "residential_remaining":
-            counts["residential_remaining"],
+            # "residential_remaining":
+            # counts["residential_remaining"],
 
-            "commercial_remaining":
-            counts["commercial_remaining"],
+            # "commercial_remaining":
+            # counts["commercial_remaining"],
 
-            "remaining_edit_count":
-            edit_data["remaining_edit"],
+            # "remaining_edit_count":
+            # edit_data["remaining_edit"],
 
+            "remaining_property": [used_property, total_property],
+
+            "residential_remaining": [residential_used, residential_total],
+
+            "commercial_remaining": [commercial_used, commercial_total],
+
+            "remaining_edit_count": [used_edit, total_edit],
             # ======================================
             # PROPERTY DATA
             # ======================================

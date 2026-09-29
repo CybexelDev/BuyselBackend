@@ -3612,11 +3612,6 @@ class AgentPropertySerializer(serializers.ModelSerializer):
         result = {}
 
         request = self.context.get("request")
-
-        # ============================================================
-        # SUPPORT BOTH Property AND AgentProperty
-        # ============================================================
-
         if hasattr(obj, "property_features"):
 
             feature_values = obj.property_features.select_related(
@@ -3636,12 +3631,6 @@ class AgentPropertySerializer(serializers.ModelSerializer):
         else:
 
             feature_values = []
-
-
-        # ============================================================
-        # HELPER: NORMALIZE TEXT
-        # ============================================================
-
         def normalize_text(value):
 
             if value is None:
@@ -3658,20 +3647,6 @@ class AgentPropertySerializer(serializers.ModelSerializer):
             )
 
             return value
-
-
-        # ============================================================
-        # HELPER: REMOVE COUNT
-        #
-        # "storage area (5)"
-        # "Good receiving area (2)"
-        #
-        # becomes:
-        #
-        # "storage area"
-        # "Good receiving area"
-        # ============================================================
-
         def remove_count(value):
 
             if value is None:
@@ -3688,15 +3663,6 @@ class AgentPropertySerializer(serializers.ModelSerializer):
             )
 
             return value.strip()
-
-
-        # ============================================================
-        # HELPER: GET FIELD OPTION ICON
-        #
-        # IMPORTANT:
-        # ICON IS TAKEN ONLY FROM FieldOption.icon
-        # ============================================================
-
         def get_option_icon(option):
 
             if not option:
@@ -3752,23 +3718,6 @@ class AgentPropertySerializer(serializers.ModelSerializer):
             except Exception:
 
                 return None
-
-
-        # ============================================================
-        # HELPER: FIND FIELD OPTION
-        #
-        # IMPORTANT:
-        #
-        # field_id
-        #     ↓
-        # SubcategoryField
-        #     ↓
-        # FieldOption
-        #
-        # This makes sure the option belongs to the
-        # exact field.
-        # ============================================================
-
         def find_field_option(
             field,
             option_value
@@ -3779,12 +3728,6 @@ class AgentPropertySerializer(serializers.ModelSerializer):
 
             if option_value is None:
                 return None
-
-
-            # ========================================================
-            # GET OPTIONS FOR EXACT FIELD
-            # ========================================================
-
             try:
 
                 options = list(
@@ -3802,26 +3745,9 @@ class AgentPropertySerializer(serializers.ModelSerializer):
 
                 return None
 
-
-            # ========================================================
-            # ORIGINAL VALUE
-            # ========================================================
-
             original_value = str(
                 option_value
             ).strip()
-
-
-            # ========================================================
-            # VALUE WITHOUT COUNT
-            #
-            # "waiting area (4)"
-            #
-            # becomes:
-            #
-            # "waiting area"
-            # ========================================================
-
             cleaned_value = remove_count(
                 original_value
             )
@@ -3834,12 +3760,6 @@ class AgentPropertySerializer(serializers.ModelSerializer):
             normalized_cleaned = normalize_text(
                 cleaned_value
             )
-
-
-            # ========================================================
-            # 1. EXACT MATCH
-            # ========================================================
-
             for option in options:
 
                 if not option.name:
@@ -3853,12 +3773,6 @@ class AgentPropertySerializer(serializers.ModelSerializer):
                 if option_name == normalized_original:
 
                     return option
-
-
-            # ========================================================
-            # 2. MATCH AFTER REMOVING COUNT
-            # ========================================================
-
             for option in options:
 
                 if not option.name:
@@ -3872,18 +3786,6 @@ class AgentPropertySerializer(serializers.ModelSerializer):
                 if option_name == normalized_cleaned:
 
                     return option
-
-
-            # ========================================================
-            # 3. COMPACT MATCH
-            #
-            # Handles:
-            #
-            # Good receiving area
-            # Good-receiving-area
-            # good_receiving_area
-            # ========================================================
-
             import re
 
             def compact(value):
@@ -3916,12 +3818,6 @@ class AgentPropertySerializer(serializers.ModelSerializer):
                 ):
 
                     return option
-
-
-            # ========================================================
-            # 4. PREFIX / CONTAINS MATCH
-            # ========================================================
-
             for option in options:
 
                 if not option.name:
@@ -3942,12 +3838,6 @@ class AgentPropertySerializer(serializers.ModelSerializer):
                 ):
 
                     return option
-
-
-            # ========================================================
-            # 5. WORD MATCH
-            # ========================================================
-
             value_words = set(
                 normalized_cleaned.split()
             )
@@ -3993,21 +3883,9 @@ class AgentPropertySerializer(serializers.ModelSerializer):
 
 
             return None
-
-
-        # ============================================================
-        # PROCESS ALL FEATURES
-        # ============================================================
-
         for fv in feature_values:
 
             field = fv.field
-
-
-            # ========================================================
-            # SAFELY DECODE JSON
-            # ========================================================
-
             try:
 
                 data = json.loads(
@@ -4017,23 +3895,6 @@ class AgentPropertySerializer(serializers.ModelSerializer):
             except Exception:
 
                 data = None
-
-
-            # ========================================================
-            # CASE 1:
-            #
-            # [
-            #   {
-            #       "field_id": 44,
-            #       "value": "waiting area (4)"
-            #   },
-            #   {
-            #       "field_id": 44,
-            #       "value": "work area (5)"
-            #   }
-            # ]
-            # ========================================================
-
             if isinstance(data, list):
 
                 for item in data:
@@ -4041,12 +3902,6 @@ class AgentPropertySerializer(serializers.ModelSerializer):
                     if not isinstance(item, dict):
 
                         continue
-
-
-                    # =================================================
-                    # GET FIELD ID FROM JSON
-                    # =================================================
-
                     field_id = item.get(
                         "field_id"
                     )
@@ -4056,12 +3911,6 @@ class AgentPropertySerializer(serializers.ModelSerializer):
                         field_id = item.get(
                             "fieldId"
                         )
-
-
-                    # -------------------------------------------------
-                    # FALLBACK TO FIELD VALUE FK
-                    # -------------------------------------------------
-
                     if not field_id:
 
                         field_id = getattr(
@@ -4069,12 +3918,6 @@ class AgentPropertySerializer(serializers.ModelSerializer):
                             "field_id",
                             None
                         )
-
-
-                    # -------------------------------------------------
-                    # FINAL FALLBACK
-                    # -------------------------------------------------
-
                     if not field_id:
 
                         field_id = getattr(
@@ -4082,16 +3925,6 @@ class AgentPropertySerializer(serializers.ModelSerializer):
                             "id",
                             None
                         )
-
-
-                    # =================================================
-                    # GET EXACT SUBCATEGORY FIELD
-                    #
-                    # field_id
-                    #     ↓
-                    # SubcategoryField
-                    # =================================================
-
                     exact_field = (
                         SubcategoryField.objects
                         .select_related(
@@ -4108,12 +3941,6 @@ class AgentPropertySerializer(serializers.ModelSerializer):
                     if exact_field:
 
                         field = exact_field
-
-
-                    # =================================================
-                    # GET CATEGORY
-                    # =================================================
-
                     category = getattr(
                         field.subcategory,
                         "category",
@@ -4130,12 +3957,6 @@ class AgentPropertySerializer(serializers.ModelSerializer):
                             "name",
                             None
                         )
-
-
-                    # =================================================
-                    # GET SUBCATEGORY
-                    # =================================================
-
                     subcategory = getattr(
                         field,
                         "subcategory",
@@ -4152,20 +3973,9 @@ class AgentPropertySerializer(serializers.ModelSerializer):
                             "name",
                             None
                         )
-
-
-                    # =================================================
-                    # OPTION
-                    # =================================================
-
                     option = item.get(
                         "option"
                     )
-
-
-                    # =================================================
-                    # SUPPORT BOTH VALUE AND COUNT
-                    # =================================================
 
                     value = item.get(
                         "value"
@@ -4178,17 +3988,7 @@ class AgentPropertySerializer(serializers.ModelSerializer):
                             ""
                         )
 
-
-                    # =================================================
-                    # FIND FIELD OPTION
-                    # =================================================
-
                     option_obj = None
-
-
-                    # -------------------------------------------------
-                    # IF OPTION NAME EXISTS
-                    # -------------------------------------------------
 
                     if option:
 
@@ -4197,36 +3997,15 @@ class AgentPropertySerializer(serializers.ModelSerializer):
                             option
                         )
 
-
-                    # -------------------------------------------------
-                    # IF OPTION NAME NOT FOUND,
-                    # SEARCH VALUE
-                    #
-                    # Example:
-                    #
-                    # "Good receiving area (2)"
-                    # -------------------------------------------------
-
                     if not option_obj:
 
                         option_obj = find_field_option(
                             field,
                             value
                         )
-
-
-                    # =================================================
-                    # GET ICON FROM FieldOption
-                    # =================================================
-
                     option_icon = get_option_icon(
                         option_obj
                     )
-
-
-                    # =================================================
-                    # OUTPUT NAME
-                    # =================================================
 
                     if (
                         option_obj
@@ -4248,18 +4027,6 @@ class AgentPropertySerializer(serializers.ModelSerializer):
                         output_name = remove_count(
                             value
                         )
-
-
-                    # =================================================
-                    # OUTPUT VALUE
-                    #
-                    # "waiting area (4)"
-                    #
-                    # becomes:
-                    #
-                    # "4"
-                    # =================================================
-
                     output_value = value
 
                     if isinstance(
@@ -4277,12 +4044,6 @@ class AgentPropertySerializer(serializers.ModelSerializer):
                             output_value = (
                                 match.group(1)
                             )
-
-
-                    # =================================================
-                    # COUNTABLE FIELD
-                    # =================================================
-
                     if field.field_type == "countable":
 
                         try:
@@ -4294,37 +4055,12 @@ class AgentPropertySerializer(serializers.ModelSerializer):
                         except Exception:
 
                             output_value = 0
-
-
-                    # =================================================
-                    # SAVE RESULT
-                    # =================================================
-
                     result[output_name] = {
                         "value": output_value,
                         "icon": option_icon
                     }
-
-
-                # ----------------------------------------------------
-                # Finished processing this FieldValue
-                # ----------------------------------------------------
-
                 continue
-
-
-            # ========================================================
-            # CASE 2:
-            #
-            # {"option": "Bed", "value": 1}
-            # {"option": "Bed", "count": 1}
-            # ========================================================
-
             if isinstance(data, dict):
-
-                # ====================================================
-                # FIELD ID
-                # ====================================================
 
                 field_id = data.get(
                     "field_id"
@@ -4353,12 +4089,6 @@ class AgentPropertySerializer(serializers.ModelSerializer):
                         "id",
                         None
                     )
-
-
-                # ====================================================
-                # EXACT FIELD
-                # ====================================================
-
                 exact_field = (
                     SubcategoryField.objects
                     .select_related(
@@ -4375,21 +4105,9 @@ class AgentPropertySerializer(serializers.ModelSerializer):
                 if exact_field:
 
                     field = exact_field
-
-
-                # ====================================================
-                # OPTION
-                # ====================================================
-
                 option = data.get(
                     "option"
                 )
-
-
-                # ====================================================
-                # VALUE
-                # ====================================================
-
                 value = data.get(
                     "value"
                 )
@@ -4400,63 +4118,29 @@ class AgentPropertySerializer(serializers.ModelSerializer):
                         "count",
                         None
                     )
-
-
-                # ====================================================
-                # OPTION EXISTS
-                # ====================================================
-
                 if option:
 
                     option = str(
                         option
                     ).strip()
 
-
-                    # ------------------------------------------------
-                    # FIND OPTION FROM EXACT FIELD
-                    # ------------------------------------------------
-
                     option_obj = find_field_option(
                         field,
                         option
                     )
-
-
-                    # ------------------------------------------------
-                    # If not found, try value
-                    # ------------------------------------------------
-
                     if not option_obj:
 
                         option_obj = find_field_option(
                             field,
                             value
                         )
-
-
-                    # ------------------------------------------------
-                    # ICON FROM FIELD OPTION
-                    # ------------------------------------------------
-
                     option_icon = get_option_icon(
                         option_obj
                     )
 
-
-                    # ------------------------------------------------
-                    # VALUE
-                    # ------------------------------------------------
-
                     if value is None:
 
                         value = ""
-
-
-                    # ------------------------------------------------
-                    # COUNTABLE
-                    # ------------------------------------------------
-
                     if field.field_type == "countable":
 
                         try:
@@ -4468,24 +4152,12 @@ class AgentPropertySerializer(serializers.ModelSerializer):
                         except Exception:
 
                             value = 0
-
-
-                    # ------------------------------------------------
-                    # SAVE
-                    # ------------------------------------------------
-
                     result[option] = {
                         "value": value,
                         "icon": option_icon
                     }
 
                     continue
-
-
-                # ====================================================
-                # NO OPTION
-                # ====================================================
-
                 if (
                     field.field_name
                     and field.field_name.lower()
@@ -4493,15 +4165,6 @@ class AgentPropertySerializer(serializers.ModelSerializer):
                 ):
 
                     continue
-
-
-                # ====================================================
-                # FIELD ICON FOR NORMAL FIELD
-                #
-                # This is ONLY for fields that do not have
-                # a FieldOption.
-                # ====================================================
-
                 if field.icon:
 
                     try:
@@ -4521,12 +4184,6 @@ class AgentPropertySerializer(serializers.ModelSerializer):
                 else:
 
                     icon = None
-
-
-                # ====================================================
-                # COUNTABLE
-                # ====================================================
-
                 if field.field_type == "countable":
 
                     try:
@@ -4554,18 +4211,6 @@ class AgentPropertySerializer(serializers.ModelSerializer):
                 }
 
                 continue
-
-
-            # ========================================================
-            # CASE 3:
-            #
-            # SIMPLE VALUE
-            #
-            # Example:
-            #
-            # "4BHK"
-            # ========================================================
-
             if (
                 field.field_name
                 and field.field_name.lower()
@@ -4573,12 +4218,6 @@ class AgentPropertySerializer(serializers.ModelSerializer):
             ):
 
                 continue
-
-
-            # ========================================================
-            # NORMAL FIELD ICON
-            # ========================================================
-
             if field.icon:
 
                 try:
@@ -4598,12 +4237,6 @@ class AgentPropertySerializer(serializers.ModelSerializer):
             else:
 
                 icon = None
-
-
-            # ========================================================
-            # COUNTABLE
-            # ========================================================
-
             if field.field_type == "countable":
 
                 try:
@@ -4625,12 +4258,6 @@ class AgentPropertySerializer(serializers.ModelSerializer):
                 "value": value,
                 "icon": icon
             }
-
-
-        # ============================================================
-        # FINAL RESPONSE
-        # ============================================================
-
         return [
             {
                 "name": key,
@@ -4639,12 +4266,6 @@ class AgentPropertySerializer(serializers.ModelSerializer):
             }
             for key, value in result.items()
         ]
-
-
-
-
-
-
 
 
 
@@ -7569,11 +7190,6 @@ class UserPropertySerializer(serializers.ModelSerializer):
     def get_features(self, obj):
 
         data = []
-
-        # ============================================================
-        # GET ALL PROPERTY FEATURES
-        # ============================================================
-
         property_features = (
             obj.property_features
             .select_related("field")
@@ -7581,20 +7197,10 @@ class UserPropertySerializer(serializers.ModelSerializer):
         )
 
         for f in property_features:
-
-            # ========================================================
-            # DEFAULT FIELD
-            # ========================================================
-
             field = f.field
 
             if not field:
                 continue
-
-            # ========================================================
-            # PARSE STORED VALUE
-            # ========================================================
-
             try:
                 parsed_value = json.loads(f.value)
 
@@ -7603,11 +7209,6 @@ class UserPropertySerializer(serializers.ModelSerializer):
                 parsed_value = {
                     "value": f.value
                 }
-
-            # ========================================================
-            # NORMALIZE INTO LIST
-            # ========================================================
-
             if isinstance(parsed_value, list):
 
                 feature_items = parsed_value
@@ -7615,27 +7216,12 @@ class UserPropertySerializer(serializers.ModelSerializer):
             else:
 
                 feature_items = [parsed_value]
-
-            # ========================================================
-            # PROCESS EACH FEATURE
-            # ========================================================
-
             for item in feature_items:
-
-                # ====================================================
-                # MAKE SURE ITEM IS A DICTIONARY
-                # ====================================================
-
                 if not isinstance(item, dict):
 
                     item = {
                         "value": item
                     }
-
-                # ====================================================
-                # FIELD ID
-                # ====================================================
-
                 field_id = item.get("field_id")
 
                 current_field = field
@@ -7648,11 +7234,6 @@ class UserPropertySerializer(serializers.ModelSerializer):
                     except (TypeError, ValueError):
 
                         field_id = None
-
-                # ====================================================
-                # IF JSON CONTAINS FIELD ID
-                # ====================================================
-
                 if field_id and field_id != field.id:
 
                     current_field = (
@@ -7664,11 +7245,6 @@ class UserPropertySerializer(serializers.ModelSerializer):
 
                     if not current_field:
                         continue
-
-                # ====================================================
-                # RAW VALUE
-                # ====================================================
-
                 feature_value = item.get("value")
 
                 if feature_value is None:
@@ -7677,32 +7253,13 @@ class UserPropertySerializer(serializers.ModelSerializer):
 
                 feature_value = str(feature_value).strip()
 
-                # ====================================================
-                # EXPLICIT OPTION
-                # ====================================================
-
                 option_name = item.get("option")
-
-                # ====================================================
-                # FIND FIELD OPTION
-                # ====================================================
 
                 option_obj = None
 
                 options = list(
                     current_field.options.all()
                 )
-
-                # ====================================================
-                # CASE 1:
-                # EXPLICIT OPTION EXISTS
-                #
-                # {
-                #     "option": "4BHK",
-                #     "value": "4BHK"
-                # }
-                # ====================================================
-
                 if option_name:
 
                     option_name_clean = (
@@ -7720,12 +7277,6 @@ class UserPropertySerializer(serializers.ModelSerializer):
 
                             option_obj = option
                             break
-
-                # ====================================================
-                # CASE 2:
-                # FIND OPTION FROM VALUE
-                # ====================================================
-
                 if not option_obj and feature_value:
 
                     value_clean = feature_value.lower().strip()
@@ -7738,26 +7289,10 @@ class UserPropertySerializer(serializers.ModelSerializer):
                             .lower()
                         )
 
-                        # =================================================
-                        # EXACT MATCH
-                        #
-                        # 4BHK
-                        # Parking
-                        # Garden
-                        # etc.
-                        # =================================================
-
                         if value_clean == option_clean:
 
                             option_obj = option
                             break
-
-                        # =================================================
-                        # COUNTABLE MATCH
-                        #
-                        # waiting area (4)
-                        # work area (5)
-                        # =================================================
 
                         prefix = option_clean + " ("
 
@@ -7780,22 +7315,7 @@ class UserPropertySerializer(serializers.ModelSerializer):
 
                                     option_obj = option
                                     break
-
-                # ====================================================
-                # FEATURE NAME
-                # ====================================================
-
                 if option_obj:
-
-                    # For select/multi-select/countable options,
-                    # the field name remains the feature name.
-                    #
-                    # Example:
-                    #
-                    # BHK types -> 4BHK
-                    # Bed       -> 1
-                    # Fan       -> 1
-
                     feature_name = current_field.field_name
 
                 elif option_name:
@@ -7805,31 +7325,8 @@ class UserPropertySerializer(serializers.ModelSerializer):
                 else:
 
                     feature_name = current_field.field_name
-
-                # ====================================================
-                # FEATURE VALUE
-                # ====================================================
-
                 output_value = feature_value
-
-                # ====================================================
-                # FIELD TYPE
-                # ====================================================
-
                 field_type = current_field.field_type
-
-                # ====================================================
-                # COUNTABLE FIELD
-                #
-                # waiting area (4)
-                #        ↓
-                # value = 4
-                #
-                # work area (5)
-                #        ↓
-                # value = 5
-                # ====================================================
-
                 if field_type == "countable":
 
                     if option_obj:
@@ -7864,29 +7361,7 @@ class UserPropertySerializer(serializers.ModelSerializer):
                                 output_value = extracted_count
 
                     else:
-
-                        # ------------------------------------------------
-                        # If no option is found, keep original value.
-                        # ------------------------------------------------
-
                         output_value = feature_value
-
-                # ====================================================
-                # SELECT FIELD
-                #
-                # Example:
-                #
-                # Field:
-                # BHK types
-                #
-                # Option:
-                # 4BHK
-                #
-                # Response:
-                #
-                # name  = BHK types
-                # value = 4BHK
-                # ====================================================
 
                 elif field_type == "select":
 
@@ -7898,12 +7373,6 @@ class UserPropertySerializer(serializers.ModelSerializer):
 
                         output_value = feature_value
 
-                # ====================================================
-                # MULTI SELECT FIELD
-                #
-                # Same behavior as select.
-                # ====================================================
-
                 elif field_type == "multi_select":
 
                     if option_obj:
@@ -7914,50 +7383,19 @@ class UserPropertySerializer(serializers.ModelSerializer):
 
                         output_value = feature_value
 
-                # ====================================================
-                # TEXT
-                # ====================================================
-
                 elif field_type == "text":
 
                     output_value = feature_value
-
-                # ====================================================
-                # NUMBER
-                # ====================================================
-
                 elif field_type == "number":
 
                     output_value = feature_value
-
-                # ====================================================
-                # BOOLEAN
-                # ====================================================
-
                 elif field_type == "boolean":
 
                     output_value = feature_value
-
-                # ====================================================
-                # UNKNOWN FIELD TYPE
-                #
-                # Keep existing value unchanged.
-                # ====================================================
-
                 else:
 
                     output_value = feature_value
-
-                # ====================================================
-                # FEATURE ICON
-                # ====================================================
-
                 icon_url = None
-
-                # ----------------------------------------------------
-                # OPTION ICON
-                # ----------------------------------------------------
-
                 if option_obj and option_obj.icon:
 
                     try:
@@ -7967,11 +7405,6 @@ class UserPropertySerializer(serializers.ModelSerializer):
                     except Exception:
 
                         icon_url = None
-
-                # ----------------------------------------------------
-                # FIELD ICON
-                # ----------------------------------------------------
-
                 elif current_field.icon:
 
                     try:
@@ -7982,20 +7415,11 @@ class UserPropertySerializer(serializers.ModelSerializer):
 
                         icon_url = None
 
-                # ====================================================
-                # FIELD OPTION ID
-                # ====================================================
-
                 option_id = (
                     option_obj.id
                     if option_obj
                     else None
                 )
-
-                # ====================================================
-                # FINAL OUTPUT
-                # ====================================================
-
                 data.append({
                     "name": feature_name,
 

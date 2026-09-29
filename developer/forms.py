@@ -384,13 +384,14 @@ SELECT_STYLE = (
     "focus:border-[#8bc83f]"
 )
 
+from django import forms
+from .models import Blog
+
 
 class BlogForm(forms.ModelForm):
 
     class Meta:
-
         model = Blog
-
         fields = [
             "category",
             "blog_head",
@@ -399,49 +400,242 @@ class BlogForm(forms.ModelForm):
             "image",
         ]
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
-        widgets = {
+        # =====================================================
+        # COMMON FIELD CLASSES
+        # =====================================================
 
-            "category": forms.Select(
-                attrs={
-                    "class": SELECT_STYLE
-                }
-            ),
+        self.fields["category"].widget.attrs.update({
+            "class": "blog-input"
+        })
+
+        self.fields["blog_head"].widget.attrs.update({
+            "class": "blog-input",
+            "placeholder": "Enter blog title"
+        })
+
+        self.fields["date"].widget.attrs.update({
+            "class": "blog-input",
+            "type": "date"
+        })
+
+        self.fields["card_paragraph"].widget.attrs.update({
+            "class": "blog-input",
+            "placeholder": "Enter card paragraph"
+        })
+
+        self.fields["image"].widget.attrs.update({
+            "class": "blog-input",
+            "accept": "image/jpeg,image/png,image/webp"
+        })
+
+    # =========================================================
+    # BLOG TITLE VALIDATION
+    # =========================================================
+
+    def clean_blog_head(self):
+
+        title = self.cleaned_data.get("blog_head", "").strip()
+
+        if not title:
+            raise forms.ValidationError(
+                "Blog title is required."
+            )
+
+        if len(title) < 5:
+            raise forms.ValidationError(
+                "Blog title must contain at least 5 characters."
+            )
+
+        return title
+
+    # =========================================================
+    # CARD PARAGRAPH VALIDATION
+    # =========================================================
+
+    def clean_card_paragraph(self):
+
+        paragraph = self.cleaned_data.get(
+            "card_paragraph",
+            ""
+        ).strip()
+
+        if not paragraph:
+            raise forms.ValidationError(
+                "Card paragraph is required."
+            )
+
+        if len(paragraph) < 5:
+            raise forms.ValidationError(
+                "Card paragraph must contain at least 5 characters."
+            )
+
+        return paragraph
+
+    # =========================================================
+    # CATEGORY VALIDATION
+    # =========================================================
+
+    def clean_category(self):
+
+        category = self.cleaned_data.get("category")
+
+        if not category:
+            raise forms.ValidationError(
+                "Please select a category."
+            )
+
+        return category
+
+    # =========================================================
+    # DATE VALIDATION
+    # =========================================================
+
+    def clean_date(self):
+
+        date = self.cleaned_data.get("date")
+
+        if not date:
+            raise forms.ValidationError(
+                "Publish date is required."
+            )
+
+        return date
+
+    def clean_image(self):
+
+        image = self.cleaned_data.get("image")
+        if not image:
+            if not self.instance or not self.instance.pk:
+                raise forms.ValidationError(
+                    "Featured image is required."
+                )
+            return self.instance.image
+        if not hasattr(image, "size"):
+
+            return image
+        MAX_IMAGE_SIZE = 2.5 * 1024 * 1024
+
+        if image.size > MAX_IMAGE_SIZE:
+
+            size_mb = image.size / (1024 * 1024)
+
+            raise forms.ValidationError(
+                f"Image '{image.name}' is too large "
+                f"({size_mb:.2f} MB). "
+                f"Maximum allowed size is 2.5 MB."
+            )
+
+        allowed_types = [
+            "image/jpeg",
+            "image/png",
+            "image/webp",
+        ]
+
+        if image.content_type not in allowed_types:
+
+            raise forms.ValidationError(
+                "Only JPG, PNG and WEBP images are allowed."
+            )
+
+        return image
+
+    # def clean_image(self):
+
+    #     image = self.cleaned_data.get("image")
+    #     if not image:
+
+    #         if not self.instance or not self.instance.pk:
+    #             raise forms.ValidationError(
+    #                 "Featured image is required."
+    #             )
+
+    #         return image
+    #     MAX_IMAGE_SIZE = 2.5 * 1024 * 1024
+
+    #     if image.size > MAX_IMAGE_SIZE:
+
+    #         size_mb = image.size / (1024 * 1024)
+
+    #         raise forms.ValidationError(
+    #             f"Image '{image.name}' is too large "
+    #             f"({size_mb:.2f} MB). "
+    #             f"Maximum allowed size is 2.5 MB."
+    #         )
+    #     allowed_types = [
+    #         "image/jpeg",
+    #         "image/png",
+    #         "image/webp",
+    #     ]
+
+    #     if image.content_type not in allowed_types:
+
+    #         raise forms.ValidationError(
+    #             "Only JPG, PNG and WEBP images are allowed."
+    #         )
+
+    #     return image
 
 
-            "blog_head": forms.TextInput(
-                attrs={
-                    "class": INPUT_STYLE,
-                    "placeholder": "Enter Blog Title"
-                }
-            ),
+# class BlogForm(forms.ModelForm):
+
+#     class Meta:
+
+#         model = Blog
+
+#         fields = [
+#             "category",
+#             "blog_head",
+#             "date",
+#             "card_paragraph",
+#             "image",
+#         ]
 
 
-            "date": forms.DateInput(
-                attrs={
-                    "class": INPUT_STYLE,
-                    "type": "date"
-                }
-            ),
+#         widgets = {
+
+#             "category": forms.Select(
+#                 attrs={
+#                     "class": SELECT_STYLE
+#                 }
+#             ),
 
 
-            "card_paragraph": forms.Textarea(
-                attrs={
-                    "class": TEXTAREA_STYLE,
-                    "placeholder": "Enter Blog Description",
-                    "rows":5
-                }
-            ),
+#             "blog_head": forms.TextInput(
+#                 attrs={
+#                     "class": INPUT_STYLE,
+#                     "placeholder": "Enter Blog Title"
+#                 }
+#             ),
 
 
-            "image": forms.ClearableFileInput(
-                attrs={
-                    "class": INPUT_STYLE,
-                    "accept":"image/*"
-                }
-            ),
+#             "date": forms.DateInput(
+#                 attrs={
+#                     "class": INPUT_STYLE,
+#                     "type": "date"
+#                 }
+#             ),
 
-        }
+
+#             "card_paragraph": forms.Textarea(
+#                 attrs={
+#                     "class": TEXTAREA_STYLE,
+#                     "placeholder": "Enter Blog Description",
+#                     "rows":5
+#                 }
+#             ),
+
+
+#             "image": forms.ClearableFileInput(
+#                 attrs={
+#                     "class": INPUT_STYLE,
+#                     "accept":"image/*"
+#                 }
+#             ),
+
+#         }
 
 class BannerAdForm(forms.ModelForm):
     class Meta:

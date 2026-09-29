@@ -125,152 +125,326 @@ def capture_property_screenshot(property_obj):
 
 import logging
 
+from django.conf import settings
+
 import sib_api_v3_sdk
 from sib_api_v3_sdk.rest import ApiException
-from django.conf import settings
+
 
 logger = logging.getLogger(__name__)
 
 
-def send_otp_email(to_email, otp):
-    """
-    Send OTP email through Brevo.
+def send_otp_email(
+    to_email,
+    otp,
+    user_name="User",
+    purpose="verification"
+):
 
-    Returns:
-        True  -> email accepted by Brevo
-        False -> sending failed
+    configuration = sib_api_v3_sdk.Configuration()
+    configuration.api_key["api-key"] = settings.BREVO_API_KEY
+
+    api_client = sib_api_v3_sdk.ApiClient(configuration)
+    api_instance = sib_api_v3_sdk.TransactionalEmailsApi(api_client)
+
+    # --------------------------------------------------
+    # EMAIL CONTENT
+    # --------------------------------------------------
+
+    if purpose == "registration":
+        title = "Verify Your Email"
+        subtitle = "Complete your BuySel registration"
+        description = (
+            "Use the verification code below to verify your email "
+            "address and complete your BuySel account registration."
+        )
+
+    elif purpose == "password_reset":
+        title = "Reset Your Password"
+        subtitle = "Your BuySel password reset code"
+        description = (
+            "We received a request to reset your BuySel password. "
+            "Use the verification code below to continue."
+        )
+
+    else:
+        title = "Email Verification"
+        subtitle = "Your BuySel verification code"
+        description = (
+            "Use the verification code below to continue with your "
+            "BuySel account."
+        )
+
+    html_content = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+
+        <meta name="viewport"
+              content="width=device-width, initial-scale=1.0">
+
+        <title>{title}</title>
+    </head>
+
+    <body style="
+        margin:0;
+        padding:0;
+        background-color:#f4f7f2;
+        font-family:Arial, Helvetica, sans-serif;
+    ">
+
+        <table width="100%"
+               cellpadding="0"
+               cellspacing="0"
+               border="0"
+               style="background-color:#f4f7f2; padding:40px 15px;">
+
+            <tr>
+                <td align="center">
+
+                    <!-- MAIN CONTAINER -->
+                    <table width="600"
+                           cellpadding="0"
+                           cellspacing="0"
+                           border="0"
+                           style="
+                               max-width:600px;
+                               width:100%;
+                               background:#ffffff;
+                               border-radius:18px;
+                               overflow:hidden;
+                               box-shadow:0 8px 30px rgba(0,0,0,0.08);
+                           ">
+
+                        <!-- HEADER -->
+                            <tr>
+                                <td style="
+                                    background:#1f3d2b;
+                                    padding:28px 35px;
+                                    text-align:center;
+                                ">
+
+                                    <img
+                                        src="https://nil-deviation-contractor-office.trycloudflare.com/static/img/logo.png"
+                                        alt="BuySel"
+                                        style="
+                                            display:block;
+                                            margin:0 auto;
+                                            max-width:180px;
+                                            width:100%;
+                                            height:auto;
+                                        "
+                                    >
+
+                                </td>
+                            </tr>
+
+                        <!-- CONTENT -->
+                        <tr>
+                            <td style="
+                                padding:40px 40px 30px 40px;
+                            ">
+
+                                <p style="
+                                    margin:0 0 8px 0;
+                                    color:#777777;
+                                    font-size:14px;
+                                ">
+                                    Hello {user_name},
+                                </p>
+
+                                <h1 style="
+                                    margin:0;
+                                    color:#1f2937;
+                                    font-size:26px;
+                                    line-height:1.3;
+                                ">
+                                    {title}
+                                </h1>
+
+                                <p style="
+                                    margin:8px 0 22px 0;
+                                    color:#7a7a7a;
+                                    font-size:14px;
+                                ">
+                                    {subtitle}
+                                </p>
+
+                                <p style="
+                                    margin:0 0 25px 0;
+                                    color:#4b5563;
+                                    font-size:15px;
+                                    line-height:1.7;
+                                ">
+                                    {description}
+                                </p>
+
+                                <!-- OTP BOX -->
+                                <table width="100%"
+                                       cellpadding="0"
+                                       cellspacing="0"
+                                       border="0">
+
+                                    <tr>
+                                        <td align="center"
+                                            style="
+                                                background:#f1f8e9;
+                                                border:1px solid #d9ebbd;
+                                                border-radius:14px;
+                                                padding:25px;
+                                            ">
+
+                                            <div style="
+                                                font-size:12px;
+                                                color:#71805f;
+                                                text-transform:uppercase;
+                                                letter-spacing:2px;
+                                                margin-bottom:10px;
+                                            ">
+                                                Verification Code
+                                            </div>
+
+                                            <div style="
+                                                font-size:36px;
+                                                font-weight:800;
+                                                color:#4f8f20;
+                                                letter-spacing:8px;
+                                            ">
+                                                {otp}
+                                            </div>
+
+                                        </td>
+                                    </tr>
+
+                                </table>
+
+                                <!-- EXPIRY -->
+                                <p style="
+                                    margin:22px 0 0 0;
+                                    text-align:center;
+                                    color:#777777;
+                                    font-size:13px;
+                                ">
+                                    This code is valid for
+                                    <strong>2 minutes</strong>.
+                                </p>
+
+                                <!-- SECURITY NOTE -->
+                                <table width="100%"
+                                       cellpadding="0"
+                                       cellspacing="0"
+                                       border="0"
+                                       style="margin-top:28px;">
+
+                                    <tr>
+
+                                        <td width="38"
+                                            valign="top"
+                                            style="
+                                                font-size:20px;
+                                                color:#6aa82c;
+                                            ">
+                                            🔒
+                                        </td>
+
+                                        <td style="
+                                            color:#777777;
+                                            font-size:13px;
+                                            line-height:1.6;
+                                        ">
+                                            <strong style="color:#444444;">
+                                                Keep your code private.
+                                            </strong>
+                                            BuySel will never ask you to share
+                                            your OTP with anyone.
+                                        </td>
+
+                                    </tr>
+
+                                </table>
+
+                            </td>
+                        </tr>
+
+                        <!-- DIVIDER -->
+                        <tr>
+                            <td style="padding:0 40px;">
+                                <div style="
+                                    height:1px;
+                                    background:#eeeeee;
+                                "></div>
+                            </td>
+                        </tr>
+
+                        <!-- FOOTER -->
+                        <tr>
+                            <td style="
+                                padding:25px 40px 30px 40px;
+                                text-align:center;
+                            ">
+
+                                <p style="
+                                    margin:0 0 8px 0;
+                                    color:#555555;
+                                    font-size:13px;
+                                ">
+                                    © BuySel
+                                </p>
+
+                                <p style="
+                                    margin:0;
+                                    color:#999999;
+                                    font-size:11px;
+                                    line-height:1.5;
+                                ">
+                                    If you did not request this code,
+                                    you can safely ignore this email.
+                                </p>
+
+                            </td>
+                        </tr>
+
+                    </table>
+
+                </td>
+            </tr>
+
+        </table>
+
+    </body>
+    </html>
     """
+
+    # --------------------------------------------------
+    # SEND EMAIL
+    # --------------------------------------------------
+
+    send_email = sib_api_v3_sdk.SendSmtpEmail(
+        sender={
+            "email": settings.DEFAULT_FROM_EMAIL,
+            "name": "BuySel",
+        },
+        to=[
+            {
+                "email": to_email,
+                "name": user_name,
+            }
+        ],
+        subject=f"BuySel - {title}",
+        html_content=html_content,
+    )
 
     try:
-        # -----------------------------------
-        # Validate configuration
-        # -----------------------------------
-        if not settings.BREVO_API_KEY:
-            logger.error("BREVO_API_KEY is missing")
-            return False
 
-        if not settings.DEFAULT_FROM_EMAIL:
-            logger.error("DEFAULT_FROM_EMAIL is missing")
-            return False
-
-        if not to_email:
-            logger.error("Recipient email is empty")
-            return False
-
-        if not otp:
-            logger.error("OTP is empty")
-            return False
-
-        # -----------------------------------
-        # Brevo configuration
-        # -----------------------------------
-        configuration = sib_api_v3_sdk.Configuration()
-
-        configuration.api_key["api-key"] = settings.BREVO_API_KEY
-
-        api_client = sib_api_v3_sdk.ApiClient(configuration)
-
-        api_instance = sib_api_v3_sdk.TransactionalEmailsApi(
-            api_client
-        )
-
-        # -----------------------------------
-        # Email content
-        # -----------------------------------
-        subject = "Your Buysel Email Verification OTP"
-
-        html_content = f"""
-        <!DOCTYPE html>
-        <html>
-        <body style="
-            margin:0;
-            padding:30px;
-            background:#f5f5f5;
-            font-family:Arial,sans-serif;
-        ">
-
-            <div style="
-                max-width:500px;
-                margin:auto;
-                background:#ffffff;
-                padding:30px;
-                border-radius:12px;
-            ">
-
-                <h2 style="color:#250f1e;">
-                    Buysel Email Verification
-                </h2>
-
-                <p>
-                    Your verification OTP is:
-                </p>
-
-                <div style="
-                    font-size:32px;
-                    font-weight:bold;
-                    letter-spacing:8px;
-                    text-align:center;
-                    padding:20px;
-                    background:#f5f5f5;
-                    border-radius:10px;
-                    margin:20px 0;
-                ">
-                    {otp}
-                </div>
-
-                <p>
-                    This OTP is valid for
-                    <strong>5 minutes</strong>.
-                </p>
-
-                <p style="color:#666;">
-                    If you did not request this OTP,
-                    please ignore this email.
-                </p>
-
-                <hr>
-
-                <p style="
-                    font-size:12px;
-                    color:#999;
-                ">
-                    © Buysel
-                </p>
-
-            </div>
-
-        </body>
-        </html>
-        """
-
-        # -----------------------------------
-        # Create Brevo email
-        # -----------------------------------
-        send_email = sib_api_v3_sdk.SendSmtpEmail(
-            sender={
-                "email": settings.DEFAULT_FROM_EMAIL,
-                "name": "Buysel",
-            },
-            to=[
-                {
-                    "email": to_email,
-                }
-            ],
-            subject=subject,
-            html_content=html_content,
-        )
-
-        # -----------------------------------
-        # Send
-        # -----------------------------------
         response = api_instance.send_transac_email(
             send_email
         )
 
         logger.info(
-            "Brevo OTP email sent successfully to %s. Response: %s",
+            "BuySel OTP email sent successfully to %s: %s",
             to_email,
-            response,
+            response
         )
 
         return True
@@ -278,23 +452,9 @@ def send_otp_email(to_email, otp):
     except ApiException as e:
 
         logger.error(
-            "Brevo API Error while sending OTP to %s",
+            "Brevo API Error while sending OTP to %s: %s",
             to_email,
-        )
-
-        logger.error(
-            "Status: %s",
-            getattr(e, "status", "Unknown"),
-        )
-
-        logger.error(
-            "Reason: %s",
-            getattr(e, "reason", str(e)),
-        )
-
-        logger.error(
-            "Body: %s",
-            getattr(e, "body", "No response body"),
+            e
         )
 
         return False
@@ -302,13 +462,12 @@ def send_otp_email(to_email, otp):
     except Exception as e:
 
         logger.exception(
-            "Unexpected error while sending OTP to %s: %s",
+            "Unexpected email error for %s: %s",
             to_email,
-            str(e),
+            e
         )
 
         return False
-
 
 
 

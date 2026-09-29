@@ -1443,10 +1443,19 @@ class RegisterAPI(APIView):
             # Session expires after 2 minutes
             request.session.set_expiry(5 * 60)
 
+            user_name = (
+                validated_data.get("name")
+                or validated_data.get("full_name")
+                or validated_data.get("username")
+                or "User"
+            )
+
             request.session.modified = True
             send_otp_email(
                 email,
-                otp
+                otp,
+                user_name=user_name,
+                purpose="registration"
             )
 
             return Response(
@@ -1776,12 +1785,20 @@ class ResendOTPAPI(APIView):
         request.session.set_expiry(
             2 * 60
         )
+        user_name = (
+            registration_data.get("name")
+            or registration_data.get("full_name")
+            or registration_data.get("username")
+            or "User"
+        )
 
         request.session.modified = True
 
         send_otp_email(
             email,
-            otp
+            otp,
+            user_name=user_name,
+            purpose="registration"
         )
 
         return Response(
@@ -1825,7 +1842,15 @@ class ForgotPasswordAPI(APIView):
                 ]
             )
 
-            email_sent = send_otp_email(email, otp)
+            user_name = (
+                getattr(user, "name", None)
+                or getattr(user, "full_name", None)
+                or getattr(user, "username", None)
+                or "User"
+            )
+
+            email_sent = send_otp_email(email, otp,user_name=user_name,
+                purpose="password_reset")
 
             if not email_sent:
 
@@ -1962,8 +1987,15 @@ class ForgotPasswordResendOTPAPI(APIView):
             user.otp_created_at = timezone.now()
             user.save(update_fields=["otp", "otp_created_at"])
 
+            user_name = (
+                getattr(user, "name", None)
+                or getattr(user, "full_name", None)
+                or getattr(user, "username", None)
+                or "User"
+            )
+
             # ✅ Send mail
-            send_otp_email(user.email, otp)
+            send_otp_email(user.email, otp, user_name=user_name, purpose="password_reset")
 
             return Response(
                 {
@@ -3453,9 +3485,15 @@ class AgentForgotPasswordAPI(APIView):
             agent.reset_otp = otp
             agent.reset_otp_created_at = timezone.now()
             agent.save(update_fields=["reset_otp", "reset_otp_created_at"])
+            agent_name = (
+                getattr(agent, "name", None)
+                or getattr(agent, "full_name", None)
+                or getattr(agent, "username", None)
+                or "Agent"
+            )
 
             # ✅ SEND EMAIL HERE
-            send_otp_email(agent.email, otp)
+            send_otp_email(agent.email, otp, user_name=agent_name, purpose="password_reset")
 
             return Response({"message": "OTP sent to email"}, status=200)
 
@@ -3506,9 +3544,15 @@ class AgentResendForgotOTP(APIView):
             agent.reset_otp = otp
             agent.reset_otp_created_at = timezone.now()
             agent.save(update_fields=["reset_otp", "reset_otp_created_at"])
+            agent_name = (
+                getattr(agent, "name", None)
+                or getattr(agent, "full_name", None)
+                or getattr(agent, "username", None)
+                or "Agent"
+            )
 
             # ✅ SEND EMAIL
-            send_otp_email(agent.email, otp)
+            send_otp_email(agent.email, otp, user_name=agent_name, purpose="password_reset")
 
             return Response(
                 {"message": "OTP resent successfully"},

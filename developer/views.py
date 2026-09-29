@@ -49,7 +49,6 @@ from developer.models import (
     SubcategoryField,
 )
 from .forms import AgentPropertyForm
-# Update this import according to your project structure
 from developer.models import (
     ExpiredProperty,
     Property,
@@ -146,12 +145,10 @@ def superuser_login_view(request):
 
     return render(request, "auth/login.html", {"form": form})
 
-# ✅ Dashboard view (only for logged-in superusers)
+
 def superuser_required(user):
     return user.is_authenticated and user.is_superuser
 
-#added by mehreena
-# dashboard
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 def Dashboard(request):
@@ -172,19 +169,6 @@ def Dashboard(request):
         + total_agent_active
         + total_agent_expired
     )
-
-    
-
-    # active_by_purpose = (
-    #     Property.objects
-    #     .values("purpose__name")
-    #     .annotate(total=Count("id"))
-    #     .order_by("purpose__name")
-    # )
-    # ===========================
-    # ACTIVE PROPERTY COUNTS BY PURPOSE
-    # NORMAL + AGENT
-    # ===========================
 
     active_by_purpose_map = defaultdict(int)
 
@@ -252,76 +236,6 @@ def Dashboard(request):
                 "purpose_map": purpose_map,
             }
         )
-
-    # # ==========================
-    # # NOTIFICATIONS
-    # # ==========================
-
-    # advertisement_notifications = (
-    #     AdvertisementRequestNotification.objects
-    #     .select_related(
-    #         "agent",
-    #         "advertisement_package"
-    #     )
-    #     .order_by("-created_at")
-    # )
-
-    # reel_notifications = (
-    #     ReelPurchaseNotification.objects
-    #     .select_related(
-    #         "agent",
-    #         "payment",
-    #         "payment__reel_package"
-    #     )
-    #     .order_by("-created_at")
-    # )
-
-    # notifications = []
-
-    # # Advertisement notifications
-    # for item in advertisement_notifications:
-
-    #     notifications.append(
-    #         {
-    #             "id": str(item.id),
-    #             "type": "advertisement",
-    #             "title": item.title,
-    #             "message": item.message,
-    #             "is_read": item.is_read,
-    #             "created_at": item.created_at,
-    #         }
-    #     )
-
-    # # Reel notifications
-    # for item in reel_notifications:
-
-    #     notifications.append(
-    #         {
-    #             "id": str(item.id),
-    #             "type": "reel",
-    #             "title": item.title,
-    #             "message": item.message,
-    #             "is_read": item.is_read,
-    #             "created_at": item.created_at,
-    #         }
-    #     )
-
-    # # Latest notification first
-    # notifications.sort(
-    #     key=lambda x: x["created_at"],
-    #     reverse=True
-    # )
-
-    # # Unread notification count
-    # unread_count = sum(
-    #     1
-    #     for notification in notifications
-    #     if not notification["is_read"]
-    # )
-
-    # ==========================
-    # NOTIFICATIONS
-    # ==========================
 
     advertisement_notifications = (
         AdvertisementRequestNotification.objects
@@ -810,15 +724,7 @@ def categories(request):
                 f"Amenity #{amenity_id} • {amenity_name} was deleted successfully.",
                 "warning",
             )
-
-        # =========================
-        # REDIRECT AFTER POST
-        # =========================
         return redirect("categories")
-
-    # =========================
-    # RENDER TEMPLATE
-    # =========================
     return render(
         request,
         "categories/categories.html",
@@ -873,17 +779,6 @@ def parse_listing(listing):
     return result
 
 def can_add_property(owner, category, purpose, is_admin=False):
-    """
-    Master Admin:
-        - Always allow property creation.
-
-    User:
-        - Validate plan/free limits.
-    """
-
-    # ==========================
-    # MASTER ADMIN BYPASS
-    # ==========================
     if is_admin:
         return True, None
 
@@ -998,9 +893,6 @@ def add_property(request):
     if request.method == "POST":
         try:
             with transaction.atomic():
-                # =============================
-                # BASIC IDS
-                # =============================
                 category_id = request.POST.get("category")
                 subcategory_id = request.POST.get("subcategory")
                 purpose_id = request.POST.get("purpose")
@@ -1020,17 +912,22 @@ def add_property(request):
                 if user_id:
 
                     user = UserCreate.objects.get(id=user_id)
-                # =============================
-                # IMAGES
-                # =============================
                 uploaded_images = request.FILES.getlist("images")
                 if not uploaded_images:
                     messages.error(request, "Upload minimum one image")
                     return redirect("add_property")
+                MAX_IMAGE_SIZE = 2.5 * 1024 * 1024
+
+                for image in uploaded_images:
+                    if image.size > MAX_IMAGE_SIZE:
+                        size_mb = image.size / (1024 * 1024)
+                        messages.error(
+                            request,
+                            f"Image '{image.name}' is too large ({size_mb:.2f} MB). Maximum allowed size is 2.5 MB."
+                        )
+                        return redirect("add_property")
+
                 main_image = uploaded_images[0]
-                # =============================
-                # DYNAMIC FEATURES
-                # =============================
                 dynamic_features = []
                 if subcategory:
                     fields = SubcategoryField.objects.filter(
@@ -1041,22 +938,14 @@ def add_property(request):
 
                         key = f"field_{field.id}"
 
-                        # -------------------------
-                        # BOOLEAN FIELD
-                        # -------------------------
                         if field.field_type == "boolean":
 
                             value = "Yes" if key in request.POST else "No"
-                        # -------------------------
-                        # MULTI SELECT
-                        # -------------------------
+                       
                         elif field.field_type == "multi_select":
 
                             value = request.POST.get(key)
 
-                        # -------------------------
-                        # SELECT / TEXT / NUMBER / COUNTABLE
-                        # -------------------------
                         else:
 
                             value = request.POST.get(key)
@@ -1065,14 +954,8 @@ def add_property(request):
 
                             dynamic_features.append({"field": field, "value": value})
 
-                # =============================
-                # FEATURED PROPERTY
-                # =============================
                 is_featured = "is_featured" in request.POST
 
-                # =============================
-                # SELLING POINTS
-                # =============================
 
                 selling_points = [
                     x.strip()
@@ -1086,9 +969,6 @@ def add_property(request):
 
                     return redirect("add_property")
 
-                # =============================
-                # LANDMARKS
-                # =============================
 
                 landmark_names = request.POST.getlist("landmark_name")
 
@@ -1109,9 +989,7 @@ def add_property(request):
                     messages.error(request, "Maximum 3 landmarks allowed")
 
                     return redirect("add_property")
-                # =============================
-                # CREATE PROPERTY
-                # =============================
+               
                 property_obj = Property.objects.create(
                     category=category,
                     subcategory=subcategory,
@@ -1145,9 +1023,7 @@ def add_property(request):
                     note=request.POST.get("note"),
                     is_featured=is_featured,
                 )
-                # =============================
-                # SAVE FEATURES
-                # =============================
+                
                 import json
 
                 for item in dynamic_features:
@@ -1155,9 +1031,7 @@ def add_property(request):
                     field = item["field"]
                     value = item["value"]
 
-                    # -------------------------
-                    # MULTI SELECT
-                    # -------------------------
+                   
                     if field.field_type == "multi_select":
 
                         try:
@@ -1181,9 +1055,7 @@ def add_property(request):
                                 icon=option.icon if option else None,
                             )
 
-                    # -------------------------
-                    # SELECT
-                    # -------------------------
+                   
                     elif field.field_type == "select":
 
                         option = FieldOption.objects.filter(
@@ -1196,24 +1068,18 @@ def add_property(request):
                             value=value,
                             icon=option.icon if option else None,
                         )
-                    # -------------------------
-                    # NORMAL FIELDS
-                    # -------------------------
+                    
                     else:
                         PropertyFeature.objects.create(
                             property=property_obj, field=field, value=value
                         )
-                # =============================
-                # AMENITIES
-                # =============================
+                
                 amenity_ids = request.POST.getlist("amenities")
                 if amenity_ids:
                     property_obj.amenities.set(
                         Amenities.objects.filter(id__in=amenity_ids)
                     )
-                # =============================
-                # MULTIPLE IMAGES
-                # =============================
+                
                 for img in uploaded_images:
                     PropertyImage.objects.create(
                         property=property_obj,
@@ -1575,6 +1441,22 @@ def edit_property(request, property_id):
         # ====================================
 
         uploaded_images = request.FILES.getlist("images")
+        MAX_IMAGE_SIZE = 2.5 * 1024 * 1024  # 2.5 MB
+
+        for image in uploaded_images:
+
+            if image.size > MAX_IMAGE_SIZE:
+
+                size_mb = image.size / (1024 * 1024)
+
+                messages.error(
+                    request,
+                    f"Image '{image.name}' is too large "
+                    f"({size_mb:.2f} MB). "
+                    f"Maximum allowed size is 2.5 MB."
+                )
+
+                return redirect("add_property")
 
         if uploaded_images:
 
@@ -1761,219 +1643,6 @@ def delete_property(request, property_id):
 
     return redirect("add_property")
 
-
-# @never_cache
-# @user_passes_test(
-#     superuser_required,
-#     login_url='superuser_login_view'
-# )
-# @require_POST
-# def edit_property(request, property_id):
-
-#     prop = get_object_or_404(
-#         Property,
-#         id=property_id
-#     )
-
-#     # BASIC FIELDS
-
-#     prop.label = request.POST.get("label")
-#     prop.land_area = request.POST.get("land_area")
-#     prop.sq_ft = request.POST.get("sq_ft")
-
-#     prop.description = request.POST.get(
-#         "description"
-#     )
-
-#     prop.message = request.POST.get(
-#         "message"
-#     )
-
-#     prop.perprice = request.POST.get(
-#         "perprice"
-#     )
-
-#     prop.price = request.POST.get(
-#         "price"
-#     )
-
-#     prop.whatsapp = request.POST.get(
-#         "whatsapp"
-#     )
-
-#     prop.phone = request.POST.get(
-#         "phone"
-#     )
-
-#     prop.location = request.POST.get(
-#         "location"
-#     )
-
-#     prop.city = request.POST.get(
-#         "city"
-#     )
-
-#     prop.district = request.POST.get(
-#         "district"
-#     )
-
-#     prop.village = request.POST.get(
-#         "village"
-#     )
-
-#     prop.taluk = request.POST.get(
-#         "taluk"
-#     )
-
-#     prop.state = request.POST.get(
-#         "state"
-#     )
-
-#     prop.pincode = request.POST.get(
-#         "pincode"
-#     )
-
-#     prop.added_by = request.POST.get(
-#         "added_by"
-#     )
-
-#     prop.market_staff = request.POST.get(
-#         "market_staff"
-#     )
-
-#     # PAID
-
-#     prop.paid = request.POST.get(
-#         "paid",
-#         "no"
-#     )
-
-#     # CATEGORY
-
-#     category_id = request.POST.get(
-#         "category"
-#     )
-
-#     if category_id:
-
-#         prop.category = get_object_or_404(
-#             Category,
-#             id=category_id
-#         )
-
-#     # PURPOSE
-
-#     purpose_id = request.POST.get(
-#         "purpose"
-#     )
-
-#     if purpose_id:
-
-#         prop.purpose = get_object_or_404(
-#             Purpose,
-#             id=purpose_id
-#         )
-
-#     # OWNER
-
-#     owner_id = request.POST.get(
-#         "owner"
-#     )
-
-#     if owner_id:
-
-#         prop.owner = get_object_or_404(
-#             UserCreate,
-#             id=owner_id
-#         )
-
-#     # DURATION
-
-#     duration_days = request.POST.get(
-#         "duration_days"
-#     )
-
-#     if duration_days:
-
-#         try:
-#             prop.duration_days = int(
-#                 duration_days
-#             )
-
-#         except ValueError:
-#             pass
-
-#     # SCREENSHOT
-
-#     screenshot_file = request.FILES.get(
-#         "manual_screenshot"
-#     )
-
-#     if screenshot_file:
-
-#         prop.screenshot = screenshot_file
-
-#     # SAVE
-
-#     prop.save()
-
-#     # AMENITIES
-
-#     amenity_ids = request.POST.getlist(
-#         "amenities"
-#     )
-
-#     if amenity_ids:
-
-#         amenities_qs = Amenities.objects.filter(
-#             id__in=amenity_ids
-#         )
-
-#         prop.amenities.set(
-#             amenities_qs
-#         )
-
-#     # ADD NEW IMAGES
-
-#     new_images = request.FILES.getlist(
-#         "images"
-#     )
-
-#     for img in new_images:
-
-#         PropertyImage.objects.create(
-#             property=prop,
-#             image=img
-#         )
-
-#     # DELETE IMAGES
-
-#     delete_images = request.POST.getlist(
-#         "delete_images"
-#     )
-
-#     for img_id in delete_images:
-
-#         PropertyImage.objects.filter(
-#             id=img_id,
-#             property=prop
-#         ).delete()
-
-#     messages.success(
-#         request,
-#         "Property updated successfully."
-#     )
-
-#     return redirect("add_property")
-
-
-# @never_cache
-# @user_passes_test(superuser_required, login_url='superuser_login_view')
-# @require_POST
-# def delete_property(request, pk):
-#     prop = get_object_or_404(Property, pk=pk)
-#     prop.delete()
-#     return redirect('add_property')
 
 
 @never_cache
@@ -3807,6 +3476,24 @@ def reject_agent(request, agent_id):
 def testimonial_admin_view(request):
 
     if request.method == "POST":
+        uploaded_image = request.FILES.get("image")
+
+        if uploaded_image:
+
+            MAX_IMAGE_SIZE = 2.5 * 1024 * 1024  # 2.5 MB
+
+            if uploaded_image.size > MAX_IMAGE_SIZE:
+
+                size_mb = uploaded_image.size / (1024 * 1024)
+
+                messages.error(
+                    request,
+                    f"Image '{uploaded_image.name}' is too large "
+                    f"({size_mb:.2f} MB). "
+                    f"Maximum allowed size is 2.5 MB."
+                )
+
+                return redirect("testimonial")
         Testimonial.objects.create(
             user_id=request.POST.get("user"),
             rating=request.POST.get("rating"),
@@ -3844,6 +3531,24 @@ def edit_testimonial(request, id):
     users = UserCreate.objects.all()
 
     if request.method == "POST":
+        uploaded_image = request.FILES.get("image")
+
+        if uploaded_image:
+
+            MAX_IMAGE_SIZE = 2.5 * 1024 * 1024  # 2.5 MB
+
+            if uploaded_image.size > MAX_IMAGE_SIZE:
+
+                size_mb = uploaded_image.size / (1024 * 1024)
+
+                messages.error(
+                    request,
+                    f"Image '{uploaded_image.name}' is too large "
+                    f"({size_mb:.2f} MB). "
+                    f"Maximum allowed size is 2.5 MB."
+                )
+
+                return redirect("testimonial")
         testimonial.user_id = request.POST.get("user")
         testimonial.rating = request.POST.get("rating")
         # testimonial.image=request.FILES.get("image")
@@ -3872,6 +3577,31 @@ def userprofile_list_view(request):
 
         try:
             profile = get_object_or_404(UserProfile, id=request.POST.get("profile_id"))
+
+            uploaded_image = request.FILES.get("image")
+
+            if uploaded_image:
+
+                MAX_IMAGE_SIZE = 2.5 * 1024 * 1024  # 2.5 MB
+
+                if uploaded_image.size > MAX_IMAGE_SIZE:
+
+                    size_mb = uploaded_image.size / (1024 * 1024)
+
+                    print("IMAGE TOO LARGE:")
+                    print("Image:", uploaded_image.name)
+                    print("Size:", size_mb, "MB")
+
+                    messages.error(
+                        request,
+                        f"Image '{uploaded_image.name}' is too large "
+                        f"({size_mb:.2f} MB). "
+                        f"Maximum allowed size is 2.5 MB."
+                    )
+
+                    # IMPORTANT:
+                    # Do NOT save any profile changes
+                    return redirect("userprofiles")
 
             # =====================================================
             # UPDATE EDITABLE PROFILE DETAILS
@@ -3971,6 +3701,28 @@ def edit_userprofile(request, id):
     if request.method == "POST":
 
         try:
+            uploaded_image = request.FILES.get("image")
+
+            if uploaded_image:
+
+                MAX_IMAGE_SIZE = 2.5 * 1024 * 1024  # 2.5 MB
+
+                print("IMAGE NAME:", uploaded_image.name)
+                print("IMAGE SIZE:", uploaded_image.size)
+                print("IMAGE SIZE MB:", uploaded_image.size / (1024 * 1024))
+
+                if uploaded_image.size > MAX_IMAGE_SIZE:
+
+                    size_mb = uploaded_image.size / (1024 * 1024)
+
+                    messages.error(
+                        request,
+                        f"Image '{uploaded_image.name}' is too large "
+                        f"({size_mb:.2f} MB). "
+                        f"Maximum allowed size is 2.5 MB."
+                    )
+
+                    return redirect("userprofiles")
             # =====================================================
             # UPDATE USER PROFILE FROM SEPARATE EDIT PAGE
             # =====================================================
@@ -3990,11 +3742,8 @@ def edit_userprofile(request, id):
 
             profile.is_active = request.POST.get("is_active") == "True"
 
-            # =====================================================
-            # OPTIONAL IMAGE UPDATE
-            # =====================================================
-            if request.FILES.get("image"):
-                profile.image = request.FILES.get("image")
+            if uploaded_image:
+                profile.image = uploaded_image
 
             profile.save()
 
@@ -4210,24 +3959,26 @@ def blog_dashboard(request):
     form = BlogForm()
 
     edit_form = BlogForm()
+    open_add_blog_modal = False
 
     if request.method == "POST":
 
         form = BlogForm(request.POST, request.FILES)
+        if form.is_valid():
+            blog = form.save()
 
-        blog = form.save()
+            create_admin_notification(
+                "Blog Added",
+                f"Blog • {blog.blog_head or 'Untitled Blog'} was added successfully.",
+                "success",
+            )
 
-        create_admin_notification(
-            "Blog Added",
-            f"Blog • {blog.blog_head or 'Untitled Blog'} was added successfully.",
-            "success",
-        )
+            messages.success(request, "Blog added successfully.")
 
-        messages.success(request, "Blog added successfully.")
+            return redirect("blog_dashboard")
 
-        return redirect("blog_dashboard")
-
-    else:
+        else:
+            open_add_blog_modal = True
 
             print(form.errors)
 
@@ -4236,9 +3987,11 @@ def blog_dashboard(request):
         "categories": categories,
         "form": form,
         "edit_form": edit_form,
+        "open_add_blog_modal": open_add_blog_modal,
     }
 
     return render(request, "blogs/admin_blog.html", context)
+
 
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
@@ -4248,16 +4001,15 @@ def edit_blog(request, id):
 
     if request.method == "POST":
 
-        form = BlogForm(request.POST, request.FILES, instance=blog)
+        edit_form = BlogForm(
+            request.POST,
+            request.FILES,
+            instance=blog
+        )
 
-        if form.is_valid():
+        if edit_form.is_valid():
 
-            # Keep old image if no new image uploaded
-            if not request.FILES.get("image"):
-
-                form.instance.image = blog.image
-
-            blog = form.save()
+            blog = edit_form.save()
 
             create_admin_notification(
                 "Blog Updated",
@@ -4265,20 +4017,83 @@ def edit_blog(request, id):
                 "info",
             )
 
-            messages.success(request, "Blog updated successfully.")
-            return redirect("blog_dashboard")
-
-        else:
-
-            print(form.errors)
-
-            messages.error(request, "Please correct the errors below.")
+            messages.success(
+                request,
+                "Blog updated successfully."
+            )
 
             return redirect("blog_dashboard")
 
-    messages.error(request, "Invalid request.")
+        blogs = (
+            Blog.objects
+            .select_related("category")
+            .order_by("-date")
+        )
 
-    return render("blog_dashboard")
+        categories = Category.objects.all()
+
+        form = BlogForm()
+
+        context = {
+            "blogs": blogs,
+            "categories": categories,
+            "form": form,
+            "edit_form": edit_form,
+            "open_add_blog_modal": False,
+            "open_edit_blog_modal": True,
+            "edit_blog_id": blog.id,
+        }
+
+        return render(
+            request,
+            "blogs/admin_blog.html",
+            context
+        )
+
+    messages.error(
+        request,
+        "Invalid request."
+    )
+
+    return redirect("blog_dashboard")
+
+# @never_cache
+# @user_passes_test(superuser_required, login_url="superuser_login_view")
+# def edit_blog(request, id):
+
+#     blog = get_object_or_404(Blog, id=id)
+
+#     if request.method == "POST":
+
+#         form = BlogForm(request.POST, request.FILES, instance=blog)
+
+#         if form.is_valid():
+
+#             # Keep old image if no new image uploaded
+#             if not request.FILES.get("image"):
+
+#                 form.instance.image = blog.image
+
+#             blog = form.save()
+
+#             create_admin_notification(
+#                 "Blog Updated",
+#                 f"Blog • {blog.blog_head or 'Untitled Blog'} was updated successfully.",
+#                 "info",
+#             )
+
+#             messages.success(request, "Blog updated successfully.")
+#             return redirect("blog_dashboard")
+
+#         else:
+
+#             messages.error(request, "Please correct the errors below.")
+
+#             return redirect("blog_dashboard")
+
+#     messages.error(request, "Invalid request.")
+
+#     return render("blog_dashboard")
 
 # delete blog function
 def delete_blog(request, id):
@@ -5227,24 +5042,11 @@ def add_agent_property(request):
             ""
         ).strip()
 
-        # -------------------------------------------------
-        # DEFAULT DURATION
-        # -------------------------------------------------
-
-        # Your AgentProperty model uses duration_days.
-        # There is NO expiry_date/status field in the model.
-
         duration_days = request.POST.get("duration_days")
 
         if duration_days:
             property_obj.duration_days = int(duration_days)
 
-        # if not property_obj.duration_days:
-        #     property_obj.duration_days = 30
-
-        # -------------------------------------------------
-        # VALIDATE INSTANCE
-        # -------------------------------------------------
 
         property_obj.full_clean()
 
@@ -5253,16 +5055,6 @@ def add_agent_property(request):
         # =================================================
 
         property_obj.save()
-
-        print(
-            "PROPERTY CREATED:",
-            property_obj.id
-        )
-
-        print(
-            "SAVED DURATION DAYS:",
-            property_obj.duration_days
-        )
 
         # =================================================
         # AMENITIES
@@ -5287,6 +5079,25 @@ def add_agent_property(request):
         images = request.FILES.getlist(
             "images"
         )
+
+        MAX_IMAGE_SIZE = 2.5 * 1024 * 1024  
+
+        for image in images:
+
+            if image.size > MAX_IMAGE_SIZE:
+
+                size_mb = image.size / (1024 * 1024)
+
+                messages.error(
+                    request,
+                    f"Image '{image.name}' is too large "
+                    f"({size_mb:.2f} MB). "
+                    f"Maximum allowed size is 2.5 MB."
+                )
+
+                return redirect(
+                    "agent_property_dashboard"
+                )
 
         for image in images:
 
@@ -5564,6 +5375,26 @@ def edit_agent_property(request, id):
     property = get_object_or_404(AgentProperty, id=id)
 
     try:
+        images = request.FILES.getlist("images")
+
+        MAX_IMAGE_SIZE = 2.5 * 1024 * 1024  # 2.5 MB
+
+        for image in images:
+
+            if image.size > MAX_IMAGE_SIZE:
+
+                size_mb = image.size / (1024 * 1024)
+
+                messages.error(
+                    request,
+                    f"Image '{image.name}' is too large "
+                    f"({size_mb:.2f} MB). "
+                    f"Maximum allowed size is 2.5 MB."
+                )
+
+                return redirect(
+                    "agent_property_dashboard"
+                )
 
         with transaction.atomic():
 

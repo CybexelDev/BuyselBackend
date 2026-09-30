@@ -7211,7 +7211,10 @@ class UserPropertySerializer(serializers.ModelSerializer):
 
     def get_features(self, obj):
 
+        import re
+
         data = []
+
         property_features = (
             obj.property_features
             .select_related("field")
@@ -7219,11 +7222,18 @@ class UserPropertySerializer(serializers.ModelSerializer):
         )
 
         for f in property_features:
+
             field = f.field
 
             if not field:
                 continue
+
+            # =================================================
+            # PARSE VALUE
+            # =================================================
+
             try:
+
                 parsed_value = json.loads(f.value)
 
             except (TypeError, ValueError, json.JSONDecodeError):
@@ -7231,6 +7241,11 @@ class UserPropertySerializer(serializers.ModelSerializer):
                 parsed_value = {
                     "value": f.value
                 }
+
+            # =================================================
+            # NORMALIZE TO LIST
+            # =================================================
+
             if isinstance(parsed_value, list):
 
                 feature_items = parsed_value
@@ -7238,24 +7253,37 @@ class UserPropertySerializer(serializers.ModelSerializer):
             else:
 
                 feature_items = [parsed_value]
+
+            # =================================================
+            # PROCESS EACH ITEM
+            # =================================================
+
             for item in feature_items:
+
                 if not isinstance(item, dict):
 
                     item = {
                         "value": item
                     }
-                field_id = item.get("field_id")
+
+                # =================================================
+                # GET CURRENT FIELD
+                # =================================================
 
                 current_field = field
+
+                field_id = item.get("field_id")
 
                 if field_id:
 
                     try:
+
                         field_id = int(field_id)
 
                     except (TypeError, ValueError):
 
                         field_id = None
+
                 if field_id and field_id != field.id:
 
                     current_field = (
@@ -7267,191 +7295,505 @@ class UserPropertySerializer(serializers.ModelSerializer):
 
                     if not current_field:
                         continue
+
+                # =================================================
+                # RAW VALUE
+                # =================================================
+
                 feature_value = item.get("value")
 
                 if feature_value is None:
 
                     feature_value = ""
 
-                feature_value = str(feature_value).strip()
+                feature_value = str(
+                    feature_value
+                ).strip()
+
+                # =================================================
+                # OPTION NAME
+                # =================================================
 
                 option_name = item.get("option")
 
-                option_obj = None
+                if option_name is not None:
+
+                    option_name = str(
+                        option_name
+                    ).strip()
+
+                # =================================================
+                # FIELD TYPE
+                # =================================================
+
+                field_type = (
+                    current_field.field_type
+                )
+
+                # =================================================
+                # GET OPTIONS
+                # =================================================
 
                 options = list(
                     current_field.options.all()
                 )
+
+                option_obj = None
+
+                # =================================================
+                # FIND OPTION USING option
+                # =================================================
+
                 if option_name:
 
                     option_name_clean = (
-                        str(option_name)
+                        option_name
                         .strip()
                         .lower()
                     )
 
                     for option in options:
 
+                        option_name_db = (
+                            str(option.name)
+                            .strip()
+                            .lower()
+                        )
+
                         if (
-                            option.name.strip().lower()
+                            option_name_db
                             == option_name_clean
                         ):
 
                             option_obj = option
                             break
+
+                # =================================================
+                # FIND OPTION USING VALUE
+                # =================================================
+
                 if not option_obj and feature_value:
 
-                    value_clean = feature_value.lower().strip()
+                    value_clean = (
+                        feature_value
+                        .strip()
+                        .lower()
+                    )
 
                     for option in options:
 
-                        option_clean = (
-                            option.name
+                        option_name_db = (
+                            str(option.name)
                             .strip()
                             .lower()
                         )
 
-                        if value_clean == option_clean:
+                        # -----------------------------------------
+                        # Exact match
+                        # -----------------------------------------
+
+                        if (
+                            value_clean
+                            == option_name_db
+                        ):
 
                             option_obj = option
                             break
 
-                        prefix = option_clean + " ("
+                        # -----------------------------------------
+                        # Match:
+                        #
+                        # Bed (2)
+                        # Fan (3)
+                        # pantry (5)
+                        # -----------------------------------------
 
-                        if value_clean.startswith(prefix):
-
-                            remaining = value_clean[
-                                len(option_clean):
-                            ]
-
-                            if (
-                                remaining.startswith(" (")
-                                and remaining.endswith(")")
-                            ):
-
-                                count_value = remaining[
-                                    2:-1
-                                ].strip()
-
-                                if count_value:
-
-                                    option_obj = option
-                                    break
-                if option_obj:
-                    feature_name = current_field.field_name
-
-                elif option_name:
-
-                    feature_name = str(option_name)
-
-                else:
-
-                    feature_name = current_field.field_name
-                output_value = feature_value
-                field_type = current_field.field_type
-                if field_type == "countable":
-
-                    if option_obj:
-
-                        option_clean = (
-                            option_obj.name.strip()
+                        prefix = (
+                            option_name_db + " ("
                         )
 
-                        prefix = option_clean + " ("
+                        if value_clean.startswith(
+                            prefix
+                        ) and value_clean.endswith(")"):
 
-                        if (
-                            feature_value.lower().startswith(
-                                prefix.lower()
+                            option_obj = option
+                            break
+
+                        # -----------------------------------------
+                        # Match without space:
+                        #
+                        # Bed(2)
+                        # Fan(3)
+                        # -----------------------------------------
+
+                        prefix_no_space = (
+                            option_name_db + "("
+                        )
+
+                        if value_clean.startswith(
+                            prefix_no_space
+                        ) and value_clean.endswith(")"):
+
+                            option_obj = option
+                            break
+
+                # =================================================
+                # ICON
+                # =================================================
+
+                icon_url = None
+
+                if option_obj:
+
+                    try:
+
+                        if option_obj.icon:
+
+                            icon_url = (
+                                option_obj.icon.url
                             )
-                            and feature_value.endswith(")")
-                        ):
 
-                            start_index = (
-                                len(option_clean) + 2
+                    except Exception:
+
+                        icon_url = None
+
+                if not icon_url:
+
+                    try:
+
+                        if current_field.icon:
+
+                            icon_url = (
+                                current_field.icon.url
                             )
 
-                            end_index = (
-                                len(feature_value) - 1
-                            )
+                    except Exception:
 
-                            extracted_count = feature_value[
-                                start_index:end_index
-                            ].strip()
+                        icon_url = None
 
-                            if extracted_count:
+                # =================================================
+                # SELECT
+                #
+                # KEEP EXISTING BEHAVIOR
+                #
+                # BHK types -> 4BHK
+                # =================================================
 
-                                output_value = extracted_count
+                if field_type == "select":
 
-                    else:
-                        output_value = feature_value
-
-                elif field_type == "select":
+                    feature_name = (
+                        current_field.field_name
+                    )
 
                     if option_obj:
 
-                        output_value = option_obj.name
+                        output_value = (
+                            str(option_obj.name)
+                            .strip()
+                        )
 
                     else:
 
-                        output_value = feature_value
+                        output_value = (
+                            feature_value
+                        )
+
+                # =================================================
+                # MULTI SELECT
+                #
+                # IMPORTANT:
+                #
+                # Bed (2)
+                #
+                # becomes:
+                #
+                # name  = Bed
+                # value = 2
+                # =================================================
 
                 elif field_type == "multi_select":
 
+                    # -----------------------------------------
+                    # NAME
+                    # -----------------------------------------
+
                     if option_obj:
 
-                        output_value = option_obj.name
+                        feature_name = (
+                            str(option_obj.name)
+                            .strip()
+                        )
+
+                    elif option_name:
+
+                        feature_name = (
+                            str(option_name)
+                            .strip()
+                        )
 
                     else:
 
-                        output_value = feature_value
+                        feature_name = (
+                            current_field.field_name
+                        )
+
+                    # -----------------------------------------
+                    # DEFAULT VALUE
+                    # -----------------------------------------
+
+                    output_value = feature_value
+
+                    # -----------------------------------------
+                    # Extract count from:
+                    #
+                    # Bed (2)
+                    # Bed(2)
+                    # -----------------------------------------
+
+                    if option_obj:
+
+                        option_text = (
+                            str(option_obj.name)
+                            .strip()
+                        )
+
+                        # -------------------------------------
+                        # Bed (2)
+                        # -------------------------------------
+
+                        pattern_with_space = (
+                            r"^"
+                            + re.escape(option_text)
+                            + r"\s*\(\s*"
+                            r"(\d+(?:\.\d+)?)"
+                            r"\s*\)$"
+                        )
+
+                        match = re.match(
+                            pattern_with_space,
+                            feature_value,
+                            re.IGNORECASE
+                        )
+
+                        if match:
+
+                            output_value = (
+                                match.group(1)
+                            )
+
+                        else:
+
+                            # ---------------------------------
+                            # If value is already only number
+                            # ---------------------------------
+
+                            if feature_value.isdigit():
+
+                                output_value = (
+                                    feature_value
+                                )
+
+                            else:
+
+                                # -----------------------------
+                                # Last fallback:
+                                # extract number in brackets
+                                # -----------------------------
+
+                                match = re.search(
+                                    r"\(\s*(\d+(?:\.\d+)?)\s*\)",
+                                    feature_value
+                                )
+
+                                if match:
+
+                                    output_value = (
+                                        match.group(1)
+                                    )
+
+                    else:
+
+                        # -------------------------------------
+                        # No option object
+                        # -------------------------------------
+
+                        match = re.search(
+                            r"\(\s*(\d+(?:\.\d+)?)\s*\)",
+                            feature_value
+                        )
+
+                        if match:
+
+                            output_value = (
+                                match.group(1)
+                            )
+
+                        elif feature_value.isdigit():
+
+                            output_value = (
+                                feature_value
+                            )
+
+                # =================================================
+                # COUNTABLE
+                #
+                # pantry (5)
+                #
+                # becomes:
+                #
+                # name  = pantry
+                # value = 5
+                # =================================================
+
+                elif field_type == "countable":
+
+                    if option_obj:
+
+                        feature_name = (
+                            str(option_obj.name)
+                            .strip()
+                        )
+
+                    elif option_name:
+
+                        feature_name = (
+                            str(option_name)
+                            .strip()
+                        )
+
+                    else:
+
+                        feature_name = (
+                            current_field.field_name
+                        )
+
+                    output_value = feature_value
+
+                    # -----------------------------------------
+                    # Extract count
+                    # -----------------------------------------
+
+                    if option_obj:
+
+                        option_text = (
+                            str(option_obj.name)
+                            .strip()
+                        )
+
+                        pattern = (
+                            r"^"
+                            + re.escape(option_text)
+                            + r"\s*\(\s*"
+                            r"(\d+(?:\.\d+)?)"
+                            r"\s*\)$"
+                        )
+
+                        match = re.match(
+                            pattern,
+                            feature_value,
+                            re.IGNORECASE
+                        )
+
+                        if match:
+
+                            output_value = (
+                                match.group(1)
+                            )
+
+                        elif feature_value.isdigit():
+
+                            output_value = (
+                                feature_value
+                            )
+
+                    else:
+
+                        match = re.search(
+                            r"\(\s*(\d+(?:\.\d+)?)\s*\)",
+                            feature_value
+                        )
+
+                        if match:
+
+                            output_value = (
+                                match.group(1)
+                            )
+
+                        elif feature_value.isdigit():
+
+                            output_value = (
+                                feature_value
+                            )
+
+                # =================================================
+                # TEXT
+                # =================================================
 
                 elif field_type == "text":
 
-                    output_value = feature_value
+                    feature_name = (
+                        current_field.field_name
+                    )
+
+                    output_value = (
+                        feature_value
+                    )
+
+                # =================================================
+                # NUMBER
+                # =================================================
+
                 elif field_type == "number":
 
-                    output_value = feature_value
+                    feature_name = (
+                        current_field.field_name
+                    )
+
+                    output_value = (
+                        feature_value
+                    )
+
+                # =================================================
+                # BOOLEAN
+                # =================================================
+
                 elif field_type == "boolean":
 
-                    output_value = feature_value
+                    feature_name = (
+                        current_field.field_name
+                    )
+
+                    output_value = (
+                        feature_value
+                    )
+
+                # =================================================
+                # OTHER
+                # =================================================
+
                 else:
 
-                    output_value = feature_value
-                icon_url = None
-                if option_obj and option_obj.icon:
+                    feature_name = (
+                        current_field.field_name
+                    )
 
-                    try:
+                    output_value = (
+                        feature_value
+                    )
 
-                        icon_url = option_obj.icon.url
+                # =================================================
+                # FINAL RESPONSE
+                # =================================================
 
-                    except Exception:
-
-                        icon_url = None
-                elif current_field.icon:
-
-                    try:
-
-                        icon_url = current_field.icon.url
-
-                    except Exception:
-
-                        icon_url = None
-
-                option_id = (
-                    option_obj.id
-                    if option_obj
-                    else None
+                data.append(
+                    {
+                        "name": feature_name,
+                        "value": output_value,
+                        "icon": icon_url
+                    }
                 )
-                data.append({
-                    "name": feature_name,
-
-                    "value": output_value,
-
-                    "icon": icon_url
-                })
 
         return data
-
 
 
 

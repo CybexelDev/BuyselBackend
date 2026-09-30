@@ -103,7 +103,7 @@ urlpatterns = [
         views.expired_agents_dashboard,
         name="expired_agents_dashboard",
     ),
-    path("agents_login", views.agents_login, name="agents_login"),
+    # path("agents_login", views.agents_login, name="agents_login"),
     path("admin_premiumagents", views.admin_premiumagents, name="admin_premiumagents"),
     path("admin_premium/<int:pk>/", views.edit_premium, name="edit_premium"),
     path("admin_premium/delete/<int:pk>/", views.delete_premium, name="delete_premium"),

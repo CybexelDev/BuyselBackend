@@ -3683,10 +3683,481 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
+# class AgentPendingRegisterAPIView(APIView):
+
+#     authentication_classes = [UserJWTAuthentication]
+#     permission_classes = [IsAuthenticated]
+
+#     def post(self, request):
+
+#         # =================================================
+#         # AUTHENTICATION CHECK
+#         # =================================================
+
+#         if (
+#             not request.user
+#             or not request.user.is_authenticated
+#         ):
+
+#             return Response(
+#                 {
+#                     "status": False,
+#                     "message": "Authentication required."
+#                 },
+#                 status=status.HTTP_401_UNAUTHORIZED
+#             )
+
+#         # =================================================
+#         # COPY REQUEST DATA
+#         # =================================================
+
+#         data = request.data.copy()
+
+#         # =================================================
+#         # NORMALIZE VALUES
+#         # =================================================
+
+#         data["email"] = str(
+#             data.get("email", "")
+#         ).strip().lower()
+
+#         data["agent_type"] = str(
+#             data.get("agent_type", "")
+#         ).strip().lower()
+
+#         data["full_name"] = str(
+#             data.get("full_name", "")
+#         ).strip()
+
+#         data["phone_number"] = str(
+#             data.get("phone_number", "")
+#         ).strip()
+
+#         data["city"] = str(
+#             data.get("city", "")
+#         ).strip()
+
+#         data["pin_code"] = str(
+#             data.get("pin_code", "")
+#         ).strip()
+
+#         data["address"] = str(
+#             data.get("address", "")
+#         ).strip()
+
+#         # =================================================
+#         # DEALS FIELD
+#         # =================================================
+
+#         if "total_deals_served" in data:
+
+#             data["deals_closed"] = data.get(
+#                 "total_deals_served"
+#             )
+
+#             data.pop(
+#                 "total_deals_served",
+#                 None
+#             )
+
+#         # =================================================
+#         # NEVER ACCEPT submitted_by FROM FRONTEND
+#         # =================================================
+
+#         data.pop(
+#             "submitted_by",
+#             None
+#         )
+
+#         # =================================================
+#         # GET PLAN ID
+#         # =================================================
+
+#         plan_id = data.get("plan_id")
+
+#         if plan_id:
+#             plan_id = str(plan_id).strip()
+
+
+#         # =================================================
+#         # REMOVE plan_id
+#         # =================================================
+#         # plan_id is only used internally to find the
+#         # correct plan object.
+#         #
+#         # The actual ForeignKey field is populated below.
+#         # =================================================
+
+#         data.pop(
+#             "plan_id",
+#             None
+#         )
+
+#         # =================================================
+#         # RESET ALL PLAN FIELDS
+#         # =================================================
+
+#         data["basic_plan"] = None
+#         data["premium_plan"] = None
+#         data["elite_plan"] = None
+
+#         agent_type = data.get("agent_type")
+
+#         # =================================================
+#         # BASIC AGENT
+#         # =================================================
+
+#         if agent_type == "basic":
+
+#             # Basic agent ALSO requires a plan
+#             if not plan_id:
+
+#                 return Response(
+#                     {
+#                         "status": False,
+#                         "message": (
+#                             "Basic plan is required."
+#                         )
+#                     },
+#                     status=status.HTTP_400_BAD_REQUEST
+#                 )
+
+#             # ---------------------------------------------
+#             # FIND BASIC AGENT PLAN
+#             # ---------------------------------------------
+
+#             basic_plan = AgentPlan.objects.filter(
+#                 pk=plan_id
+#             ).first()
+
+#             if not basic_plan:
+
+#                 return Response(
+#                     {
+#                         "status": False,
+#                         "message": (
+#                             "Invalid basic plan ID."
+#                         )
+#                     },
+#                     status=status.HTTP_400_BAD_REQUEST
+#                 )
+
+            
+
+#             # ---------------------------------------------
+#             # IMPORTANT
+#             # ---------------------------------------------
+#             # This was missing in your original code.
+#             #
+#             # Without this, model.clean() receives
+#             # basic_plan=None.
+#             # ---------------------------------------------
+
+#             data["basic_plan"] = basic_plan.pk
+
+#         # =================================================
+#         # PREMIUM AGENT
+#         # =================================================
+
+#         elif agent_type == "premium":
+
+#             if not plan_id:
+
+#                 return Response(
+#                     {
+#                         "status": False,
+#                         "message": (
+#                             "Premium plan is required."
+#                         )
+#                     },
+#                     status=status.HTTP_400_BAD_REQUEST
+#                 )
+
+#             # ---------------------------------------------
+#             # FIND PREMIUM PLAN
+#             # ---------------------------------------------
+
+#             premium_plan = PremiumPlan.objects.filter(
+#                 pk=plan_id
+#             ).first()
+
+#             if not premium_plan:
+
+#                 return Response(
+#                     {
+#                         "status": False,
+#                         "message": (
+#                             "Invalid premium plan ID."
+#                         )
+#                     },
+#                     status=status.HTTP_400_BAD_REQUEST
+#                 )
+
+            
+
+#             data["premium_plan"] = premium_plan.pk
+
+#         # =================================================
+#         # ELITE AGENT
+#         # =================================================
+
+#         elif agent_type == "elite":
+
+#             if not plan_id:
+
+#                 return Response(
+#                     {
+#                         "status": False,
+#                         "message": (
+#                             "Elite plan is required."
+#                         )
+#                     },
+#                     status=status.HTTP_400_BAD_REQUEST
+#                 )
+
+#             # ---------------------------------------------
+#             # FIND ELITE PLAN
+#             # ---------------------------------------------
+
+#             elite_plan = ElitePlan.objects.filter(
+#                 pk=plan_id
+#             ).first()
+
+#             if not elite_plan:
+
+#                 return Response(
+#                     {
+#                         "status": False,
+#                         "message": (
+#                             "Invalid elite plan ID."
+#                         )
+#                     },
+#                     status=status.HTTP_400_BAD_REQUEST
+#                 )
+
+            
+
+#             data["elite_plan"] = elite_plan.pk
+
+#         # =================================================
+#         # INVALID AGENT TYPE
+#         # =================================================
+
+#         else:
+
+#             return Response(
+#                 {
+#                     "status": False,
+#                     "message": "Invalid agent type."
+#                 },
+#                 status=status.HTTP_400_BAD_REQUEST
+#             )
+
+
+#         # =================================================
+#         # SERIALIZER
+#         # =================================================
+
+#         serializer = PendingAgentRegistrationSerializer(
+#             data=data
+#         )
+
+#         # =================================================
+#         # SERIALIZER VALIDATION
+#         # =================================================
+
+#         if not serializer.is_valid():
+
+#             errors = serializer.errors
+
+#             # ---------------------------------------------
+#             # FIRST USEFUL ERROR
+#             # ---------------------------------------------
+
+#             first_message = (
+#                 "Please correct the errors below."
+#             )
+
+#             for field_errors in errors.values():
+
+#                 if field_errors:
+
+#                     first_message = str(
+#                         field_errors[0]
+#                     )
+
+#                     break
+
+#             return Response(
+#                 {
+#                     "status": False,
+#                     "message": first_message,
+#                     "errors": errors
+#                 },
+#                 status=status.HTTP_400_BAD_REQUEST
+#             )
+
+#         # =================================================
+#         # CREATE REGISTRATION
+#         # =================================================
+
+#         try:
+
+#             registration = serializer.save(
+#                 submitted_by=request.user
+#             )
+
+#         except DjangoValidationError as exc:
+
+
+#             first_message = str(exc)
+
+#             # ---------------------------------------------
+#             # FIELD VALIDATION ERROR
+#             # ---------------------------------------------
+
+#             if hasattr(
+#                 exc,
+#                 "message_dict"
+#             ):
+
+#                 for field_errors in (
+#                     exc.message_dict.values()
+#                 ):
+
+#                     if field_errors:
+
+#                         first_message = str(
+#                             field_errors[0]
+#                         )
+
+#                         break
+
+#             # ---------------------------------------------
+#             # NORMAL VALIDATION ERROR
+#             # ---------------------------------------------
+
+#             elif getattr(
+#                 exc,
+#                 "messages",
+#                 None
+#             ):
+
+#                 first_message = str(
+#                     exc.messages[0]
+#                 )
+
+#             return Response(
+#                 {
+#                     "status": False,
+#                     "message": first_message
+#                 },
+#                 status=status.HTTP_400_BAD_REQUEST
+#             )
+
+#         except Exception as exc:
+
+#             return Response(
+#                 {
+#                     "status": False,
+#                     "message": (
+#                         "Unable to submit registration."
+#                     ),
+#                     "error": str(exc)
+#                 },
+#                 status=status.HTTP_400_BAD_REQUEST
+#             )
+
+#         # =================================================
+#         # SUCCESS DEBUG
+#         # =================================================
+
+
+#         # =================================================
+#         # FINAL PLAN ID
+#         # =================================================
+
+#         if registration.agent_type == "basic":
+
+#             final_plan_id = (
+#                 str(registration.basic_plan_id)
+#                 if registration.basic_plan_id
+#                 else None
+#             )
+
+#         elif registration.agent_type == "premium":
+
+#             final_plan_id = (
+#                 str(registration.premium_plan_id)
+#                 if registration.premium_plan_id
+#                 else None
+#             )
+
+#         elif registration.agent_type == "elite":
+
+#             final_plan_id = (
+#                 str(registration.elite_plan_id)
+#                 if registration.elite_plan_id
+#                 else None
+#             )
+
+#         else:
+
+#             final_plan_id = None
+
+#         # =================================================
+#         # SUCCESS RESPONSE
+#         # =================================================
+
+#         return Response(
+#             {
+#                 "status": True,
+
+#                 "message": (
+#                     "Registration submitted. "
+#                     "Waiting for admin approval."
+#                 ),
+
+#                 "registration_id": str(
+#                     registration.id
+#                 ),
+
+#                 "submitted_by": (
+#                     str(
+#                         registration.submitted_by.id
+#                     )
+#                     if registration.submitted_by
+#                     else None
+#                 ),
+
+#                 "agent_type": registration.agent_type,
+
+#                 "plan_id": final_plan_id
+#             },
+#             status=status.HTTP_201_CREATED
+#         )
+
+
+from uuid import UUID
+
+from django.core.exceptions import ValidationError as DjangoValidationError
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework import status
+
+
 class AgentPendingRegisterAPIView(APIView):
 
     authentication_classes = [UserJWTAuthentication]
     permission_classes = [IsAuthenticated]
+
+    parser_classes = (
+        MultiPartParser,
+        FormParser,
+    )
 
     def post(self, request):
 
@@ -3708,10 +4179,44 @@ class AgentPendingRegisterAPIView(APIView):
             )
 
         # =================================================
-        # COPY REQUEST DATA
+        # SAFE REQUEST DATA
+        # =================================================
+        #
+        # DO NOT USE:
+        #
+        # data = request.data.copy()
+        #
+        # UploadedFile can cause BufferedRandom deepcopy
+        # errors.
         # =================================================
 
-        data = request.data.copy()
+        data = {}
+
+        # =================================================
+        # NORMAL FORM DATA
+        # =================================================
+
+        for key in request.POST.keys():
+
+            values = request.POST.getlist(key)
+
+            if len(values) > 1:
+                data[key] = values
+            else:
+                data[key] = values[0]
+
+        # =================================================
+        # FILE DATA
+        # =================================================
+
+        for key in request.FILES.keys():
+
+            files = request.FILES.getlist(key)
+
+            if len(files) > 1:
+                data[key] = files
+            else:
+                data[key] = files[0]
 
         # =================================================
         # NORMALIZE VALUES
@@ -3761,7 +4266,7 @@ class AgentPendingRegisterAPIView(APIView):
             )
 
         # =================================================
-        # NEVER ACCEPT submitted_by FROM FRONTEND
+        # NEVER ACCEPT submitted_by
         # =================================================
 
         data.pop(
@@ -3775,17 +4280,87 @@ class AgentPendingRegisterAPIView(APIView):
 
         plan_id = data.get("plan_id")
 
-        if plan_id:
-            plan_id = str(plan_id).strip()
+        # =================================================
+        # IMPORTANT UUID FIX
+        # =================================================
+        #
+        # plan_id MUST be ONE UUID.
+        #
+        # Example:
+        #
+        # 539c0076-610d-44dd-b4d7-4cc5deaacdaf
+        #
+        # NOT:
+        #
+        # ['uuid1', 'uuid2']
+        # =================================================
 
+        if isinstance(plan_id, list):
+
+            # Remove empty values
+            plan_ids = [
+                str(value).strip()
+                for value in plan_id
+                if str(value).strip()
+            ]
+
+            # Multiple IDs are not allowed
+            if len(plan_ids) > 1:
+
+                return Response(
+                    {
+                        "status": False,
+                        "message": (
+                            "Only one plan ID is allowed."
+                        ),
+                        "plan_ids": plan_ids
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            if len(plan_ids) == 1:
+                plan_id = plan_ids[0]
+            else:
+                plan_id = None
+
+        elif plan_id:
+
+            plan_id = str(
+                plan_id
+            ).strip()
+
+        # =================================================
+        # VALIDATE UUID FORMAT
+        # =================================================
+
+        if plan_id:
+
+            try:
+
+                plan_id = str(
+                    UUID(plan_id)
+                )
+
+            except (
+                ValueError,
+                TypeError,
+                AttributeError
+            ):
+
+                return Response(
+                    {
+                        "status": False,
+                        "message": (
+                            "Invalid plan ID. "
+                            "Plan ID must be a valid UUID."
+                        ),
+                        "plan_id": plan_id
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
         # =================================================
         # REMOVE plan_id
-        # =================================================
-        # plan_id is only used internally to find the
-        # correct plan object.
-        #
-        # The actual ForeignKey field is populated below.
         # =================================================
 
         data.pop(
@@ -3801,7 +4376,13 @@ class AgentPendingRegisterAPIView(APIView):
         data["premium_plan"] = None
         data["elite_plan"] = None
 
-        agent_type = data.get("agent_type")
+        # =================================================
+        # GET AGENT TYPE
+        # =================================================
+
+        agent_type = data.get(
+            "agent_type"
+        )
 
         # =================================================
         # BASIC AGENT
@@ -3809,49 +4390,61 @@ class AgentPendingRegisterAPIView(APIView):
 
         if agent_type == "basic":
 
-            # Basic agent ALSO requires a plan
+            # -------------------------------------------------
+            # PLAN REQUIRED
+            # -------------------------------------------------
+
             if not plan_id:
 
                 return Response(
                     {
                         "status": False,
-                        "message": (
-                            "Basic plan is required."
-                        )
+                        "message": "Basic plan is required."
                     },
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-            # ---------------------------------------------
-            # FIND BASIC AGENT PLAN
-            # ---------------------------------------------
+            # -------------------------------------------------
+            # FIND BASIC PLAN
+            # -------------------------------------------------
 
-            basic_plan = AgentPlan.objects.filter(
-                pk=plan_id
-            ).first()
+            try:
+
+                basic_plan = AgentPlan.objects.filter(
+                    pk=plan_id
+                ).first()
+
+            except (
+                ValueError,
+                TypeError,
+                DjangoValidationError
+            ):
+
+                return Response(
+                    {
+                        "status": False,
+                        "message": "Invalid basic plan ID."
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # -------------------------------------------------
+            # PLAN NOT FOUND
+            # -------------------------------------------------
 
             if not basic_plan:
 
                 return Response(
                     {
                         "status": False,
-                        "message": (
-                            "Invalid basic plan ID."
-                        )
+                        "message": "Invalid basic plan ID."
                     },
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-            
-
-            # ---------------------------------------------
-            # IMPORTANT
-            # ---------------------------------------------
-            # This was missing in your original code.
-            #
-            # Without this, model.clean() receives
-            # basic_plan=None.
-            # ---------------------------------------------
+            # -------------------------------------------------
+            # SET BASIC PLAN UUID
+            # -------------------------------------------------
 
             data["basic_plan"] = basic_plan.pk
 
@@ -3861,39 +4454,61 @@ class AgentPendingRegisterAPIView(APIView):
 
         elif agent_type == "premium":
 
+            # -------------------------------------------------
+            # PLAN REQUIRED
+            # -------------------------------------------------
+
             if not plan_id:
 
                 return Response(
                     {
                         "status": False,
-                        "message": (
-                            "Premium plan is required."
-                        )
+                        "message": "Premium plan is required."
                     },
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-            # ---------------------------------------------
+            # -------------------------------------------------
             # FIND PREMIUM PLAN
-            # ---------------------------------------------
+            # -------------------------------------------------
 
-            premium_plan = PremiumPlan.objects.filter(
-                pk=plan_id
-            ).first()
+            try:
+
+                premium_plan = PremiumPlan.objects.filter(
+                    pk=plan_id
+                ).first()
+
+            except (
+                ValueError,
+                TypeError,
+                DjangoValidationError
+            ):
+
+                return Response(
+                    {
+                        "status": False,
+                        "message": "Invalid premium plan ID."
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # -------------------------------------------------
+            # PLAN NOT FOUND
+            # -------------------------------------------------
 
             if not premium_plan:
 
                 return Response(
                     {
                         "status": False,
-                        "message": (
-                            "Invalid premium plan ID."
-                        )
+                        "message": "Invalid premium plan ID."
                     },
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-            
+            # -------------------------------------------------
+            # SET PREMIUM PLAN UUID
+            # -------------------------------------------------
 
             data["premium_plan"] = premium_plan.pk
 
@@ -3903,39 +4518,61 @@ class AgentPendingRegisterAPIView(APIView):
 
         elif agent_type == "elite":
 
+            # -------------------------------------------------
+            # PLAN REQUIRED
+            # -------------------------------------------------
+
             if not plan_id:
 
                 return Response(
                     {
                         "status": False,
-                        "message": (
-                            "Elite plan is required."
-                        )
+                        "message": "Elite plan is required."
                     },
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-            # ---------------------------------------------
+            # -------------------------------------------------
             # FIND ELITE PLAN
-            # ---------------------------------------------
+            # -------------------------------------------------
 
-            elite_plan = ElitePlan.objects.filter(
-                pk=plan_id
-            ).first()
+            try:
+
+                elite_plan = ElitePlan.objects.filter(
+                    pk=plan_id
+                ).first()
+
+            except (
+                ValueError,
+                TypeError,
+                DjangoValidationError
+            ):
+
+                return Response(
+                    {
+                        "status": False,
+                        "message": "Invalid elite plan ID."
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # -------------------------------------------------
+            # PLAN NOT FOUND
+            # -------------------------------------------------
 
             if not elite_plan:
 
                 return Response(
                     {
                         "status": False,
-                        "message": (
-                            "Invalid elite plan ID."
-                        )
+                        "message": "Invalid elite plan ID."
                     },
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-            
+            # -------------------------------------------------
+            # SET ELITE PLAN UUID
+            # -------------------------------------------------
 
             data["elite_plan"] = elite_plan.pk
 
@@ -3953,7 +4590,6 @@ class AgentPendingRegisterAPIView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-
         # =================================================
         # SERIALIZER
         # =================================================
@@ -3969,10 +4605,6 @@ class AgentPendingRegisterAPIView(APIView):
         if not serializer.is_valid():
 
             errors = serializer.errors
-
-            # ---------------------------------------------
-            # FIRST USEFUL ERROR
-            # ---------------------------------------------
 
             first_message = (
                 "Please correct the errors below."
@@ -4009,12 +4641,11 @@ class AgentPendingRegisterAPIView(APIView):
 
         except DjangoValidationError as exc:
 
-
             first_message = str(exc)
 
-            # ---------------------------------------------
+            # -------------------------------------------------
             # FIELD VALIDATION ERROR
-            # ---------------------------------------------
+            # -------------------------------------------------
 
             if hasattr(
                 exc,
@@ -4033,9 +4664,9 @@ class AgentPendingRegisterAPIView(APIView):
 
                         break
 
-            # ---------------------------------------------
+            # -------------------------------------------------
             # NORMAL VALIDATION ERROR
-            # ---------------------------------------------
+            # -------------------------------------------------
 
             elif getattr(
                 exc,
@@ -4067,11 +4698,6 @@ class AgentPendingRegisterAPIView(APIView):
                 },
                 status=status.HTTP_400_BAD_REQUEST
             )
-
-        # =================================================
-        # SUCCESS DEBUG
-        # =================================================
-
 
         # =================================================
         # FINAL PLAN ID
@@ -4136,7 +4762,6 @@ class AgentPendingRegisterAPIView(APIView):
             },
             status=status.HTTP_201_CREATED
         )
-
 
 
 class AgentTokenRefreshAPIView(APIView):

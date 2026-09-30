@@ -1668,101 +1668,101 @@ def delete_property(request, property_id):
     return redirect("add_property")
 
 
-@user_passes_test(superuser_required, login_url="superuser_login_view")
-def agents_login(request):
-    if request.method == "POST":
-        if "username" in request.POST:  # Premium Agent Login form
-            name = request.POST.get("name")
-            speacialised = request.POST.get("speacialised")
-            phone = request.POST.get("phone")
-            whatsapp = request.POST.get("whatsapp")
-            email = request.POST.get("email")
-            location = request.POST.get("location")
-            city = request.POST.get("city")
-            pincode = request.POST.get("pincode")
-            username = request.POST.get("username")
-            password = request.POST.get("password")
-            image = request.FILES.get("image")
-            duration_days = request.POST.get("duration_days")  #  from POST, not FILES
+# @user_passes_test(superuser_required, login_url="superuser_login_view")
+# def agents_login(request):
+#     if request.method == "POST":
+#         if "username" in request.POST:  # Premium Agent Login form
+#             name = request.POST.get("name")
+#             speacialised = request.POST.get("speacialised")
+#             phone = request.POST.get("phone")
+#             whatsapp = request.POST.get("whatsapp")
+#             email = request.POST.get("email")
+#             location = request.POST.get("location")
+#             city = request.POST.get("city")
+#             pincode = request.POST.get("pincode")
+#             username = request.POST.get("username")
+#             password = request.POST.get("password")
+#             image = request.FILES.get("image")
+#             duration_days = request.POST.get("duration_days")  #  from POST, not FILES
 
-            # optional: check duplicate username
-            if Premium.objects.filter(username=username).exists():
-                messages.error(request, "❌ This username is already registered.")
-                return redirect("agents_login")
+#             # optional: check duplicate username
+#             if Premium.objects.filter(username=username).exists():
+#                 messages.error(request, "❌ This username is already registered.")
+#                 return redirect("agents_login")
 
-            Premium.objects.create(
-                name=name,
-                speacialised=speacialised,
-                phone=phone,
-                whatsapp=whatsapp,
-                email=email,
-                location=location,
-                city=city,
-                pincode=pincode,
-                username=username,
-                password=make_password(password),
-                image=image,
-                duration_days=duration_days,
-                created_at=timezone.now(),
-            )
+#             Premium.objects.create(
+#                 name=name,
+#                 speacialised=speacialised,
+#                 phone=phone,
+#                 whatsapp=whatsapp,
+#                 email=email,
+#                 location=location,
+#                 city=city,
+#                 pincode=pincode,
+#                 username=username,
+#                 password=make_password(password),
+#                 image=image,
+#                 duration_days=duration_days,
+#                 created_at=timezone.now(),
+#             )
 
-            create_admin_notification(
-                "Premium Agent Added",
-                f"Premium Agent • {name} was added successfully.",
-                "success",
-            )
+#             create_admin_notification(
+#                 "Premium Agent Added",
+#                 f"Premium Agent • {name} was added successfully.",
+#                 "success",
+#             )
 
-            messages.success(request, " Premium Agent created successfully!")
+#             messages.success(request, " Premium Agent created successfully!")
 
 
-        elif "agentname" in request.POST:
-            agentsname = request.POST.get("agentname")
-            agentsspeacialised = request.POST.get("agentspeacialised")
-            agentsphone = request.POST.get("agentphone")
-            agentswhatsapp = request.POST.get("agentwhatsapp")
-            agentsemail = request.POST.get("agentemail")
-            agentslocation = request.POST.get("agentlocation")
-            agentscity = request.POST.get("agentscity")
-            agentspincode = request.POST.get("agentspincode")
-            agentsimage = request.FILES.get("agentsimage")
-            plan_id = request.POST.get("plan_id")
-            # validate plan
-            try:
+#         elif "agentname" in request.POST:
+#             agentsname = request.POST.get("agentname")
+#             agentsspeacialised = request.POST.get("agentspeacialised")
+#             agentsphone = request.POST.get("agentphone")
+#             agentswhatsapp = request.POST.get("agentwhatsapp")
+#             agentsemail = request.POST.get("agentemail")
+#             agentslocation = request.POST.get("agentlocation")
+#             agentscity = request.POST.get("agentscity")
+#             agentspincode = request.POST.get("agentspincode")
+#             agentsimage = request.FILES.get("agentsimage")
+#             plan_id = request.POST.get("plan_id")
+#             # validate plan
+#             try:
 
-                plan = AgentPlan.objects.get(id=plan_id)
-            except AgentPlan.DoesNotExist:
-                messages.error(request, " Invalid plan selected")
-                return redirect("agents_login")
+#                 plan = AgentPlan.objects.get(id=plan_id)
+#             except AgentPlan.DoesNotExist:
+#                 messages.error(request, " Invalid plan selected")
+#                 return redirect("agents_login")
 
-            if Agents.objects.filter(agentsphone=agentsphone).exists():
-                messages.error(request, "This phone number is already registered.")
-                return redirect("agents_login")
+#             if Agents.objects.filter(agentsphone=agentsphone).exists():
+#                 messages.error(request, "This phone number is already registered.")
+#                 return redirect("agents_login")
 
-            Agents.objects.create(
-                agentsname=agentsname,
-                agentsspeacialised=agentsspeacialised,
-                agentsphone=agentsphone,
-                agentswhatsapp=agentswhatsapp,
-                agentsemail=agentsemail,
-                agentslocation=agentslocation,
-                agentscity=agentscity,
-                agentspincode=agentspincode,
-                agentsimage=agentsimage,
-                duration_days=plan.validity,
-            )
+#             Agents.objects.create(
+#                 agentsname=agentsname,
+#                 agentsspeacialised=agentsspeacialised,
+#                 agentsphone=agentsphone,
+#                 agentswhatsapp=agentswhatsapp,
+#                 agentsemail=agentsemail,
+#                 agentslocation=agentslocation,
+#                 agentscity=agentscity,
+#                 agentspincode=agentspincode,
+#                 agentsimage=agentsimage,
+#                 duration_days=plan.validity,
+#             )
 
-            create_admin_notification(
-                "Agent Added",
-                f"Agent • {agentsname} was added successfully with a {plan.validity} days plan.",
-                "success",
-            )
+#             create_admin_notification(
+#                 "Agent Added",
+#                 f"Agent • {agentsname} was added successfully with a {plan.validity} days plan.",
+#                 "success",
+#             )
 
-            messages.success(
-                request, f"[------------- Agent added with {plan.validity} days plan!"
-            )
+#             messages.success(
+#                 request, f"[------------- Agent added with {plan.validity} days plan!"
+#             )
 
-            return redirect("agents_login")
-    return render(request, "agents/add_agent.html")
+#             return redirect("agents_login")
+#     return render(request, "agents/add_agent.html")
 
 
 @never_cache

@@ -602,8 +602,7 @@
                         <div>
                             <p class="text-sm font-semibold text-[#24351e]">Registered Agents</p>
                             <p class="mt-0.5 text-xs font-normal text-slate-400">
-                                <span id="visibleAgentCount">{{ premium_report|length }}</span> visible record{{
-                                premium_report|length|pluralize }}
+                                <span id="visibleAgentCount">{{ premium_report|length }}</span> visible record{{ premium_report|length|pluralize }}
                             </p>
                         </div>
                     </div>
@@ -716,6 +715,300 @@
         </main>
     </div>
 </div>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const markAllButton =
+        document.getElementById("markAllNotificationsRead");
+
+    if (!markAllButton) {
+        return;
+    }
+
+    // =====================================================
+    // GET CSRF TOKEN FROM COOKIE
+    // =====================================================
+
+    function getCookie(name) {
+
+        let cookieValue = null;
+
+        if (document.cookie && document.cookie !== "") {
+
+            const cookies =
+                document.cookie.split(";");
+
+            for (let i = 0; i < cookies.length; i++) {
+
+                const cookie =
+                    cookies[i].trim();
+
+                if (
+                    cookie.substring(
+                        0,
+                        name.length + 1
+                    ) === name + "="
+                ) {
+
+                    cookieValue =
+                        decodeURIComponent(
+                            cookie.substring(
+                                name.length + 1
+                            )
+                        );
+
+                    break;
+                }
+            }
+        }
+
+        return cookieValue;
+    }
+
+
+    // =====================================================
+    // MARK ALL AS READ
+    // =====================================================
+
+    markAllButton.addEventListener(
+        "click",
+        function () {
+
+            const csrfToken =
+                getCookie("csrftoken");
+
+            if (!csrfToken) {
+
+                console.error(
+                    "CSRF token not found in cookie."
+                );
+
+                alert(
+                    "CSRF token not found. Please refresh the page and try again."
+                );
+
+                return;
+            }
+
+
+            // =================================================
+            // DISABLE BUTTON
+            // =================================================
+
+            markAllButton.disabled = true;
+
+            const originalText =
+                markAllButton.textContent;
+
+            markAllButton.textContent =
+                "Marking...";
+
+
+            // =================================================
+            // SEND REQUEST
+            // =================================================
+
+            fetch(
+                "{% url 'mark_all_dashboard_notifications_read' %}",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "X-CSRFToken": csrfToken,
+                        "X-Requested-With": "XMLHttpRequest"
+                    },
+
+                    credentials: "same-origin"
+                }
+            )
+
+
+            // =================================================
+            // RESPONSE
+            // =================================================
+
+            .then(function (response) {
+
+                if (!response.ok) {
+
+                    return response
+                        .json()
+                        .catch(function () {
+                            throw new Error(
+                                "Request failed with status " +
+                                response.status
+                            );
+                        })
+                        .then(function (data) {
+
+                            throw new Error(
+                                data.message ||
+                                data.error ||
+                                "Unable to mark notifications as read."
+                            );
+
+                        });
+
+                }
+
+                return response.json();
+
+            })
+
+
+            // =================================================
+            // SUCCESS
+            // =================================================
+
+            .then(function (data) {
+
+                if (!data.success) {
+
+                    throw new Error(
+                        data.message ||
+                        "Unable to mark notifications as read."
+                    );
+
+                }
+
+
+                // =============================================
+                // UPDATE NOTIFICATION ITEMS
+                // =============================================
+
+                document
+                    .querySelectorAll(
+                        "[data-notification-id]"
+                    )
+                    .forEach(function (notification) {
+
+                        notification.classList.remove(
+                            "bg-[#f0f8e8]",
+                            "border-l-[3px]",
+                            "border-l-[#8bc83f]",
+                            "hover:bg-[#eaf5dc]"
+                        );
+
+                        notification.classList.add(
+                            "bg-[#f7f9f4]",
+                            "opacity-60"
+                        );
+
+                    });
+
+
+                // =============================================
+                // REMOVE INDIVIDUAL "MARK AS READ" BUTTONS
+                // =============================================
+
+                document
+                    .querySelectorAll(
+                        ".mark-notification-read"
+                    )
+                    .forEach(function (button) {
+
+                        button.remove();
+
+                    });
+
+
+                // =============================================
+                // REMOVE UNREAD BADGES
+                // =============================================
+
+                document
+                    .querySelectorAll(
+                        ".notification-unread"
+                    )
+                    .forEach(function (badge) {
+
+                        badge.remove();
+
+                    });
+
+
+                // =============================================
+                // UPDATE NOTIFICATION BADGE
+                // =============================================
+
+                const notificationBadge =
+                    document.getElementById(
+                        "notificationBadge"
+                    );
+
+                if (notificationBadge) {
+
+                    notificationBadge.textContent =
+                        "0";
+
+                    notificationBadge.classList.remove(
+                        "flex"
+                    );
+
+                    notificationBadge.classList.add(
+                        "hidden"
+                    );
+
+                }
+
+
+                // =============================================
+                // UPDATE BUTTON
+                // =============================================
+
+                markAllButton.textContent =
+                    "All read";
+
+
+                markAllButton.classList.remove(
+                    "text-[#659d28]"
+                );
+
+                markAllButton.classList.add(
+                    "text-slate-400"
+                );
+
+            })
+
+
+            // =================================================
+            // ERROR
+            // =================================================
+
+            .catch(function (error) {
+
+                console.error(
+                    "Mark all notifications error:",
+                    error
+                );
+
+                markAllButton.textContent =
+                    originalText;
+
+                alert(
+                    error.message ||
+                    "Something went wrong."
+                );
+
+            })
+
+
+            // =================================================
+            // FINALLY
+            // =================================================
+
+            .finally(function () {
+
+                markAllButton.disabled =
+                    false;
+
+            });
+
+        }
+    );
+
+});
+</script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {

@@ -4579,7 +4579,96 @@ def mark_dashboard_notification_read(request):
             },
             status=400
         )
+    
+@never_cache
+@user_passes_test(
+    superuser_required,
+    login_url="superuser_login_view"
+)
+@require_POST
+def mark_all_dashboard_notifications_read(request):
 
+    try:
+
+        # ------------------------------------------
+        # Mark all Admin / Developer notifications
+        # ------------------------------------------
+
+        admin_updated = AdminNotification.objects.filter(
+            is_read=False
+        ).update(
+            is_read=True
+        )
+
+        # ------------------------------------------
+        # Mark all Advertisement notifications
+        # ------------------------------------------
+
+        advertisement_updated = (
+            AdvertisementRequestNotification.objects
+            .filter(
+                is_read=False
+            )
+            .update(
+                is_read=True
+            )
+        )
+
+        # ------------------------------------------
+        # Mark all Reel notifications
+        # ------------------------------------------
+
+        reel_updated = (
+            ReelPurchaseNotification.objects
+            .filter(
+                is_read=False
+            )
+            .update(
+                is_read=True
+            )
+        )
+
+        # ------------------------------------------
+        # TOTAL UPDATED
+        # ------------------------------------------
+
+        total_updated = (
+            admin_updated
+            + advertisement_updated
+            + reel_updated
+        )
+
+        return JsonResponse({
+
+            "success": True,
+
+            "message":
+                "All notifications marked as read.",
+
+            "updated":
+                total_updated,
+
+            "admin_updated":
+                admin_updated,
+
+            "advertisement_updated":
+                advertisement_updated,
+
+            "reel_updated":
+                reel_updated
+
+        })
+
+    except Exception as error:
+
+        return JsonResponse({
+
+            "success": False,
+
+            "message":
+                str(error)
+
+        }, status=400)
 # ============================================================
 # UPDATE STATUS
 # ============================================================

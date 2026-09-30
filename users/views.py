@@ -13656,10 +13656,6 @@ class UserPropertyListAPIView(APIView):
 
         edit_data = get_edit_remaining_count(user)
 
-        # ==========================================
-        # ACTIVE PLANS
-        # ==========================================
-
         active_subscriptions = (
             UserPlanSubscription.objects
             .filter(
@@ -13672,6 +13668,14 @@ class UserPropertyListAPIView(APIView):
         )
 
         has_active_plan = active_subscriptions.exists()
+        # ==========================================
+        # SINGLE PROPERTY PACKAGE STATUS
+        # ==========================================
+
+        has_single_property_package = (
+            not has_active_plan and
+            properties.exists()
+        )
 
         serializer = UserPropertySerializer(
             properties,
@@ -13680,11 +13684,6 @@ class UserPropertyListAPIView(APIView):
                 "request": request
             }
         )
-
-        # ==========================================
-        # PROPERTY COUNT
-        # [USED, TOTAL]
-        # ==========================================
 
         remaining_property = counts.get(
             "remaining_property",
@@ -13701,10 +13700,6 @@ class UserPropertyListAPIView(APIView):
                 subscription.plan.listing_type or ""
             ).lower()
 
-            # ------------------------------------------
-            # RESIDENTIAL LIMIT
-            # ------------------------------------------
-
             residential_match = re.search(
                 r"(\d+)\s*residential",
                 listing_type
@@ -13715,10 +13710,6 @@ class UserPropertyListAPIView(APIView):
                 if residential_match
                 else 0
             )
-
-            # ------------------------------------------
-            # COMMERCIAL LIMIT
-            # ------------------------------------------
 
             commercial_match = re.search(
                 r"(\d+)\s*commercial",
@@ -13731,18 +13722,10 @@ class UserPropertyListAPIView(APIView):
                 else 0
             )
 
-            # ------------------------------------------
-            # TOTAL SUBSCRIPTION LIMIT
-            # ------------------------------------------
-
             subscription_total_property += (
                 residential_limit +
                 commercial_limit
             )
-
-            # ------------------------------------------
-            # USED PROPERTY
-            # ------------------------------------------
 
             subscription_used_property += (
                 subscription.residential_property_used or 0
@@ -13751,11 +13734,6 @@ class UserPropertyListAPIView(APIView):
             subscription_used_property += (
                 subscription.commercial_property_used or 0
             )
-
-        # ==========================================
-        # RESIDENTIAL COUNT
-        # [USED, TOTAL]
-        # ==========================================
 
         residential_remaining = counts.get(
             "residential_remaining",
@@ -13790,11 +13768,6 @@ class UserPropertyListAPIView(APIView):
                 subscription.residential_property_used or 0
             )
 
-        # ==========================================
-        # COMMERCIAL COUNT
-        # [USED, TOTAL]
-        # ==========================================
-
         commercial_remaining = counts.get(
             "commercial_remaining",
             0
@@ -13828,17 +13801,7 @@ class UserPropertyListAPIView(APIView):
                 subscription.commercial_property_used or 0
             )
 
-        # ==========================================
-        # FREE PROPERTY LIMIT
-        # ==========================================
-
         FREE_PROPERTY_LIMIT = 2
-
-        # ==========================================
-        # RESIDENTIAL TOTAL
-        #
-        # Free + Subscription
-        # ==========================================
 
         residential_total = (
             FREE_PROPERTY_LIMIT
@@ -13846,33 +13809,17 @@ class UserPropertyListAPIView(APIView):
             residential_subscription_total
         )
 
-        # ==========================================
-        # COMMERCIAL TOTAL
-        #
-        # Free + Subscription
-        # ==========================================
-
         commercial_total = (
             FREE_PROPERTY_LIMIT
             +
             commercial_subscription_total
         )
 
-        # ==========================================
-        # PROPERTY TOTAL
-        #
-        # Free + Subscription
-        # ==========================================
-
         total_property = (
             FREE_PROPERTY_LIMIT
             +
             subscription_total_property
         )
-
-        # ==========================================
-        # USED COUNTS
-        # ==========================================
 
         used_property = max(
             total_property -
@@ -13892,19 +13839,10 @@ class UserPropertyListAPIView(APIView):
             0
         )
 
-        # ==========================================
-        # EDIT COUNT
-        # [USED, TOTAL]
-        # ==========================================
-
         remaining_edit = edit_data.get(
             "remaining_edit",
             0
         )
-
-        # ------------------------------------------
-        # EDIT TOTAL / USED
-        # ------------------------------------------
 
         total_edit = 0
         used_edit = 0
@@ -13928,11 +13866,6 @@ class UserPropertyListAPIView(APIView):
                 subscription.edit_used or 0
             )
 
-
-        # ------------------------------------------
-        # SINGLE PROPERTY EDIT
-        # ------------------------------------------
-
         single_property_edit_total = 0
         single_property_edit_used = 0
 
@@ -13948,11 +13881,6 @@ class UserPropertyListAPIView(APIView):
                     prop.single_property_edit_used or 0
                 )
 
-
-        # ------------------------------------------
-        # ADD SINGLE PROPERTY EDIT
-        # ------------------------------------------
-
         if not has_unlimited_edit:
 
             total_edit += (
@@ -13962,12 +13890,6 @@ class UserPropertyListAPIView(APIView):
             used_edit += (
                 single_property_edit_used
             )
-
-
-        # ------------------------------------------
-        # FINAL EDIT COUNT
-        # [USED, TOTAL]
-        # ------------------------------------------
 
         if has_unlimited_edit:
 
@@ -14053,10 +13975,6 @@ class UserPropertyListAPIView(APIView):
                 "remaining_edit": remaining
             })
 
-        # ==========================================
-        # RESPONSE
-        # ==========================================
-
         return Response({
 
             "status": True,
@@ -14064,12 +13982,11 @@ class UserPropertyListAPIView(APIView):
             "message":
                 "Properties fetched successfully",
 
-            # ======================================
-            # PLAN STATUS
-            # ======================================
-
             "is_plan_chosen":
                 has_active_plan,
+
+            "has_single_property_package":
+                has_single_property_package,
 
             "remaining_property": counts["remaining_property"],
 
@@ -14078,11 +13995,6 @@ class UserPropertyListAPIView(APIView):
             "commercial_remaining": counts["commercial_remaining"],
 
             "remaining_edit_count": edit_data["remaining_edit"],
-
-            # ======================================
-            # PROPERTY LIMITS
-            # [USED, TOTAL]
-            # ======================================
 
             "remaining_used": [
                 used_property,
@@ -14099,24 +14011,11 @@ class UserPropertyListAPIView(APIView):
                 commercial_total
             ],
 
-            # ======================================
-            # EDIT LIMIT
-            # [USED, TOTAL]
-            # ======================================
-
             "used_edit_count":
                 edit_count,
 
-            # ======================================
-            # SINGLE PROPERTY EDIT
-            # ======================================
-
             "single_property_edit":
                 property_edit_data,
-
-            # ======================================
-            # PROPERTY DATA
-            # ======================================
 
             "data":
                 serializer.data

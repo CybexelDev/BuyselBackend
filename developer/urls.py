@@ -74,6 +74,12 @@ urlpatterns = [
         views.mark_dashboard_notification_read,
         name="mark_dashboard_notification_read",
     ),
+
+    path(
+        "mark-all-dashboard-notifications-read/",
+        views.mark_all_dashboard_notifications_read,
+        name="mark_all_dashboard_notifications_read"
+    ),
     # =====================================================
     # Update Status
     # =====================================================

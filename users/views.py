@@ -13673,8 +13673,7 @@ class UserPropertyListAPIView(APIView):
         # ==========================================
 
         has_single_property_package = (
-            not has_active_plan and
-            properties.exists()
+            not has_active_plan 
         )
 
         serializer = UserPropertySerializer(

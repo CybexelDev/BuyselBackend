@@ -3115,6 +3115,29 @@ class UserProfileImageUpdateView(APIView):
                 },
                 status=400
             )
+        image = request.FILES["image"]
+
+        MAX_IMAGE_SIZE = 2.5 * 1024 * 1024  # 2.5 MB
+
+        if image.size >= MAX_IMAGE_SIZE:
+
+            return Response({
+
+                "status": False,
+
+                "message":
+                "Each image size must be less than 2.5 MB.",
+
+                "image":
+                image.name,
+
+                "size_mb":
+                round(
+                    image.size / (1024 * 1024),
+                    2
+                )
+
+            }, status=400)
 
 
         profile,_ = UserProfile.objects.get_or_create(
@@ -6227,6 +6250,60 @@ class AgentPropertyAPIView(APIView):
         category_name = category.name.lower().strip()
 
         # =====================================================
+        # IMAGE SIZE VALIDATION
+        # =====================================================
+
+        MAX_IMAGE_SIZE = 2.5 * 1024 * 1024  # 2.5 MB
+
+        # MAIN IMAGE
+        image = request.FILES.get("image")
+
+        if image and image.size >= MAX_IMAGE_SIZE:
+
+            return Response({
+
+                "status": False,
+
+                "message":
+                "Main image size must be less than 2.5 MB.",
+
+                "image":
+                image.name,
+
+                "size_mb":
+                round(
+                    image.size / (1024 * 1024),
+                    2
+                )
+
+            }, status=400)
+
+        # MULTIPLE IMAGES
+        images = request.FILES.getlist("images")
+
+        for img in images:
+
+            if img.size >= MAX_IMAGE_SIZE:
+
+                return Response({
+
+                    "status": False,
+
+                    "message":
+                    "Each image size must be less than 2.5 MB.",
+
+                    "image":
+                    img.name,
+
+                    "size_mb":
+                    round(
+                        img.size / (1024 * 1024),
+                        2
+                    )
+
+                }, status=400)
+
+        # =====================================================
         # ACTIVE SUBSCRIPTIONS
         # =====================================================
 
@@ -6890,6 +6967,60 @@ class AgentPropertyDetailAPIView(APIView):
         old_group = get_group(old_category)
 
         new_group = get_group(new_category_name)
+
+        # ==========================================
+        # IMAGE SIZE VALIDATION
+        # ==========================================
+
+        MAX_IMAGE_SIZE = 2.5 * 1024 * 1024  # 2.5 MB
+
+        # MAIN IMAGE
+        image = request.FILES.get("image")
+
+        if image and image.size >= MAX_IMAGE_SIZE:
+
+            return Response({
+
+                "status": False,
+
+                "message":
+                "Main image size must be less than 2.5 MB.",
+
+                "image":
+                image.name,
+
+                "size_mb":
+                round(
+                    image.size / (1024 * 1024),
+                    2
+                )
+
+            }, status=400)
+
+        # MULTIPLE IMAGES
+        images = request.FILES.getlist("images")
+
+        for img in images:
+
+            if img.size >= MAX_IMAGE_SIZE:
+
+                return Response({
+
+                    "status": False,
+
+                    "message":
+                    "Each image size must be less than 2.5 MB.",
+
+                    "image":
+                    img.name,
+
+                    "size_mb":
+                    round(
+                        img.size / (1024 * 1024),
+                        2
+                    )
+
+                }, status=400)
 
 
 
@@ -12388,6 +12519,60 @@ class UserPropertyDetailAPIView(APIView):
         )
 
         # =====================================================
+        # IMAGE SIZE VALIDATION
+        # =====================================================
+
+        MAX_IMAGE_SIZE = 2.5 * 1024 * 1024  # 2.5 MB
+
+        # MAIN IMAGE
+        image = request.FILES.get("image")
+
+        if image and image.size >= MAX_IMAGE_SIZE:
+
+            return Response({
+
+                "status": False,
+
+                "message":
+                "Main image size must be less than 2.5 MB.",
+
+                "image":
+                image.name,
+
+                "size_mb":
+                round(
+                    image.size / (1024 * 1024),
+                    2
+                )
+
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # MULTIPLE IMAGES
+        images = request.FILES.getlist("images")
+
+        for img in images:
+
+            if img.size >= MAX_IMAGE_SIZE:
+
+                return Response({
+
+                    "status": False,
+
+                    "message":
+                    "Each image size must be less than 2.5 MB.",
+
+                    "image":
+                    img.name,
+
+                    "size_mb":
+                    round(
+                        img.size / (1024 * 1024),
+                        2
+                    )
+
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+        # =====================================================
         # REMOVE READ ONLY FIELDS
         # =====================================================
 
@@ -14272,6 +14457,60 @@ class UserPropertyCreateAPIView(APIView):
         category_name = (
             category.name.lower().strip()
         )
+
+        # =================================================
+        # IMAGE SIZE VALIDATION
+        # =================================================
+
+        MAX_IMAGE_SIZE = 2.5 * 1024 * 1024  # 2.5 MB
+
+        # MAIN IMAGE
+        image = request.FILES.get("image")
+
+        if image and image.size >= MAX_IMAGE_SIZE:
+
+            return Response({
+
+                "status": False,
+
+                "message":
+                "Main image size must be less than 2.5 MB.",
+
+                "image":
+                image.name,
+
+                "size_mb":
+                round(
+                    image.size / (1024 * 1024),
+                    2
+                )
+
+            }, status=400)
+
+        # MULTIPLE IMAGES
+        images = request.FILES.getlist("images")
+
+        for img in images:
+
+            if img.size >= MAX_IMAGE_SIZE:
+
+                return Response({
+
+                    "status": False,
+
+                    "message":
+                    "Each image size must be less than 2.5 MB.",
+
+                    "image":
+                    img.name,
+
+                    "size_mb":
+                    round(
+                        img.size / (1024 * 1024),
+                        2
+                    )
+
+                }, status=400)
         
 
         if remaining_property <= 0:

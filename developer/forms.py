@@ -1,4 +1,17 @@
 from django import forms
+from .models import (
+    PendingAgentRegistration,
+    AgentPlan,
+)
+from agents.models import (
+    AgentProperty,
+    AgentPropertyImage,
+    AgentPropertyFieldValue,
+    AgentPropertySellingPoint,
+    AgentPropertyLandmark
+)
+from .models import BannerAd, SliderAd
+from .models import Blog
 
 class SuperuserLoginForm(forms.Form):
     username = forms.CharField(
@@ -14,11 +27,6 @@ class SuperuserLoginForm(forms.Form):
             'style': 'text-align: center;'
         })
     )
-
-
-from django import forms
-from .models import PendingAgentRegistration
-
 
 INPUT_STYLE = (
     "w-full h-14 "
@@ -53,36 +61,35 @@ SELECT_STYLE = (
     "focus:border-[#8bc83f]"
 )
 
-# SELECT_STYLE = (
-#     "w-full h-14 "
-#     "px-5 pr-12 "
-#     "rounded-2xl "
-#     "border border-gray-300 "
-#     "bg-white "
-#     "text-gray-800 "
-#     "text-base "
-#     "font-medium "
-#     "shadow-sm "
-#     "appearance-none "
-#     "cursor-pointer "
-#     "outline-none "
-#     "transition-all duration-200 "
-#     "hover:border-[#8bc83f] "
-#     "focus:bg-white "
-#     "focus:border-[#8bc83f] "
-#     "focus:ring-4 "
-#     "focus:ring-[#8bc83f]/20"
-# )
-
-
 class PendingAgentRegistrationForm(forms.ModelForm):
+
+    # --------------------------------
+    # PASSWORD
+    # --------------------------------
 
     password = forms.CharField(
         widget=forms.PasswordInput(
             attrs={
                 "class": INPUT_STYLE,
                 "placeholder": "Enter password",
-                "autocomplete": "new-password"
+                "autocomplete": "new-password",
+            }
+        )
+    )
+
+
+    # --------------------------------
+    # BASIC PLAN
+    # --------------------------------
+
+    basic_plan = forms.ModelChoiceField(
+        queryset=AgentPlan.objects.all().order_by("name"),
+        required=False,
+        empty_label="Select Basic Plan",
+        widget=forms.Select(
+            attrs={
+                "class": SELECT_STYLE,
+                "id": "id_basic_plan",
             }
         )
     )
@@ -91,7 +98,6 @@ class PendingAgentRegistrationForm(forms.ModelForm):
     class Meta:
 
         model = PendingAgentRegistration
-
 
         fields = [
             "full_name",
@@ -102,6 +108,7 @@ class PendingAgentRegistrationForm(forms.ModelForm):
             "pin_code",
             "address",
             "agent_type",
+            "basic_plan",
             "premium_plan",
             "elite_plan",
             "years_of_experience",
@@ -112,47 +119,70 @@ class PendingAgentRegistrationForm(forms.ModelForm):
 
         widgets = {
 
+            # --------------------------------
+            # FULL NAME
+            # --------------------------------
 
             "full_name": forms.TextInput(
                 attrs={
                     "class": INPUT_STYLE,
-                    "placeholder": "Enter full name"
+                    "placeholder": "Enter full name",
                 }
             ),
 
+
+            # --------------------------------
+            # EMAIL
+            # --------------------------------
 
             "email": forms.EmailInput(
                 attrs={
                     "class": INPUT_STYLE,
                     "placeholder": "Enter email address",
-                    "autocomplete": "off"
+                    "autocomplete": "off",
                 }
             ),
 
+
+            # --------------------------------
+            # PHONE
+            # --------------------------------
 
             "phone_number": forms.TextInput(
                 attrs={
                     "class": INPUT_STYLE,
-                    "placeholder": "Enter phone number"
+                    "placeholder": "Enter phone number",
                 }
             ),
 
+
+            # --------------------------------
+            # CITY
+            # --------------------------------
 
             "city": forms.TextInput(
                 attrs={
                     "class": INPUT_STYLE,
-                    "placeholder": "Enter city"
+                    "placeholder": "Enter city",
                 }
             ),
 
+
+            # --------------------------------
+            # PIN CODE
+            # --------------------------------
 
             "pin_code": forms.TextInput(
                 attrs={
                     "class": INPUT_STYLE,
-                    "placeholder": "Enter pin code"
+                    "placeholder": "Enter pin code",
                 }
             ),
 
+
+            # --------------------------------
+            # ADDRESS
+            # --------------------------------
 
             "address": forms.Textarea(
                 attrs={
@@ -170,75 +200,120 @@ class PendingAgentRegistrationForm(forms.ModelForm):
                         "focus:ring-[#8bc83f] "
                         "focus:border-[#8bc83f]",
                     "placeholder": "Enter complete address",
-                    "rows": 5
+                    "rows": 5,
                 }
             ),
 
+
+            # --------------------------------
+            # AGENT TYPE
+            # --------------------------------
 
             "agent_type": forms.Select(
                 attrs={
                     "class": SELECT_STYLE,
-                    "id": "id_agent_type"
+                    "id": "id_agent_type",
                 }
             ),
 
+
+            # --------------------------------
+            # PREMIUM PLAN
+            # --------------------------------
 
             "premium_plan": forms.Select(
                 attrs={
                     "class": SELECT_STYLE,
-                    "id": "id_premium_plan"
+                    "id": "id_premium_plan",
                 }
             ),
 
+
+            # --------------------------------
+            # ELITE PLAN
+            # --------------------------------
 
             "elite_plan": forms.Select(
                 attrs={
                     "class": SELECT_STYLE,
-                    "id": "id_elite_plan"
+                    "id": "id_elite_plan",
                 }
             ),
 
+
+            # --------------------------------
+            # EXPERIENCE
+            # --------------------------------
 
             "years_of_experience": forms.NumberInput(
                 attrs={
                     "class": INPUT_STYLE,
-                    "placeholder": "Years of experience"
+                    "placeholder": "Years of experience",
                 }
             ),
 
+
+            # --------------------------------
+            # DEALS CLOSED
+            # --------------------------------
 
             "deals_closed": forms.NumberInput(
                 attrs={
                     "class": INPUT_STYLE,
-                    "placeholder": "Number of deals"
+                    "placeholder": "Number of deals",
                 }
             ),
 
+
+            # --------------------------------
+            # STATUS
+            # --------------------------------
 
             "status": forms.Select(
                 attrs={
-                    "class": SELECT_STYLE
+                    "class": SELECT_STYLE,
                 }
             ),
-
         }
 
 
+    # =====================================
+    # VALIDATION
+    # =====================================
 
     def clean(self):
 
         cleaned_data = super().clean()
 
         agent_type = cleaned_data.get("agent_type")
+
+        basic = cleaned_data.get("basic_plan")
         premium = cleaned_data.get("premium_plan")
         elite = cleaned_data.get("elite_plan")
 
 
+        # --------------------------------
+        # BASIC
+        # --------------------------------
+
         if agent_type == "basic":
+
+            if not basic:
+
+                self.add_error(
+                    "basic_plan",
+                    "Please select a Basic Plan."
+                )
+
+            # Basic should not have other plans
 
             cleaned_data["premium_plan"] = None
             cleaned_data["elite_plan"] = None
 
+
+        # --------------------------------
+        # PREMIUM
+        # --------------------------------
 
         elif agent_type == "premium":
 
@@ -249,9 +324,15 @@ class PendingAgentRegistrationForm(forms.ModelForm):
                     "Please select a Premium Plan."
                 )
 
+            # Premium does not use Basic or Elite
 
+            cleaned_data["basic_plan"] = None
             cleaned_data["elite_plan"] = None
 
+
+        # --------------------------------
+        # ELITE
+        # --------------------------------
 
         elif agent_type == "elite":
 
@@ -262,17 +343,13 @@ class PendingAgentRegistrationForm(forms.ModelForm):
                     "Please select an Elite Plan."
                 )
 
+            # Elite does not use Basic or Premium
 
+            cleaned_data["basic_plan"] = None
             cleaned_data["premium_plan"] = None
 
 
         return cleaned_data
-
-
-
-from django import forms
-from .models import Blog
-
 
 INPUT_STYLE = (
     "w-full h-14 px-5 rounded-2xl "
@@ -307,13 +384,14 @@ SELECT_STYLE = (
     "focus:border-[#8bc83f]"
 )
 
+from django import forms
+from .models import Blog
+
 
 class BlogForm(forms.ModelForm):
 
     class Meta:
-
         model = Blog
-
         fields = [
             "category",
             "blog_head",
@@ -322,54 +400,242 @@ class BlogForm(forms.ModelForm):
             "image",
         ]
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
-        widgets = {
+        # =====================================================
+        # COMMON FIELD CLASSES
+        # =====================================================
 
-            "category": forms.Select(
-                attrs={
-                    "class": SELECT_STYLE
-                }
-            ),
+        self.fields["category"].widget.attrs.update({
+            "class": "blog-input"
+        })
+
+        self.fields["blog_head"].widget.attrs.update({
+            "class": "blog-input",
+            "placeholder": "Enter blog title"
+        })
+
+        self.fields["date"].widget.attrs.update({
+            "class": "blog-input",
+            "type": "date"
+        })
+
+        self.fields["card_paragraph"].widget.attrs.update({
+            "class": "blog-input",
+            "placeholder": "Enter card paragraph"
+        })
+
+        self.fields["image"].widget.attrs.update({
+            "class": "blog-input",
+            "accept": "image/jpeg,image/png,image/webp"
+        })
+
+    # =========================================================
+    # BLOG TITLE VALIDATION
+    # =========================================================
+
+    def clean_blog_head(self):
+
+        title = self.cleaned_data.get("blog_head", "").strip()
+
+        if not title:
+            raise forms.ValidationError(
+                "Blog title is required."
+            )
+
+        if len(title) < 5:
+            raise forms.ValidationError(
+                "Blog title must contain at least 5 characters."
+            )
+
+        return title
+
+    # =========================================================
+    # CARD PARAGRAPH VALIDATION
+    # =========================================================
+
+    def clean_card_paragraph(self):
+
+        paragraph = self.cleaned_data.get(
+            "card_paragraph",
+            ""
+        ).strip()
+
+        if not paragraph:
+            raise forms.ValidationError(
+                "Card paragraph is required."
+            )
+
+        if len(paragraph) < 5:
+            raise forms.ValidationError(
+                "Card paragraph must contain at least 5 characters."
+            )
+
+        return paragraph
+
+    # =========================================================
+    # CATEGORY VALIDATION
+    # =========================================================
+
+    def clean_category(self):
+
+        category = self.cleaned_data.get("category")
+
+        if not category:
+            raise forms.ValidationError(
+                "Please select a category."
+            )
+
+        return category
+
+    # =========================================================
+    # DATE VALIDATION
+    # =========================================================
+
+    def clean_date(self):
+
+        date = self.cleaned_data.get("date")
+
+        if not date:
+            raise forms.ValidationError(
+                "Publish date is required."
+            )
+
+        return date
+
+    def clean_image(self):
+
+        image = self.cleaned_data.get("image")
+        if not image:
+            if not self.instance or not self.instance.pk:
+                raise forms.ValidationError(
+                    "Featured image is required."
+                )
+            return self.instance.image
+        if not hasattr(image, "size"):
+
+            return image
+        MAX_IMAGE_SIZE = 2.5 * 1024 * 1024
+
+        if image.size > MAX_IMAGE_SIZE:
+
+            size_mb = image.size / (1024 * 1024)
+
+            raise forms.ValidationError(
+                f"Image '{image.name}' is too large "
+                f"({size_mb:.2f} MB). "
+                f"Maximum allowed size is 2.5 MB."
+            )
+
+        allowed_types = [
+            "image/jpeg",
+            "image/png",
+            "image/webp",
+        ]
+
+        if image.content_type not in allowed_types:
+
+            raise forms.ValidationError(
+                "Only JPG, PNG and WEBP images are allowed."
+            )
+
+        return image
+
+    # def clean_image(self):
+
+    #     image = self.cleaned_data.get("image")
+    #     if not image:
+
+    #         if not self.instance or not self.instance.pk:
+    #             raise forms.ValidationError(
+    #                 "Featured image is required."
+    #             )
+
+    #         return image
+    #     MAX_IMAGE_SIZE = 2.5 * 1024 * 1024
+
+    #     if image.size > MAX_IMAGE_SIZE:
+
+    #         size_mb = image.size / (1024 * 1024)
+
+    #         raise forms.ValidationError(
+    #             f"Image '{image.name}' is too large "
+    #             f"({size_mb:.2f} MB). "
+    #             f"Maximum allowed size is 2.5 MB."
+    #         )
+    #     allowed_types = [
+    #         "image/jpeg",
+    #         "image/png",
+    #         "image/webp",
+    #     ]
+
+    #     if image.content_type not in allowed_types:
+
+    #         raise forms.ValidationError(
+    #             "Only JPG, PNG and WEBP images are allowed."
+    #         )
+
+    #     return image
 
 
-            "blog_head": forms.TextInput(
-                attrs={
-                    "class": INPUT_STYLE,
-                    "placeholder": "Enter Blog Title"
-                }
-            ),
+# class BlogForm(forms.ModelForm):
+
+#     class Meta:
+
+#         model = Blog
+
+#         fields = [
+#             "category",
+#             "blog_head",
+#             "date",
+#             "card_paragraph",
+#             "image",
+#         ]
 
 
-            "date": forms.DateInput(
-                attrs={
-                    "class": INPUT_STYLE,
-                    "type": "date"
-                }
-            ),
+#         widgets = {
+
+#             "category": forms.Select(
+#                 attrs={
+#                     "class": SELECT_STYLE
+#                 }
+#             ),
 
 
-            "card_paragraph": forms.Textarea(
-                attrs={
-                    "class": TEXTAREA_STYLE,
-                    "placeholder": "Enter Blog Description",
-                    "rows":5
-                }
-            ),
+#             "blog_head": forms.TextInput(
+#                 attrs={
+#                     "class": INPUT_STYLE,
+#                     "placeholder": "Enter Blog Title"
+#                 }
+#             ),
 
 
-            "image": forms.ClearableFileInput(
-                attrs={
-                    "class": INPUT_STYLE,
-                    "accept":"image/*"
-                }
-            ),
-
-        }
+#             "date": forms.DateInput(
+#                 attrs={
+#                     "class": INPUT_STYLE,
+#                     "type": "date"
+#                 }
+#             ),
 
 
-from django import forms
-from .models import BannerAd, SliderAd
+#             "card_paragraph": forms.Textarea(
+#                 attrs={
+#                     "class": TEXTAREA_STYLE,
+#                     "placeholder": "Enter Blog Description",
+#                     "rows":5
+#                 }
+#             ),
 
+
+#             "image": forms.ClearableFileInput(
+#                 attrs={
+#                     "class": INPUT_STYLE,
+#                     "accept":"image/*"
+#                 }
+#             ),
+
+#         }
 
 class BannerAdForm(forms.ModelForm):
     class Meta:
@@ -383,31 +649,42 @@ class SliderAdForm(forms.ModelForm):
         fields = ["image", "is_active"]
 
 
-from django import forms
 
-from agents.models import (
-    AgentProperty,
-    AgentPropertyImage,
-    AgentPropertyFieldValue,
-    AgentPropertySellingPoint,
-    AgentPropertyLandmark
-)
-
-
+#new code added by mehreena
 class AgentPropertyForm(forms.ModelForm):
 
     class Meta:
         model = AgentProperty
 
-        exclude = (
-            "id",
-            "agent",
-            "property_hash_id",
-            "subscription",
-            "paid",
-            "created_at",
-            "is_featured",
-        )
+        fields = [
+            "category",
+            "subcategory",
+            "purpose",
+
+            "label",
+            "land_area",
+            "sq_ft",
+
+            "price",
+            "perprice",
+            "deposit",
+
+            "description",
+
+            "owner",
+            "phone",
+            "whatsapp",
+
+            "city",
+            "district",
+            "state",
+            "taluk",
+            "village",
+            "pincode",
+
+            "location",
+            "notes",
+        ]
 
         widgets = {
 
@@ -427,11 +704,9 @@ class AgentPropertyForm(forms.ModelForm):
                 attrs={
                     "rows": 2
                 }
-            )
+            ),
 
         }
-        
-
 
 class AgentPropertyImageForm(forms.ModelForm):
 

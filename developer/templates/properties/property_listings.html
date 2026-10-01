@@ -1222,26 +1222,6 @@ body.pm-delete-open {
 
 <div class="property-registration-page property-management-page">
 
-<!-- <div class="flex-1 bg-white rounded-3xl shadow-lg flex flex-col overflow-hidden"> -->
-
-    <!-- ================= TOP BAR ================= -->
-
-     <!-- <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 px-5 md:px-8 py-5 border-b bg-white"> -->
-
-       <!-- <h2 class="text-2xl font-semibold text-gray-700">
-            Add Your Property
-        </h2>
-
-        <div class="flex items-center gap-5 text-xl text-gray-500">
-
-            <i class="fa fa-bell cursor-pointer hover:text-[#8bc83f] transition"></i>
-
-            <i class="fa fa-envelope cursor-pointer hover:text-[#8bc83f] transition"></i>
-
-        </div>
-
-    </div> -->
-
 
 <section class="page-hero">
     <div class="page-hero-left">
@@ -2023,10 +2003,6 @@ body.pm-delete-open {
     </div>
 
 
-<!-- End property records card -->
-<!-- ========================================================= -->
-<!-- PREMIUM ADD PROPERTY MODAL -->
-<!-- ========================================================= -->
 
 <div
     id="addPropertyModal"
@@ -3196,15 +3172,14 @@ body.pm-delete-open {
             <div>
 
                 <label class="label mb-2 block">
-                    Pincode *
+                    Pincode 
                 </label>
 
                 <input
                     type="text"
                     name="pincode"
                     class="input w-full"
-                    placeholder="Pincode"
-                    required>
+                    placeholder="Pincode">
 
             </div>
 
@@ -4309,8 +4284,8 @@ body.pm-delete-open {
                                         </div>
 
                                         <div>
-                                            <label class="label mb-2 block">Pincode *</label>
-                                            <input type="text" name="pincode" id="edit_pincode" class="input w-full" required>
+                                            <label class="label mb-2 block">Pincode</label>
+                                            <input type="text" name="pincode" id="edit_pincode" class="input w-full" >
                                         </div>
 
                                     </div>
@@ -4751,6 +4726,9 @@ function renderDjangoPropertyMessages() {
             showPropertyToast(message, type);
         });
 }
+document.addEventListener("DOMContentLoaded", function () {
+    renderDjangoPropertyMessages();
+});
 
 
 let pendingDeletePropertyUrl = "";

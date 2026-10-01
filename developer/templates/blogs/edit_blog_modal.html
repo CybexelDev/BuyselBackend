@@ -85,7 +85,9 @@
 
                     <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
 
+                        <!-- ========================================= -->
                         <!-- Category -->
+                        <!-- ========================================= -->
 
                         <div>
 
@@ -119,9 +121,34 @@
 
                             </select>
 
+                            <!-- Django Category Error -->
+
+                            <div
+                                id="editCategoryError"
+                                class="mt-1">
+
+                                {% if open_edit_blog_modal and edit_form.category.errors %}
+
+                                    {% for error in edit_form.category.errors %}
+
+                                        <p class="text-sm font-medium text-red-500">
+
+                                            {{ error }}
+
+                                        </p>
+
+                                    {% endfor %}
+
+                                {% endif %}
+
+                            </div>
+
                         </div>
 
+
+                        <!-- ========================================= -->
                         <!-- Blog Title -->
+                        <!-- ========================================= -->
 
                         <div class="md:col-span-1 lg:col-span-2">
 
@@ -139,9 +166,34 @@
                                 class="w-full h-14 rounded-2xl border border-gray-200 px-5 focus:ring-2 focus:ring-[#8bc83f]"
                                 placeholder="Enter Blog Title">
 
+                            <!-- Django Blog Title Error -->
+
+                            <div
+                                id="editBlogHeadError"
+                                class="mt-1">
+
+                                {% if open_edit_blog_modal and edit_form.blog_head.errors %}
+
+                                    {% for error in edit_form.blog_head.errors %}
+
+                                        <p class="text-sm font-medium text-red-500">
+
+                                            {{ error }}
+
+                                        </p>
+
+                                    {% endfor %}
+
+                                {% endif %}
+
+                            </div>
+
                         </div>
 
+
+                        <!-- ========================================= -->
                         <!-- Date -->
+                        <!-- ========================================= -->
 
                         <div>
 
@@ -158,11 +210,34 @@
                                 name="date"
                                 class="w-full h-14 rounded-2xl border border-gray-200 px-5 focus:ring-2 focus:ring-[#8bc83f]">
 
+                            <!-- Django Date Error -->
+
+                            <div
+                                id="editBlogDateError"
+                                class="mt-1">
+
+                                {% if open_edit_blog_modal and edit_form.date.errors %}
+
+                                    {% for error in edit_form.date.errors %}
+
+                                        <p class="text-sm font-medium text-red-500">
+
+                                            {{ error }}
+
+                                        </p>
+
+                                    {% endfor %}
+
+                                {% endif %}
+
+                            </div>
+
                         </div>
 
                     </div>
 
                 </div>
+
 
                 <!-- ========================================= -->
                 <!-- Description -->
@@ -191,7 +266,30 @@
                         class="w-full rounded-2xl border border-gray-200 px-5 py-4 focus:ring-2 focus:ring-[#8bc83f]"
                         placeholder="Enter blog description"></textarea>
 
+                    <!-- Django Card Paragraph Error -->
+
+                    <div
+                        id="editBlogParagraphError"
+                        class="mt-1">
+
+                        {% if open_edit_blog_modal and edit_form.card_paragraph.errors %}
+
+                            {% for error in edit_form.card_paragraph.errors %}
+
+                                <p class="text-sm font-medium text-red-500">
+
+                                    {{ error }}
+
+                                </p>
+
+                            {% endfor %}
+
+                        {% endif %}
+
+                    </div>
+
                 </div>
+
 
                 <!-- ========================================= -->
                 <!-- Image Section -->
@@ -221,8 +319,30 @@
                             type="file"
                             id="edit_image"
                             name="image"
-                            accept="image/*"
+                            accept="image/jpeg,image/png,image/webp"
                             class="w-full rounded-xl border border-gray-300 p-3">
+
+                        <!-- Django Image Error -->
+
+                        <div
+                            id="editImageError"
+                            class="mt-1">
+
+                            {% if open_edit_blog_modal and edit_form.image.errors %}
+
+                                {% for error in edit_form.image.errors %}
+
+                                    <p class="text-sm font-medium text-red-500">
+
+                                        {{ error }}
+
+                                    </p>
+
+                                {% endfor %}
+
+                            {% endif %}
+
+                        </div>
 
                         <p class="mt-3 text-sm text-gray-500">
 
@@ -231,6 +351,7 @@
                         </p>
 
                     </div>
+
 
                     <!-- Preview -->
 
@@ -272,6 +393,7 @@
                 </div>
 
             </div>
+
 
             <!-- ========================================= -->
             <!-- Footer -->
@@ -316,142 +438,289 @@
 @media(max-width:639px){#editBlogModal{align-items:flex-end}#editBlogModal>div{height:100dvh;max-height:100dvh;border-radius:0}#editBlogModal textarea{min-height:105px}#editBlogModal input[type="file"]{font-size:11px}#editBlogModal input[type="file"]::file-selector-button{margin-right:8px;padding:11px 14px;font-size:11px}}
 </style>
 <script>
-
 document.addEventListener("DOMContentLoaded", function () {
-    console.log("Edit modal JS loaded");
-    const editUrlTemplate =
-        "{% url 'edit_blog' '00000000-0000-0000-0000-000000000000' %}";
 
-    /* ============================================
+    console.log("Edit Blog modal JS loaded");
+
+
+    /* =========================================================
        ELEMENTS
-    ============================================ */
+    ========================================================= */
 
-    const editModal = document.getElementById("editBlogModal");
+    const editModal =
+        document.getElementById("editBlogModal");
 
-    const editForm = document.getElementById("editBlogForm");
+    const editForm =
+        document.getElementById("editBlogForm");
 
-    const closeEditBtn = document.getElementById("closeEditBlogModal");
+    const closeEditBtn =
+        document.getElementById("closeEditBlogModal");
 
-    const cancelEditBtn = document.getElementById("cancelEditBlog");
+    const cancelEditBtn =
+        document.getElementById("cancelEditBlog");
 
-    const editButtons = document.querySelectorAll(".editBlogBtn");
-    console.log("Buttons found:", editButtons.length);
+    const editButtons =
+        document.querySelectorAll(".editBlogBtn");
 
-    const imageInput = document.getElementById("edit_image");
+    const imageInput =
+        document.getElementById("edit_image");
 
-    const previewImage = document.getElementById("editImagePreview");
+    const previewImage =
+        document.getElementById("editImagePreview");
 
-    const previewPlaceholder = document.getElementById("editPreviewPlaceholder");
+    const previewPlaceholder =
+        document.getElementById("editPreviewPlaceholder");
 
 
-    /* ============================================
-       OPEN MODAL
-    ============================================ */
+    /* =========================================================
+       IMAGE VALIDATION STATE
+    ========================================================= */
+
+    let invalidImageSelected = false;
+
+    let invalidImageMessage = "";
+
+
+    /* =========================================================
+       OPEN EDIT MODAL
+    ========================================================= */
 
     function openEditModal() {
 
-        if (!editModal) return;
+        if (!editModal) {
+            return;
+        }
 
         editModal.classList.remove("hidden");
 
         editModal.classList.add("flex");
 
         document.body.classList.add("overflow-hidden");
-
     }
 
 
-    /* ============================================
-       CLOSE MODAL
-    ============================================ */
+    /* =========================================================
+       CLOSE EDIT MODAL
+    ========================================================= */
 
     function closeEditModal() {
 
-        if (!editModal) return;
+        if (!editModal) {
+            return;
+        }
 
         editModal.classList.remove("flex");
 
         editModal.classList.add("hidden");
 
         document.body.classList.remove("overflow-hidden");
+    }
+
+
+    /* =========================================================
+       CLEAR VALIDATION ERRORS
+    ========================================================= */
+
+    function clearEditErrors() {
+
+        const errorElements = [
+            "editCategoryError",
+            "editBlogHeadError",
+            "editBlogDateError",
+            "editBlogParagraphError",
+            "editImageError"
+        ];
+
+
+        errorElements.forEach(function (id) {
+
+            const element =
+                document.getElementById(id);
+
+            if (element) {
+
+                element.innerHTML = "";
+
+            }
+
+        });
 
     }
 
 
-    /* ============================================
-       EDIT BUTTON CLICK
-    ============================================ */
+    /* =========================================================
+       SHOW ERROR
+    ========================================================= */
+
+    function showEditError(
+        elementId,
+        message
+    ) {
+
+        const errorElement =
+            document.getElementById(elementId);
+
+
+        if (!errorElement) {
+            return;
+        }
+
+
+        errorElement.innerHTML =
+            '<p class="text-sm font-medium text-red-500">' +
+            message +
+            '</p>';
+
+    }
+
+
+    /* =========================================================
+       EDIT BLOG BUTTON
+    ========================================================= */
 
     editButtons.forEach(function (button) {
 
         button.addEventListener("click", function () {
 
-            const id = this.dataset.id || "";
+            const id =
+                this.dataset.id || "";
 
-            const category = this.dataset.category || "";
+            const category =
+                this.dataset.category || "";
 
-            const title = this.dataset.title || "";
+            const title =
+                this.dataset.title || "";
 
-            const date = this.dataset.date || "";
+            const date =
+                this.dataset.date || "";
 
-            const paragraph = this.dataset.paragraph || "";
+            const paragraph =
+                this.dataset.paragraph || "";
 
-            const image = this.dataset.image || "";
+            const image =
+                this.dataset.image || "";
 
 
-            /* --------------------------
+            console.log(
+                "Opening blog for edit:",
+                id
+            );
+
+
+            /* =================================================
+               RESET IMAGE VALIDATION STATE
+            ================================================= */
+
+            invalidImageSelected = false;
+
+            invalidImageMessage = "";
+
+
+            /* =================================================
                FORM ACTION
-            -------------------------- */
+            ================================================= */
 
-            // editForm.action = "/admin_panel/blogs/edit/" + id + "/";
-            // editForm.action = editUrlTemplate.replace(
-            //     "00000000-0000-0000-0000-000000000000",
-            //     id
-            // );
-            // console.log(editForm.action);
-            editForm.action = "/admin_panel/blogs/edit/" + id + "/";
+            if (editForm) {
 
-console.log("Action:", editForm.action);
+                editForm.action =
+                    "/admin_panel/blogs/edit/" + id + "/";
+
+            }
 
 
-            /* --------------------------
-               HIDDEN ID
-            -------------------------- */
+            /* =================================================
+               BLOG ID
+            ================================================= */
 
-            document.getElementById("edit_blog_id").value = id;
+            const blogIdInput =
+                document.getElementById("edit_blog_id");
 
 
-            /* --------------------------
+            if (blogIdInput) {
+
+                blogIdInput.value = id;
+
+            }
+
+
+            /* =================================================
                CATEGORY
-            -------------------------- */
+            ================================================= */
 
-            document.getElementById("edit_blog_category").value = category;
-
-
-            /* --------------------------
-               TITLE
-            -------------------------- */
-
-            document.getElementById("edit_blog_head").value = title;
+            const categoryInput =
+                document.getElementById(
+                    "edit_blog_category"
+                );
 
 
-            /* --------------------------
+            if (categoryInput) {
+
+                categoryInput.value = category;
+
+            }
+
+
+            /* =================================================
+               BLOG TITLE
+            ================================================= */
+
+            const titleInput =
+                document.getElementById(
+                    "edit_blog_head"
+                );
+
+
+            if (titleInput) {
+
+                titleInput.value = title;
+
+            }
+
+
+            /* =================================================
                DATE
-            -------------------------- */
+            ================================================= */
 
-            document.getElementById("edit_blog_date").value = date;
-
-
-            /* --------------------------
-               DESCRIPTION
-            -------------------------- */
-
-            document.getElementById("edit_blog_paragraph").value = paragraph;
+            const dateInput =
+                document.getElementById(
+                    "edit_blog_date"
+                );
 
 
-            /* --------------------------
-               RESET FILE INPUT
-            -------------------------- */
+            if (dateInput) {
+
+                dateInput.value = date;
+
+            }
+
+
+            /* =================================================
+               CARD PARAGRAPH
+            ================================================= */
+
+            const paragraphInput =
+                document.getElementById(
+                    "edit_blog_paragraph"
+                );
+
+
+            if (paragraphInput) {
+
+                paragraphInput.value = paragraph;
+
+            }
+
+
+            /* =================================================
+               CLEAR PREVIOUS ERRORS
+            ================================================= */
+
+            clearEditErrors();
+
+
+            /* =================================================
+               RESET IMAGE INPUT
+            ================================================= */
 
             if (imageInput) {
 
@@ -460,32 +729,52 @@ console.log("Action:", editForm.action);
             }
 
 
-            /* --------------------------
-               IMAGE PREVIEW
-            -------------------------- */
+            /* =================================================
+               EXISTING IMAGE PREVIEW
+            ================================================= */
 
-            if (image) {
+            if (
+                image &&
+                previewImage &&
+                previewPlaceholder
+            ) {
 
                 previewImage.src = image;
 
-                previewImage.classList.remove("hidden");
+                previewImage.classList.remove(
+                    "hidden"
+                );
 
-                previewPlaceholder.classList.add("hidden");
+                previewPlaceholder.classList.add(
+                    "hidden"
+                );
 
             } else {
 
-                previewImage.src = "";
+                if (previewImage) {
 
-                previewImage.classList.add("hidden");
+                    previewImage.src = "";
 
-                previewPlaceholder.classList.remove("hidden");
+                    previewImage.classList.add(
+                        "hidden"
+                    );
+
+                }
+
+                if (previewPlaceholder) {
+
+                    previewPlaceholder.classList.remove(
+                        "hidden"
+                    );
+
+                }
 
             }
 
 
-            /* --------------------------
-               OPEN
-            -------------------------- */
+            /* =================================================
+               OPEN MODAL
+            ================================================= */
 
             openEditModal();
 
@@ -494,128 +783,864 @@ console.log("Action:", editForm.action);
     });
 
 
-    /* ============================================
-       IMAGE CHANGE PREVIEW
-    ============================================ */
+    /* =========================================================
+       IMAGE VALIDATION
+    ========================================================= */
 
     if (imageInput) {
 
-        imageInput.addEventListener("change", function () {
+        imageInput.addEventListener(
+            "change",
+            function () {
 
-            const file = this.files[0];
+                const file =
+                    this.files[0];
 
-            if (!file) {
 
-                return;
+                /* ---------------------------------------------
+                   NO FILE
+                --------------------------------------------- */
+
+                if (!file) {
+
+                    invalidImageSelected = false;
+
+                    invalidImageMessage = "";
+
+                    return;
+
+                }
+
+
+                /* ---------------------------------------------
+                   RESET IMAGE ERROR
+                --------------------------------------------- */
+
+                invalidImageSelected = false;
+
+                invalidImageMessage = "";
+
+                showEditError(
+                    "editImageError",
+                    ""
+                );
+
+
+                /* ---------------------------------------------
+                   MAXIMUM IMAGE SIZE
+                   2.5 MB
+                --------------------------------------------- */
+
+                const maxImageSize =
+                    2.5 * 1024 * 1024;
+
+
+                if (
+                    file.size >
+                    maxImageSize
+                ) {
+
+                    const sizeMB =
+                        (
+                            file.size /
+                            (1024 * 1024)
+                        ).toFixed(2);
+
+
+                    invalidImageSelected = true;
+
+                    invalidImageMessage =
+                        'Image "' +
+                        file.name +
+                        '" is too large (' +
+                        sizeMB +
+                        ' MB). Maximum allowed size is 2.5 MB.';
+
+
+                    showEditError(
+                        "editImageError",
+                        invalidImageMessage
+                    );
+
+
+                    /*
+                     * IMPORTANT:
+                     *
+                     * Do NOT clear imageInput.value here.
+                     *
+                     * We keep the selected file so that
+                     * the submit handler knows that an
+                     * invalid image was selected.
+                     */
+
+
+                    openEditModal();
+
+
+                    return;
+
+                }
+
+
+                /* ---------------------------------------------
+                   IMAGE TYPE
+                --------------------------------------------- */
+
+                const allowedTypes = [
+                    "image/jpeg",
+                    "image/png",
+                    "image/webp"
+                ];
+
+
+                if (
+                    !allowedTypes.includes(
+                        file.type
+                    )
+                ) {
+
+                    invalidImageSelected = true;
+
+                    invalidImageMessage =
+                        "Only JPG, PNG and WEBP images are allowed.";
+
+
+                    showEditError(
+                        "editImageError",
+                        invalidImageMessage
+                    );
+
+
+                    /*
+                     * Keep modal open.
+                     */
+
+                    openEditModal();
+
+
+                    return;
+
+                }
+
+
+                /* ---------------------------------------------
+                   VALID IMAGE
+                --------------------------------------------- */
+
+                invalidImageSelected = false;
+
+                invalidImageMessage = "";
+
+
+                showEditError(
+                    "editImageError",
+                    ""
+                );
+
+
+                /* ---------------------------------------------
+                   IMAGE PREVIEW
+                --------------------------------------------- */
+
+                if (
+                    previewImage &&
+                    previewPlaceholder
+                ) {
+
+                    const reader =
+                        new FileReader();
+
+
+                    reader.onload =
+                        function (e) {
+
+                            previewImage.src =
+                                e.target.result;
+
+
+                            previewImage.classList.remove(
+                                "hidden"
+                            );
+
+
+                            previewPlaceholder.classList.add(
+                                "hidden"
+                            );
+
+                        };
+
+
+                    reader.readAsDataURL(file);
+
+                }
 
             }
-
-            const reader = new FileReader();
-
-            reader.onload = function (e) {
-
-                previewImage.src = e.target.result;
-
-                previewImage.classList.remove("hidden");
-
-                previewPlaceholder.classList.add("hidden");
-
-            };
-
-            reader.readAsDataURL(file);
-
-        });
+        );
 
     }
 
 
-    /* ============================================
+    /* =========================================================
+       FORM SUBMIT VALIDATION
+    ========================================================= */
+
+    if (editForm) {
+
+        editForm.addEventListener(
+            "submit",
+            function (event) {
+
+                /*
+                 * ALWAYS STOP SUBMISSION FIRST.
+                 */
+
+                event.preventDefault();
+
+
+                /* ---------------------------------------------
+                   CLEAR OLD ERRORS
+                --------------------------------------------- */
+
+                clearEditErrors();
+
+
+                let hasError = false;
+
+
+                /* =================================================
+                   GET FIELDS
+                ================================================= */
+
+                const categoryInput =
+                    document.getElementById(
+                        "edit_blog_category"
+                    );
+
+
+                const titleInput =
+                    document.getElementById(
+                        "edit_blog_head"
+                    );
+
+
+                const dateInput =
+                    document.getElementById(
+                        "edit_blog_date"
+                    );
+
+
+                const paragraphInput =
+                    document.getElementById(
+                        "edit_blog_paragraph"
+                    );
+
+
+                /* =================================================
+                   VALUES
+                ================================================= */
+
+                const category =
+                    categoryInput
+                        ? categoryInput.value.trim()
+                        : "";
+
+
+                const title =
+                    titleInput
+                        ? titleInput.value.trim()
+                        : "";
+
+
+                const date =
+                    dateInput
+                        ? dateInput.value.trim()
+                        : "";
+
+
+                const paragraph =
+                    paragraphInput
+                        ? paragraphInput.value.trim()
+                        : "";
+
+
+                /* =================================================
+                   CATEGORY
+                ================================================= */
+
+                if (!category) {
+
+                    showEditError(
+                        "editCategoryError",
+                        "Please select a category."
+                    );
+
+                    hasError = true;
+
+                }
+
+
+                /* =================================================
+                   TITLE
+                ================================================= */
+
+                if (!title) {
+
+                    showEditError(
+                        "editBlogHeadError",
+                        "Blog title is required."
+                    );
+
+                    hasError = true;
+
+                }
+                else if (title.length < 5) {
+
+                    showEditError(
+                        "editBlogHeadError",
+                        "Blog title must contain at least 5 characters."
+                    );
+
+                    hasError = true;
+
+                }
+
+
+                /* =================================================
+                   DATE
+                ================================================= */
+
+                if (!date) {
+
+                    showEditError(
+                        "editBlogDateError",
+                        "Publish date is required."
+                    );
+
+                    hasError = true;
+
+                }
+
+
+                /* =================================================
+                   PARAGRAPH
+                ================================================= */
+
+                if (!paragraph) {
+
+                    showEditError(
+                        "editBlogParagraphError",
+                        "Card paragraph is required."
+                    );
+
+                    hasError = true;
+
+                }
+                else if (paragraph.length < 20) {
+
+                    showEditError(
+                        "editBlogParagraphError",
+                        "Card paragraph must contain at least 20 characters."
+                    );
+
+                    hasError = true;
+
+                }
+
+
+                /* =================================================
+                   IMAGE VALIDATION
+                ================================================= */
+
+                if (invalidImageSelected) {
+
+                    showEditError(
+                        "editImageError",
+                        invalidImageMessage
+                    );
+
+                    hasError = true;
+
+                }
+
+
+                /* =================================================
+                   ALSO CHECK CURRENT FILE
+                ================================================= */
+
+                if (imageInput) {
+
+                    const file =
+                        imageInput.files[0];
+
+
+                    if (file) {
+
+                        const maxImageSize =
+                            2.5 * 1024 * 1024;
+
+
+                        /* -----------------------------------------
+                           SIZE
+                        ----------------------------------------- */
+
+                        if (
+                            file.size >
+                            maxImageSize
+                        ) {
+
+                            const sizeMB =
+                                (
+                                    file.size /
+                                    (1024 * 1024)
+                                ).toFixed(2);
+
+
+                            showEditError(
+                                "editImageError",
+                                'Image "' +
+                                file.name +
+                                '" is too large (' +
+                                sizeMB +
+                                ' MB). Maximum allowed size is 2.5 MB.'
+                            );
+
+
+                            hasError = true;
+
+                        }
+
+
+                        /* -----------------------------------------
+                           TYPE
+                        ----------------------------------------- */
+
+                        const allowedTypes = [
+                            "image/jpeg",
+                            "image/png",
+                            "image/webp"
+                        ];
+
+
+                        if (
+                            !allowedTypes.includes(
+                                file.type
+                            )
+                        ) {
+
+                            showEditError(
+                                "editImageError",
+                                "Only JPG, PNG and WEBP images are allowed."
+                            );
+
+
+                            hasError = true;
+
+                        }
+
+                    }
+
+                }
+
+
+                /* =================================================
+                   VALIDATION FAILED
+                ================================================= */
+
+                if (hasError) {
+
+                    /*
+                     * KEEP EDIT MODAL OPEN.
+                     */
+
+                    openEditModal();
+
+
+                    /*
+                     * DO NOT SUBMIT.
+                     */
+
+                    console.log(
+                        "Edit Blog validation failed."
+                    );
+
+
+                    return;
+
+                }
+
+
+                /* =================================================
+                   VALIDATION PASSED
+                ================================================= */
+
+                const submitButton =
+                    this.querySelector(
+                        "button[type='submit']"
+                    );
+
+
+                if (submitButton) {
+
+                    submitButton.disabled = true;
+
+                    submitButton.innerHTML =
+                        '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Updating...';
+
+                }
+                HTMLFormElement.prototype.submit.call(this);
+
+            }
+        );
+
+    }
+
+
+    /* =========================================================
        CLOSE BUTTON
-    ============================================ */
+    ========================================================= */
 
     if (closeEditBtn) {
 
-        closeEditBtn.addEventListener("click", function () {
+        closeEditBtn.addEventListener(
+            "click",
+            function () {
 
-            closeEditModal();
+                closeEditModal();
 
-        });
+            }
+        );
 
     }
 
 
-    /* ============================================
+    /* =========================================================
        CANCEL BUTTON
-    ============================================ */
+    ========================================================= */
 
     if (cancelEditBtn) {
 
-        cancelEditBtn.addEventListener("click", function () {
+        cancelEditBtn.addEventListener(
+            "click",
+            function () {
 
-            closeEditModal();
+                closeEditModal();
 
-        });
+            }
+        );
 
     }
 
 
-    /* ============================================
-       CLICK OUTSIDE
-    ============================================ */
+    /* =========================================================
+       CLICK OUTSIDE MODAL
+    ========================================================= */
 
     if (editModal) {
 
-        editModal.addEventListener("click", function (e) {
+        editModal.addEventListener(
+            "click",
+            function (e) {
 
-            if (e.target === editModal) {
+                if (
+                    e.target === editModal
+                ) {
+
+                    closeEditModal();
+
+                }
+
+            }
+        );
+
+    }
+
+
+    /* =========================================================
+       ESCAPE KEY
+    ========================================================= */
+
+    document.addEventListener(
+        "keydown",
+        function (e) {
+
+            if (
+                e.key === "Escape"
+            ) {
 
                 closeEditModal();
 
             }
 
-        });
+        }
+    );
 
-    }
+
+    /* =========================================================
+       REOPEN AFTER DJANGO VALIDATION ERROR
+    ========================================================= */
+
+    {% if open_edit_blog_modal %}
+
+        console.log(
+            "Django validation failed - reopening Edit Blog modal"
+        );
 
 
-    /* ============================================
-       ESC KEY
-    ============================================ */
+        openEditModal();
 
-    document.addEventListener("keydown", function (e) {
 
-        if (e.key === "Escape") {
+        /* -----------------------------------------------------
+           BLOG ID
+        ----------------------------------------------------- */
 
-            closeEditModal();
+        const errorBlogId =
+            document.getElementById(
+                "edit_blog_id"
+            );
+
+
+        if (errorBlogId) {
+
+            errorBlogId.value =
+                "{{ edit_blog_id|escapejs }}";
 
         }
 
-    });
+
+        /* -----------------------------------------------------
+           FORM ACTION
+        ----------------------------------------------------- */
+
+        if (editForm) {
+
+            editForm.action =
+                "/admin_panel/blogs/edit/{{ edit_blog_id }}/";
+
+        }
 
 
-    /* ============================================
-       OPTIONAL FORM RESET AFTER SUBMIT
-    ============================================ */
+        /* -----------------------------------------------------
+           CATEGORY
+        ----------------------------------------------------- */
 
-    if (editForm) {
+        const errorCategory =
+            document.getElementById(
+                "edit_blog_category"
+            );
 
-        editForm.addEventListener("submit", function () {
 
-            const submitButton = this.querySelector("button[type='submit']");
+        if (errorCategory) {
 
-            if (submitButton) {
+            errorCategory.value =
+                "{{ edit_form.category.value|default_if_none:''|escapejs }}";
 
-                submitButton.disabled = true;
+        }
 
-                submitButton.innerHTML =
-                    '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Updating...';
+
+        /* -----------------------------------------------------
+           TITLE
+        ----------------------------------------------------- */
+
+        const errorTitle =
+            document.getElementById(
+                "edit_blog_head"
+            );
+
+
+        if (errorTitle) {
+
+            errorTitle.value =
+                "{{ edit_form.blog_head.value|default_if_none:''|escapejs }}";
+
+        }
+
+
+        /* -----------------------------------------------------
+           DATE
+        ----------------------------------------------------- */
+
+        const errorDate =
+            document.getElementById(
+                "edit_blog_date"
+            );
+
+
+        if (errorDate) {
+
+            errorDate.value =
+                "{{ edit_form.date.value|default_if_none:''|escapejs }}";
+
+        }
+
+
+        /* -----------------------------------------------------
+           PARAGRAPH
+        ----------------------------------------------------- */
+
+        const errorParagraph =
+            document.getElementById(
+                "edit_blog_paragraph"
+            );
+
+
+        if (errorParagraph) {
+
+            errorParagraph.value =
+                "{{ edit_form.card_paragraph.value|default_if_none:''|escapejs }}";
+
+        }
+
+
+        /* =====================================================
+           CATEGORY ERROR
+        ===================================================== */
+
+        {% if edit_form.category.errors %}
+
+            const categoryError =
+                document.getElementById(
+                    "editCategoryError"
+                );
+
+
+            if (categoryError) {
+
+                categoryError.innerHTML = "";
+
+                {% for error in edit_form.category.errors %}
+
+                    categoryError.innerHTML +=
+                        '<p class="text-sm font-medium text-red-500">' +
+                        '{{ error|escapejs }}' +
+                        '</p>';
+
+                {% endfor %}
 
             }
 
-        });
+        {% endif %}
 
-    }
+
+        /* =====================================================
+           TITLE ERROR
+        ===================================================== */
+
+        {% if edit_form.blog_head.errors %}
+
+            const blogHeadError =
+                document.getElementById(
+                    "editBlogHeadError"
+                );
+
+
+            if (blogHeadError) {
+
+                blogHeadError.innerHTML = "";
+
+                {% for error in edit_form.blog_head.errors %}
+
+                    blogHeadError.innerHTML +=
+                        '<p class="text-sm font-medium text-red-500">' +
+                        '{{ error|escapejs }}' +
+                        '</p>';
+
+                {% endfor %}
+
+            }
+
+        {% endif %}
+
+
+        /* =====================================================
+           DATE ERROR
+        ===================================================== */
+
+        {% if edit_form.date.errors %}
+
+            const dateError =
+                document.getElementById(
+                    "editBlogDateError"
+                );
+
+
+            if (dateError) {
+
+                dateError.innerHTML = "";
+
+                {% for error in edit_form.date.errors %}
+
+                    dateError.innerHTML +=
+                        '<p class="text-sm font-medium text-red-500">' +
+                        '{{ error|escapejs }}' +
+                        '</p>';
+
+                {% endfor %}
+
+            }
+
+        {% endif %}
+
+
+        /* =====================================================
+           PARAGRAPH ERROR
+        ===================================================== */
+
+        {% if edit_form.card_paragraph.errors %}
+
+            const paragraphError =
+                document.getElementById(
+                    "editBlogParagraphError"
+                );
+
+
+            if (paragraphError) {
+
+                paragraphError.innerHTML = "";
+
+                {% for error in edit_form.card_paragraph.errors %}
+
+                    paragraphError.innerHTML +=
+                        '<p class="text-sm font-medium text-red-500">' +
+                        '{{ error|escapejs }}' +
+                        '</p>';
+
+                {% endfor %}
+
+            }
+
+        {% endif %}
+
+
+        /* =====================================================
+           IMAGE ERROR
+        ===================================================== */
+
+        {% if edit_form.image.errors %}
+
+            const imageError =
+                document.getElementById(
+                    "editImageError"
+                );
+
+
+            if (imageError) {
+
+                imageError.innerHTML = "";
+
+                {% for error in edit_form.image.errors %}
+
+                    imageError.innerHTML +=
+                        '<p class="text-sm font-medium text-red-500">' +
+                        '{{ error|escapejs }}' +
+                        '</p>';
+
+                {% endfor %}
+
+            }
+
+        {% endif %}
+
+    {% endif %}
 
 });
-
 </script>

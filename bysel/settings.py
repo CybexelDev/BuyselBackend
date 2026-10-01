@@ -62,7 +62,8 @@ INSTALLED_APPS = [
 CSRF_TRUSTED_ORIGINS = [
     "https://buysel.in",
     "https://www.buysel.in",
-    "https://buyselbackend-1.onrender.com"
+    "https://buyselbackend-1.onrender.com",
+    "https://buyselbackend-4grp.onrender.com",
 ]
 
 CORS_ALLOWED_ORIGINS = [
@@ -167,13 +168,12 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+# TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
 USE_TZ = True
 
-# settings.py
 
 TIME_ZONE = 'Asia/Kolkata'
 
@@ -239,8 +239,11 @@ SESSION_COOKIE_NAME = 'sessionid'  # The cookie name for sessions
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # Optional: Automatically clear session when the browser is closed
 SESSION_COOKIE_AGE = 60 * 30  # 30 minutes session timeout (in seconds)
 
+# SESSION_COOKIE_SAMESITE = "None"
+# SESSION_COOKIE_SECURE = True
 
-
+SESSION_COOKIE_SAMESITE = "Lax"
+SESSION_COOKIE_SECURE = False
 
 from decouple import config
 import cloudinary
@@ -317,14 +320,25 @@ RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET")
 
 
 
-CACHES = {
-    "default": {
-        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+import os
+
+if os.environ.get("USE_REDIS") == "true":
+    CACHES = {
+        "default": {
+            "BACKEND": "django_redis.cache.RedisCache",
+            "LOCATION": os.environ["REDIS_URL"],
+            "OPTIONS": {
+                "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            },
+            "TIMEOUT": 3600,
+        }
     }
-}
-
-
-
+else:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        }
+    }
 
 
 BREVO_API_KEY = os.getenv("BREVO_API_KEY")
@@ -335,3 +349,5 @@ FACEBOOK_APP_ID = os.getenv("FACEBOOK_APP_ID")
 FACEBOOK_APP_SECRET = os.getenv("FACEBOOK_APP_SECRET")
 FACEBOOK_REDIRECT_URI = os.getenv("FACEBOOK_REDIRECT_URI")
 
+FACEBOOK_APP_ID = os.getenv("FACEBOOK_APP_ID")
+FACEBOOK_APP_SECRET = os.getenv("FACEBOOK_APP_SECRET")

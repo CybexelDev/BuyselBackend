@@ -1418,18 +1418,49 @@
 
     }
 
+    // function addOption(name = "", icon = "") {
+
+    //     let row = document.createElement("div");
+
+    //     row.className = "flex items-center gap-3 mb-3 optionRow";
+
+    //     row.innerHTML = `
+    //     <input
+    //         type="text"
+    //         name="options[]"
+    //         value="${name}"
+    //         class="optionName border rounded-lg p-2 flex-1"
+    //         placeholder="Option Name">
+
+    //     <input
+    //         type="file"
+    //         name="option_icons[]"
+    //         accept="image/*"
+    //         class="w-44">
+
+    //     <button
+    //         type="button"
+    //         onclick="removeOption(this)"
+    //         class="bg-red-500 text-white px-3 py-2 rounded">
+    //         ✕
+    //     </button>
+    // `;
+
+    //     document.getElementById("optionsContainer").appendChild(row);
+    // }
+
     function addOption(name = "", icon = "") {
 
-        let row = document.createElement("div");
+    let row = document.createElement("div");
 
-        row.className = "flex items-center gap-3 mb-3 optionRow";
+    row.className = "flex items-center gap-3 mb-3 optionRow";
 
-        row.innerHTML = `
+    row.innerHTML = `
         <input
             type="text"
             name="options[]"
             value="${name}"
-            class="optionName border rounded-lg p-2 flex-1"
+            class="optionName border rounded-lg p-2 w-[350px]"
             placeholder="Option Name">
 
         <input
@@ -1446,9 +1477,8 @@
         </button>
     `;
 
-        document.getElementById("optionsContainer").appendChild(row);
-    }
-
+    document.getElementById("optionsContainer").appendChild(row);
+}
 
     document.addEventListener("DOMContentLoaded", function () {
 
@@ -1517,7 +1547,8 @@
             type="text"
             name="options[]"
             value="${name}"
-            class="optionName border rounded-lg p-2 flex-1">
+            class="optionName border rounded-lg p-2 flex-1 min-w-[300px]">
+        
 
         <input
             type="file"
@@ -3295,6 +3326,28 @@ TYPOGRAPHY ONLY
             width: 24px !important;
             height: 24px !important;
         }
+    }
+
+    /* Amenity icon */
+    #amenityTab .data-card tbody td:nth-child(2) > div {
+        width: 44px !important;
+        height: 44px !important;
+        background: #000 !important;
+        border-radius: 13px !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 6px;
+    }
+
+    /* Actual image */
+    #amenityTab .data-card tbody td:nth-child(2) > div img {
+        width: 28px !important;
+        height: 28px !important;
+        padding: 0 !important;
+        border: none !important;
+        background: transparent !important;
+        object-fit: contain;
     }
 
     /* ================= ACTION BUTTONS ================= */

@@ -14355,6 +14355,19 @@ class OwnerDashboardAPIView(APIView):
 
             total_enquiries = enquiries_qs.count()
 
+            # ==========================================================
+            # DELETED PROPERTY COUNT
+            # ==========================================================
+
+            current_property_count = Property.objects.filter(
+                user=user
+            ).count()
+
+            deleted_property_count = max(
+                total_properties - current_property_count,
+                0
+            )
+
             current_year = timezone.now().year
 
             monthly = (
@@ -14409,6 +14422,10 @@ class OwnerDashboardAPIView(APIView):
 
                     "property_listed":
                     total_properties,
+
+                    "deleted_property_count":
+                    deleted_property_count,
+
 
                     "remaining_property":
                     counts["remaining_property"],

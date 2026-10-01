@@ -7228,10 +7228,6 @@ class UserPropertySerializer(serializers.ModelSerializer):
             if not field:
                 continue
 
-            # =================================================
-            # PARSE VALUE
-            # =================================================
-
             try:
 
                 parsed_value = json.loads(f.value)
@@ -7242,10 +7238,6 @@ class UserPropertySerializer(serializers.ModelSerializer):
                     "value": f.value
                 }
 
-            # =================================================
-            # NORMALIZE TO LIST
-            # =================================================
-
             if isinstance(parsed_value, list):
 
                 feature_items = parsed_value
@@ -7254,10 +7246,6 @@ class UserPropertySerializer(serializers.ModelSerializer):
 
                 feature_items = [parsed_value]
 
-            # =================================================
-            # PROCESS EACH ITEM
-            # =================================================
-
             for item in feature_items:
 
                 if not isinstance(item, dict):
@@ -7265,10 +7253,6 @@ class UserPropertySerializer(serializers.ModelSerializer):
                     item = {
                         "value": item
                     }
-
-                # =================================================
-                # GET CURRENT FIELD
-                # =================================================
 
                 current_field = field
 
@@ -7296,10 +7280,6 @@ class UserPropertySerializer(serializers.ModelSerializer):
                     if not current_field:
                         continue
 
-                # =================================================
-                # RAW VALUE
-                # =================================================
-
                 feature_value = item.get("value")
 
                 if feature_value is None:
@@ -7310,10 +7290,6 @@ class UserPropertySerializer(serializers.ModelSerializer):
                     feature_value
                 ).strip()
 
-                # =================================================
-                # OPTION NAME
-                # =================================================
-
                 option_name = item.get("option")
 
                 if option_name is not None:
@@ -7322,27 +7298,15 @@ class UserPropertySerializer(serializers.ModelSerializer):
                         option_name
                     ).strip()
 
-                # =================================================
-                # FIELD TYPE
-                # =================================================
-
                 field_type = (
                     current_field.field_type
                 )
-
-                # =================================================
-                # GET OPTIONS
-                # =================================================
 
                 options = list(
                     current_field.options.all()
                 )
 
                 option_obj = None
-
-                # =================================================
-                # FIND OPTION USING option
-                # =================================================
 
                 if option_name:
 
@@ -7368,10 +7332,6 @@ class UserPropertySerializer(serializers.ModelSerializer):
                             option_obj = option
                             break
 
-                # =================================================
-                # FIND OPTION USING VALUE
-                # =================================================
-
                 if not option_obj and feature_value:
 
                     value_clean = (
@@ -7387,11 +7347,6 @@ class UserPropertySerializer(serializers.ModelSerializer):
                             .strip()
                             .lower()
                         )
-
-                        # -----------------------------------------
-                        # Exact match
-                        # -----------------------------------------
-
                         if (
                             value_clean
                             == option_name_db
@@ -7399,14 +7354,6 @@ class UserPropertySerializer(serializers.ModelSerializer):
 
                             option_obj = option
                             break
-
-                        # -----------------------------------------
-                        # Match:
-                        #
-                        # Bed (2)
-                        # Fan (3)
-                        # pantry (5)
-                        # -----------------------------------------
 
                         prefix = (
                             option_name_db + " ("
@@ -7419,13 +7366,6 @@ class UserPropertySerializer(serializers.ModelSerializer):
                             option_obj = option
                             break
 
-                        # -----------------------------------------
-                        # Match without space:
-                        #
-                        # Bed(2)
-                        # Fan(3)
-                        # -----------------------------------------
-
                         prefix_no_space = (
                             option_name_db + "("
                         )
@@ -7436,10 +7376,6 @@ class UserPropertySerializer(serializers.ModelSerializer):
 
                             option_obj = option
                             break
-
-                # =================================================
-                # ICON
-                # =================================================
 
                 icon_url = None
 
@@ -7471,14 +7407,6 @@ class UserPropertySerializer(serializers.ModelSerializer):
 
                         icon_url = None
 
-                # =================================================
-                # SELECT
-                #
-                # KEEP EXISTING BEHAVIOR
-                #
-                # BHK types -> 4BHK
-                # =================================================
-
                 if field_type == "select":
 
                     feature_name = (
@@ -7498,24 +7426,7 @@ class UserPropertySerializer(serializers.ModelSerializer):
                             feature_value
                         )
 
-                # =================================================
-                # MULTI SELECT
-                #
-                # IMPORTANT:
-                #
-                # Bed (2)
-                #
-                # becomes:
-                #
-                # name  = Bed
-                # value = 2
-                # =================================================
-
                 elif field_type == "multi_select":
-
-                    # -----------------------------------------
-                    # NAME
-                    # -----------------------------------------
 
                     if option_obj:
 
@@ -7537,18 +7448,7 @@ class UserPropertySerializer(serializers.ModelSerializer):
                             current_field.field_name
                         )
 
-                    # -----------------------------------------
-                    # DEFAULT VALUE
-                    # -----------------------------------------
-
                     output_value = feature_value
-
-                    # -----------------------------------------
-                    # Extract count from:
-                    #
-                    # Bed (2)
-                    # Bed(2)
-                    # -----------------------------------------
 
                     if option_obj:
 
@@ -7556,10 +7456,6 @@ class UserPropertySerializer(serializers.ModelSerializer):
                             str(option_obj.name)
                             .strip()
                         )
-
-                        # -------------------------------------
-                        # Bed (2)
-                        # -------------------------------------
 
                         pattern_with_space = (
                             r"^"
@@ -7583,10 +7479,6 @@ class UserPropertySerializer(serializers.ModelSerializer):
 
                         else:
 
-                            # ---------------------------------
-                            # If value is already only number
-                            # ---------------------------------
-
                             if feature_value.isdigit():
 
                                 output_value = (
@@ -7594,11 +7486,6 @@ class UserPropertySerializer(serializers.ModelSerializer):
                                 )
 
                             else:
-
-                                # -----------------------------
-                                # Last fallback:
-                                # extract number in brackets
-                                # -----------------------------
 
                                 match = re.search(
                                     r"\(\s*(\d+(?:\.\d+)?)\s*\)",
@@ -7612,10 +7499,6 @@ class UserPropertySerializer(serializers.ModelSerializer):
                                     )
 
                     else:
-
-                        # -------------------------------------
-                        # No option object
-                        # -------------------------------------
 
                         match = re.search(
                             r"\(\s*(\d+(?:\.\d+)?)\s*\)",
@@ -7633,17 +7516,6 @@ class UserPropertySerializer(serializers.ModelSerializer):
                             output_value = (
                                 feature_value
                             )
-
-                # =================================================
-                # COUNTABLE
-                #
-                # pantry (5)
-                #
-                # becomes:
-                #
-                # name  = pantry
-                # value = 5
-                # =================================================
 
                 elif field_type == "countable":
 
@@ -7668,10 +7540,6 @@ class UserPropertySerializer(serializers.ModelSerializer):
                         )
 
                     output_value = feature_value
-
-                    # -----------------------------------------
-                    # Extract count
-                    # -----------------------------------------
 
                     if option_obj:
 
@@ -7725,10 +7593,6 @@ class UserPropertySerializer(serializers.ModelSerializer):
                                 feature_value
                             )
 
-                # =================================================
-                # TEXT
-                # =================================================
-
                 elif field_type == "text":
 
                     feature_name = (
@@ -7738,10 +7602,6 @@ class UserPropertySerializer(serializers.ModelSerializer):
                     output_value = (
                         feature_value
                     )
-
-                # =================================================
-                # NUMBER
-                # =================================================
 
                 elif field_type == "number":
 
@@ -7753,10 +7613,6 @@ class UserPropertySerializer(serializers.ModelSerializer):
                         feature_value
                     )
 
-                # =================================================
-                # BOOLEAN
-                # =================================================
-
                 elif field_type == "boolean":
 
                     feature_name = (
@@ -7767,10 +7623,6 @@ class UserPropertySerializer(serializers.ModelSerializer):
                         feature_value
                     )
 
-                # =================================================
-                # OTHER
-                # =================================================
-
                 else:
 
                     feature_name = (
@@ -7780,11 +7632,6 @@ class UserPropertySerializer(serializers.ModelSerializer):
                     output_value = (
                         feature_value
                     )
-
-                # =================================================
-                # FINAL RESPONSE
-                # =================================================
-
                 data.append(
                     {
                         "name": feature_name,

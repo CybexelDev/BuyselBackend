@@ -635,7 +635,7 @@ class PendingAgentRegistration(models.Model):
 
             # Create Agent
             agent = AgentUserProfile.objects.create(
-                username=username,
+                username=self.full_name.strip(),
                 email=self.email,
                 phone_number=self.phone_number,
                 whatsapp_number=self.phone_number,

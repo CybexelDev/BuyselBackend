@@ -3031,6 +3031,7 @@ def plans(request):
             plan.featured_listings_limit = int(request.POST.get("sale") or 0)
 
             plan.priority_search = request.POST.get("priority_search")
+            plan.edit = request.POST.get("edit") or "0"
 
             plan.meta_ads_promotion = request.POST.get("meta_ads")
 
@@ -3551,13 +3552,12 @@ def edit_testimonial(request, id):
                 return redirect("testimonial")
         testimonial.user_id = request.POST.get("user")
         testimonial.rating = request.POST.get("rating")
-        # testimonial.image=request.FILES.get("image")
+       
         testimonial.opinion = request.POST.get("opinion")
         testimonial.description = request.POST.get("description")
         testimonial.designation = request.POST.get("designation")
 
-        # if request.FILES.get("image"):
-        #     testimonial.image = request.FILES.get("image")
+       
         if request.FILES.get("image"):
             testimonial.image = request.FILES["image"]
 
@@ -3568,11 +3568,6 @@ def edit_testimonial(request, id):
 
 
 def userprofile_list_view(request):
-
-    # =========================================================
-    # EDIT USER PROFILE
-    # Handles profile update submitted from the edit modal
-    # =========================================================
     if request.method == "POST" and request.POST.get("profile_id"):
 
         try:
@@ -3587,10 +3582,6 @@ def userprofile_list_view(request):
                 if uploaded_image.size > MAX_IMAGE_SIZE:
 
                     size_mb = uploaded_image.size / (1024 * 1024)
-
-                    print("IMAGE TOO LARGE:")
-                    print("Image:", uploaded_image.name)
-                    print("Size:", size_mb, "MB")
 
                     messages.error(
                         request,
@@ -3615,10 +3606,6 @@ def userprofile_list_view(request):
 
             profile.is_active = request.POST.get("is_active") == "True"
 
-            # =====================================================
-            # OPTIONAL PROFILE IMAGE UPDATE
-            # Updates image only when a new image is selected
-            # =====================================================
             if request.FILES.get("image"):
                 profile.image = request.FILES.get("image")
 
@@ -3635,26 +3622,13 @@ def userprofile_list_view(request):
 
         except Exception as error:
             print("USER PROFILE UPDATE ERROR:", error)
-
-            # =====================================================
-            # TOAST NOTIFICATION — EDIT ERROR
-            # This message appears as a red toast when update fails
-            # =====================================================
             messages.error(
                 request, "Unable to update the user profile. Please try again."
             )
 
         return redirect("userprofiles")
-
-    # =========================================================
-    # LOAD USER PROFILES
-    # select_related avoids additional queries for user details
-    # =========================================================
     profiles = UserProfile.objects.select_related("user").all().order_by("-id")
-    # =========================================================
-    # LOAD USER PROFILES
-    # select_related avoids additional queries for user details
-    # =========================================================
+    
     profiles = UserProfile.objects.select_related("user").all().order_by("-id")
 
     return render(request, "users/user_profiles.html", {"profiles": profiles})
@@ -4587,6 +4561,11 @@ def mark_dashboard_notification_read(request):
 )
 @require_POST
 def mark_all_dashboard_notifications_read(request):
+    print("========== MARK ALL ==========")
+    print("PATH:", request.path)
+    print("METHOD:", request.method)
+    print("USER:", request.user)
+    print("AUTH:", request.user.is_authenticated)
 
     try:
 
@@ -5113,27 +5092,16 @@ def delete_agent_property(request, id):
 @transaction.atomic
 def add_agent_property(request):
 
-    print("\n========== ADD AGENT PROPERTY ==========")
-
-    # -------------------------------------------------
-    # DEBUG POST DATA
-    # -------------------------------------------------
-
     for key in request.POST:
         print(key, "=", request.POST.getlist(key))
 
     print("FILES =", request.FILES)
 
-    # -------------------------------------------------
-    # FORM
-    # -------------------------------------------------
-
+    
     form = AgentPropertyForm(
         request.POST,
         request.FILES
     )
-
-    print("FORM VALID =", form.is_valid())
 
     if not form.is_valid():
 
@@ -5148,9 +5116,6 @@ def add_agent_property(request):
 
     try:
 
-        # =================================================
-        # AGENT
-        # =================================================
 
         agent_id = request.POST.get("agent")
 
@@ -5175,26 +5140,12 @@ def add_agent_property(request):
                     "agent_property_dashboard"
                 )
 
-        # =================================================
-        # CREATE PROPERTY INSTANCE
-        # =================================================
 
         property_obj = form.save(
             commit=False
         )
 
-        # -------------------------------------------------
-        # OPTIONAL AGENT
-        # -------------------------------------------------
-
         property_obj.agent = agent
-
-        # -------------------------------------------------
-        # ADMIN CREATED PROPERTY
-        # -------------------------------------------------
-
-        # No subscription is required for an admin-created
-        # property.
 
         property_obj.subscription = None
 
@@ -5206,17 +5157,9 @@ def add_agent_property(request):
             request.POST.get("paid") == "on"
         )
 
-        # -------------------------------------------------
-        # FEATURED
-        # -------------------------------------------------
-
         property_obj.is_featured = (
             request.POST.get("is_featured") == "on"
         )
-
-        # -------------------------------------------------
-        # NOTES
-        # -------------------------------------------------
 
         property_obj.notes = request.POST.get(
             "notes",
@@ -5227,10 +5170,6 @@ def add_agent_property(request):
             "added_by",
             ""
         ).strip()
-
-        # -------------------------------------------------
-        # MARKET STAFF
-        # -------------------------------------------------
 
         property_obj.market_staff = request.POST.get(
             "market_staff",
@@ -5245,15 +5184,7 @@ def add_agent_property(request):
 
         property_obj.full_clean()
 
-        # =================================================
-        # SAVE PROPERTY
-        # =================================================
-
         property_obj.save()
-
-        # =================================================
-        # AMENITIES
-        # =================================================
 
         amenity_ids = request.POST.getlist(
             "amenities"
@@ -5266,10 +5197,6 @@ def add_agent_property(request):
                     id__in=amenity_ids
                 )
             )
-
-        # =================================================
-        # IMAGES
-        # =================================================
 
         images = request.FILES.getlist(
             "images"
@@ -5300,10 +5227,6 @@ def add_agent_property(request):
                 property=property_obj,
                 image=image
             )
-
-        # =================================================
-        # DYNAMIC FIELDS
-        # =================================================
 
         if property_obj.subcategory:
 
@@ -5449,19 +5372,11 @@ def add_agent_property(request):
             "Agent property added successfully."
         )
 
-        print(
-            "========== PROPERTY ADD SUCCESS =========="
-        )
-
         return redirect(
             "agent_property_dashboard"
         )
 
     except Exception as e:
-
-        # Because the view is wrapped with
-        # transaction.atomic, database changes made
-        # before the exception will be rolled back.
 
         traceback.print_exc()
 
@@ -5593,26 +5508,12 @@ def edit_agent_property(request, id):
 
         with transaction.atomic():
 
-            # ==========================================
-            # CATEGORY
-            # ==========================================
-
             property.category_id = request.POST.get("category") or None
 
             property.subcategory_id = request.POST.get("subcategory") or None
 
             property.purpose_id = request.POST.get("purpose") or None
-
-            # ==========================================
-            # BASIC DETAILS
-            # ==========================================
-
             property.label = request.POST.get("label", "")
-
-            # ------------------------------------------
-            # LAND AREA
-            # Only update if a value was entered
-            # ------------------------------------------
 
             land_area = request.POST.get("land_area")
 

@@ -1009,6 +1009,11 @@ class AmenitiesSerializer(serializers.ModelSerializer):
 
 class InboxSerializer(serializers.ModelSerializer):
 
+    created_at = serializers.DateTimeField(
+        format="%d-%m-%Y %-I:%M:%S %p",
+        read_only=True
+    )
+
     class Meta:
         model = Inbox
         fields = "__all__"
@@ -2150,6 +2155,7 @@ from rest_framework import serializers
 from agents.models import AgentContact
 
 class AgentContactSerializer(serializers.ModelSerializer):
+    created_at = serializers.SerializerMethodField()
 
     class Meta:
         model = AgentContact
@@ -2188,6 +2194,12 @@ class AgentContactSerializer(serializers.ModelSerializer):
                 'allow_blank': False,
             },
         }
+
+    def get_created_at(self, obj):
+
+        return timezone.localtime(
+            obj.created_at
+        ).strftime("%d-%m-%Y %I:%M:%S %p").replace(" 0", " ")
 
     # -----------------------------------------
     # FIRST NAME
@@ -5634,19 +5646,69 @@ class AgentDetailSerializer(serializers.ModelSerializer):
     # -------------------------------
     # OPERATING CITIES → LIST
     # -------------------------------
+    # def get_operating_cities(self, obj):
+    #     data = obj.operating_cities
+
+    #     # If already list (JSONField)
+    #     if isinstance(data, list):
+    #         return data
+
+    #     # If stored as string → convert
+    #     if isinstance(data, str):
+    #         try:
+    #             return json.loads(data)
+    #         except:
+    #             return [data]  # fallback
+
+    #     return []
+
+    # -------------------------------
+    # OPERATING CITIES → LIST
+    # -------------------------------
+
     def get_operating_cities(self, obj):
+
         data = obj.operating_cities
+
+        # If empty / None
+        if not data:
+            return []
 
         # If already list (JSONField)
         if isinstance(data, list):
-            return data
 
-        # If stored as string → convert
+            return [
+                city.strip()
+                for city in data
+                if isinstance(city, str) and city.strip()
+            ]
+
+        # If stored as string
         if isinstance(data, str):
+
             try:
-                return json.loads(data)
-            except:
-                return [data]  # fallback
+
+                parsed_data = json.loads(data)
+
+                if isinstance(parsed_data, list):
+
+                    return [
+                        city.strip()
+                        for city in parsed_data
+                        if isinstance(city, str) and city.strip()
+                    ]
+
+                if isinstance(parsed_data, str) and parsed_data.strip():
+                    return [parsed_data.strip()]
+
+                return []
+
+            except (json.JSONDecodeError, TypeError):
+
+                if data.strip():
+                    return [data.strip()]
+
+                return []
 
         return []
 

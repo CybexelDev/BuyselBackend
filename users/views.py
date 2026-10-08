@@ -12669,7 +12669,7 @@ class UnifiedEnquiryListAPIView(APIView):
                     "property": e.property.label,
                     "price": e.property.price,
                     # "time": e.created_at.strftime("%Y-%m-%d %H:%M:%S")
-                    "time": local_time.strftime("%Y-%m-%d %H:%M:%S")
+                    "time": local_time.strftime("%d-%m-%Y %H:%M:%S")
                 })
 
         elif isinstance(user, AgentUserProfile):
@@ -12690,7 +12690,7 @@ class UnifiedEnquiryListAPIView(APIView):
                     "property": e.property.label,
                     "price": e.property.price,
                     # "time": e.created_at.strftime("%Y-%m-%d %H:%M:%S")
-                    "time": local_time.strftime("%Y-%m-%d %H:%M:%S")
+                    "time": local_time.strftime("%d-%m-%Y %H:%M:%S")
                 })
 
         return Response({
@@ -12712,7 +12712,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 
-class EnquiryDetailAPIView(APIView):
+class   EnquiryDetailAPIView(APIView):
 
     authentication_classes = [UnifiedJWTAuthentication]
     permission_classes = [IsAuthenticated]
@@ -14495,9 +14495,6 @@ class UserPropertyListAPIView(APIView):
         )
 
         has_active_plan = active_subscriptions.exists()
-        # ==========================================
-        # SINGLE PROPERTY PACKAGE STATUS
-        # ==========================================
 
         has_single_property_package = (
             not has_active_plan 
@@ -14735,45 +14732,6 @@ class UserPropertyListAPIView(APIView):
                 used_edit,
                 total_edit
             ]
-
-        # ==========================================
-        # EDIT COUNT
-        # [USED, TOTAL]
-        # ==========================================
-
-        # remaining_edit = edit_data.get(
-        #     "remaining_edit",
-        #     0
-        # )
-
-        # total_edit = edit_data.get(
-        #     "total_edit",
-        #     remaining_edit
-        # )
-
-        # if remaining_edit == "Unlimited":
-
-        #     edit_count = [
-        #         0,
-        #         "Unlimited"
-        #     ]
-
-        # else:
-
-        #     used_edit = max(
-        #         total_edit -
-        #         remaining_edit,
-        #         0
-        #     )
-
-        #     edit_count = [
-        #         used_edit,
-        #         total_edit
-        #     ]
-
-        # ==========================================
-        # SINGLE PROPERTY EDIT
-        # ==========================================
 
         property_edit_data = []
 

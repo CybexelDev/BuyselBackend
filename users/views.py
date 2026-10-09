@@ -61,7 +61,9 @@ import os
 import cloudinary.uploader
 from django.conf import settings
 from django.core.files.base import ContentFile
-
+from rest_framework.parsers import FormParser
+from users.parsers import ImageCompressionMultiPartParser
+from rest_framework.parsers import FormParser
 import base64
 
 
@@ -2974,6 +2976,10 @@ class UserProfileImageUpdateView(APIView):
 
     authentication_classes = []
     permission_classes = [AllowAny]
+    parser_classes = [
+        ImageCompressionMultiPartParser,
+        FormParser,
+    ]
 
 
     # ----------------------------
@@ -3117,27 +3123,27 @@ class UserProfileImageUpdateView(APIView):
             )
         image = request.FILES["image"]
 
-        MAX_IMAGE_SIZE = 2.5 * 1024 * 1024  # 2.5 MB
+        # MAX_IMAGE_SIZE = 2.5 * 1024 * 1024  # 2.5 MB
 
-        if image.size >= MAX_IMAGE_SIZE:
+        # if image.size >= MAX_IMAGE_SIZE:
 
-            return Response({
+        #     return Response({
 
-                "status": False,
+        #         "status": False,
 
-                "message":
-                "Each image size must be less than 2.5 MB.",
+        #         "message":
+        #         "Each image size must be less than 2.5 MB.",
 
-                "image":
-                image.name,
+        #         "image":
+        #         image.name,
 
-                "size_mb":
-                round(
-                    image.size / (1024 * 1024),
-                    2
-                )
+        #         "size_mb":
+        #         round(
+        #             image.size / (1024 * 1024),
+        #             2
+        #         )
 
-            }, status=400)
+        #     }, status=400)
 
 
         profile,_ = UserProfile.objects.get_or_create(
@@ -5164,7 +5170,11 @@ class AgentListAPIView(APIView):
 class AgentProfileAPIView(APIView):
     authentication_classes = [AgentJWTAuthentication]
     permission_classes = [IsAuthenticated]
-    parser_classes = (MultiPartParser, FormParser)
+    # parser_classes = (MultiPartParser, FormParser)
+    parser_classes = (
+        ImageCompressionMultiPartParser,
+        FormParser,
+    )
 
     # 🔹 Get Profile
     def get(self, request):
@@ -7300,11 +7310,11 @@ class AgentPropertyLimitAPIView(APIView):
 class AgentPropertyAPIView(APIView):
     authentication_classes = [AgentJWTAuthentication]
     permission_classes = [IsAuthenticated]
-    parser_classes = [MultiPartParser, FormParser]
-
-    # =====================================================
-    # PARSE LIST FIELD
-    # =====================================================
+    # parser_classes = [MultiPartParser, FormParser]
+    parser_classes = [
+        ImageCompressionMultiPartParser,
+        FormParser,
+    ]
 
     def parse_list_field(self, request, field_name):
 
@@ -7344,10 +7354,6 @@ class AgentPropertyAPIView(APIView):
 
         return parsed
 
-    # =====================================================
-    # GET CATEGORY TYPE
-    # =====================================================
-
     def get_category_type(self, category_name):
 
         category_name = category_name.lower().strip()
@@ -7372,10 +7378,6 @@ class AgentPropertyAPIView(APIView):
 
         return None
 
-    # =====================================================
-    # GET PREMIUM PLAN
-    # =====================================================
-
     def get_premium_plan(self, subscription):
 
         premium = PremiumPlan.objects.filter(
@@ -7385,10 +7387,6 @@ class AgentPropertyAPIView(APIView):
         ).first()
 
         return premium
-
-    # =====================================================
-    # GET SUBSCRIPTION CATEGORY USAGE
-    # =====================================================
 
     def get_subscription_category_usage(
         self,
@@ -7424,10 +7422,6 @@ class AgentPropertyAPIView(APIView):
             commercial_used
         )
 
-    # =====================================================
-    # SELECT SUBSCRIPTION
-    # =====================================================
-
     def select_subscription(
         self,
         active_subscriptions,
@@ -7439,10 +7433,6 @@ class AgentPropertyAPIView(APIView):
         for subscription in active_subscriptions.order_by(
             "end_date"
         ):
-
-            # =============================================
-            # ELITE PLAN
-            # =============================================
 
             if subscription.plan_type == "elite":
 
@@ -7464,10 +7454,6 @@ class AgentPropertyAPIView(APIView):
 
                 continue
 
-            # =============================================
-            # PREMIUM PLAN
-            # =============================================
-
             premium = self.get_premium_plan(
                 subscription
             )
@@ -7483,10 +7469,6 @@ class AgentPropertyAPIView(APIView):
                 subscription
             )
 
-            # =============================================
-            # RESIDENTIAL
-            # =============================================
-
             if category_type == "residential":
 
                 residential_limit = (
@@ -7500,10 +7482,6 @@ class AgentPropertyAPIView(APIView):
                     )
 
                     break
-
-            # =============================================
-            # COMMERCIAL
-            # =============================================
 
             elif category_type == "commercial":
 
@@ -7521,10 +7499,6 @@ class AgentPropertyAPIView(APIView):
 
         return selected_subscription
 
-    # =====================================================
-    # GET CATEGORY REMAINING
-    # =====================================================
-
     def get_category_remaining(
         self,
         active_subscriptions,
@@ -7533,10 +7507,6 @@ class AgentPropertyAPIView(APIView):
 
         residential_limit = 0
         commercial_limit = 0
-
-        # =============================================
-        # PREMIUM LIMITS
-        # =============================================
 
         for subscription in active_subscriptions:
 
@@ -7560,10 +7530,7 @@ class AgentPropertyAPIView(APIView):
                 premium.commercial_limit or 0
             )
 
-        # =============================================
-        # GLOBAL CATEGORY USAGE
-        # =============================================
-
+       
         residential_used = AgentProperty.objects.filter(
             agent=agent
         ).filter(
@@ -7603,10 +7570,6 @@ class AgentPropertyAPIView(APIView):
             commercial_remaining
         )
 
-    # =====================================================
-    # GET TOTAL REMAINING
-    # =====================================================
-
     def get_total_remaining(
         self,
         active_subscriptions
@@ -7616,10 +7579,6 @@ class AgentPropertyAPIView(APIView):
         total_used = 0
 
         for subscription in active_subscriptions:
-
-            # =============================================
-            # ELITE
-            # =============================================
 
             if subscription.plan_type == "elite":
 
@@ -7632,10 +7591,6 @@ class AgentPropertyAPIView(APIView):
                 )
 
                 continue
-
-            # =============================================
-            # PREMIUM
-            # =============================================
 
             premium = self.get_premium_plan(
                 subscription
@@ -7671,18 +7626,12 @@ class AgentPropertyAPIView(APIView):
 
         return remaining
 
-    # =====================================================
-    # POST
-    # =====================================================
-
+    
     def post(self, request):
 
         agent = request.user
 
-        # =================================================
-        # CATEGORY
-        # =================================================
-
+       
         category_id = request.data.get(
             "category"
         )
@@ -7725,77 +7674,62 @@ class AgentPropertyAPIView(APIView):
             category_name
         )
 
-        # =================================================
-        # IMAGE SIZE VALIDATION
-        # =================================================
+        
+        # MAX_IMAGE_SIZE = (
+        #     2.5 * 1024 * 1024
+        # )
 
-        MAX_IMAGE_SIZE = (
-            2.5 * 1024 * 1024
-        )
+        # image = request.FILES.get(
+        #     "image"
+        # )
 
-        # =================================================
-        # MAIN IMAGE
-        # =================================================
+        # if image and image.size >= MAX_IMAGE_SIZE:
 
-        image = request.FILES.get(
-            "image"
-        )
+        #     return Response({
 
-        if image and image.size >= MAX_IMAGE_SIZE:
+        #         "status": False,
 
-            return Response({
+        #         "message":
+        #             "Main image size must be less than 2.5 MB.",
 
-                "status": False,
+        #         "image":
+        #             image.name,
 
-                "message":
-                    "Main image size must be less than 2.5 MB.",
+        #         "size_mb":
+        #             round(
+        #                 image.size
+        #                 / (1024 * 1024),
+        #                 2
+        #             )
 
-                "image":
-                    image.name,
+        #     }, status=400)
 
-                "size_mb":
-                    round(
-                        image.size
-                        / (1024 * 1024),
-                        2
-                    )
+        # images = request.FILES.getlist(
+        #     "images"
+        # )
 
-            }, status=400)
+        # for img in images:
 
-        # =================================================
-        # MULTIPLE IMAGES
-        # =================================================
+        #     if img.size >= MAX_IMAGE_SIZE:
 
-        images = request.FILES.getlist(
-            "images"
-        )
+        #         return Response({
 
-        for img in images:
+        #             "status": False,
 
-            if img.size >= MAX_IMAGE_SIZE:
+        #             "message":
+        #                 "Each image size must be less than 2.5 MB.",
 
-                return Response({
+        #             "image":
+        #                 img.name,
 
-                    "status": False,
+        #             "size_mb":
+        #                 round(
+        #                     img.size
+        #                     / (1024 * 1024),
+        #                     2
+        #                 )
 
-                    "message":
-                        "Each image size must be less than 2.5 MB.",
-
-                    "image":
-                        img.name,
-
-                    "size_mb":
-                        round(
-                            img.size
-                            / (1024 * 1024),
-                            2
-                        )
-
-                }, status=400)
-
-        # =================================================
-        # ACTIVE SUBSCRIPTIONS
-        # =================================================
+        #         }, status=400)
 
         active_subscriptions = (
             Subscription.objects.filter(
@@ -7816,19 +7750,12 @@ class AgentPropertyAPIView(APIView):
 
             }, status=400)
 
-        # =================================================
-        # TOTAL REMAINING
-        # =================================================
-
         remaining_property = (
             self.get_total_remaining(
                 active_subscriptions
             )
         )
 
-        # =================================================
-        # CATEGORY REMAINING
-        # =================================================
 
         (
             residential_remaining,
@@ -7837,18 +7764,6 @@ class AgentPropertyAPIView(APIView):
             active_subscriptions,
             agent
         )
-
-        # =================================================
-        # OVERALL PROPERTY LIMIT CHECK
-        # =================================================
-        #
-        # If there is absolutely no listing remaining
-        # across all active subscriptions, stop here.
-        #
-        # This is different from residential/commercial
-        # category limits.
-        #
-        # =================================================
 
         if remaining_property <= 0:
 
@@ -8141,24 +8056,21 @@ class AgentPropertyAPIView(APIView):
                 ]
             )
 
-        # =================================================
-        # IMAGES
-        # =================================================
-
         images = request.FILES.getlist(
             "images"
         )
 
         for img in images:
+            print(
+                "Image:", img.name,
+                "| Size in KB:", round(img.size / 1024, 2),
+                "| Content type:", img.content_type
+            )
 
             AgentPropertyImage.objects.create(
                 property=property_obj,
                 image=img
             )
-
-        # =================================================
-        # MAIN IMAGE
-        # =================================================
 
         if (
             not property_obj.image
@@ -8235,10 +8147,6 @@ class AgentPropertyAPIView(APIView):
                 "You have used all your property listings. Please upgrade your plan.",
                 "usage"
             )
-
-        # =================================================
-        # RESPONSE
-        # =================================================
 
         return Response({
 
@@ -8352,7 +8260,11 @@ class AgentPropertyDetailAPIView(APIView):
 
     authentication_classes = [AgentJWTAuthentication]
     permission_classes = [IsAuthenticated]
-    parser_classes = [MultiPartParser, FormParser]
+    # parser_classes = [MultiPartParser, FormParser]
+    parser_classes = [
+        ImageCompressionMultiPartParser,
+        FormParser,
+    ]
 
     # =========================================
     # GET OBJECT
@@ -8562,55 +8474,55 @@ class AgentPropertyDetailAPIView(APIView):
         # IMAGE SIZE VALIDATION
         # ==========================================
 
-        MAX_IMAGE_SIZE = 2.5 * 1024 * 1024  # 2.5 MB
+        # MAX_IMAGE_SIZE = 2.5 * 1024 * 1024  # 2.5 MB
 
-        # MAIN IMAGE
-        image = request.FILES.get("image")
+        # # MAIN IMAGE
+        # image = request.FILES.get("image")
 
-        if image and image.size >= MAX_IMAGE_SIZE:
+        # if image and image.size >= MAX_IMAGE_SIZE:
 
-            return Response({
+        #     return Response({
 
-                "status": False,
+        #         "status": False,
 
-                "message":
-                "Main image size must be less than 2.5 MB.",
+        #         "message":
+        #         "Main image size must be less than 2.5 MB.",
 
-                "image":
-                image.name,
+        #         "image":
+        #         image.name,
 
-                "size_mb":
-                round(
-                    image.size / (1024 * 1024),
-                    2
-                )
+        #         "size_mb":
+        #         round(
+        #             image.size / (1024 * 1024),
+        #             2
+        #         )
 
-            }, status=400)
+        #     }, status=400)
 
-        # MULTIPLE IMAGES
-        images = request.FILES.getlist("images")
+        # # MULTIPLE IMAGES
+        # images = request.FILES.getlist("images")
 
-        for img in images:
+        # for img in images:
 
-            if img.size >= MAX_IMAGE_SIZE:
+        #     if img.size >= MAX_IMAGE_SIZE:
 
-                return Response({
+        #         return Response({
 
-                    "status": False,
+        #             "status": False,
 
-                    "message":
-                    "Each image size must be less than 2.5 MB.",
+        #             "message":
+        #             "Each image size must be less than 2.5 MB.",
 
-                    "image":
-                    img.name,
+        #             "image":
+        #             img.name,
 
-                    "size_mb":
-                    round(
-                        img.size / (1024 * 1024),
-                        2
-                    )
+        #             "size_mb":
+        #             round(
+        #                 img.size / (1024 * 1024),
+        #                 2
+        #             )
 
-                }, status=400)
+        #         }, status=400)
 
 
 
@@ -13803,7 +13715,11 @@ class UserPropertyDetailAPIView(APIView):
 
     authentication_classes = [UserJWTAuthentication]
     permission_classes = [IsAuthenticated]
-    parser_classes = [MultiPartParser, FormParser]
+    # parser_classes = [MultiPartParser, FormParser]
+    parser_classes = [
+        ImageCompressionMultiPartParser,
+        FormParser,
+    ]
 
     def get_object(self, request, id):
 
@@ -14112,55 +14028,55 @@ class UserPropertyDetailAPIView(APIView):
         # IMAGE SIZE VALIDATION
         # =====================================================
 
-        MAX_IMAGE_SIZE = 2.5 * 1024 * 1024  # 2.5 MB
+        # MAX_IMAGE_SIZE = 2.5 * 1024 * 1024  # 2.5 MB
 
-        # MAIN IMAGE
-        image = request.FILES.get("image")
+        # # MAIN IMAGE
+        # image = request.FILES.get("image")
 
-        if image and image.size >= MAX_IMAGE_SIZE:
+        # if image and image.size >= MAX_IMAGE_SIZE:
 
-            return Response({
+        #     return Response({
 
-                "status": False,
+        #         "status": False,
 
-                "message":
-                "Main image size must be less than 2.5 MB.",
+        #         "message":
+        #         "Main image size must be less than 2.5 MB.",
 
-                "image":
-                image.name,
+        #         "image":
+        #         image.name,
 
-                "size_mb":
-                round(
-                    image.size / (1024 * 1024),
-                    2
-                )
+        #         "size_mb":
+        #         round(
+        #             image.size / (1024 * 1024),
+        #             2
+        #         )
 
-            }, status=status.HTTP_400_BAD_REQUEST)
+        #     }, status=status.HTTP_400_BAD_REQUEST)
 
-        # MULTIPLE IMAGES
-        images = request.FILES.getlist("images")
+        # # MULTIPLE IMAGES
+        # images = request.FILES.getlist("images")
 
-        for img in images:
+        # for img in images:
 
-            if img.size >= MAX_IMAGE_SIZE:
+        #     if img.size >= MAX_IMAGE_SIZE:
 
-                return Response({
+        #         return Response({
 
-                    "status": False,
+        #             "status": False,
 
-                    "message":
-                    "Each image size must be less than 2.5 MB.",
+        #             "message":
+        #             "Each image size must be less than 2.5 MB.",
 
-                    "image":
-                    img.name,
+        #             "image":
+        #             img.name,
 
-                    "size_mb":
-                    round(
-                        img.size / (1024 * 1024),
-                        2
-                    )
+        #             "size_mb":
+        #             round(
+        #                 img.size / (1024 * 1024),
+        #                 2
+        #             )
 
-                }, status=status.HTTP_400_BAD_REQUEST)
+        #         }, status=status.HTTP_400_BAD_REQUEST)
 
         # =====================================================
         # REMOVE READ ONLY FIELDS
@@ -15914,7 +15830,11 @@ class UserPropertyCreateAPIView(APIView):
 
     authentication_classes = [UserJWTAuthentication]
     permission_classes = [IsAuthenticated]
-    parser_classes = [MultiPartParser, FormParser]
+    # parser_classes = [MultiPartParser, FormParser]
+    parser_classes = [
+        ImageCompressionMultiPartParser,
+        FormParser,
+    ]
 
     # =====================================================
     # PARSE LIST FIELD
@@ -16027,55 +15947,55 @@ class UserPropertyCreateAPIView(APIView):
         # IMAGE SIZE VALIDATION
         # =================================================
 
-        MAX_IMAGE_SIZE = 2.5 * 1024 * 1024  # 2.5 MB
+        # MAX_IMAGE_SIZE = 2.5 * 1024 * 1024  # 2.5 MB
 
-        # MAIN IMAGE
-        image = request.FILES.get("image")
+        # # MAIN IMAGE
+        # image = request.FILES.get("image")
 
-        if image and image.size >= MAX_IMAGE_SIZE:
+        # if image and image.size >= MAX_IMAGE_SIZE:
 
-            return Response({
+        #     return Response({
 
-                "status": False,
+        #         "status": False,
 
-                "message":
-                "Main image size must be less than 2.5 MB.",
+        #         "message":
+        #         "Main image size must be less than 2.5 MB.",
 
-                "image":
-                image.name,
+        #         "image":
+        #         image.name,
 
-                "size_mb":
-                round(
-                    image.size / (1024 * 1024),
-                    2
-                )
+        #         "size_mb":
+        #         round(
+        #             image.size / (1024 * 1024),
+        #             2
+        #         )
 
-            }, status=400)
+        #     }, status=400)
 
-        # MULTIPLE IMAGES
-        images = request.FILES.getlist("images")
+        # # MULTIPLE IMAGES
+        # images = request.FILES.getlist("images")
 
-        for img in images:
+        # for img in images:
 
-            if img.size >= MAX_IMAGE_SIZE:
+        #     if img.size >= MAX_IMAGE_SIZE:
 
-                return Response({
+        #         return Response({
 
-                    "status": False,
+        #             "status": False,
 
-                    "message":
-                    "Each image size must be less than 2.5 MB.",
+        #             "message":
+        #             "Each image size must be less than 2.5 MB.",
 
-                    "image":
-                    img.name,
+        #             "image":
+        #             img.name,
 
-                    "size_mb":
-                    round(
-                        img.size / (1024 * 1024),
-                        2
-                    )
+        #             "size_mb":
+        #             round(
+        #                 img.size / (1024 * 1024),
+        #                 2
+        #             )
 
-                }, status=400)
+        #         }, status=400)
         
 
         if remaining_property <= 0:

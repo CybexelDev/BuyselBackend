@@ -1985,27 +1985,27 @@ class AgentProfileSerializer(serializers.ModelSerializer):
     # -----------------------------------
     # OUTPUT IMAGE FIX (IMPORTANT)
     # -----------------------------------
-    def validate_profile_image(self, image):
+    # def validate_profile_image(self, image):
 
-        # 2.5 MB
-        MAX_SIZE = 2.5 * 1024 * 1024
+    #     # 2.5 MB
+    #     MAX_SIZE = 2.5 * 1024 * 1024
 
-        if image:
+    #     if image:
 
-            if image.size > MAX_SIZE:
+    #         if image.size > MAX_SIZE:
 
-                size_mb = round(
-                    image.size / (1024 * 1024),
-                    2
-                )
+    #             size_mb = round(
+    #                 image.size / (1024 * 1024),
+    #                 2
+    #             )
 
-                raise serializers.ValidationError({
-                    "message": "Each image size must be less than 2.5 MB.",
-                    "image": image.name,
-                    "size_mb": size_mb
-                })
+    #             raise serializers.ValidationError({
+    #                 "message": "Each image size must be less than 2.5 MB.",
+    #                 "image": image.name,
+    #                 "size_mb": size_mb
+    #             })
 
-        return image
+    #     return image
     
     def get_profile_image(self, obj):
         if obj.profile_image:

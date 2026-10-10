@@ -516,17 +516,6 @@ class BlogForm(forms.ModelForm):
         if not hasattr(image, "size"):
 
             return image
-        MAX_IMAGE_SIZE = 2.5 * 1024 * 1024
-
-        if image.size > MAX_IMAGE_SIZE:
-
-            size_mb = image.size / (1024 * 1024)
-
-            raise forms.ValidationError(
-                f"Image '{image.name}' is too large "
-                f"({size_mb:.2f} MB). "
-                f"Maximum allowed size is 2.5 MB."
-            )
 
         allowed_types = [
             "image/jpeg",
@@ -542,100 +531,6 @@ class BlogForm(forms.ModelForm):
 
         return image
 
-    # def clean_image(self):
-
-    #     image = self.cleaned_data.get("image")
-    #     if not image:
-
-    #         if not self.instance or not self.instance.pk:
-    #             raise forms.ValidationError(
-    #                 "Featured image is required."
-    #             )
-
-    #         return image
-    #     MAX_IMAGE_SIZE = 2.5 * 1024 * 1024
-
-    #     if image.size > MAX_IMAGE_SIZE:
-
-    #         size_mb = image.size / (1024 * 1024)
-
-    #         raise forms.ValidationError(
-    #             f"Image '{image.name}' is too large "
-    #             f"({size_mb:.2f} MB). "
-    #             f"Maximum allowed size is 2.5 MB."
-    #         )
-    #     allowed_types = [
-    #         "image/jpeg",
-    #         "image/png",
-    #         "image/webp",
-    #     ]
-
-    #     if image.content_type not in allowed_types:
-
-    #         raise forms.ValidationError(
-    #             "Only JPG, PNG and WEBP images are allowed."
-    #         )
-
-    #     return image
-
-
-# class BlogForm(forms.ModelForm):
-
-#     class Meta:
-
-#         model = Blog
-
-#         fields = [
-#             "category",
-#             "blog_head",
-#             "date",
-#             "card_paragraph",
-#             "image",
-#         ]
-
-
-#         widgets = {
-
-#             "category": forms.Select(
-#                 attrs={
-#                     "class": SELECT_STYLE
-#                 }
-#             ),
-
-
-#             "blog_head": forms.TextInput(
-#                 attrs={
-#                     "class": INPUT_STYLE,
-#                     "placeholder": "Enter Blog Title"
-#                 }
-#             ),
-
-
-#             "date": forms.DateInput(
-#                 attrs={
-#                     "class": INPUT_STYLE,
-#                     "type": "date"
-#                 }
-#             ),
-
-
-#             "card_paragraph": forms.Textarea(
-#                 attrs={
-#                     "class": TEXTAREA_STYLE,
-#                     "placeholder": "Enter Blog Description",
-#                     "rows":5
-#                 }
-#             ),
-
-
-#             "image": forms.ClearableFileInput(
-#                 attrs={
-#                     "class": INPUT_STYLE,
-#                     "accept":"image/*"
-#                 }
-#             ),
-
-#         }
 
 class BannerAdForm(forms.ModelForm):
     class Meta:

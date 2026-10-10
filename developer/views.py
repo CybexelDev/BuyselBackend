@@ -92,7 +92,7 @@ from users.models import *
 from django.contrib import messages
 from django.db import transaction
 from agents.models import *
-
+from users.image_compression import compress_image
 
 #added by mehreena
 def create_admin_notification(title, message, notification_type="info"):
@@ -916,16 +916,15 @@ def add_property(request):
                 if not uploaded_images:
                     messages.error(request, "Upload minimum one image")
                     return redirect("add_property")
-                MAX_IMAGE_SIZE = 2.5 * 1024 * 1024
 
-                for image in uploaded_images:
-                    if image.size > MAX_IMAGE_SIZE:
-                        size_mb = image.size / (1024 * 1024)
-                        messages.error(
-                            request,
-                            f"Image '{image.name}' is too large ({size_mb:.2f} MB). Maximum allowed size is 2.5 MB."
-                        )
-                        return redirect("add_property")
+                try:
+                    uploaded_images = [
+                        compress_image(image)
+                        for image in uploaded_images
+                    ]
+                except ValueError as e:
+                    messages.error(request, str(e))
+                    return redirect("add_property")
 
                 main_image = uploaded_images[0]
                 dynamic_features = []
@@ -1440,29 +1439,21 @@ def edit_property(request, property_id):
         # MAIN IMAGE
         # ====================================
 
-        uploaded_images = request.FILES.getlist("images")
-        MAX_IMAGE_SIZE = 2.5 * 1024 * 1024  # 2.5 MB
+        # uploaded_images = request.FILES.getlist("images")
 
-        for image in uploaded_images:
+        # if uploaded_images:
+        #     try:
+        #         uploaded_images = [
+        #             compress_image(image)
+        #             for image in uploaded_images
+        #         ]
+        #     except ValueError as e:
+        #         messages.error(request, str(e))
+        #         return redirect("add_property")
 
-            if image.size > MAX_IMAGE_SIZE:
+        #     property_obj.image = uploaded_images[0]
 
-                size_mb = image.size / (1024 * 1024)
-
-                messages.error(
-                    request,
-                    f"Image '{image.name}' is too large "
-                    f"({size_mb:.2f} MB). "
-                    f"Maximum allowed size is 2.5 MB."
-                )
-
-                return redirect("add_property")
-
-        if uploaded_images:
-
-            property_obj.image = uploaded_images[0]
-
-        property_obj.save()
+        # property_obj.save()
 
         # ====================================
         # UPDATE DYNAMIC FEATURES
@@ -1569,8 +1560,6 @@ def edit_property(request, property_id):
         # ====================================
         # UPDATE AMENITIES
         # ====================================
-        print("POST:", request.POST)
-        print("Amenity IDs:", request.POST.getlist("amenities"))
 
         amenity_ids = request.POST.getlist("amenities")
 
@@ -1594,8 +1583,28 @@ def edit_property(request, property_id):
 
         uploaded_images = request.FILES.getlist("images")
 
-        for image in uploaded_images:
+        if uploaded_images:
+            try:
+                compressed_images = []
 
+                for image in uploaded_images:
+                    compressed_image = compress_image(image)
+                    compressed_image.seek(0)
+                    compressed_images.append(compressed_image)
+
+                uploaded_images = compressed_images
+
+                # Set first compressed image as the main image
+                property_obj.image = uploaded_images[0]
+
+            except ValueError as e:
+                messages.error(request, str(e))
+                return redirect("add_property")
+
+        property_obj.save()
+
+        for image in uploaded_images:
+            image.seek(0)
             PropertyImage.objects.create(property=property_obj, image=image)
 
         # ====================================
@@ -1997,14 +2006,19 @@ def add_admin_agent(request):
         # IMAGE
         # =========================================
 
-        if image:
-            agent.profile_image = image
+        # if image:
+        #     agent.profile_image = image
 
-        # =========================================
-        # SAVE
-        # Agent model's save() handles password hash
-        # and agent_code generation.
-        # =========================================
+        if image: 
+            try: 
+                image = compress_image(image) 
+                agent.profile_image = image
+            except Exception as e: 
+                messages.error( 
+                    request, f"Unable to process profile image: {str(e)}" 
+                ) 
+                return redirect("admin_agents")
+
 
         agent.save()
 
@@ -2060,9 +2074,21 @@ def edit_agent(request, pk):
         if status:
             agent.is_active = True if status == "true" else False
 
-        if request.FILES.get("image"):
+        # if request.FILES.get("image"):
 
-            agent.profile_image = request.FILES.get("image")
+        #     agent.profile_image = request.FILES.get("image")
+
+        uploaded_image = request.FILES.get("image") 
+        if uploaded_image: 
+            try: 
+                compressed_image = compress_image(uploaded_image) 
+                agent.profile_image = compressed_image 
+            except Exception as e: 
+                messages.error( 
+                    request, 
+                    f"Unable to process profile image: {str(e)}" 
+                ) 
+                return redirect("admin_agents")
 
         agent.save()
 
@@ -3481,24 +3507,16 @@ def testimonial_admin_view(request):
 
         if uploaded_image:
 
-            MAX_IMAGE_SIZE = 2.5 * 1024 * 1024  # 2.5 MB
-
-            if uploaded_image.size > MAX_IMAGE_SIZE:
-
-                size_mb = uploaded_image.size / (1024 * 1024)
-
-                messages.error(
-                    request,
-                    f"Image '{uploaded_image.name}' is too large "
-                    f"({size_mb:.2f} MB). "
-                    f"Maximum allowed size is 2.5 MB."
-                )
-
+            try: 
+                uploaded_image = compress_image(uploaded_image) 
+            except ValueError as error: 
+                messages.error(request, str(error)) 
                 return redirect("testimonial")
         Testimonial.objects.create(
             user_id=request.POST.get("user"),
             rating=request.POST.get("rating"),
-            image=request.FILES.get("image"),
+            # image=request.FILES.get("image"),
+            image=uploaded_image,
             opinion=request.POST.get("opinion"),
             description=request.POST.get("description"),
             designation=request.POST.get("designation"),
@@ -3536,19 +3554,10 @@ def edit_testimonial(request, id):
 
         if uploaded_image:
 
-            MAX_IMAGE_SIZE = 2.5 * 1024 * 1024  # 2.5 MB
-
-            if uploaded_image.size > MAX_IMAGE_SIZE:
-
-                size_mb = uploaded_image.size / (1024 * 1024)
-
-                messages.error(
-                    request,
-                    f"Image '{uploaded_image.name}' is too large "
-                    f"({size_mb:.2f} MB). "
-                    f"Maximum allowed size is 2.5 MB."
-                )
-
+            try: 
+                uploaded_image = compress_image(uploaded_image) 
+            except ValueError as error: 
+                messages.error(request, str(error))
                 return redirect("testimonial")
         testimonial.user_id = request.POST.get("user")
         testimonial.rating = request.POST.get("rating")
@@ -3558,8 +3567,10 @@ def edit_testimonial(request, id):
         testimonial.designation = request.POST.get("designation")
 
        
-        if request.FILES.get("image"):
-            testimonial.image = request.FILES["image"]
+        # if request.FILES.get("image"):
+        #     testimonial.image = request.FILES["image"]
+        if uploaded_image: 
+            testimonial.image = uploaded_image
 
         testimonial.save()
         return redirect("testimonial")
@@ -3576,22 +3587,14 @@ def userprofile_list_view(request):
             uploaded_image = request.FILES.get("image")
 
             if uploaded_image:
-
-                MAX_IMAGE_SIZE = 2.5 * 1024 * 1024  # 2.5 MB
-
-                if uploaded_image.size > MAX_IMAGE_SIZE:
-
-                    size_mb = uploaded_image.size / (1024 * 1024)
-
-                    messages.error(
-                        request,
-                        f"Image '{uploaded_image.name}' is too large "
-                        f"({size_mb:.2f} MB). "
-                        f"Maximum allowed size is 2.5 MB."
-                    )
-
-                    # IMPORTANT:
-                    # Do NOT save any profile changes
+                try: 
+                    compressed_image = compress_image(uploaded_image) 
+                    profile.image = compressed_image 
+                except Exception as error: 
+                    messages.error( 
+                        request, 
+                        f"Unable to process profile image: {str(error)}" 
+                    ) 
                     return redirect("userprofiles")
 
             # =====================================================
@@ -3606,10 +3609,10 @@ def userprofile_list_view(request):
 
             profile.is_active = request.POST.get("is_active") == "True"
 
-            if request.FILES.get("image"):
-                profile.image = request.FILES.get("image")
+            # if request.FILES.get("image"):
+            #     profile.image = request.FILES.get("image")
 
-            profile.save()
+            # profile.save()
             profile.save()
 
             create_admin_notification(
@@ -3677,25 +3680,15 @@ def edit_userprofile(request, id):
         try:
             uploaded_image = request.FILES.get("image")
 
-            if uploaded_image:
-
-                MAX_IMAGE_SIZE = 2.5 * 1024 * 1024  # 2.5 MB
-
-                print("IMAGE NAME:", uploaded_image.name)
-                print("IMAGE SIZE:", uploaded_image.size)
-                print("IMAGE SIZE MB:", uploaded_image.size / (1024 * 1024))
-
-                if uploaded_image.size > MAX_IMAGE_SIZE:
-
-                    size_mb = uploaded_image.size / (1024 * 1024)
-
-                    messages.error(
-                        request,
-                        f"Image '{uploaded_image.name}' is too large "
-                        f"({size_mb:.2f} MB). "
-                        f"Maximum allowed size is 2.5 MB."
-                    )
-
+            if uploaded_image:  
+                try: 
+                    compressed_image = compress_image(uploaded_image) 
+                    profile.image = compressed_image 
+                except Exception as error:  
+                    messages.error( 
+                        request, 
+                        f"Unable to process profile image: {str(error)}" 
+                    ) 
                     return redirect("userprofiles")
             # =====================================================
             # UPDATE USER PROFILE FROM SEPARATE EDIT PAGE
@@ -3716,8 +3709,8 @@ def edit_userprofile(request, id):
 
             profile.is_active = request.POST.get("is_active") == "True"
 
-            if uploaded_image:
-                profile.image = uploaded_image
+            # if uploaded_image:
+            #     profile.image = uploaded_image
 
             profile.save()
 
@@ -3939,6 +3932,23 @@ def blog_dashboard(request):
 
         form = BlogForm(request.POST, request.FILES)
         if form.is_valid():
+            uploaded_image = request.FILES.get("image") 
+            if uploaded_image: 
+                try: 
+                    compressed_image = compress_image(uploaded_image) 
+                    # Replace the original upload with the compressed image 
+                    form.instance.image = compressed_image 
+                except ValueError as error: 
+                    form.add_error("image", str(error)) 
+                    open_add_blog_modal = True 
+                    context = { 
+                        "blogs": blogs, 
+                        "categories": categories, 
+                        "form": form, 
+                        "edit_form": edit_form, 
+                        "open_add_blog_modal": open_add_blog_modal, 
+                    } 
+                    return render( request, "blogs/admin_blog.html", context, )
             blog = form.save()
 
             create_admin_notification(
@@ -3953,8 +3963,6 @@ def blog_dashboard(request):
 
         else:
             open_add_blog_modal = True
-
-            print(form.errors)
 
     context = {
         "blogs": blogs,
@@ -3980,6 +3988,13 @@ def edit_blog(request, id):
             request.FILES,
             instance=blog
         )
+        uploaded_image = request.FILES.get("image") 
+        if uploaded_image: 
+            try: 
+                compressed_image = compress_image(uploaded_image) 
+                request.FILES["image"] = compressed_image 
+            except ValueError as error: 
+                edit_form.add_error("image", str(error))
 
         if edit_form.is_valid():
 
@@ -4205,7 +4220,22 @@ def add_slider(request):
         form = SliderAdForm(request.POST, request.FILES)
 
         if form.is_valid():
-            slider = form.save()
+            slider = form.save(commit=False)
+            uploaded_image = request.FILES.get("image")
+            if uploaded_image:
+                try:
+                    compressed_image = compress_image(uploaded_image)
+                    slider.image = compressed_image
+                except Exception as error:
+                    messages.error(
+                        request,
+                        f"Unable to compress slider image: {str(error)}"
+                    )
+                    return redirect("ads_dashboard")
+
+            slider.save()
+            form.save_m2m()
+            # slider = form.save()
 
             create_admin_notification(
                 "Slider Added",
@@ -4236,6 +4266,19 @@ def edit_slider(request, id):
         )
 
         if form.is_valid():
+            uploaded_image = request.FILES.get("image")
+
+            if uploaded_image:
+                try:
+                    compressed_image = compress_image(uploaded_image)
+                    form.instance.image = compressed_image
+
+                except Exception as error:
+                    messages.error(
+                        request,
+                        f"Unable to compress slider image: {str(error)}"
+                    )
+                    return redirect("ads_dashboard")
             slider = form.save()
 
             create_admin_notification(
@@ -5202,26 +5245,29 @@ def add_agent_property(request):
             "images"
         )
 
-        MAX_IMAGE_SIZE = 2.5 * 1024 * 1024  
+        compressed_images = []
 
-        for image in images:
+        try:
+            for image in images:
+                compressed = compress_image(image)
 
-            if image.size > MAX_IMAGE_SIZE:
+                # Verify the compressed file size.
+                if compressed.size > 120 * 1024:
+                    raise ValueError(
+                        f"Image '{image.name}' exceeds the "
+                        "120 KB limit after compression."
+                    )
 
-                size_mb = image.size / (1024 * 1024)
+                compressed_images.append(compressed)
 
-                messages.error(
-                    request,
-                    f"Image '{image.name}' is too large "
-                    f"({size_mb:.2f} MB). "
-                    f"Maximum allowed size is 2.5 MB."
-                )
+        except ValueError as e:
+            messages.error(request, str(e))
+            return redirect("agent_property_dashboard")
 
-                return redirect(
-                    "agent_property_dashboard"
-                )
+        for image in compressed_images:
+            image.seek(0)
 
-        for image in images:
+        # for image in images:
 
             AgentPropertyImage.objects.create(
                 property=property_obj,
@@ -5485,26 +5531,6 @@ def edit_agent_property(request, id):
     property = get_object_or_404(AgentProperty, id=id)
 
     try:
-        images = request.FILES.getlist("images")
-
-        MAX_IMAGE_SIZE = 2.5 * 1024 * 1024  # 2.5 MB
-
-        for image in images:
-
-            if image.size > MAX_IMAGE_SIZE:
-
-                size_mb = image.size / (1024 * 1024)
-
-                messages.error(
-                    request,
-                    f"Image '{image.name}' is too large "
-                    f"({size_mb:.2f} MB). "
-                    f"Maximum allowed size is 2.5 MB."
-                )
-
-                return redirect(
-                    "agent_property_dashboard"
-                )
 
         with transaction.atomic():
 
@@ -5803,8 +5829,22 @@ def edit_agent_property(request, id):
             # Add newly uploaded images
 
             images = request.FILES.getlist("images")
+            compressed_images = []
 
             for image in images:
+                compressed = compress_image(image)
+
+                if compressed.size > 120 * 1024:
+                    raise ValueError(
+                        f"Image '{image.name}' exceeds "
+                        "the 120 KB limit after compression."
+                    )
+
+                compressed_images.append(compressed)
+
+            # Save the compressed images
+            for image in compressed_images:
+                image.seek(0)
 
                 AgentPropertyImage.objects.create(
                     property=property,

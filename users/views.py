@@ -10141,7 +10141,7 @@ class WishlistSortingAPIView(APIView):
                 pattern = re.compile(
                     r"(\d+(?:\.\d+)?)\s*"
                     r"(crores?|cr|c|"
-                    r"lakhs?|lacs?|lac|lakh|l|"
+                    r"lakhs?|lacs?|lac|lakh|l|lacks|"
                     r"thousands?|thousand|"
                     r"kilo|k)?",
                     re.IGNORECASE
@@ -10192,6 +10192,14 @@ class WishlistSortingAPIView(APIView):
 
             except (InvalidOperation, ValueError, TypeError):
                 return Decimal("0")
+            
+        def has_invalid_price(obj):
+            price = str(obj.price or "").strip().lower()
+
+            if price in ("n/a", "na", "n.a.", "n.a", ""):
+                return True
+
+            return safe_price(obj) <= Decimal("0")
 
         if sort_by == "latest":
             properties.sort(
@@ -10201,13 +10209,18 @@ class WishlistSortingAPIView(APIView):
 
         elif sort_by == "price_low_to_high":
             properties.sort(
-                key=safe_price
+                key=lambda x: (
+                    has_invalid_price(x),
+                    safe_price(x)
+                )
             )
 
         elif sort_by == "price_high_to_low":
             properties.sort(
-                key=safe_price,
-                reverse=True
+                key=lambda x: (
+                    has_invalid_price(x),
+                    -safe_price(x)
+                )
             )
 
         results = []

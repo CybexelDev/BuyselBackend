@@ -264,8 +264,26 @@
                     >
                         <i class="fa-regular fa-eye"></i>
                     </button>
-
+<!-- 
                     <button
+                        type="button"
+                        onclick="editReel(
+                            '{{ reel.id }}',
+                            '{{ reel.name|escapejs }}',
+                            '{{ reel.reel_type|escapejs }}',
+                            '{{ reel.price_per_day|escapejs }}',
+                            '{{ reel.duration|escapejs }}',
+                            '{{ reel.edited_video|escapejs }}',
+                            '{{ reel.reel_format|escapejs }}',
+                            '{{ reel.description|default:""|escapejs }}'
+                        )"
+                        class="package-action-btn package-edit-btn"
+                        title="Edit reel package"
+                    >
+                        <i class="fa-solid fa-pen-to-square"></i>
+                    </button> -->
+
+                    <!-- <button
                         type="button"
                         onclick="editReel(
                 '{{reel.id}}',
@@ -281,7 +299,22 @@
                         title="Edit reel package"
                     >
                         <i class="fa-solid fa-pen-to-square"></i>
-                    </button>
+                    </button> -->
+                    <button
+    type="button"
+    class="package-action-btn package-edit-btn js-edit-reel"
+    title="Edit reel package"
+    data-id="{{ reel.id }}"
+    data-name="{{ reel.name }}"
+    data-type="{{ reel.reel_type }}"
+    data-price="{{ reel.price_per_day }}"
+    data-duration="{{ reel.duration }}"
+    data-edited="{{ reel.edited_video }}"
+    data-format="{{ reel.reel_format }}"
+    data-description="{{ reel.description|default:'' }}"
+>
+    <i class="fa-solid fa-pen-to-square"></i>
+</button>
 
                     <button
                         type="button"
@@ -303,6 +336,29 @@
     </section>
 
 </div>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    document.querySelectorAll(".js-edit-reel").forEach(function (button) {
+
+        button.addEventListener("click", function () {
+
+            editReel(
+                button.dataset.id,
+                button.dataset.name,
+                button.dataset.type,
+                button.dataset.price,
+                button.dataset.duration,
+                button.dataset.edited,
+                button.dataset.format,
+                button.dataset.description
+            );
+
+        });
+
+    });
+
+});
 
 <!-- ================= PACKAGE MODAL ================= -->
 <div id="modal" class="package-modal hidden">
@@ -1718,6 +1774,29 @@ document.getElementById("modal").addEventListener("click", function (event) {
                     );
                 });
             });
+
+        // document
+        // .querySelectorAll(".package-delete-btn")
+        // .forEach(function (button) {
+
+        //     if (button.dataset.packageToastBound === "true") {
+        //         return;
+        //     }
+
+        //     button.dataset.packageToastBound = "true";
+
+        //     button.addEventListener("click", function (event) {
+        //         if (event.defaultPrevented) return;
+
+        //         const label = button.dataset.deleteLabel || "package";
+
+        //         showPackageToast(
+        //             `Deleting ${label}...`,
+        //             "delete",
+        //             2200
+        //         );
+        //     });
+        // });
     });
 })();
 </script>
@@ -1844,7 +1923,7 @@ body.package-delete-open {
 }
 </style>
 
-
+<!-- 
 <script>
 (function () {
     let pendingDeleteUrl = "";
@@ -1946,8 +2025,399 @@ body.package-delete-open {
         }
     });
 })();
-</script>
+</script> -->
 
+<script>
+(function () {
+
+    let pendingDeleteUrl = "";
+    let pendingDeleteLabel = "";
+    let deleteSubmitting = false;
+
+
+    // =====================================================
+    // OPEN DELETE MODAL
+    // =====================================================
+
+    function openPackageDeleteModal(url, label) {
+
+        if (!url || deleteSubmitting) {
+            return;
+        }
+
+        pendingDeleteUrl = url;
+        pendingDeleteLabel = label || "package";
+
+        const modal =
+            document.getElementById("packageDeleteModal");
+
+        const message =
+            document.getElementById("packageDeleteMessage");
+
+        const confirmButton =
+            document.getElementById("packageDeleteConfirm");
+
+        if (!modal || !message || !confirmButton) {
+            console.error(
+                "Package delete modal elements not found."
+            );
+            return;
+        }
+
+        message.textContent =
+            `This ${pendingDeleteLabel} will be permanently deleted.`;
+
+        confirmButton.disabled = false;
+
+        confirmButton.innerHTML =
+            '<i class="fa-regular fa-trash-can"></i> Delete';
+
+        modal.classList.add("open");
+
+        modal.setAttribute(
+            "aria-hidden",
+            "false"
+        );
+
+        document.body.classList.add(
+            "package-delete-open"
+        );
+    }
+
+
+    // =====================================================
+    // CLOSE DELETE MODAL
+    // =====================================================
+
+    function closePackageDeleteModal() {
+
+        if (deleteSubmitting) {
+            return;
+        }
+
+        const modal =
+            document.getElementById("packageDeleteModal");
+
+        if (!modal) {
+            return;
+        }
+
+        modal.classList.remove("open");
+
+        modal.setAttribute(
+            "aria-hidden",
+            "true"
+        );
+
+        pendingDeleteUrl = "";
+        pendingDeleteLabel = "";
+
+        document.body.classList.remove(
+            "package-delete-open"
+        );
+    }
+
+
+    // =====================================================
+    // GET CSRF TOKEN
+    // =====================================================
+
+    function getCSRFToken() {
+
+        const csrfInput =
+            document.querySelector(
+                'input[name="csrfmiddlewaretoken"]'
+            );
+
+        if (csrfInput) {
+            return csrfInput.value;
+        }
+
+        // Fallback: get csrftoken cookie
+
+        const cookieValue =
+            document.cookie
+                .split("; ")
+                .find(row =>
+                    row.startsWith("csrftoken=")
+                );
+
+        if (cookieValue) {
+
+            return decodeURIComponent(
+                cookieValue.split("=")[1]
+            );
+
+        }
+
+        return "";
+    }
+
+
+    // =====================================================
+    // CONFIRM DELETE
+    // =====================================================
+
+    function confirmPackageDelete() {
+
+        if (!pendingDeleteUrl || deleteSubmitting) {
+            return;
+        }
+
+        deleteSubmitting = true;
+
+        const confirmButton =
+            document.getElementById(
+                "packageDeleteConfirm"
+            );
+
+        if (confirmButton) {
+
+            confirmButton.disabled = true;
+
+            confirmButton.innerHTML =
+                '<i class="fa-solid fa-spinner fa-spin"></i> Deleting...';
+
+        }
+
+
+        // =================================================
+        // TOAST
+        // =================================================
+
+        if (
+            typeof window.showPackageToast ===
+            "function"
+        ) {
+
+            window.showPackageToast(
+                `Deleting ${pendingDeleteLabel}...`,
+                "delete",
+                2200
+            );
+
+        }
+
+
+        // =================================================
+        // CSRF
+        // =================================================
+
+        const csrfToken = getCSRFToken();
+
+        if (!csrfToken) {
+
+            console.error(
+                "CSRF token not found."
+            );
+
+            alert(
+                "Security token not found. Please refresh the page and try again."
+            );
+
+            deleteSubmitting = false;
+
+            if (confirmButton) {
+
+                confirmButton.disabled = false;
+
+                confirmButton.innerHTML =
+                    '<i class="fa-regular fa-trash-can"></i> Delete';
+
+            }
+
+            return;
+        }
+
+
+        // =================================================
+        // CREATE POST FORM
+        // =================================================
+
+        const form =
+            document.createElement("form");
+
+        form.method = "POST";
+
+        form.action = pendingDeleteUrl;
+
+        form.style.display = "none";
+
+
+        // =================================================
+        // CSRF INPUT
+        // =================================================
+
+        const csrfInput =
+            document.createElement("input");
+
+        csrfInput.type = "hidden";
+
+        csrfInput.name =
+            "csrfmiddlewaretoken";
+
+        csrfInput.value =
+            csrfToken;
+
+        form.appendChild(
+            csrfInput
+        );
+
+
+        // =================================================
+        // SUBMIT
+        // =================================================
+
+        document.body.appendChild(form);
+
+        form.submit();
+    }
+
+
+    // =====================================================
+    // DOM READY
+    // =====================================================
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+
+            const modal =
+                document.getElementById(
+                    "packageDeleteModal"
+                );
+
+            if (!modal) {
+
+                console.error(
+                    "packageDeleteModal not found."
+                );
+
+                return;
+            }
+
+
+            // ---------------------------------------------
+            // MOVE MODAL TO BODY
+            // ---------------------------------------------
+
+            if (modal.parentElement !== document.body) {
+
+                document.body.appendChild(
+                    modal
+                );
+
+            }
+
+
+            // ---------------------------------------------
+            // DELETE BUTTONS
+            // ---------------------------------------------
+
+            document.addEventListener(
+                "click",
+                function (event) {
+
+                    const trigger =
+                        event.target.closest(
+                            ".js-package-delete"
+                        );
+
+                    if (!trigger) {
+                        return;
+                    }
+
+                    event.preventDefault();
+
+                    openPackageDeleteModal(
+                        trigger.dataset.deleteUrl,
+                        trigger.dataset.deleteLabel
+                    );
+
+                }
+            );
+
+
+            // ---------------------------------------------
+            // CANCEL
+            // ---------------------------------------------
+
+            const cancelButton =
+                document.getElementById(
+                    "packageDeleteCancel"
+                );
+
+            if (cancelButton) {
+
+                cancelButton.addEventListener(
+                    "click",
+                    closePackageDeleteModal
+                );
+
+            }
+
+
+            // ---------------------------------------------
+            // CONFIRM
+            // ---------------------------------------------
+
+            const confirmButton =
+                document.getElementById(
+                    "packageDeleteConfirm"
+                );
+
+            if (confirmButton) {
+
+                confirmButton.addEventListener(
+                    "click",
+                    confirmPackageDelete
+                );
+
+            }
+
+
+            // ---------------------------------------------
+            // CLICK OUTSIDE
+            // ---------------------------------------------
+
+            modal.addEventListener(
+                "click",
+                function (event) {
+
+                    if (
+                        event.target === modal
+                    ) {
+
+                        closePackageDeleteModal();
+
+                    }
+
+                }
+            );
+
+        }
+    );
+
+
+    // =====================================================
+    // ESCAPE
+    // =====================================================
+
+    document.addEventListener(
+        "keydown",
+        function (event) {
+
+            if (event.key === "Escape") {
+
+                closePackageDeleteModal();
+
+            }
+
+        }
+    );
+
+})();
+</script>
 
 
 <!-- ================= PACKAGE VIEW DETAILS MODAL ================= -->

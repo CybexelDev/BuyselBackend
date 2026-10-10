@@ -139,10 +139,6 @@ def validate_safe_text(value):
         if re.search(pattern, value, re.IGNORECASE | re.DOTALL):
             raise ValidationError("Invalid content detected.")
 
-    # if len(value) < 1:
-    #     raise ValidationError("This field cannot be empty.")
-
-
 def validate_name(value):
     # Allow empty or null
     if value is None or value == "":

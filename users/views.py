@@ -10010,6 +10010,92 @@ class WishlistFilterAPIView(APIView):
         return Response(results, status=status.HTTP_200_OK)
     
     
+# class WishlistSortingAPIView(APIView):
+
+#     authentication_classes = [UserJWTAuthentication]
+#     permission_classes = [IsAuthenticated]
+
+#     def get(self, request):
+
+#         user = request.user
+#         sort_by = request.query_params.get("sort", "default")
+
+#         # -----------------------------------
+#         # STEP 1: WISHLIST IDS
+#         # -----------------------------------
+#         wishlist_qs = Wishlist.objects.filter(user_id=user.id)
+
+#         wishlist_ids = set(
+#             str(i) for i in wishlist_qs.values_list("property_uuid", flat=True)
+#         )
+
+#         # -----------------------------------
+#         # STEP 2: GET BOTH MODELS
+#         # -----------------------------------
+#         user_properties = Property.objects.filter(
+#             id__in=wishlist_ids
+#         )
+
+#         agent_properties = AgentProperty.objects.filter(
+#             id__in=wishlist_ids
+#         )
+
+#         properties = list(user_properties) + list(agent_properties)
+
+#         # -----------------------------------
+#         # STEP 3: SORTING
+#         # -----------------------------------
+#         def safe_price(obj):
+#             try:
+#                 return int(obj.price)
+#             except:
+#                 return 0
+
+#         if sort_by == "latest":
+#             properties.sort(key=lambda x: x.created_at, reverse=True)
+
+#         elif sort_by == "price_low_to_high":
+#             properties.sort(key=safe_price)
+
+#         elif sort_by == "price_high_to_low":
+#             properties.sort(key=safe_price, reverse=True)
+
+#         # -----------------------------------
+#         # STEP 4: RESPONSE FORMAT (CLEAN)
+#         # -----------------------------------
+#         results = []
+
+#         for obj in properties:
+
+#             results.append({
+#                 "id": str(obj.id),
+#                 "property_type": "user" if isinstance(obj, Property) else "agent",
+#                 "label": obj.label,
+#                 "city": obj.city,
+#                 "perprice": getattr(obj, "perprice", None),
+#                 "price": obj.price,
+#                 "sq_ft": str(getattr(obj, "sq_ft", "")),
+#                 "land_area": obj.land_area,
+#                 "owner": getattr(obj, "owner", "") if isinstance(obj, AgentProperty) else (obj.owner if obj.owner else None),
+#                 "whatsapp": getattr(obj, "whatsapp", None),
+#                 "phone": getattr(obj, "phone", None),
+#                 "location": obj.location,
+
+#                 # images safe handling
+#                 "images": (
+#                     [img.image.url for img in obj.images.all()]
+#                     if hasattr(obj, "images") and obj.images.exists()
+#                     else ([obj.image.url] if getattr(obj, "image", None) else [])
+#                 ),
+
+#                 # 🔥 FIXED WISHLIST FLAG
+#                 "is_wishlisted": str(obj.id) in wishlist_ids,
+#             })
+
+#         return Response(results, status=status.HTTP_200_OK)
+
+from decimal import Decimal, InvalidOperation
+
 class WishlistSortingAPIView(APIView):
 
     authentication_classes = [UserJWTAuthentication]
@@ -10019,19 +10105,14 @@ class WishlistSortingAPIView(APIView):
 
         user = request.user
         sort_by = request.query_params.get("sort", "default")
-
-        # -----------------------------------
-        # STEP 1: WISHLIST IDS
-        # -----------------------------------
         wishlist_qs = Wishlist.objects.filter(user_id=user.id)
 
         wishlist_ids = set(
-            str(i) for i in wishlist_qs.values_list("property_uuid", flat=True)
+            str(i) for i in wishlist_qs.values_list(
+                "property_uuid", flat=True
+            )
         )
 
-        # -----------------------------------
-        # STEP 2: GET BOTH MODELS
-        # -----------------------------------
         user_properties = Property.objects.filter(
             id__in=wishlist_ids
         )
@@ -10042,57 +10123,139 @@ class WishlistSortingAPIView(APIView):
 
         properties = list(user_properties) + list(agent_properties)
 
-        # -----------------------------------
-        # STEP 3: SORTING
-        # -----------------------------------
         def safe_price(obj):
+
             try:
-                return int(obj.price)
-            except:
-                return 0
+                raw_price = str(obj.price or "").strip().lower()
+
+                if not raw_price:
+                    return Decimal("0")
+                price = (
+                    raw_price
+                    .replace(",", "")
+                    .replace("₹", "")
+                    .replace("rs.", "")
+                    .replace("rs", "")
+                    .strip()
+                )
+                pattern = re.compile(
+                    r"(\d+(?:\.\d+)?)\s*"
+                    r"(crores?|cr|c|"
+                    r"lakhs?|lacs?|lac|lakh|l|"
+                    r"thousands?|thousand|"
+                    r"kilo|k)?",
+                    re.IGNORECASE
+                )
+
+                matches = list(pattern.finditer(price))
+
+                if not matches:
+                    try:
+                        return Decimal(price)
+                    except (InvalidOperation, ValueError):
+                        return Decimal("0")
+
+                total = Decimal("0")
+                found_number = False
+
+                for match in matches:
+
+                    number_text = match.group(1)
+
+                    if not number_text:
+                        continue
+
+                    amount = Decimal(number_text)
+                    unit = (match.group(2) or "").lower()
+
+                    if unit in (
+                        "c", "cr", "crore", "crores"
+                    ):
+                        amount *= Decimal("10000000")
+
+                    elif unit in (
+                        "l", "lac", "lacs",
+                        "lakh", "lakhs"
+                    ):
+                        amount *= Decimal("100000")
+
+                    elif unit in (
+                        "k", "kilo",
+                        "thousand", "thousands"
+                    ):
+                        amount *= Decimal("1000")
+
+                    total += amount
+                    found_number = True
+
+                return total if found_number else Decimal("0")
+
+            except (InvalidOperation, ValueError, TypeError):
+                return Decimal("0")
 
         if sort_by == "latest":
-            properties.sort(key=lambda x: x.created_at, reverse=True)
+            properties.sort(
+                key=lambda x: x.created_at,
+                reverse=True
+            )
 
         elif sort_by == "price_low_to_high":
-            properties.sort(key=safe_price)
+            properties.sort(
+                key=safe_price
+            )
 
         elif sort_by == "price_high_to_low":
-            properties.sort(key=safe_price, reverse=True)
+            properties.sort(
+                key=safe_price,
+                reverse=True
+            )
 
-        # -----------------------------------
-        # STEP 4: RESPONSE FORMAT (CLEAN)
-        # -----------------------------------
         results = []
 
         for obj in properties:
 
             results.append({
                 "id": str(obj.id),
-                "property_type": "user" if isinstance(obj, Property) else "agent",
+                "property_type": (
+                    "user"
+                    if isinstance(obj, Property)
+                    else "agent"
+                ),
                 "label": obj.label,
                 "city": obj.city,
                 "perprice": getattr(obj, "perprice", None),
                 "price": obj.price,
                 "sq_ft": str(getattr(obj, "sq_ft", "")),
                 "land_area": obj.land_area,
-                "owner": getattr(obj, "owner", "") if isinstance(obj, AgentProperty) else (obj.owner if obj.owner else None),
+                "owner": (
+                    getattr(obj, "owner", "")
+                    if isinstance(obj, AgentProperty)
+                    else (
+                        obj.owner if obj.owner else None
+                    )
+                ),
                 "whatsapp": getattr(obj, "whatsapp", None),
                 "phone": getattr(obj, "phone", None),
                 "location": obj.location,
 
-                # images safe handling
+                # Images safe handling
                 "images": (
                     [img.image.url for img in obj.images.all()]
                     if hasattr(obj, "images") and obj.images.exists()
-                    else ([obj.image.url] if getattr(obj, "image", None) else [])
+                    else (
+                        [obj.image.url]
+                        if getattr(obj, "image", None)
+                        else []
+                    )
                 ),
 
-                # 🔥 FIXED WISHLIST FLAG
                 "is_wishlisted": str(obj.id) in wishlist_ids,
             })
 
-        return Response(results, status=status.HTTP_200_OK)
+        return Response(
+            results,
+            status=status.HTTP_200_OK
+        )
 
 
 from rest_framework.permissions import IsAuthenticated

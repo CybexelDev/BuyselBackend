@@ -12037,44 +12037,107 @@ class CombinedPropertyListAPIView(APIView):
             "data": serializer.data
         })
 
-    # --------------------------------
-    # PRICE CONVERTER
-    # --------------------------------
-
     def convert_price_to_number(self, price):
 
+        import re
+
+        if price is None:
+            return None
+
+        cleaned = str(price).strip().lower()
+
+        invalid_prices = [
+            "",
+            "n/a",
+            "na",
+            "n.a.",
+            "n.a",
+            "not available",
+            "price on request",
+            "contact for price",
+            "contact for pricing",
+            "ask for price",
+        ]
+
+        if cleaned in invalid_prices:
+            return None
+
+        cleaned = (
+            cleaned
+            .replace("₹", "")
+            .replace("rs.", "")
+            .replace("rs", "")
+            .replace(",", "")
+            .strip()
+        )
+        cleaned = re.sub(r"\blacs?\b", "lakh", cleaned)
+        cleaned = re.sub(r"\blacks?\b", "lakh", cleaned)
+        cleaned = re.sub(r"\blakhs?\b", "lakh", cleaned)
+        cleaned = re.sub(r"\bcrores?\b", "crore", cleaned)
+        cleaned = re.sub(r"\bcr\b", "crore", cleaned)
+        cleaned = re.sub(r"\bthousands?\b", "thousand", cleaned)
+
+        match = re.fullmatch(
+            r"(\d+(?:\.\d+)?)\s*k",
+            cleaned
+        )
+
+        if match:
+            return float(match.group(1)) * 1000
+        pattern = (
+            r"(\d+(?:\.\d+)?)\s*(crore|lakh|thousand)"
+        )
+
+        matches = list(re.finditer(pattern, cleaned))
+
+        if matches:
+            amount = 0
+            remaining = cleaned
+
+            for match in reversed(matches):
+                value = float(match.group(1))
+                unit = match.group(2)
+
+                if unit == "crore":
+                    multiplier = 10000000
+                elif unit == "lakh":
+                    multiplier = 100000
+                else:
+                    multiplier = 1000
+
+                amount += value * multiplier
+
+                remaining = (
+                    remaining[:match.start()]
+                    + " "
+                    + remaining[match.end():]
+                )
+
+            remaining = remaining.strip()
+
+            if remaining:
+                remaining_match = re.fullmatch(
+                    r"(\d+(?:\.\d+)?)",
+                    remaining
+                )
+
+                if remaining_match:
+                    amount += float(remaining_match.group(1))
+                else:
+                    return None
+
+            return amount
         try:
-
-            if not price:
-                return 0
-
-            cleaned = str(price)
-
-            cleaned = (
-                cleaned
-                .replace("₹", "")
-                .replace(",", "")
-                .replace("Lakhs+", "")
-                .replace("Lakhs", "")
-                .replace("Lakh+", "")
-                .replace("Lakh", "")
-                .strip()
-            )
-
             return float(cleaned)
-
-        except:
-            return 0
-
-    # --------------------------------
-    # PRICE RANGE CHECKER
-    # --------------------------------
+        except (ValueError, TypeError):
+            return None
 
     def check_price_range(self, price, price_range):
 
-        amount = self.convert_price_to_number(
-            price
-        )
+        amount = self.convert_price_to_number(price)
+ 
+        if amount is None:
+            return False
 
         # Below ₹5 Lakhs
         if price_range == "Below ₹5 Lakhs":
@@ -12086,17 +12149,78 @@ class CombinedPropertyListAPIView(APIView):
 
         # ₹10 – 25 Lakhs
         elif price_range == "₹10 – 25 Lakhs":
-            return 1000000 <= amount <= 2500000
+            return 1000000 < amount <= 2500000
 
         # ₹25 – 50 Lakhs
         elif price_range == "₹25 – 50 Lakhs":
-            return 2500000 <= amount <= 5000000
+            return 2500000 < amount <= 5000000
 
         # Above ₹50 Lakhs
         elif price_range == "Above ₹50 Lakhs":
             return amount > 5000000
 
         return True
+
+    # --------------------------------
+    # PRICE CONVERTER
+    # --------------------------------
+
+    # def convert_price_to_number(self, price):
+
+    #     try:
+
+    #         if not price:
+    #             return 0
+
+    #         cleaned = str(price)
+
+    #         cleaned = (
+    #             cleaned
+    #             .replace("₹", "")
+    #             .replace(",", "")
+    #             .replace("Lakhs+", "")
+    #             .replace("Lakhs", "")
+    #             .replace("Lakh+", "")
+    #             .replace("Lakh", "")
+    #             .strip()
+    #         )
+
+    #         return float(cleaned)
+
+    #     except:
+    #         return 0
+
+    # # --------------------------------
+    # # PRICE RANGE CHECKER
+    # # --------------------------------
+
+    # def check_price_range(self, price, price_range):
+
+    #     amount = self.convert_price_to_number(
+    #         price
+    #     )
+
+    #     # Below ₹5 Lakhs
+    #     if price_range == "Below ₹5 Lakhs":
+    #         return amount < 500000
+
+    #     # ₹5 – 10 Lakhs
+    #     elif price_range == "₹5 – 10 Lakhs":
+    #         return 500000 <= amount <= 1000000
+
+    #     # ₹10 – 25 Lakhs
+    #     elif price_range == "₹10 – 25 Lakhs":
+    #         return 1000000 <= amount <= 2500000
+
+    #     # ₹25 – 50 Lakhs
+    #     elif price_range == "₹25 – 50 Lakhs":
+    #         return 2500000 <= amount <= 5000000
+
+    #     # Above ₹50 Lakhs
+    #     elif price_range == "Above ₹50 Lakhs":
+    #         return amount > 5000000
+
+    #     return True
         
 from uuid import UUID
 

@@ -2028,9 +2028,6 @@ class UserChangePasswordAPI(APIView):
 
     def post(self, request):
 
-        # -------------------------
-        # STEP 1: GET NEW PASSWORD DIRECTLY
-        # -------------------------
         new_password = request.data.get("new_password")
 
         if not new_password:
@@ -2038,10 +2035,6 @@ class UserChangePasswordAPI(APIView):
                 {"error": "new_password is required"},
                 status=400
             )
-
-        # -------------------------
-        # STEP 2: GET RESET TOKEN
-        # -------------------------
         auth_header = request.headers.get("Authorization")
 
         if not auth_header:
@@ -2058,9 +2051,6 @@ class UserChangePasswordAPI(APIView):
                 status=400
             )
 
-        # -------------------------
-        # STEP 3: FIND TOKEN
-        # -------------------------
         try:
             reset = PasswordResetToken.objects.get(token=reset_token)
         except PasswordResetToken.DoesNotExist:
@@ -2069,25 +2059,16 @@ class UserChangePasswordAPI(APIView):
                 status=400
             )
 
-        # -------------------------
-        # STEP 4: CHECK EXPIRY
-        # -------------------------
         if reset.expires_at < timezone.now():
             return Response(
                 {"error": "Reset token expired"},
                 status=400
             )
 
-        # -------------------------
-        # STEP 5: UPDATE PASSWORD
-        # -------------------------
         user = reset.user
         user.password = make_password(new_password)
         user.save(update_fields=["password"])
 
-        # -------------------------
-        # STEP 6: DELETE TOKEN
-        # -------------------------
         reset.delete()
 
         return Response(
@@ -2122,9 +2103,6 @@ class UserLoginAPI(APIView):
                 email=email
             )
 
-            # =====================================
-            # EMAIL VERIFIED CHECK
-            # =====================================
             if not user.is_verified:
 
                 return Response(
@@ -2134,9 +2112,6 @@ class UserLoginAPI(APIView):
                     status=400
                 )
 
-            # =====================================
-            # PASSWORD CHECK
-            # =====================================
             if not check_password(
                 password,
                 user.password
@@ -2241,9 +2216,6 @@ class FacebookLoginAPI(APIView):
 
     def post(self, request):
         try:
-            # =====================================================
-            # 1. GET FACEBOOK ACCESS TOKEN
-            # =====================================================
             access_token = request.data.get("access_token")
 
             if not access_token:
@@ -2255,9 +2227,6 @@ class FacebookLoginAPI(APIView):
                     status=400
                 )
 
-            # =====================================================
-            # 2. GET USER DATA FROM FACEBOOK
-            # =====================================================
             facebook_url = "https://graph.facebook.com/me"
 
             params = {
@@ -2273,9 +2242,6 @@ class FacebookLoginAPI(APIView):
 
             data = facebook_response.json()
 
-            # =====================================================
-            # 3. CHECK FACEBOOK RESPONSE
-            # =====================================================
             if facebook_response.status_code != 200 or "error" in data:
                 return Response(
                     {
@@ -2285,16 +2251,10 @@ class FacebookLoginAPI(APIView):
                     status=400
                 )
 
-            # =====================================================
-            # 4. GET FACEBOOK USER DATA
-            # =====================================================
             facebook_id = data.get("id")
             name = data.get("name")
             email = data.get("email")
 
-            # =====================================================
-            # 5. EMAIL IS REQUIRED
-            # =====================================================
             if not email:
                 return Response(
                     {
@@ -2307,16 +2267,10 @@ class FacebookLoginAPI(APIView):
                     status=400
                 )
 
-            # =====================================================
-            # 6. FIND EXISTING USER
-            # =====================================================
             user = UserCreate.objects.filter(
                 email=email
             ).first()
 
-            # =====================================================
-            # 7. CREATE USER IF NOT EXISTS
-            # =====================================================
             if not user:
                 user = UserCreate.objects.create(
                     name=name or "Facebook User",
@@ -2325,21 +2279,12 @@ class FacebookLoginAPI(APIView):
                     is_verified=True
                 )
 
-            # =====================================================
-            # 8. GET / CREATE USER PROFILE
-            # =====================================================
             profile, created = UserProfile.objects.get_or_create(
                 user=user
             )
 
-            # =====================================================
-            # 9. SET FACEBOOK AS AUTH PROVIDER
-            # =====================================================
             profile.auth_provider = "facebook"
 
-            # =====================================================
-            # 10. SAVE FACEBOOK PROFILE IMAGE
-            # =====================================================
             image_url = None
 
             picture_data = data.get("picture", {}).get("data", {})
@@ -2351,18 +2296,8 @@ class FacebookLoginAPI(APIView):
                 profile.image = image_url
 
             profile.save()
-
-            # =====================================================
-            # 11. GENERATE BUYSEL JWT
-            # =====================================================
             refresh = RefreshToken.for_user(user)
-
-            # Important for UUID user ID
             refresh["user_id"] = str(user.id)
-
-            # =====================================================
-            # 12. RESPONSE
-            # =====================================================
             return Response(
                 {
                     "status": True,
@@ -2426,15 +2361,12 @@ def handle_google_user(email, name, picture):
         defaults={"auth_provider": "google"}
     )
 
-    #  Ensure provider
     if profile.auth_provider != "google":
         profile.auth_provider = "google"
 
-    #  Set full name
     if not profile.full_name:
         profile.full_name = name
 
-    #  Save Google image (only first time)
     if picture and not profile.image:
         try:
             img_res = requests.get(picture, timeout=10)
@@ -2470,9 +2402,6 @@ class GoogleLoginView(APIView):
                     "error": "Access token required"
                 }, status=400)
 
-            # =====================================
-            # GOOGLE USER INFO
-            # =====================================
             google_res = requests.get(
                 "https://www.googleapis.com/oauth2/v1/userinfo",
                 params={
@@ -2499,10 +2428,6 @@ class GoogleLoginView(APIView):
                 return Response({
                     "error": "Email not found"
                 }, status=400)
-
-            # =====================================
-            # CREATE / GET USER
-            # =====================================
             user, profile = handle_google_user(
                 email,
                 name,
@@ -2514,29 +2439,15 @@ class GoogleLoginView(APIView):
                 is_active=True
             ).exists()
 
-
-            # =====================================
-            # JWT TOKEN
-            # =====================================
             refresh = RefreshToken.for_user(user)
 
             refresh["user_id"] = str(user.id)
-
-            # =====================================
-            # PROFILE IMAGE
-            # =====================================
             image_url = profile.profile_image_url
 
-            # =====================================
-            # PROPERTY COUNTS
-            # =====================================
             property_counts = get_property_remaining_counts(
                 user
             )
 
-            # =====================================
-            # RESPONSE
-            # =====================================
             return Response({
 
                 "message": "Login successful",
@@ -2595,151 +2506,6 @@ class GoogleLoginView(APIView):
                 "details": str(e)
             }, status=500)
 
-
-#  COMMON FUNCTION (UNCHANGED)
-# def handle_google_user(email, name):
-#     user, _ = UserCreate.objects.get_or_create(
-#         email=email,
-#         defaults={"name": name, "is_verified": True}
-#     )
-#
-#     profile, _ = UserProfile.objects.get_or_create(
-#         user=user,
-#         defaults={"auth_provider": "google"}
-#     )
-#
-#     if profile.auth_provider != "google":
-#         profile.auth_provider = "google"
-#         profile.save()
-#
-#     return user, profile
-#
-#
-#
-# #  REDIRECT LOGIN
-# class GoogleLoginRedirectView(APIView):
-#
-#     authentication_classes = []
-#     permission_classes = []
-#
-#     def get(self, request):
-#
-#         redirect_uri = request.build_absolute_uri("/api/auth/google/callback/")
-#
-#         state = secrets.token_urlsafe(16)
-#
-#         # ✅ Store in session safely
-#         request.session["google_oauth_state"] = state
-#         request.session.modified = True
-#
-#         params = {
-#             "client_id": settings.GOOGLE_CLIENT_ID,
-#             "response_type": "code",
-#             "scope": "openid email profile",
-#             "redirect_uri": redirect_uri,
-#             "prompt": "select_account",
-#             "state": state
-#         }
-#
-#         google_auth_url = "https://accounts.google.com/o/oauth2/v2/auth?" + urlencode(params)
-#
-#         return redirect(google_auth_url)
-#
-#
-# # ✅ CALLBACK (FIXED)
-# FRONTEND_URL = "http://localhost:5173" # change in production
-#
-# class GoogleCallbackView(APIView):
-#
-#     authentication_classes = []
-#     permission_classes = []
-#
-#     def get(self, request):
-#
-#         try:
-#             code = request.GET.get("code")
-#             state = request.GET.get("state")
-#
-#             saved_state = request.session.get("google_oauth_state")
-#
-#             if not state or state != saved_state:
-#                 return redirect(f"{FRONTEND_URL}/login?error=state_error")
-#
-#             if not code:
-#                 return redirect(f"{FRONTEND_URL}/login?error=no_code")
-#
-#             redirect_uri = request.build_absolute_uri("/api/auth/google/callback/")
-#
-#             # ✅ EXCHANGE CODE FOR TOKEN
-#             token_response = requests.post(
-#                 "https://oauth2.googleapis.com/token",
-#                 data={
-#                     "code": code,
-#                     "client_id": settings.GOOGLE_CLIENT_ID,
-#                     "client_secret": settings.GOOGLE_CLIENT_SECRET,
-#                     "redirect_uri": redirect_uri,
-#                     "grant_type": "authorization_code",
-#                 },
-#                 timeout=10
-#             )
-#
-#             if token_response.status_code != 200:
-#                 return redirect(f"{FRONTEND_URL}/login?error=token_failed")
-#
-#             token_json = token_response.json()
-#
-#             id_token_value = token_json.get("id_token")
-#             if not id_token_value:
-#                 return redirect(f"{FRONTEND_URL}/login?error=no_id_token")
-#
-#             # ✅ VERIFY TOKEN
-#             idinfo = id_token.verify_oauth2_token(
-#                 id_token_value,
-#                 google_requests.Request(),
-#                 settings.GOOGLE_CLIENT_ID
-#             )
-#
-#             email = idinfo.get("email")
-#             name = idinfo.get("name", "")
-#
-#             user, profile = handle_google_user(email, name)
-#
-#             refresh = RefreshToken.for_user(user)
-#             access_token = str(refresh.access_token)
-#
-#             # ✅ SEND DATA TO FRONTEND VIA URL
-#             query_params = urlencode({
-#                 "access": access_token,
-#                 "username": profile.username or "",
-#                 "email": user.email
-#             })
-#
-#             response = redirect(f"{FRONTEND_URL}/google-success?{query_params}")
-#
-#             # ✅ STORE REFRESH TOKEN IN COOKIE
-#             response.set_cookie(
-#                 key="refresh_token",
-#                 value=str(refresh),
-#                 httponly=True,
-#                 secure=not settings.DEBUG,  # ✅ works locally + prod
-#                 samesite="Lax" if settings.DEBUG else "None",
-#                 max_age=7 * 24 * 60 * 60,
-#                 path="/"
-#             )
-#
-#             request.session.pop("google_oauth_state", None)
-#
-#             return response
-#
-#         except requests.exceptions.Timeout:
-#             return redirect(f"{FRONTEND_URL}/login?error=timeout")
-#
-#         except Exception as e:
-#             return redirect(f"{FRONTEND_URL}/login?error=server_error")
-
-
-
-
 class FacebookLoginRedirectView(APIView):
 
     def get(self, request):
@@ -2772,11 +2538,6 @@ class UserProfileView(APIView):
 
     authentication_classes = []
     permission_classes = [AllowAny]
-
-
-    # ---------------------------------
-    # GET USER FROM JWT TOKEN
-    # ---------------------------------
     def get_user_from_token(self, request):
 
         auth_header = request.headers.get(
@@ -2809,8 +2570,6 @@ class UserProfileView(APIView):
                 "user_id"
             )
 
-
-            # UUID support
             user_uuid = uuid.UUID(
                 str(user_id)
             )
@@ -2885,10 +2644,6 @@ class UserProfileView(APIView):
                 )
             )
 
-
-    # ---------------------------------
-    # GET PROFILE
-    # ---------------------------------
     def get(self,request):
 
         user,error = self.get_user_from_token(
@@ -2916,10 +2671,6 @@ class UserProfileView(APIView):
             serializer.data
         )
 
-
-    # ---------------------------------
-    # UPDATE PROFILE
-    # ---------------------------------
     def put(self,request):
 
         user,error = self.get_user_from_token(
@@ -2980,11 +2731,6 @@ class UserProfileImageUpdateView(APIView):
         ImageCompressionMultiPartParser,
         FormParser,
     ]
-
-
-    # ----------------------------
-    # GET USER FROM TOKEN
-    # ----------------------------
     def get_user_from_token(
         self,
         request
@@ -3096,11 +2842,6 @@ class UserProfileImageUpdateView(APIView):
                     status=401
                 )
             )
-
-
-    # ----------------------------
-    # UPDATE PROFILE IMAGE
-    # ----------------------------
     def put(
         self,
         request
@@ -3199,8 +2940,6 @@ class RefreshTokenView(APIView):
 
         try:
             refresh = RefreshToken(refresh_token)
-
-
             return Response({
                 "access": str(refresh.access_token),
                 "refresh": str(refresh)
@@ -3211,8 +2950,6 @@ class RefreshTokenView(APIView):
                 {"error": "Invalid or expired refresh token"},
                 status=401
             )
-
-
 
 class AmenitiesListCreateView(APIView):
 
@@ -3598,20 +3335,14 @@ class AgentVerifyForgotOTP(APIView):
 
         try:
             agent = AgentUserProfile.objects.get(email=email)
-
-            # ❌ OTP mismatch
             if agent.reset_otp != otp:
                 return Response({"error": "Invalid OTP"}, status=400)
 
-            # ⏰ Expiry (5 min)
             if agent.reset_otp_created_at < timezone.now() - timedelta(minutes=5):
                 return Response({"error": "OTP expired"}, status=400)
 
-            # ✅ Generate reset token
             token = uuid.uuid4()
             agent.reset_token = token
-
-            # clear OTP
             agent.reset_otp = None
             agent.reset_otp_created_at = None
 
@@ -3674,470 +3405,11 @@ class AgentChangePasswordAPI(APIView):
             )
 
 from django.core.exceptions import ValidationError as DjangoValidationError
-
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-
-# class AgentPendingRegisterAPIView(APIView):
-
-#     authentication_classes = [UserJWTAuthentication]
-#     permission_classes = [IsAuthenticated]
-
-#     def post(self, request):
-
-#         # =================================================
-#         # AUTHENTICATION CHECK
-#         # =================================================
-
-#         if (
-#             not request.user
-#             or not request.user.is_authenticated
-#         ):
-
-#             return Response(
-#                 {
-#                     "status": False,
-#                     "message": "Authentication required."
-#                 },
-#                 status=status.HTTP_401_UNAUTHORIZED
-#             )
-
-#         # =================================================
-#         # COPY REQUEST DATA
-#         # =================================================
-
-#         data = request.data.copy()
-
-#         # =================================================
-#         # NORMALIZE VALUES
-#         # =================================================
-
-#         data["email"] = str(
-#             data.get("email", "")
-#         ).strip().lower()
-
-#         data["agent_type"] = str(
-#             data.get("agent_type", "")
-#         ).strip().lower()
-
-#         data["full_name"] = str(
-#             data.get("full_name", "")
-#         ).strip()
-
-#         data["phone_number"] = str(
-#             data.get("phone_number", "")
-#         ).strip()
-
-#         data["city"] = str(
-#             data.get("city", "")
-#         ).strip()
-
-#         data["pin_code"] = str(
-#             data.get("pin_code", "")
-#         ).strip()
-
-#         data["address"] = str(
-#             data.get("address", "")
-#         ).strip()
-
-#         # =================================================
-#         # DEALS FIELD
-#         # =================================================
-
-#         if "total_deals_served" in data:
-
-#             data["deals_closed"] = data.get(
-#                 "total_deals_served"
-#             )
-
-#             data.pop(
-#                 "total_deals_served",
-#                 None
-#             )
-
-#         # =================================================
-#         # NEVER ACCEPT submitted_by FROM FRONTEND
-#         # =================================================
-
-#         data.pop(
-#             "submitted_by",
-#             None
-#         )
-
-#         # =================================================
-#         # GET PLAN ID
-#         # =================================================
-
-#         plan_id = data.get("plan_id")
-
-#         if plan_id:
-#             plan_id = str(plan_id).strip()
-
-
-#         # =================================================
-#         # REMOVE plan_id
-#         # =================================================
-#         # plan_id is only used internally to find the
-#         # correct plan object.
-#         #
-#         # The actual ForeignKey field is populated below.
-#         # =================================================
-
-#         data.pop(
-#             "plan_id",
-#             None
-#         )
-
-#         # =================================================
-#         # RESET ALL PLAN FIELDS
-#         # =================================================
-
-#         data["basic_plan"] = None
-#         data["premium_plan"] = None
-#         data["elite_plan"] = None
-
-#         agent_type = data.get("agent_type")
-
-#         # =================================================
-#         # BASIC AGENT
-#         # =================================================
-
-#         if agent_type == "basic":
-
-#             # Basic agent ALSO requires a plan
-#             if not plan_id:
-
-#                 return Response(
-#                     {
-#                         "status": False,
-#                         "message": (
-#                             "Basic plan is required."
-#                         )
-#                     },
-#                     status=status.HTTP_400_BAD_REQUEST
-#                 )
-
-#             # ---------------------------------------------
-#             # FIND BASIC AGENT PLAN
-#             # ---------------------------------------------
-
-#             basic_plan = AgentPlan.objects.filter(
-#                 pk=plan_id
-#             ).first()
-
-#             if not basic_plan:
-
-#                 return Response(
-#                     {
-#                         "status": False,
-#                         "message": (
-#                             "Invalid basic plan ID."
-#                         )
-#                     },
-#                     status=status.HTTP_400_BAD_REQUEST
-#                 )
-
-            
-
-#             # ---------------------------------------------
-#             # IMPORTANT
-#             # ---------------------------------------------
-#             # This was missing in your original code.
-#             #
-#             # Without this, model.clean() receives
-#             # basic_plan=None.
-#             # ---------------------------------------------
-
-#             data["basic_plan"] = basic_plan.pk
-
-#         # =================================================
-#         # PREMIUM AGENT
-#         # =================================================
-
-#         elif agent_type == "premium":
-
-#             if not plan_id:
-
-#                 return Response(
-#                     {
-#                         "status": False,
-#                         "message": (
-#                             "Premium plan is required."
-#                         )
-#                     },
-#                     status=status.HTTP_400_BAD_REQUEST
-#                 )
-
-#             # ---------------------------------------------
-#             # FIND PREMIUM PLAN
-#             # ---------------------------------------------
-
-#             premium_plan = PremiumPlan.objects.filter(
-#                 pk=plan_id
-#             ).first()
-
-#             if not premium_plan:
-
-#                 return Response(
-#                     {
-#                         "status": False,
-#                         "message": (
-#                             "Invalid premium plan ID."
-#                         )
-#                     },
-#                     status=status.HTTP_400_BAD_REQUEST
-#                 )
-
-            
-
-#             data["premium_plan"] = premium_plan.pk
-
-#         # =================================================
-#         # ELITE AGENT
-#         # =================================================
-
-#         elif agent_type == "elite":
-
-#             if not plan_id:
-
-#                 return Response(
-#                     {
-#                         "status": False,
-#                         "message": (
-#                             "Elite plan is required."
-#                         )
-#                     },
-#                     status=status.HTTP_400_BAD_REQUEST
-#                 )
-
-#             # ---------------------------------------------
-#             # FIND ELITE PLAN
-#             # ---------------------------------------------
-
-#             elite_plan = ElitePlan.objects.filter(
-#                 pk=plan_id
-#             ).first()
-
-#             if not elite_plan:
-
-#                 return Response(
-#                     {
-#                         "status": False,
-#                         "message": (
-#                             "Invalid elite plan ID."
-#                         )
-#                     },
-#                     status=status.HTTP_400_BAD_REQUEST
-#                 )
-
-            
-
-#             data["elite_plan"] = elite_plan.pk
-
-#         # =================================================
-#         # INVALID AGENT TYPE
-#         # =================================================
-
-#         else:
-
-#             return Response(
-#                 {
-#                     "status": False,
-#                     "message": "Invalid agent type."
-#                 },
-#                 status=status.HTTP_400_BAD_REQUEST
-#             )
-
-
-#         # =================================================
-#         # SERIALIZER
-#         # =================================================
-
-#         serializer = PendingAgentRegistrationSerializer(
-#             data=data
-#         )
-
-#         # =================================================
-#         # SERIALIZER VALIDATION
-#         # =================================================
-
-#         if not serializer.is_valid():
-
-#             errors = serializer.errors
-
-#             # ---------------------------------------------
-#             # FIRST USEFUL ERROR
-#             # ---------------------------------------------
-
-#             first_message = (
-#                 "Please correct the errors below."
-#             )
-
-#             for field_errors in errors.values():
-
-#                 if field_errors:
-
-#                     first_message = str(
-#                         field_errors[0]
-#                     )
-
-#                     break
-
-#             return Response(
-#                 {
-#                     "status": False,
-#                     "message": first_message,
-#                     "errors": errors
-#                 },
-#                 status=status.HTTP_400_BAD_REQUEST
-#             )
-
-#         # =================================================
-#         # CREATE REGISTRATION
-#         # =================================================
-
-#         try:
-
-#             registration = serializer.save(
-#                 submitted_by=request.user
-#             )
-
-#         except DjangoValidationError as exc:
-
-
-#             first_message = str(exc)
-
-#             # ---------------------------------------------
-#             # FIELD VALIDATION ERROR
-#             # ---------------------------------------------
-
-#             if hasattr(
-#                 exc,
-#                 "message_dict"
-#             ):
-
-#                 for field_errors in (
-#                     exc.message_dict.values()
-#                 ):
-
-#                     if field_errors:
-
-#                         first_message = str(
-#                             field_errors[0]
-#                         )
-
-#                         break
-
-#             # ---------------------------------------------
-#             # NORMAL VALIDATION ERROR
-#             # ---------------------------------------------
-
-#             elif getattr(
-#                 exc,
-#                 "messages",
-#                 None
-#             ):
-
-#                 first_message = str(
-#                     exc.messages[0]
-#                 )
-
-#             return Response(
-#                 {
-#                     "status": False,
-#                     "message": first_message
-#                 },
-#                 status=status.HTTP_400_BAD_REQUEST
-#             )
-
-#         except Exception as exc:
-
-#             return Response(
-#                 {
-#                     "status": False,
-#                     "message": (
-#                         "Unable to submit registration."
-#                     ),
-#                     "error": str(exc)
-#                 },
-#                 status=status.HTTP_400_BAD_REQUEST
-#             )
-
-#         # =================================================
-#         # SUCCESS DEBUG
-#         # =================================================
-
-
-#         # =================================================
-#         # FINAL PLAN ID
-#         # =================================================
-
-#         if registration.agent_type == "basic":
-
-#             final_plan_id = (
-#                 str(registration.basic_plan_id)
-#                 if registration.basic_plan_id
-#                 else None
-#             )
-
-#         elif registration.agent_type == "premium":
-
-#             final_plan_id = (
-#                 str(registration.premium_plan_id)
-#                 if registration.premium_plan_id
-#                 else None
-#             )
-
-#         elif registration.agent_type == "elite":
-
-#             final_plan_id = (
-#                 str(registration.elite_plan_id)
-#                 if registration.elite_plan_id
-#                 else None
-#             )
-
-#         else:
-
-#             final_plan_id = None
-
-#         # =================================================
-#         # SUCCESS RESPONSE
-#         # =================================================
-
-#         return Response(
-#             {
-#                 "status": True,
-
-#                 "message": (
-#                     "Registration submitted. "
-#                     "Waiting for admin approval."
-#                 ),
-
-#                 "registration_id": str(
-#                     registration.id
-#                 ),
-
-#                 "submitted_by": (
-#                     str(
-#                         registration.submitted_by.id
-#                     )
-#                     if registration.submitted_by
-#                     else None
-#                 ),
-
-#                 "agent_type": registration.agent_type,
-
-#                 "plan_id": final_plan_id
-#             },
-#             status=status.HTTP_201_CREATED
-#         )
-
-
 from uuid import UUID
-
 from django.core.exceptions import ValidationError as DjangoValidationError
-
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -4156,11 +3428,6 @@ class AgentPendingRegisterAPIView(APIView):
     )
 
     def post(self, request):
-
-        # =================================================
-        # AUTHENTICATION CHECK
-        # =================================================
-
         if (
             not request.user
             or not request.user.is_authenticated
@@ -4174,23 +3441,7 @@ class AgentPendingRegisterAPIView(APIView):
                 status=status.HTTP_401_UNAUTHORIZED
             )
 
-        # =================================================
-        # SAFE REQUEST DATA
-        # =================================================
-        #
-        # DO NOT USE:
-        #
-        # data = request.data.copy()
-        #
-        # UploadedFile can cause BufferedRandom deepcopy
-        # errors.
-        # =================================================
-
         data = {}
-
-        # =================================================
-        # NORMAL FORM DATA
-        # =================================================
 
         for key in request.POST.keys():
 
@@ -4201,10 +3452,6 @@ class AgentPendingRegisterAPIView(APIView):
             else:
                 data[key] = values[0]
 
-        # =================================================
-        # FILE DATA
-        # =================================================
-
         for key in request.FILES.keys():
 
             files = request.FILES.getlist(key)
@@ -4213,10 +3460,6 @@ class AgentPendingRegisterAPIView(APIView):
                 data[key] = files
             else:
                 data[key] = files[0]
-
-        # =================================================
-        # NORMALIZE VALUES
-        # =================================================
 
         data["email"] = str(
             data.get("email", "")
@@ -4246,10 +3489,6 @@ class AgentPendingRegisterAPIView(APIView):
             data.get("address", "")
         ).strip()
 
-        # =================================================
-        # DEALS FIELD
-        # =================================================
-
         if "total_deals_served" in data:
 
             data["deals_closed"] = data.get(
@@ -4261,46 +3500,18 @@ class AgentPendingRegisterAPIView(APIView):
                 None
             )
 
-        # =================================================
-        # NEVER ACCEPT submitted_by
-        # =================================================
-
         data.pop(
             "submitted_by",
             None
         )
 
-        # =================================================
-        # GET PLAN ID
-        # =================================================
-
         plan_id = data.get("plan_id")
-
-        # =================================================
-        # IMPORTANT UUID FIX
-        # =================================================
-        #
-        # plan_id MUST be ONE UUID.
-        #
-        # Example:
-        #
-        # 539c0076-610d-44dd-b4d7-4cc5deaacdaf
-        #
-        # NOT:
-        #
-        # ['uuid1', 'uuid2']
-        # =================================================
-
         if isinstance(plan_id, list):
-
-            # Remove empty values
             plan_ids = [
                 str(value).strip()
                 for value in plan_id
                 if str(value).strip()
             ]
-
-            # Multiple IDs are not allowed
             if len(plan_ids) > 1:
 
                 return Response(
@@ -4324,11 +3535,6 @@ class AgentPendingRegisterAPIView(APIView):
             plan_id = str(
                 plan_id
             ).strip()
-
-        # =================================================
-        # VALIDATE UUID FORMAT
-        # =================================================
-
         if plan_id:
 
             try:
@@ -4354,41 +3560,20 @@ class AgentPendingRegisterAPIView(APIView):
                     },
                     status=status.HTTP_400_BAD_REQUEST
                 )
-
-        # =================================================
-        # REMOVE plan_id
-        # =================================================
-
         data.pop(
             "plan_id",
             None
         )
 
-        # =================================================
-        # RESET ALL PLAN FIELDS
-        # =================================================
-
         data["basic_plan"] = None
         data["premium_plan"] = None
         data["elite_plan"] = None
-
-        # =================================================
-        # GET AGENT TYPE
-        # =================================================
 
         agent_type = data.get(
             "agent_type"
         )
 
-        # =================================================
-        # BASIC AGENT
-        # =================================================
-
         if agent_type == "basic":
-
-            # -------------------------------------------------
-            # PLAN REQUIRED
-            # -------------------------------------------------
 
             if not plan_id:
 
@@ -4399,10 +3584,6 @@ class AgentPendingRegisterAPIView(APIView):
                     },
                     status=status.HTTP_400_BAD_REQUEST
                 )
-
-            # -------------------------------------------------
-            # FIND BASIC PLAN
-            # -------------------------------------------------
 
             try:
 
@@ -4423,11 +3604,6 @@ class AgentPendingRegisterAPIView(APIView):
                     },
                     status=status.HTTP_400_BAD_REQUEST
                 )
-
-            # -------------------------------------------------
-            # PLAN NOT FOUND
-            # -------------------------------------------------
-
             if not basic_plan:
 
                 return Response(
@@ -4437,23 +3613,8 @@ class AgentPendingRegisterAPIView(APIView):
                     },
                     status=status.HTTP_400_BAD_REQUEST
                 )
-
-            # -------------------------------------------------
-            # SET BASIC PLAN UUID
-            # -------------------------------------------------
-
             data["basic_plan"] = basic_plan.pk
-
-        # =================================================
-        # PREMIUM AGENT
-        # =================================================
-
         elif agent_type == "premium":
-
-            # -------------------------------------------------
-            # PLAN REQUIRED
-            # -------------------------------------------------
-
             if not plan_id:
 
                 return Response(
@@ -4463,11 +3624,6 @@ class AgentPendingRegisterAPIView(APIView):
                     },
                     status=status.HTTP_400_BAD_REQUEST
                 )
-
-            # -------------------------------------------------
-            # FIND PREMIUM PLAN
-            # -------------------------------------------------
-
             try:
 
                 premium_plan = PremiumPlan.objects.filter(
@@ -4487,11 +3643,6 @@ class AgentPendingRegisterAPIView(APIView):
                     },
                     status=status.HTTP_400_BAD_REQUEST
                 )
-
-            # -------------------------------------------------
-            # PLAN NOT FOUND
-            # -------------------------------------------------
-
             if not premium_plan:
 
                 return Response(
@@ -4501,23 +3652,9 @@ class AgentPendingRegisterAPIView(APIView):
                     },
                     status=status.HTTP_400_BAD_REQUEST
                 )
-
-            # -------------------------------------------------
-            # SET PREMIUM PLAN UUID
-            # -------------------------------------------------
-
             data["premium_plan"] = premium_plan.pk
 
-        # =================================================
-        # ELITE AGENT
-        # =================================================
-
         elif agent_type == "elite":
-
-            # -------------------------------------------------
-            # PLAN REQUIRED
-            # -------------------------------------------------
-
             if not plan_id:
 
                 return Response(
@@ -4527,11 +3664,6 @@ class AgentPendingRegisterAPIView(APIView):
                     },
                     status=status.HTTP_400_BAD_REQUEST
                 )
-
-            # -------------------------------------------------
-            # FIND ELITE PLAN
-            # -------------------------------------------------
-
             try:
 
                 elite_plan = ElitePlan.objects.filter(
@@ -4551,11 +3683,6 @@ class AgentPendingRegisterAPIView(APIView):
                     },
                     status=status.HTTP_400_BAD_REQUEST
                 )
-
-            # -------------------------------------------------
-            # PLAN NOT FOUND
-            # -------------------------------------------------
-
             if not elite_plan:
 
                 return Response(
@@ -4565,17 +3692,7 @@ class AgentPendingRegisterAPIView(APIView):
                     },
                     status=status.HTTP_400_BAD_REQUEST
                 )
-
-            # -------------------------------------------------
-            # SET ELITE PLAN UUID
-            # -------------------------------------------------
-
             data["elite_plan"] = elite_plan.pk
-
-        # =================================================
-        # INVALID AGENT TYPE
-        # =================================================
-
         else:
 
             return Response(
@@ -4585,19 +3702,9 @@ class AgentPendingRegisterAPIView(APIView):
                 },
                 status=status.HTTP_400_BAD_REQUEST
             )
-
-        # =================================================
-        # SERIALIZER
-        # =================================================
-
         serializer = PendingAgentRegistrationSerializer(
             data=data
         )
-
-        # =================================================
-        # SERIALIZER VALIDATION
-        # =================================================
-
         if not serializer.is_valid():
 
             errors = serializer.errors
@@ -4625,10 +3732,6 @@ class AgentPendingRegisterAPIView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # =================================================
-        # CREATE REGISTRATION
-        # =================================================
-
         try:
 
             registration = serializer.save(
@@ -4638,10 +3741,6 @@ class AgentPendingRegisterAPIView(APIView):
         except DjangoValidationError as exc:
 
             first_message = str(exc)
-
-            # -------------------------------------------------
-            # FIELD VALIDATION ERROR
-            # -------------------------------------------------
 
             if hasattr(
                 exc,
@@ -4659,10 +3758,6 @@ class AgentPendingRegisterAPIView(APIView):
                         )
 
                         break
-
-            # -------------------------------------------------
-            # NORMAL VALIDATION ERROR
-            # -------------------------------------------------
 
             elif getattr(
                 exc,
@@ -4695,10 +3790,6 @@ class AgentPendingRegisterAPIView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # =================================================
-        # FINAL PLAN ID
-        # =================================================
-
         if registration.agent_type == "basic":
 
             final_plan_id = (
@@ -4726,10 +3817,6 @@ class AgentPendingRegisterAPIView(APIView):
         else:
 
             final_plan_id = None
-
-        # =================================================
-        # SUCCESS RESPONSE
-        # =================================================
 
         return Response(
             {
@@ -11609,7 +10696,18 @@ class EnquiryDetailAPIView(APIView):
 
 
 
+
 import re
+
+def normalize_location_key(value):
+    if value is None:
+        return ""
+    return re.sub(
+        r"[\s_-]+",
+        "",
+        str(value).strip().lower()
+    )
+
 
 def normalize_location_value(value):
 
@@ -11621,13 +10719,7 @@ def normalize_location_value(value):
     if not value:
         return ""
 
-    normalized = (
-        value.lower()
-        .replace(" ", "")
-        .replace("_", "")
-        .replace("-", "")
-    )
-
+    normalized = normalize_location_key(value)
     invalid_values = {
         "na",
         "n/a",
@@ -11648,6 +10740,67 @@ def normalize_location_value(value):
 
     return value
 
+
+
+
+import re
+
+from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+
+
+def normalize_location_key(value):
+    """
+    Create a common key for matching equivalent location names.
+    """
+
+    if value is None:
+        return ""
+
+    return re.sub(
+        r"[\s_-]+",
+        "",
+        str(value).strip().casefold()
+    )
+
+
+def normalize_location_value(value):
+    """
+    Remove invalid locations while preserving the display name.
+    """
+
+    if value is None:
+        return ""
+
+    value = str(value).strip()
+
+    if not value:
+        return ""
+
+    normalized = normalize_location_key(value)
+
+    invalid_values = {
+        "",
+        "na",
+        "n/a",
+        "null",
+        "none",
+        "nil",
+        "n.a.",
+        "notavailable",
+        "notapplicable",
+        "undefined",
+    }
+
+    if normalized in invalid_values:
+        return ""
+
+    # Exclude legacycity, legacycity1, legacycity123, etc.
+    if re.fullmatch(r"legacycity\d*", normalized):
+        return ""
+
+    return value
 
 
 class PropertyFilterOptionsAPIView(APIView):
@@ -11680,19 +10833,22 @@ class PropertyFilterOptionsAPIView(APIView):
         )
 
         # -------------------------
-        # STATE -> DISTRICT -> CITY
-        # USER + AGENT PROPERTIES
+        # LOCATION MAP
+        # Normalized keys prevent duplicates.
+        # Original names are retained for display.
         # -------------------------
 
-        location_map = defaultdict(
-            lambda: defaultdict(set)
-        )
+        location_map = {}
 
         # -------------------------
         # USER PROPERTIES
         # -------------------------
 
         user_properties = Property.objects.values(
+            "state",
+            "district",
+            "city"
+        ).order_by(
             "state",
             "district",
             "city"
@@ -11703,6 +10859,10 @@ class PropertyFilterOptionsAPIView(APIView):
         # -------------------------
 
         agent_properties = AgentProperty.objects.values(
+            "state",
+            "district",
+            "city"
+        ).order_by(
             "state",
             "district",
             "city"
@@ -11735,16 +10895,36 @@ class PropertyFilterOptionsAPIView(APIView):
                 item.get("city")
             )
 
-            if not state:
+            # Skip invalid locations
+            if not state or not district or not city:
                 continue
 
-            if not district:
-                continue
+            # Normalized comparison keys
+            state_key = normalize_location_key(state)
+            district_key = normalize_location_key(district)
+            city_key = normalize_location_key(city)
 
-            if not city:
-                continue
+            # Create state only once
+            if state_key not in location_map:
+                location_map[state_key] = {
+                    "name": state,
+                    "districts": {}
+                }
 
-            location_map[state][district].add(city)
+            districts_map = location_map[state_key]["districts"]
+
+            # Create district only once per state
+            if district_key not in districts_map:
+                districts_map[district_key] = {
+                    "name": district,
+                    "cities": {}
+                }
+
+            cities_map = districts_map[district_key]["cities"]
+
+            # Create city only once per district
+            if city_key not in cities_map:
+                cities_map[city_key] = city
 
         # -------------------------
         # CONVERT TO RESPONSE
@@ -11752,31 +10932,34 @@ class PropertyFilterOptionsAPIView(APIView):
 
         states_data = []
 
-        for state, districts in location_map.items():
+        for state_data in location_map.values():
 
             districts_data = []
 
-            for district, cities in districts.items():
+            for district_data in state_data["districts"].values():
+
+                cities_data = sorted(
+                    district_data["cities"].values(),
+                    key=str.casefold
+                )
 
                 districts_data.append({
-                    "name": district,
-                    "cities": sorted(
-                        list(cities)
-                    )
+                    "name": district_data["name"],
+                    "cities": cities_data
                 })
 
             districts_data.sort(
-                key=lambda x: x["name"]
+                key=lambda item: item["name"].casefold()
             )
 
             states_data.append({
-                "name": state,
+                "name": state_data["name"],
                 "districts": districts_data
             })
 
         # Sort states
         states_data.sort(
-            key=lambda x: x["name"]
+            key=lambda item: item["name"].casefold()
         )
 
         # -------------------------

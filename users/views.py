@@ -11608,19 +11608,46 @@ class EnquiryDetailAPIView(APIView):
 
 
 
+
+import re
+
 def normalize_location_value(value):
+
+    if value is None:
+        return ""
+
+    value = str(value).strip()
 
     if not value:
         return ""
 
-    return (
-        str(value)
-        .strip()
-        .lower()
+    normalized = (
+        value.lower()
         .replace(" ", "")
         .replace("_", "")
         .replace("-", "")
     )
+
+    invalid_values = {
+        "na",
+        "n/a",
+        "null",
+        "none",
+        "nil",
+        "n.a.",
+        "notavailable",
+        "notapplicable",
+        "undefined",
+    }
+
+    if normalized in invalid_values:
+        return ""
+
+    if re.fullmatch(r"legacycity\d*", normalized):
+        return ""
+
+    return value
+
 
 
 class PropertyFilterOptionsAPIView(APIView):

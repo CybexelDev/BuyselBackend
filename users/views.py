@@ -8244,6 +8244,17 @@ class AgentPropertyDetailAPIView(APIView):
         FormParser,
     ]
 
+    def handle_exception(self, exc):
+
+        if isinstance(exc, ParseError):
+
+            return Response({
+                "status": False,
+                "message": "Image can't be compressed. Please upload another image."
+            }, status=400)
+
+        return super().handle_exception(exc)
+
     # =========================================
     # GET OBJECT
     # =========================================
@@ -14328,6 +14339,17 @@ class UserPropertyDetailAPIView(APIView):
         FormParser,
     ]
 
+    def handle_exception(self, exc):
+
+        if isinstance(exc, ParseError):
+
+            return Response({
+                "status": False,
+                "message": "Image can't be compressed. Please upload another image."
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        return super().handle_exception(exc)
+
     def get_object(self, request, id):
 
         try:
@@ -16442,6 +16464,17 @@ class UserPropertyCreateAPIView(APIView):
         ImageCompressionMultiPartParser,
         FormParser,
     ]
+
+    def handle_exception(self, exc):
+
+        if isinstance(exc, ParseError):
+
+            return Response({
+                "status": False,
+                "message": "Image can't be compressed. Please upload another image."
+            }, status=400)
+
+        return super().handle_exception(exc)
 
     # =====================================================
     # PARSE LIST FIELD

@@ -10820,293 +10820,250 @@ class PropertyFilterAPIView(APIView):
 
 
 
-import re
-from decimal import Decimal, InvalidOperation
 
+
+import re
+import jwt
+
+from decimal import Decimal, InvalidOperation
 from itertools import chain
 
 from django.conf import settings
 from django.db.models import Q
+
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-
-import jwt
 
 
 class PropertySearchAPIView(APIView):
 
     authentication_classes = []
     permission_classes = [AllowAny]
-
     PRICE_PATTERN = re.compile(
-        r"(?<![a-z0-9])"
+        r"(?<![\w.])"
         r"(\d[\d,]*(?:\.\d+)?)"
         r"\s*"
-        r"(crores?|crore|cr|c|"
-        r"lakhs?|lakh|lacs?|lac|l|"
-        r"thousands?|thousand|k|"
-        r"hundreds?|hundred|h)"
-        r"(?![a-z])",
+        r"(crores?|cr|c|lakhs?|lacs?|lacks?|lack|l|"
+        r"thousands?|thousand|k|hundreds?|h)?"
+        r"(?!\w)",
         re.IGNORECASE
     )
 
     PRICE_MULTIPLIERS = {
-        "c": 10000000,
-        "cr": 10000000,
-        "crore": 10000000,
-        "crores": 10000000,
+        "": Decimal("1"),
 
-        "l": 100000,
-        "lac": 100000,
-        "lacs": 100000,
-        "lakh": 100000,
-        "lakhs": 100000,
+        "c": Decimal("10000000"),
+        "cr": Decimal("10000000"),
+        "crore": Decimal("10000000"),
+        "crores": Decimal("10000000"),
 
-        "k": 1000,
-        "thousand": 1000,
-        "thousands": 1000,
+        "l": Decimal("100000"),
+        "lac": Decimal("100000"),
+        "lacs": Decimal("100000"),
+        "lack": Decimal("100000"),
+        "lacks": Decimal("100000"),
+        "lakh": Decimal("100000"),
+        "lakhs": Decimal("100000"),
 
-        "h": 100,
-        "hundred": 100,
-        "hundreds": 100,
+        "k": Decimal("1000"),
+        "thousand": Decimal("1000"),
+        "thousands": Decimal("1000"),
+
+        "h": Decimal("100"),
+        "hundred": Decimal("100"),
+        "hundreds": Decimal("100"),
     }
 
-    @staticmethod
-    def clean_number(value):
-        """
-        Convert a number such as 50,00,000 or 1.5
-        into a Decimal value.
-        """
-        try:
-            return Decimal(str(value).replace(",", "").strip())
-        except (InvalidOperation, ValueError):
-            return None
-
     @classmethod
-    def price_to_rupees(cls, value):
-        """
-        Convert a property price into rupees.
+    def get_price_parts(cls, value):
+        
 
-        Examples:
-        5 Cr       -> 50000000
-        50 Lakhs   -> 5000000
-        500K       -> 500000
-        500 Hundred -> 50000
-        5000000    -> 5000000
-        """
         if value is None:
-            return None
+            return []
 
         value = str(value).strip().lower()
-        value = value.replace("₹", "").replace("rs.", "").strip()
 
-        match = re.fullmatch(
-            r"(\d[\d,]*(?:\.\d+)?)\s*"
-            r"(crores?|cr|c|lakhs?|lacs?|lac|l|"
-            r"thousands?|thousand|k|hundreds?|hundred|h)?",
+        if not value:
+            return []
+
+        value = value.replace("₹", "")
+        value = re.sub(
+            r"\b(?:rs\.?|inr|rupees?)\b",
+            "",
             value,
-            re.IGNORECASE
-        )
-
-        if not match:
-            return None
-
-        amount = cls.clean_number(match.group(1))
-
-        if amount is None:
-            return None
-
-        unit = (match.group(2) or "").lower()
-
-        multiplier = cls.PRICE_MULTIPLIERS.get(unit, 1)
-
-        return amount * multiplier
-
-    @classmethod
-    def get_price_search(cls, raw_input):
-        """
-        Extract price searches and return the remaining
-        words for property label/city/district searching.
-        """
-        price_values = []
-
-        def replace_price(match):
-            amount = cls.clean_number(match.group(1))
-            unit = match.group(2).lower()
-
-            if amount is not None:
-                price_values.append(
-                    amount * cls.PRICE_MULTIPLIERS[unit]
-                )
-
-            return " "
-
-        remaining_input = cls.PRICE_PATTERN.sub(
-            replace_price,
-            raw_input
-        )
-
-        # A standalone number is also treated as a price search.
-        # Supports values such as 5000000 and 50,00,000.
-        for match in re.finditer(
-            r"(?<![a-z0-9])\d[\d,]*(?:\.\d+)?(?![a-z0-9])",
-            remaining_input,
-            re.IGNORECASE
-        ):
-            amount = cls.clean_number(match.group())
-
-            if amount is not None:
-                price_values.append(amount)
-
-        remaining_input = re.sub(
-            r"(?<![a-z0-9])\d[\d,]*(?:\.\d+)?(?![a-z0-9])",
-            " ",
-            remaining_input,
             flags=re.IGNORECASE
         )
 
-        search_words = remaining_input.lower().split()
+        parts = []
 
-        return search_words, price_values
+        for match in cls.PRICE_PATTERN.finditer(value):
+            number_text = match.group(1).replace(",", "")
+            unit = (match.group(2) or "").lower()
+
+            try:
+                amount = Decimal(number_text)
+                multiplier = cls.PRICE_MULTIPLIERS.get(unit)
+
+                if multiplier is not None:
+                    parts.append(amount * multiplier)
+
+            except (InvalidOperation, ValueError):
+                continue
+
+        return parts
 
     @classmethod
-    def matches_price(cls, property_obj, price_values):
-        """
-        Match the requested price against the property's
-        normalized price.
+    def normalize_price(cls, value):
+        
+        parts = cls.get_price_parts(value)
 
-        Prefix matching is used, so 5 Cr can match 5.2 Cr.
-        """
-        property_price = cls.price_to_rupees(
-            getattr(property_obj, "price", None)
-        )
+        if not parts:
+            return None
 
-        if property_price is None:
+        return sum(parts, Decimal("0"))
+
+    @classmethod
+    def extract_price(cls, raw_input):
+        
+        matches = list(cls.PRICE_PATTERN.finditer(raw_input))
+
+        if not matches:
+            return None, raw_input
+
+        price_values = []
+        remaining_parts = []
+        last_position = 0
+
+        for match in matches:
+            token = match.group(0).strip()
+
+            if not cls.get_price_parts(token):
+                continue
+
+            price_values.append(token)
+
+            remaining_parts.append(
+                raw_input[last_position:match.start()]
+            )
+
+            last_position = match.end()
+
+        if not price_values:
+            return None, raw_input
+
+        remaining_parts.append(raw_input[last_position:])
+
+        text_query = " ".join(remaining_parts)
+        text_query = re.sub(r"\s+", " ", text_query).strip()
+
+        return price_values, text_query
+
+    @classmethod
+    def price_matches(cls, stored_price, searched_prices):
+        
+        stored_parts = cls.get_price_parts(stored_price)
+
+        if not stored_parts:
             return False
 
-        property_digits = format(
-            property_price.normalize(), "f"
-        ).split(".")[0]
+        stored_total = sum(stored_parts, Decimal("0"))
 
-        for requested_price in price_values:
+        searched_parts = []
 
-            requested_digits = format(
-                requested_price.normalize(), "f"
-            ).split(".")[0]
+        for searched_price in searched_prices:
+            searched_parts.extend(
+                cls.get_price_parts(searched_price)
+            )
 
-            # Prefix matching for the normalized price.
-            if property_digits.startswith(requested_digits):
-                return True
+        if not searched_parts:
+            return False
 
-            # For decimal/unit searches, the normalized
-            # integer amount is used for prefix comparison.
-            # Exact decimal matching is also supported.
-            if property_price == requested_price:
-                return True
+        searched_total = sum(searched_parts, Decimal("0"))
+
+        if stored_total == searched_total:
+            return True
+
+        for start in range(len(stored_parts)):
+            subtotal = Decimal("0")
+
+            for end in range(start, len(stored_parts)):
+                subtotal += stored_parts[end]
+
+                if subtotal == searched_total:
+                    return True
 
         return False
 
     def get(self, request):
 
         raw_input = request.query_params.get(
-            "label",
-            ""
+            "label", ""
         ).strip().lower()
 
-        # =====================================================
-        # BASE QUERYSETS
-        # =====================================================
+        searched_prices, text_query = self.extract_price(raw_input)
+
+        search_words = text_query.split()
 
         user_properties = Property.objects.select_related(
             "user",
             "category",
             "purpose"
-        ).prefetch_related("images")
+        ).prefetch_related(
+            "images"
+        )
 
         agent_properties = AgentProperty.objects.select_related(
             "agent",
             "category",
             "purpose"
-        ).prefetch_related("images")
-
-        # =====================================================
-        # SPLIT SEARCH INPUT AND PRICE
-        # =====================================================
-
-        search_words, price_values = self.get_price_search(
-            raw_input
+        ).prefetch_related(
+            "images"
         )
-
-        # =====================================================
-        # PROPERTY LABEL / CITY / DISTRICT SEARCH
-        # =====================================================
 
         for word in search_words:
 
             escaped_word = re.escape(word)
-
             word_prefix_regex = rf"(^|\W){escaped_word}"
 
             user_properties = user_properties.filter(
-                Q(label__iregex=word_prefix_regex) |
-                Q(city__iregex=word_prefix_regex) |
-                Q(district__iregex=word_prefix_regex)
+                Q(label__iregex=word_prefix_regex)
+                | Q(city__iregex=word_prefix_regex)
+                | Q(district__iregex=word_prefix_regex)
             )
 
             agent_properties = agent_properties.filter(
-                Q(label__iregex=word_prefix_regex) |
-                Q(city__iregex=word_prefix_regex) |
-                Q(district__iregex=word_prefix_regex)
+                Q(label__iregex=word_prefix_regex)
+                | Q(city__iregex=word_prefix_regex)
+                | Q(district__iregex=word_prefix_regex)
             )
-
-        # =====================================================
-        # COMBINE USER + AGENT PROPERTIES
-        # =====================================================
 
         combined = list(
-            chain(
-                user_properties,
-                agent_properties
-            )
+            chain(user_properties, agent_properties)
         )
 
-        # =====================================================
-        # PRICE FILTER
-        # =====================================================
-
-        if price_values:
+        if searched_prices:
 
             combined = [
                 property_obj
                 for property_obj in combined
-                if self.matches_price(
-                    property_obj,
-                    price_values
+                if self.price_matches(
+                    getattr(property_obj, "price", None),
+                    searched_prices
                 )
             ]
 
-        # =====================================================
-        # SORT BY CREATED DATE
-        # =====================================================
-
         combined.sort(
-            key=lambda x: x.created_at,
+            key=lambda obj: obj.created_at,
             reverse=True
         )
-
-        # =====================================================
-        # WISHLIST UUIDS
-        # =====================================================
 
         wishlist_ids = set()
 
         auth = request.headers.get("Authorization")
 
         if auth:
-
             try:
-
                 token_parts = auth.split()
 
                 if len(token_parts) >= 2:
@@ -11122,10 +11079,9 @@ class PropertySearchAPIView(APIView):
                     user_id = decoded.get("user_id")
 
                     if user_id:
-
                         wishlist_ids = set(
-                            str(x)
-                            for x in Wishlist.objects.filter(
+                            str(value)
+                            for value in Wishlist.objects.filter(
                                 user_id=user_id
                             ).values_list(
                                 "property_uuid",
@@ -11136,10 +11092,6 @@ class PropertySearchAPIView(APIView):
             except Exception:
                 pass
 
-        # =====================================================
-        # SERIALIZER
-        # =====================================================
-
         serializer = CombinedPropertyListSerializer(
             combined,
             many=True,
@@ -11149,14 +11101,12 @@ class PropertySearchAPIView(APIView):
             }
         )
 
-        # =====================================================
-        # RESPONSE
-        # =====================================================
-
         return Response({
             "count": len(combined),
             "data": serializer.data
         })
+
+
 
 
 # class PropertySearchAPIView(APIView):

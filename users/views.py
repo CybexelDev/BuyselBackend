@@ -3136,30 +3136,6 @@ class UserProfileImageUpdateView(APIView):
                 status=400
             )
         image = request.FILES["image"]
-
-        # MAX_IMAGE_SIZE = 2.5 * 1024 * 1024  # 2.5 MB
-
-        # if image.size >= MAX_IMAGE_SIZE:
-
-        #     return Response({
-
-        #         "status": False,
-
-        #         "message":
-        #         "Each image size must be less than 2.5 MB.",
-
-        #         "image":
-        #         image.name,
-
-        #         "size_mb":
-        #         round(
-        #             image.size / (1024 * 1024),
-        #             2
-        #         )
-
-        #     }, status=400)
-
-
         profile,_ = UserProfile.objects.get_or_create(
             user=user
         )

@@ -5190,6 +5190,16 @@ class AgentProfileAPIView(APIView):
         FormParser,
     )
 
+    def handle_exception(self, exc):
+        if isinstance(exc, ParseError):
+            return Response({
+                "status": False,
+                "error": "Image can't be compressed. Please upload another image."
+            }, status=400)
+
+        return super().handle_exception(exc)
+
+
     # 🔹 Get Profile
     def get(self, request):
         serializer = AgentProfileSerializer(request.user)

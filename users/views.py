@@ -5194,7 +5194,7 @@ class AgentProfileAPIView(APIView):
         if isinstance(exc, ParseError):
             return Response({
                 "status": False,
-                "error": "Image can't be compressed. Please upload another image."
+                "errors": "Image can't be compressed. Please upload another image."
             }, status=400)
 
         return super().handle_exception(exc)

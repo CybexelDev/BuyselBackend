@@ -10971,6 +10971,38 @@ class PropertySearchAPIView(APIView):
 
         return False
 
+    
+    @classmethod
+    def price_starts_with(cls, stored_price, search_number):
+        if stored_price is None:
+            return False
+
+        stored_price = str(stored_price).strip().lower()
+        search_number = str(search_number).strip().replace(",", "")
+
+        if not search_number:
+            return False
+
+        pattern = (
+            r"(?<![\w.])"
+            + re.escape(search_number)
+            + r"\d*(?:\.\d+)?\s*"
+            + r"(?:crores?|cr|c|lakhs?|lacs?|lacks?|lack|l|"
+              r"thousands?|thousand|k|hundreds?|h)?"
+            + r"(?!\w)"
+        )
+
+        if re.search(pattern, stored_price, re.IGNORECASE):
+            return True
+
+        numeric_price = re.sub(r"[^\d.]", "", stored_price)
+
+        if numeric_price.startswith(search_number):
+            return True
+
+        return False
+
+
     def get(self, request):
 
         raw_input = request.query_params.get(
@@ -11018,16 +11050,44 @@ class PropertySearchAPIView(APIView):
             chain(user_properties, agent_properties)
         )
 
+        
         if searched_prices:
-
-            combined = [
-                property_obj
-                for property_obj in combined
-                if self.price_matches(
-                    getattr(property_obj, "price", None),
-                    searched_prices
+            plain_number_search = (
+                len(searched_prices) == 1
+                and re.fullmatch(
+                    r"\s*[\d,]+(?:\.\d+)?\s*",
+                    searched_prices[0]
                 )
-            ]
+            )
+
+            if plain_number_search:
+
+                search_number = (
+                    searched_prices[0]
+                    .replace(",", "")
+                    .strip()
+                )
+
+                combined = [
+                    property_obj
+                    for property_obj in combined
+                    if self.price_starts_with(
+                        getattr(property_obj, "price", None),
+                        search_number
+                    )
+                ]
+
+            else:
+
+                combined = [
+                    property_obj
+                    for property_obj in combined
+                    if self.price_matches(
+                        getattr(property_obj, "price", None),
+                        searched_prices
+                    )
+                ]
+
 
         combined.sort(
             key=lambda obj: obj.created_at,

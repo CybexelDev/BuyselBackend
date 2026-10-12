@@ -7378,6 +7378,17 @@ class AgentPropertyAPIView(APIView):
 
         return parsed
 
+    
+    def handle_exception(self, exc):
+        if isinstance(exc, ParseError):
+            return Response({
+                "status": False,
+                "message": "Image can't be compressed. Please upload another image."
+            }, status=400)
+
+        return super().handle_exception(exc)
+
+
     def get_category_type(self, category_name):
 
         category_name = category_name.lower().strip()
@@ -7697,63 +7708,6 @@ class AgentPropertyAPIView(APIView):
         category_type = self.get_category_type(
             category_name
         )
-
-        
-        # MAX_IMAGE_SIZE = (
-        #     2.5 * 1024 * 1024
-        # )
-
-        # image = request.FILES.get(
-        #     "image"
-        # )
-
-        # if image and image.size >= MAX_IMAGE_SIZE:
-
-        #     return Response({
-
-        #         "status": False,
-
-        #         "message":
-        #             "Main image size must be less than 2.5 MB.",
-
-        #         "image":
-        #             image.name,
-
-        #         "size_mb":
-        #             round(
-        #                 image.size
-        #                 / (1024 * 1024),
-        #                 2
-        #             )
-
-        #     }, status=400)
-
-        # images = request.FILES.getlist(
-        #     "images"
-        # )
-
-        # for img in images:
-
-        #     if img.size >= MAX_IMAGE_SIZE:
-
-        #         return Response({
-
-        #             "status": False,
-
-        #             "message":
-        #                 "Each image size must be less than 2.5 MB.",
-
-        #             "image":
-        #                 img.name,
-
-        #             "size_mb":
-        #                 round(
-        #                     img.size
-        #                     / (1024 * 1024),
-        #                     2
-        #                 )
-
-        #         }, status=400)
 
         active_subscriptions = (
             Subscription.objects.filter(

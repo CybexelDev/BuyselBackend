@@ -5,6 +5,54 @@ from django.shortcuts import render, get_object_or_404
 from django.core.exceptions import ValidationError
 from django.contrib import messages
 from django.http import Http404
+from rest_framework_simplejwt.tokens import AccessToken
+from rest_framework.permissions import AllowAny
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+import requests
+import jwt
+import uuid
+from developer.models import UserCreate, UserProfile
+import jwt
+from django.conf import settings
+import uuid
+import jwt
+import cloudinary.uploader
+from django.core.exceptions import ValidationError as DjangoValidationError
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from uuid import UUID
+from django.core.exceptions import ValidationError as DjangoValidationError
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework import status
+from django.conf import settings
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.permissions import AllowAny
+
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.exceptions import TokenError
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
+
+from .models import UserCreate, UserProfile
+from rest_framework.exceptions import ParseError
+from django.conf import settings
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
+
+from .models import UserCreate, UserProfile
+from .serializers import UserProfileSerializer
+from django.core.files.base import ContentFile
 # import requests 
 # from geopy.distance import geodesic
 from . models import*
@@ -26,10 +74,13 @@ from django.utils import timezone
 from django.http import FileResponse
 from django.db.models.functions import Lower
 import os
+from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
+from django.utils import timezone
+from django.contrib.auth.hashers import make_password
 import hmac
 import hashlib
 from django.conf import settings
-import re
 from developer.models import Premium
 from django.core.validators import validate_email
 from django.db.models import F
@@ -45,26 +96,53 @@ from django.db import transaction
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.exceptions import NotAuthenticated
 from .authentication import UserJWTAuthentication
-from rest_framework import generics
 from agents.utils import check_plan_notifications
 from agents.utils import create_notification
 from .utils import *
 import json
 import uuid
-import base64
 import requests
 from django.core.cache import cache
-from rest_framework.response import Response
 import base64
 import tempfile
-import os
 import cloudinary.uploader
 from django.conf import settings
 from django.core.files.base import ContentFile
 from rest_framework.parsers import FormParser
 from users.parsers import ImageCompressionMultiPartParser
 from rest_framework.parsers import FormParser
-import base64
+from rest_framework import viewsets
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import SearchFilter
+from rest_framework.views import APIView
+from django.contrib.auth.hashers import check_password
+from .serializers import *
+from rest_framework_simplejwt.tokens import RefreshToken,TokenError
+from django.contrib.auth.hashers import check_password
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
+import re
+from rest_framework.permissions import AllowAny
+from rest_framework.authentication import SessionAuthentication
+from django.contrib.auth import get_user_model
+import requests
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
+from rest_framework.permissions import IsAuthenticated
+from .utils import *
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from cloudinary.utils import cloudinary_url
+import secrets
+from urllib.parse import urlencode
+from rest_framework import generics
+from rest_framework.views import APIView
+from rest_framework import status
+from django.utils import timezone
+from datetime import timedelta
+import random
 
 
 razorpay_client = razorpay.Client(
@@ -161,14 +239,12 @@ from geopy.distance import geodesic
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from math import radians, sin, cos, sqrt, atan2
-import re
 from urllib.parse import quote
 
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.contrib import messages
 from urllib.parse import quote
-import re
 
 from .models import  *
 from developer.models import  *
@@ -837,35 +913,7 @@ def upload_agents_screenshot(request):
 
 
 
-from rest_framework import viewsets
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.filters import SearchFilter
 
-from .serializers import *
-from rest_framework_simplejwt.tokens import RefreshToken,TokenError
-from django.contrib.auth.hashers import check_password
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt
-import re
-from rest_framework.permissions import AllowAny
-from rest_framework.authentication import SessionAuthentication
-from django.contrib.auth import get_user_model
-import requests
-
-from google.oauth2 import id_token
-from google.auth.transport import requests as google_requests
-from rest_framework.permissions import IsAuthenticated
-from .utils import *
-from rest_framework_simplejwt.authentication import JWTAuthentication
-from cloudinary.utils import cloudinary_url
-import uuid
-import secrets
-from urllib.parse import urlencode
-from rest_framework import generics
 
 
 class PropertyViewSet(viewsets.ReadOnlyModelViewSet):
@@ -1008,12 +1056,6 @@ class PropertyViewSet(viewsets.ReadOnlyModelViewSet):
                 )
 
         return queryset
-
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from django.contrib.auth.hashers import check_password
-from rest_framework_simplejwt.tokens import RefreshToken
 
 
 class RequestCreateAPIView(APIView):
@@ -1943,12 +1985,6 @@ class VerifyForgotOTPAPI(APIView):
                 status=404
             )
         
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from django.utils import timezone
-from datetime import timedelta
-import random
 
 class ForgotPasswordResendOTPAPI(APIView):
 
@@ -2013,13 +2049,6 @@ class ForgotPasswordResendOTPAPI(APIView):
                 status=404
             )
 
-
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
-from django.utils import timezone
-from django.contrib.auth.hashers import make_password
 
 class UserChangePasswordAPI(APIView):
 
@@ -2344,8 +2373,7 @@ class FacebookLoginAPI(APIView):
 
 
 
-import requests
-from django.core.files.base import ContentFile
+
 
 def handle_google_user(email, name, picture):
     user, _ = UserCreate.objects.get_or_create(
@@ -2519,19 +2547,6 @@ class FacebookLoginRedirectView(APIView):
         )
 
         return redirect(facebook_auth_url)
-
-
-import jwt
-import uuid
-
-from django.conf import settings
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
-
-from .models import UserCreate, UserProfile
-from .serializers import UserProfileSerializer
 
 
 class UserProfileView(APIView):
@@ -2710,18 +2725,6 @@ class UserProfileView(APIView):
 
 
 
-import uuid
-import jwt
-import cloudinary.uploader
-
-from django.conf import settings
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
-
-from .models import UserCreate, UserProfile
-from rest_framework.exceptions import ParseError
 
 class UserProfileImageUpdateView(APIView):
 
@@ -2909,16 +2912,6 @@ class UserProfileImageUpdateView(APIView):
                 "image_url":profile.image.url
             }
         )
-
-
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework.permissions import AllowAny
-
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.exceptions import TokenError
 
 
 class RefreshTokenView(APIView):
@@ -3404,17 +3397,6 @@ class AgentChangePasswordAPI(APIView):
                 status=400
             )
 
-from django.core.exceptions import ValidationError as DjangoValidationError
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from uuid import UUID
-from django.core.exceptions import ValidationError as DjangoValidationError
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.parsers import MultiPartParser, FormParser
-from rest_framework import status
 
 
 class AgentPendingRegisterAPIView(APIView):
@@ -3916,12 +3898,7 @@ class EliteFeatureAPIView(APIView):
         })
 
 
-from rest_framework_simplejwt.tokens import AccessToken
 
-from rest_framework.permissions import AllowAny
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
 
 class SubmitAgentReviewAPIView(APIView):
 
@@ -4081,9 +4058,7 @@ class SubmitAgentReviewAPIView(APIView):
             status=400
         )
 
-from developer.models import UserCreate, UserProfile
-import jwt
-from django.conf import settings
+
 
 class ToggleReviewLikeAPIView(APIView):
     permission_classes = []            # 🔥 disable DRF auth
@@ -9246,7 +9221,6 @@ class PropertyFilterAPIView(APIView):
 
 
 
-import re
 import jwt
 
 from decimal import Decimal, InvalidOperation
@@ -9624,7 +9598,7 @@ class PropertyEnquiryByUserAPIView(APIView):
             status=200
         )
 
-import re
+
 from math import radians, sin, cos, sqrt, atan2
 
 from rest_framework.views import APIView
@@ -9891,8 +9865,6 @@ class EnquiryDetailAPIView(APIView):
 
 
 
-import re
-
 def normalize_location_key(value):
     if value is None:
         return ""
@@ -9937,7 +9909,6 @@ def normalize_location_value(value):
 
 
 
-import re
 
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
@@ -10668,8 +10639,6 @@ class CombinedPropertyListAPIView(APIView):
 
     def convert_price_to_number(self, price):
 
-        import re
-
         if price is None:
             return None
 
@@ -11105,6 +11074,7 @@ class UniversalPropertyDetailAPIView(APIView):
                         obj.owner,
                         obj.user
                     ),
+                    "property_owner" : "user",
 
                     "whatsapp": obj.whatsapp,
 
@@ -11269,6 +11239,7 @@ class UniversalPropertyDetailAPIView(APIView):
                         obj.owner,
                         agent_obj
                     ),
+                    "property_owner" : "agent",
 
                     "whatsapp": obj.whatsapp,
 
@@ -11411,7 +11382,6 @@ class UniversalPropertyEnquiryAPI(APIView):
         )
 
 
-import re
 import jwt
 
 from itertools import chain
@@ -13423,7 +13393,6 @@ class AgentContactMessageCreateAPIView(APIView):
         })
 
 import uuid
-import re
 
 from datetime import timedelta
 
@@ -15728,7 +15697,7 @@ class CreatePaymentAPIView(APIView):
             }, status=400)
 
 
-import re
+
 import hmac
 import hashlib
 

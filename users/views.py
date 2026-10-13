@@ -7986,11 +7986,8 @@ class DashboardAPIView(APIView):
         agent_properties = AgentProperty.objects.filter(agent=user)
 
         total_properties = agent_properties.count()
-        # total_properties = user.total_property_used or 0
+        total_added_properties = user.total_property_used or 0
 
-        # enquiries_qs = AgentPropertyEnquiry.objects.filter(
-        #     agent_property__agent=user
-        # )
         enquiries_qs = AgentPropertyEnquiry.objects.filter(
             property__agent=user
         )
@@ -8026,6 +8023,23 @@ class DashboardAPIView(APIView):
 
         remaining_listings = max(
             total_limit - total_used,
+            0
+        )
+        
+        # ================= SUBSCRIPTION DELETED PROPERTIES =================
+
+        # Total properties added through subscriptions
+        total_added_properties = user.total_property_used or 0
+
+        # Currently existing properties linked to subscriptions
+        subscription_properties_count = AgentProperty.objects.filter(
+            agent=user,
+            subscription__isnull=False
+        ).count()
+
+        # Only count deleted subscription properties
+        deleted_property_count = max(
+            total_added_properties - subscription_properties_count,
             0
         )
 
@@ -8076,6 +8090,7 @@ class DashboardAPIView(APIView):
             "data": {
                 "total_properties": total_properties,
                 "total_enquiries": total_enquiries,
+                "deleted_property_count": deleted_property_count,
                 "remaining_listings": remaining_listings,   # ✅ FIX ADDED
                 "monthly_enquiries": monthly_data,
                 "recent_enquiries": recent_data
@@ -10766,10 +10781,6 @@ def normalize_location_key(value):
 
 
 def normalize_location_value(value):
-    """
-    Remove invalid locations while preserving the display name.
-    """
-
     if value is None:
         return ""
 
@@ -10796,7 +10807,6 @@ def normalize_location_value(value):
     if normalized in invalid_values:
         return ""
 
-    # Exclude legacycity, legacycity1, legacycity123, etc.
     if re.fullmatch(r"legacycity\d*", normalized):
         return ""
 
@@ -10810,10 +10820,6 @@ class PropertyFilterOptionsAPIView(APIView):
 
     def get(self, request):
 
-        # -------------------------
-        # CATEGORY
-        # -------------------------
-
         categories = list(
             Category.objects.values(
                 "id",
@@ -10821,10 +10827,7 @@ class PropertyFilterOptionsAPIView(APIView):
             ).order_by("name")
         )
 
-        # -------------------------
-        # PURPOSE
-        # -------------------------
-
+        
         purposes = list(
             Purpose.objects.values(
                 "id",
@@ -10832,17 +10835,7 @@ class PropertyFilterOptionsAPIView(APIView):
             ).order_by("name")
         )
 
-        # -------------------------
-        # LOCATION MAP
-        # Normalized keys prevent duplicates.
-        # Original names are retained for display.
-        # -------------------------
-
         location_map = {}
-
-        # -------------------------
-        # USER PROPERTIES
-        # -------------------------
 
         user_properties = Property.objects.values(
             "state",
@@ -10854,10 +10847,6 @@ class PropertyFilterOptionsAPIView(APIView):
             "city"
         )
 
-        # -------------------------
-        # AGENT PROPERTIES
-        # -------------------------
-
         agent_properties = AgentProperty.objects.values(
             "state",
             "district",
@@ -10868,19 +10857,10 @@ class PropertyFilterOptionsAPIView(APIView):
             "city"
         )
 
-        # -------------------------
-        # COMBINE
-        # -------------------------
-
         all_properties = (
             list(user_properties)
             + list(agent_properties)
         )
-
-        # -------------------------
-        # BUILD LOCATION MAP
-        # -------------------------
-
         for item in all_properties:
 
             state = normalize_location_value(
@@ -10895,16 +10875,13 @@ class PropertyFilterOptionsAPIView(APIView):
                 item.get("city")
             )
 
-            # Skip invalid locations
             if not state or not district or not city:
                 continue
 
-            # Normalized comparison keys
             state_key = normalize_location_key(state)
             district_key = normalize_location_key(district)
             city_key = normalize_location_key(city)
 
-            # Create state only once
             if state_key not in location_map:
                 location_map[state_key] = {
                     "name": state,
@@ -10913,7 +10890,6 @@ class PropertyFilterOptionsAPIView(APIView):
 
             districts_map = location_map[state_key]["districts"]
 
-            # Create district only once per state
             if district_key not in districts_map:
                 districts_map[district_key] = {
                     "name": district,
@@ -10922,14 +10898,8 @@ class PropertyFilterOptionsAPIView(APIView):
 
             cities_map = districts_map[district_key]["cities"]
 
-            # Create city only once per district
             if city_key not in cities_map:
                 cities_map[city_key] = city
-
-        # -------------------------
-        # CONVERT TO RESPONSE
-        # -------------------------
-
         states_data = []
 
         for state_data in location_map.values():
@@ -10957,14 +10927,9 @@ class PropertyFilterOptionsAPIView(APIView):
                 "districts": districts_data
             })
 
-        # Sort states
         states_data.sort(
             key=lambda item: item["name"].casefold()
         )
-
-        # -------------------------
-        # RESPONSE
-        # -------------------------
 
         return Response({
             "categories": categories,
@@ -11045,10 +11010,6 @@ class RecentEnquiryAPIView(APIView):
             many=True
         ).data
 
-        # =====================================================
-        # ADD TYPE
-        # =====================================================
-
         for item in property_data:
 
             item["enquiry_type"] = "property"
@@ -11078,10 +11039,6 @@ class AgentPropertyLocationAPIView(APIView):
     authentication_classes = []
 
     def get(self, request, agent_id):
-
-        # -----------------------------
-        # GET AGENT
-        # -----------------------------
         agent = None
 
         try:
@@ -11095,20 +11052,9 @@ class AgentPropertyLocationAPIView(APIView):
 
         if not agent:
             return Response({"error": "Agent not found"}, status=404)
-
-        # -----------------------------
-        # BASE QUERY
-        # -----------------------------
         queryset = AgentProperty.objects.filter(agent=agent)
 
-        # -----------------------------
-        # GET CITY PARAM
-        # -----------------------------
         city = request.GET.get("city")
-
-        # -----------------------------
-        # STEP 1 → RETURN CITIES
-        # -----------------------------
         if not city:
             cities = list(
                 queryset.exclude(city__isnull=True)
@@ -11122,9 +11068,6 @@ class AgentPropertyLocationAPIView(APIView):
                 "cities": cities
             })
 
-        # -----------------------------
-        # STEP 2 → FILTER BY CITY
-        # -----------------------------
         queryset = queryset.filter(city__icontains=city)
 
         queryset = queryset.order_by("-created_at")
@@ -11524,16 +11467,9 @@ class CombinedPropertyListAPIView(APIView):
             ):
                 pass
 
-        # --------------------------------
-        # UUID FIX
-        # --------------------------------
-
         for item in combined:
-
-            # convert UUID into string safely
             item.id = str(item.id)
 
-            # optional uuid field support
             if hasattr(item, "uuid") and item.uuid:
                 item.uuid = str(item.uuid)
 
@@ -11675,66 +11611,6 @@ class CombinedPropertyListAPIView(APIView):
 
         return True
 
-    # --------------------------------
-    # PRICE CONVERTER
-    # --------------------------------
-
-    # def convert_price_to_number(self, price):
-
-    #     try:
-
-    #         if not price:
-    #             return 0
-
-    #         cleaned = str(price)
-
-    #         cleaned = (
-    #             cleaned
-    #             .replace("₹", "")
-    #             .replace(",", "")
-    #             .replace("Lakhs+", "")
-    #             .replace("Lakhs", "")
-    #             .replace("Lakh+", "")
-    #             .replace("Lakh", "")
-    #             .strip()
-    #         )
-
-    #         return float(cleaned)
-
-    #     except:
-    #         return 0
-
-    # # --------------------------------
-    # # PRICE RANGE CHECKER
-    # # --------------------------------
-
-    # def check_price_range(self, price, price_range):
-
-    #     amount = self.convert_price_to_number(
-    #         price
-    #     )
-
-    #     # Below ₹5 Lakhs
-    #     if price_range == "Below ₹5 Lakhs":
-    #         return amount < 500000
-
-    #     # ₹5 – 10 Lakhs
-    #     elif price_range == "₹5 – 10 Lakhs":
-    #         return 500000 <= amount <= 1000000
-
-    #     # ₹10 – 25 Lakhs
-    #     elif price_range == "₹10 – 25 Lakhs":
-    #         return 1000000 <= amount <= 2500000
-
-    #     # ₹25 – 50 Lakhs
-    #     elif price_range == "₹25 – 50 Lakhs":
-    #         return 2500000 <= amount <= 5000000
-
-    #     # Above ₹50 Lakhs
-    #     elif price_range == "Above ₹50 Lakhs":
-    #         return amount > 5000000
-
-    #     return True
         
 from uuid import UUID
 

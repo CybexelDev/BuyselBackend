@@ -1981,31 +1981,6 @@ class AgentProfileSerializer(serializers.ModelSerializer):
             'created_at',
             'plan_name'
         ]
-
-    # -----------------------------------
-    # OUTPUT IMAGE FIX (IMPORTANT)
-    # -----------------------------------
-    # def validate_profile_image(self, image):
-
-    #     # 2.5 MB
-    #     MAX_SIZE = 2.5 * 1024 * 1024
-
-    #     if image:
-
-    #         if image.size > MAX_SIZE:
-
-    #             size_mb = round(
-    #                 image.size / (1024 * 1024),
-    #                 2
-    #             )
-
-    #             raise serializers.ValidationError({
-    #                 "message": "Each image size must be less than 2.5 MB.",
-    #                 "image": image.name,
-    #                 "size_mb": size_mb
-    #             })
-
-    #     return image
     
     def get_profile_image(self, obj):
         if obj.profile_image:
@@ -2136,23 +2111,9 @@ class CurrentPlanSerializer(serializers.Serializer):
 
     is_active = serializers.BooleanField()
 
-# class AgentContactSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = AgentContact
-#         fields = [
-#             'id',
-#             'first_name',
-#             'last_name',
-#             'contact_number',
-#             'email',
-#             'message',
-#             'created_at'
-#         ]
-#         read_only_fields = ['id', 'created_at']
 
-import re
-from rest_framework import serializers
-from agents.models import AgentContact
+
+
 
 class AgentContactSerializer(serializers.ModelSerializer):
     created_at = serializers.SerializerMethodField()

@@ -4921,6 +4921,7 @@ def agent_property_dashboard(request):
             | Q(district__icontains=search)
             | Q(state__icontains=search)
             | Q(agent__username__icontains=search)
+            | Q(property_code__icontains=search)
         )
 
     paginator = Paginator(properties, 10)

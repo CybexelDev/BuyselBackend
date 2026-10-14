@@ -11403,10 +11403,6 @@ class NearbyPropertyAPIView(APIView):
 
     permission_classes = [AllowAny]
     authentication_classes = []
-
-    # --------------------------------
-    # HAVERSINE
-    # --------------------------------
     def haversine(
         self,
         lat1,
@@ -11442,9 +11438,6 @@ class NearbyPropertyAPIView(APIView):
 
         return R * c
 
-    # --------------------------------
-    # EXTRACT COORDINATES FROM URL
-    # --------------------------------
     def extract_coordinates_from_url(
         self,
         url
@@ -11454,6 +11447,22 @@ class NearbyPropertyAPIView(APIView):
             return None, None
 
         url = str(url).strip()
+
+        match = re.search(
+            r'!3d(-?\d+(?:\.\d+)?)!4d(-?\d+(?:\.\d+)?)',
+            url
+        )
+
+        if match:
+            try:
+                lat = float(match.group(1))
+                lng = float(match.group(2))
+
+                if self.valid_coordinates(lat, lng):
+                    return lat, lng
+
+            except (ValueError, TypeError):
+                pass
 
         # --------------------------------
         # 1. @LAT,LNG
@@ -11643,11 +11652,6 @@ class NearbyPropertyAPIView(APIView):
 
         url = str(url).strip()
 
-        # --------------------------------
-        # FIRST:
-        # Try the original URL
-        # --------------------------------
-
         lat, lng = (
             self.extract_coordinates_from_url(
                 url
@@ -11658,11 +11662,6 @@ class NearbyPropertyAPIView(APIView):
 
             return lat, lng
 
-        # --------------------------------
-        # SECOND:
-        # Resolve Google short URL
-        # --------------------------------
-
         resolved_url = (
             self.resolve_short_google_url(
                 url
@@ -11672,10 +11671,6 @@ class NearbyPropertyAPIView(APIView):
         if not resolved_url:
 
             return None, None
-
-        # --------------------------------
-        # Extract from resolved URL
-        # --------------------------------
 
         lat, lng = (
             self.extract_coordinates_from_url(
@@ -11688,10 +11683,6 @@ class NearbyPropertyAPIView(APIView):
             return lat, lng
 
         return None, None
-
-    # --------------------------------
-    # VALIDATE COORDINATES
-    # --------------------------------
     def valid_coordinates(
         self,
         lat,
@@ -11792,11 +11783,6 @@ class NearbyPropertyAPIView(APIView):
         else:
 
             radius = None
-
-        # --------------------------------
-        # USER PROPERTIES
-        # --------------------------------
-
         user_properties = (
             Property.objects
             .select_related(
@@ -11808,11 +11794,6 @@ class NearbyPropertyAPIView(APIView):
                 "images"
             )
         )
-
-        # --------------------------------
-        # AGENT PROPERTIES
-        # --------------------------------
-
         agent_properties = (
             AgentProperty.objects
             .select_related(
@@ -11822,20 +11803,12 @@ class NearbyPropertyAPIView(APIView):
             )
         )
 
-        # --------------------------------
-        # COMBINE
-        # --------------------------------
-
         all_properties = list(
             chain(
                 user_properties,
                 agent_properties
             )
         )
-
-        # --------------------------------
-        # AUTH USER WISHLIST
-        # --------------------------------
 
         wishlist_ids = set()
 
@@ -11888,54 +11861,39 @@ class NearbyPropertyAPIView(APIView):
             except Exception:
 
                 pass
-
-        # --------------------------------
-        # DISTANCE FILTER
-        # --------------------------------
-
         results = []
 
         for prop in all_properties:
+            coordinate_cache = {}
+            import time  
 
-            # --------------------------------
-            # GET LOCATION URL
-            # --------------------------------
-
-            location_url = getattr(
-                prop,
-                "location",
-                None
-            )
+            location_url = getattr(prop, "location", None)
 
             if not location_url:
-
                 continue
 
-            # --------------------------------
-            # EXTRACT LAT/LNG
-            # --------------------------------
+            # url_start = time.time()
 
-            lat, lng = (
-                self.extract_lat_lng(
-                    location_url
-                )
-            )
+            # lat, lng = self.extract_lat_lng(location_url)
 
-            # --------------------------------
-            # INVALID LOCATION
-            # --------------------------------
+            # if not self.valid_coordinates(
+            #     lat,
+            #     lng
+            # ):
 
-            if not self.valid_coordinates(
-                lat,
-                lng
-            ):
+            #     continue
+            cache_key = location_url.strip()
 
+            if cache_key in coordinate_cache:
+                lat, lng = coordinate_cache[cache_key]
+            else:
+                lat, lng = self.extract_lat_lng(location_url)
+                coordinate_cache[cache_key] = (lat, lng)
+
+            if not self.valid_coordinates(lat, lng):
                 continue
 
-            # --------------------------------
-            # HAVERSINE DISTANCE
-            # --------------------------------
-
+          
             distance = self.haversine(
                 user_lat,
                 user_lng,
@@ -11943,10 +11901,7 @@ class NearbyPropertyAPIView(APIView):
                 lng
             )
 
-            # --------------------------------
-            # RADIUS FILTER
-            # --------------------------------
-
+          
             if (
                 radius is not None
                 and
@@ -11955,10 +11910,6 @@ class NearbyPropertyAPIView(APIView):
 
                 continue
 
-            # --------------------------------
-            # ADD RESULT
-            # --------------------------------
-
             results.append(
                 (
                     prop,
@@ -11966,32 +11917,14 @@ class NearbyPropertyAPIView(APIView):
                 )
             )
 
-        # --------------------------------
-        # NEAREST FIRST
-        # --------------------------------
-
         results.sort(
             key=lambda x: x[1]
         )
-
-        # --------------------------------
-        # MAX 20
-        # --------------------------------
-
         results = results[:20]
-
-        # --------------------------------
-        # PROPERTIES ONLY
-        # --------------------------------
-
         properties = [
             item[0]
             for item in results
         ]
-
-        # --------------------------------
-        # SERIALIZE
-        # --------------------------------
 
         serialized = (
             CombinedPropertyListSerializer(
@@ -12003,10 +11936,6 @@ class NearbyPropertyAPIView(APIView):
                 }
             ).data
         )
-
-        # --------------------------------
-        # ADD DISTANCE
-        # --------------------------------
 
         final = []
 
@@ -12022,11 +11951,6 @@ class NearbyPropertyAPIView(APIView):
             final.append(
                 item
             )
-
-        # --------------------------------
-        # RESPONSE
-        # --------------------------------
-
         return Response(
             {
                 "count": len(final),

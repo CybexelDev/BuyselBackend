@@ -1000,6 +1000,11 @@ class AgentProperty(models.Model):
 
     is_featured = models.BooleanField(default=False)
 
+    deleted = models.BooleanField(
+        default=False,
+        db_index=True
+    )
+
     notes = models.CharField(
         max_length=255,
         blank=True,
@@ -1015,10 +1020,6 @@ class AgentProperty(models.Model):
         related_name="properties"
     )
 
-    # ============================================================
-    # DURATION
-    # ============================================================
-
     duration_days = models.IntegerField(
         default=30,
         null=False,
@@ -1032,6 +1033,12 @@ class AgentProperty(models.Model):
     updated_at=models.DateTimeField(
             auto_now=True
         )
+
+    
+    def soft_delete(self):
+        self.deleted = True
+        self.save(update_fields=["deleted"])
+
 
     # ============================================================
     # VALIDATION

@@ -2628,6 +2628,11 @@ class Property(models.Model):
         default=False,
         db_index=True
     )
+    
+    deleted = models.BooleanField(
+        default=False,
+        db_index=True
+    )
 
     created_at=models.DateTimeField(
         default=timezone.now
@@ -2646,6 +2651,10 @@ class Property(models.Model):
         null=True,
         blank=True
     )
+
+    def soft_delete(self):
+        self.deleted = True
+        self.save(update_fields=["deleted"])
 
     def clean(self):
 

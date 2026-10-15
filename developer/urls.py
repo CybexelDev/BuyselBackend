@@ -251,5 +251,20 @@ urlpatterns = [
         views.update_agent_contact_message_status,
         name="update_agent_contact_message_status",
     ),
+    path(
+        "deleted-properties/",
+        views.master_deleted_properties,
+        name="deleted_properties",
+    ),
+    path(
+        "deleted-properties/export/",
+        views.export_master_deleted_properties_excel,
+        name="export_master_deleted_properties_excel",
+    ),
+    path(
+        "deleted-properties/<str:kind>/<uuid:property_id>/",
+        views.master_deleted_property_detail,
+        name="deleted_property_detail",
+    ),
     re_path(r"^.*$", views.superuser_login_view, name="redirect_to_index"),
 ]

@@ -6,61 +6,64 @@ from django.core.exceptions import ValidationError
 from django.contrib import messages
 from django.http import Http404
 from rest_framework_simplejwt.tokens import AccessToken
-from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from django.db.models.functions import ExtractMonth
 from rest_framework import status
 import requests
-import jwt
-import uuid
-from developer.models import UserCreate, UserProfile
-import jwt
+from rest_framework.generics import ListAPIView
+from developer.models import Blog
+from rest_framework.generics import RetrieveAPIView
+from .serializers import SingleBlogSerializer
+from rest_framework.exceptions import NotFound
 from django.conf import settings
 import uuid
+from itertools import chain
+from math import radians, sin, cos, sqrt, atan2
+from jwt.exceptions import (
+    ExpiredSignatureError,
+    InvalidTokenError
+)
+from users.models import Payment, UserProfile
+from rest_framework.authentication import BaseAuthentication
+from rest_framework.exceptions import AuthenticationFailed
+from django.db.models import IntegerField
+from django.db.models.functions import Cast
+from jwt import (
+    ExpiredSignatureError,
+    InvalidTokenError
+)
+import razorpay
 import jwt
+from .models import Wishlist
+from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
+from rest_framework.exceptions import AuthenticationFailed
+from django.core.exceptions import ObjectDoesNotExist
+from geopy.distance import geodesic
+from math import radians, sin, cos, sqrt, atan2
+from .models import  *
+from developer.models import  *
+from developer.models import Property, PropertyEnquiry
+from .serializers import PropertyEnquirySerializer
+from .utils import hashids
+from django.db.models import Case, When, Value, IntegerField
+from rest_framework_simplejwt.exceptions import InvalidToken
 import cloudinary.uploader
 from django.core.exceptions import ValidationError as DjangoValidationError
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
 from uuid import UUID
-from django.core.exceptions import ValidationError as DjangoValidationError
-from rest_framework.views import APIView
-from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.parsers import MultiPartParser, FormParser
-from rest_framework import status
-from django.conf import settings
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework.permissions import AllowAny
-
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
-from rest_framework.views import APIView
-from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
-
 from .models import UserCreate, UserProfile
 from rest_framework.exceptions import ParseError
-from django.conf import settings
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
-
-from .models import UserCreate, UserProfile
 from .serializers import UserProfileSerializer
 from django.core.files.base import ContentFile
-# import requests 
 # from geopy.distance import geodesic
 from . models import*
 from agents.views import *
 from math import radians, cos, sin, sqrt, atan2
-# Create your views here.
 from django.db.models import Min, Max
-import uuid
 from django.core.paginator import Paginator
 from django.http import HttpResponse
 from django.db.models import Sum
@@ -72,22 +75,17 @@ from django.views import View
 from cloudinary.uploader import upload
 from django.utils import timezone
 from django.http import FileResponse
-from django.db.models.functions import Lower
+from django.db.models.functions import Lower, Trim
 import os
-from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny
-from django.utils import timezone
 from django.contrib.auth.hashers import make_password
 import hmac
 import hashlib
-from django.conf import settings
 from developer.models import Premium
 from django.core.validators import validate_email
 from django.db.models import F
 import tempfile
 from selenium import webdriver
 from urllib.parse import quote
-from django.http import JsonResponse
 from django.db.models import Q
 from .utils import send_otp_email
 from rest_framework.decorators import api_view
@@ -100,50 +98,29 @@ from agents.utils import check_plan_notifications
 from agents.utils import create_notification
 from .utils import *
 import json
-import uuid
-import requests
 from django.core.cache import cache
 import base64
-import tempfile
-import cloudinary.uploader
-from django.conf import settings
-from django.core.files.base import ContentFile
 from rest_framework.parsers import FormParser
 from users.parsers import ImageCompressionMultiPartParser
-from rest_framework.parsers import FormParser
 from rest_framework import viewsets
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter
-from rest_framework.views import APIView
 from django.contrib.auth.hashers import check_password
 from .serializers import *
 from rest_framework_simplejwt.tokens import RefreshToken,TokenError
-from django.contrib.auth.hashers import check_password
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt
 import re
-from rest_framework.permissions import AllowAny
 from rest_framework.authentication import SessionAuthentication
 from django.contrib.auth import get_user_model
-import requests
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
-from rest_framework.permissions import IsAuthenticated
-from .utils import *
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from cloudinary.utils import cloudinary_url
 import secrets
 from urllib.parse import urlencode
 from rest_framework import generics
-from rest_framework.views import APIView
-from rest_framework import status
-from django.utils import timezone
 from datetime import timedelta
 import random
-
+from agents.authentication import AgentJWTAuthentication
 
 razorpay_client = razorpay.Client(
     auth=(
@@ -230,24 +207,6 @@ def property_form(request):
 
     return render(request, 'property_form.html')
 
-
-
-
-from django.http import JsonResponse
-from django.core.exceptions import ObjectDoesNotExist
-from geopy.distance import geodesic
-from django.shortcuts import render, redirect
-from django.http import JsonResponse
-from math import radians, sin, cos, sqrt, atan2
-from urllib.parse import quote
-
-from django.shortcuts import render, redirect
-from django.http import JsonResponse
-from django.contrib import messages
-from urllib.parse import quote
-
-from .models import  *
-from developer.models import  *
 
 
 def index(request):
@@ -637,7 +596,6 @@ def map_embed(self):
             f'<iframe src="{self.location}" class="w-full h-full rounded-md" style="border:0;" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>')
 
     # Otherwise, treat it as a plain address and generate embed URL using API
-    from urllib.parse import quote
     address = quote(self.location)
     api_key = "YOUR_GOOGLE_API_KEY"  # replace with your key
     embed_url = f"https://www.google.com/maps/embed/v1/place?key={api_key}&q={address}"
@@ -1155,22 +1113,17 @@ class FeaturedPropertyViewSet(viewsets.ModelViewSet):
     authentication_classes = []
     http_method_names = ["get"]
 
-    # ===============================
-    # QUERYSET
-    # ===============================
     def get_queryset(self):
 
         return Property.objects.filter(
-            is_featured=True
+            is_featured=True,
+            deleted=False
         ).prefetch_related(
             "images",
             "category",
             "purpose"
         )
 
-    # ===============================
-    # USER
-    # ===============================
     def get_user(self):
 
         auth_header = self.request.headers.get(
@@ -1195,7 +1148,6 @@ class FeaturedPropertyViewSet(viewsets.ModelViewSet):
             if not user_id:
                 return None
 
-            # SAFE UUID HANDLING
             try:
 
                 user_id = uuid.UUID(
@@ -1213,9 +1165,6 @@ class FeaturedPropertyViewSet(viewsets.ModelViewSet):
         except Exception as e:
             return None
 
-    # ===============================
-    # CONTEXT (WISHLIST FIX)
-    # ===============================
     def get_serializer_context(self):
 
         context = super().get_serializer_context()
@@ -1233,7 +1182,6 @@ class FeaturedPropertyViewSet(viewsets.ModelViewSet):
                 flat=True
             )
 
-            # UUID -> STRING
             wishlist_ids = {
                 str(i)
                 for i in wishlist_ids
@@ -1243,64 +1191,44 @@ class FeaturedPropertyViewSet(viewsets.ModelViewSet):
 
         return context
 
-    # ===============================
-    # LIST
-    # ===============================
     def list(self, request, *args, **kwargs):
 
         context = self.get_serializer_context()
 
-        # ===============================
-        # FEATURED USER PROPERTIES
-        # ===============================
         user_properties = Property.objects.filter(
-            is_featured=True
+            is_featured=True,
+            deleted=False
         ).prefetch_related(
             "images",
             "category",
             "purpose"
         )
-
-        # ===============================
-        # FEATURED AGENT PROPERTIES
-        # ===============================
         agent_properties = AgentProperty.objects.filter(
-            is_featured=True
+            is_featured=True,
+            deleted=False
         ).prefetch_related(
             "images",
             "category",
             "purpose"
         )
 
-        # ===============================
-        # USER PROPERTY DATA
-        # ===============================
         user_data = PropertyCardSerializer(
             user_properties,
             many=True,
             context=context
         ).data
 
-        # ===============================
-        # AGENT PROPERTY DATA
-        # ===============================
         agent_data = AgentPropertyCardSerializer(
             agent_properties,
             many=True,
             context=context
         ).data
 
-        # ===============================
-        # COMBINE BOTH
-        # ===============================
         featured_data = (
             user_data +
             agent_data
         )
 
-        # ===============================
-        # RESPONSE
-        # ===============================
         return Response(
             featured_data,
             status=status.HTTP_200_OK
@@ -3036,7 +2964,7 @@ class LogoutAPIView(APIView):
         return response
 
 
-from agents.authentication import AgentJWTAuthentication
+
 class InboxCreateAPIView(APIView):
 
     authentication_classes = []   # public message form
@@ -4136,11 +4064,6 @@ class ToggleReviewLikeAPIView(APIView):
         })
 
 
-from django.db.models import Case, When, Value, IntegerField
-from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny
-from rest_framework.response import Response
-
 
 class AgentListFrontendAPIView(APIView):
     permission_classes = [AllowAny]
@@ -4293,10 +4216,6 @@ class PublicAgentProfileAPIView(APIView):
 
 
 
-
-from rest_framework.exceptions import AuthenticationFailed
-
-
 class AgentJWTAuthentication(JWTAuthentication):
 
     def get_user(self, validated_token):
@@ -4314,7 +4233,6 @@ class AgentJWTAuthentication(JWTAuthentication):
 
 from collections import defaultdict
 
-from collections import defaultdict
 
 class PlanListAPIView(APIView):
 
@@ -4633,33 +4551,6 @@ class PlanListAPIView(APIView):
         # ).order_by("start_date")
 
         upgrade_subscription = None
-
-        # subscriptions_data = []
-
-        # for subscription in active_subscriptions:
-
-        #     data = {
-        #         "subscription_id": str(subscription.id),
-        #         "plan_name": subscription.plan_name,
-        #         "property_limit": subscription.property_limit,
-        #         "used_listings": subscription.used_listings,
-        #         "remaining_listings": (
-        #             subscription.property_limit -
-        #             subscription.used_listings
-        #         ),
-        #         "start_date": subscription.start_date,
-        #         "end_date": subscription.end_date,
-        #         "is_active": subscription.is_active
-        #     }
-
-        #     subscriptions_data.append(data)
-
-        # if len(subscriptions_data) >= 2:
-        #     upgrade_subscription = subscriptions_data[1]
-
-        # is_upgrade_plan = (
-        #     upgrade_subscription is not None
-        # )
         subscriptions_data = []
 
         for subscription in active_subscriptions:
@@ -4737,15 +4628,6 @@ class PlanListAPIView(APIView):
                 }
             ]
 
-        # current_subscription = None
-        # upgrade_subscription = None
-
-        # if len(subscriptions_data) >= 1:
-        #     current_subscription = subscriptions_data[0]
-
-        # if len(subscriptions_data) >= 2:
-        #     upgrade_subscription = subscriptions_data[1]
-
         return Response({
 
             "is_upgrade_plan": (
@@ -4767,41 +4649,6 @@ class PlanListAPIView(APIView):
 
         })      
 
-        # # ================= FINAL RESPONSE =================
-
-        # return Response({
-        #     "is_upgrade_plan": is_upgrade_plan,
-
-        #     "current_plan": current_plan,
-
-        #     "upgrade_plan": upgrade_subscription,
-
-        #     "current_active_subscriptions":
-        #         subscriptions_data,
-
-
-        #     # "plans": [
-
-        #     #     {
-        #     #         "id": "premium",
-        #     #         # "plan_type": "premium",
-        #     #         "name": "Premium Agent",
-        #     #         "plans": premium_plans
-        #     #     },
-
-        #     #     {
-        #     #         "id": "elite",
-        #     #         # "plan_type": "elite",
-        #     #         "name": "Elite Agent",
-        #     #         "plans": elite_plans
-        #     #     }
-        #     # ],
-
-        #     "advertisement_packages": formatted_ads,
-
-        #     "reel_packages": formatted_reels
-
-        # })
 
 class AgentUpgradePlanAPIView(APIView):
     authentication_classes = [AgentJWTAuthentication]
@@ -5272,12 +5119,7 @@ class AgentPlansAPIView(APIView):
             "plans": response_data
         }, status=status.HTTP_200_OK)
 
-import jwt
 
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
-from rest_framework_simplejwt.exceptions import InvalidToken
 
 class AllPlansAPIView(APIView):
 
@@ -5492,7 +5334,6 @@ class ChangePasswordAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-import json
 
 
 class AmenitiesAPIView(View):
@@ -5721,7 +5562,8 @@ class AgentPropertyListAPIView(APIView):
         user = request.user
 
         properties = AgentProperty.objects.filter(
-            agent=user
+            agent=user,
+            deleted=False
         ).select_related(
             "category",
             "subcategory",
@@ -6702,10 +6544,6 @@ class AgentPropertyAPIView(APIView):
         })
 
 
-from django.db.models import Q
-from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny
-from rest_framework.response import Response
 
 class PublicPropertyListAPIView(APIView):
     authentication_classes = []
@@ -6809,28 +6647,19 @@ class AgentPropertyDetailAPIView(APIView):
             }, status=400)
 
         return super().handle_exception(exc)
-
-    # =========================================
-    # GET OBJECT
-    # =========================================
-
     def get_object(self, request, id):
 
         try:
 
             return AgentProperty.objects.get(
                 id=id,
-                agent=request.user
+                agent=request.user,
+                deleted=False
             )
 
         except AgentProperty.DoesNotExist:
 
             return None
-
-    # =========================================
-    # PARSE LIST FIELD
-    # =========================================
-
     def parse_list_field(self, request, field_name):
 
         if hasattr(request.data, 'getlist'):
@@ -6865,11 +6694,6 @@ class AgentPropertyDetailAPIView(APIView):
 
             except json.JSONDecodeError:
                 return []
-
-    # =========================================
-    # GET
-    # =========================================
-
     def get(self, request, id):
 
         property_obj = self.get_object(
@@ -6893,10 +6717,6 @@ class AgentPropertyDetailAPIView(APIView):
             "data": serializer.data
         })
 
-    # =========================================
-    # UPDATE
-    # =========================================
-
     def put(self, request, id):
 
         property_obj = self.get_object(
@@ -6905,25 +6725,6 @@ class AgentPropertyDetailAPIView(APIView):
         )
         agent = request.user
 
-        # active_subscriptions = Subscription.objects.filter(
-        #     agent=agent,
-        #     is_active=True
-        # ).order_by("start_date")
-
-        # total_edit_limit = sum(
-        #     subscription.edit_limit
-        #     for subscription in active_subscriptions
-        # )
-
-        # total_used_edits = sum(
-        #     subscription.edit_used
-        #     for subscription in active_subscriptions
-        # )
-
-        # remaining_edits = (
-        #     total_edit_limit -
-        #     total_used_edits
-        # )
         active_subscriptions = Subscription.objects.filter(
             agent=agent,
             is_active=True
@@ -7106,9 +6907,6 @@ class AgentPropertyDetailAPIView(APIView):
 
                     }, status=400)
 
-        # amenities_list = request.data.getlist(
-        #     'amenities'
-        # )
         amenities_list = self.parse_list_field(
             request,
             'amenities'
@@ -7145,14 +6943,7 @@ class AgentPropertyDetailAPIView(APIView):
         if serializer.is_valid():
 
             property_obj = serializer.save()
-            # subscription = Subscription.objects.filter(
-            #     agent=request.user,
-            #     is_active=True
-            # ).first()
-
-            # if subscription:
-            #     subscription.edit_used += 1
-            #     subscription.save()
+           
             selected_subscription = None
 
             for subscription in active_subscriptions:
@@ -7215,10 +7006,6 @@ class AgentPropertyDetailAPIView(APIView):
             status=400
         )
 
-    # =========================================
-    # DELETE
-    # =========================================
-
     def delete(self, request, id):
 
         property_obj = self.get_object(
@@ -7234,7 +7021,7 @@ class AgentPropertyDetailAPIView(APIView):
 
         agent = request.user
 
-        property_obj.delete()
+        property_obj.soft_delete()
 
         if agent.properties_listed > 0:
 
@@ -7248,10 +7035,6 @@ class AgentPropertyDetailAPIView(APIView):
 
         })
     
-
-
-
-from django.db.models.functions import ExtractMonth
 
 class AgentPropertyEnquiryCreateAPI(APIView):
 
@@ -7415,7 +7198,7 @@ class DashboardAPIView(APIView):
 
         user = request.user
 
-        agent_properties = AgentProperty.objects.filter(agent=user)
+        agent_properties = AgentProperty.objects.filter(agent=user,deleted=False)
 
         total_properties = agent_properties.count()
         total_added_properties = user.total_property_used or 0
@@ -7425,11 +7208,6 @@ class DashboardAPIView(APIView):
         )
 
         total_enquiries = enquiries_qs.count()
-
-        # ================= PLAN LIMIT =================
-        # total_limit, residential_limit, commercial_limit = user.get_plan_limits()
-
-        # remaining_listings = max(total_limit - total_properties, 0)
         active_subscriptions = Subscription.objects.filter(
             agent=user,
             is_active=True
@@ -7468,8 +7246,13 @@ class DashboardAPIView(APIView):
             total_added_properties - subscription_properties_count,
             0
         )
+        soft_deleted_count = AgentProperty.objects.filter(
+            agent=user,
+            deleted=True
+        ).count()
 
-        # ================= MONTHLY =================
+        deleted_property_count += soft_deleted_count
+
         current_year = timezone.now().year
 
         monthly = (
@@ -7709,14 +7492,6 @@ class WishlistView(APIView):
 
 
 
-from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
-from rest_framework import generics
-from rest_framework.permissions import AllowAny
-from django.db.models import Q
-import jwt
-from django.conf import settings
-from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
-
 class PropertyListAPI(generics.ListAPIView):
     serializer_class = PropertyCardSerializer
     permission_classes = [AllowAny]
@@ -7838,9 +7613,6 @@ class WishlistView(APIView):
     authentication_classes = []
     permission_classes = [AllowAny]
 
-    # -----------------------------
-    # AUTH
-    # -----------------------------
     def get_user_from_token(self, request):
 
         auth = request.headers.get(
@@ -7875,9 +7647,6 @@ class WishlistView(APIView):
                 "error": "Invalid token"
             }, status=401)
 
-    # -----------------------------
-    # GET WISHLIST
-    # -----------------------------
     def get(self, request):
 
         user, error = self.get_user_from_token(
@@ -7889,6 +7658,14 @@ class WishlistView(APIView):
 
         wishlist = Wishlist.objects.filter(
             user=user
+        ).exclude(
+            property_uuid__in=Property.objects.filter(
+                deleted=True
+            ).values_list("id", flat=True)
+        ).exclude(
+            property_uuid__in=AgentProperty.objects.filter(
+                deleted=True
+            ).values_list("id", flat=True)
         )
 
         serializer = WishlistSerializer(
@@ -7900,9 +7677,6 @@ class WishlistView(APIView):
             serializer.data
         )
 
-    # -----------------------------
-    # ADD TO WISHLIST
-    # -----------------------------
     def post(self, request):
 
         user, error = self.get_user_from_token(
@@ -7920,17 +7694,18 @@ class WishlistView(APIView):
                 "error": "id required"
             }, status=400)
 
-        # ✅ UUID PROPERTY CHECK FIX
         exists = (
 
             Property.objects.filter(
-                id=property_id
+                id=property_id,
+                deleted=False
             ).exists()
 
             or
 
             AgentProperty.objects.filter(
-                id=property_id
+                id=property_id,
+                deleted=False
             ).exists()
         )
 
@@ -7957,9 +7732,6 @@ class WishlistView(APIView):
             "message": "Added to wishlist"
         })
 
-    # -----------------------------
-    # REMOVE FROM WISHLIST
-    # -----------------------------
     def delete(self, request):
 
         user, error = self.get_user_from_token(
@@ -7998,9 +7770,7 @@ class WishlistView(APIView):
         }, status=404)
 
 
-from rest_framework import generics
-from rest_framework.permissions import AllowAny
-from rest_framework.exceptions import NotFound
+
 
 class PropertyDetailAPIView(generics.RetrieveAPIView):
     serializer_class = PropertyDetailSerializer
@@ -8052,15 +7822,8 @@ class PropertyDetailAPIView(generics.RetrieveAPIView):
         context["request"] = self.request
         return context
 
-from rest_framework import generics, status
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.exceptions import AuthenticationFailed
 
-from .models import Property, PropertyEnquiry
-from .serializers import PropertyEnquirySerializer
-from .authentication import UserJWTAuthentication
-from .utils import hashids
+
 
 
 class PropertyEnquiryCreateView(generics.CreateAPIView):
@@ -8145,10 +7908,6 @@ class PropertyEnquiryCreateView(generics.CreateAPIView):
 
 from uuid import UUID
 from itertools import chain
-from django.utils import timezone
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
 
 class RelatedPropertiesAPIView(APIView):
 
@@ -8156,10 +7915,6 @@ class RelatedPropertiesAPIView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request, uuid_id):
-
-        # =============================
-        # VALIDATE UUID
-        # =============================
         try:
             uuid_obj = UUID(str(uuid_id))
         except ValueError:
@@ -8170,29 +7925,25 @@ class RelatedPropertiesAPIView(APIView):
 
         current_property = None
 
-        # =============================
-        # TRY PROPERTY (FIXED: id not uuid)
-        # =============================
         obj = Property.objects.select_related(
             "category",
             "purpose"
         ).filter(
-            id=uuid_obj   # 🔥 FIX HERE
+            id=uuid_obj,
+            deleted=False
         ).first()
 
         if obj:
             current_property = obj
 
-        # =============================
-        # TRY AGENT PROPERTY (FIXED)
-        # =============================
         if not current_property:
 
             obj = AgentProperty.objects.select_related(
                 "category",
                 "purpose"
             ).filter(
-                id=uuid_obj   # 🔥 FIX HERE
+                id=uuid_obj,
+                deleted=False
             ).first()
 
             if obj:
@@ -8204,14 +7955,12 @@ class RelatedPropertiesAPIView(APIView):
                 status=404
             )
 
-        # =============================
-        # USER RELATED (FIXED)
-        # =============================
         user_related = Property.objects.filter(
             category=current_property.category,
-            purpose=current_property.purpose
+            purpose=current_property.purpose,
+            deleted=False
         ).exclude(
-            id=current_property.id   # 🔥 FIX HERE
+            id=current_property.id   
         ).select_related(
             "user"
         ).prefetch_related(
@@ -8220,21 +7969,16 @@ class RelatedPropertiesAPIView(APIView):
             expiry_date__gte=timezone.now()
         )
 
-        # =============================
-        # AGENT RELATED (FIXED)
-        # =============================
         agent_related = AgentProperty.objects.filter(
             category=current_property.category,
-            purpose=current_property.purpose
+            purpose=current_property.purpose,
+            deleted=False
         ).exclude(
-            id=current_property.id   # 🔥 FIX HERE
+            id=current_property.id   
         ).select_related(
             "agent"
         )
 
-        # =============================
-        # COMBINE
-        # =============================
         combined = list(chain(user_related, agent_related))
 
         combined.sort(
@@ -8243,10 +7987,6 @@ class RelatedPropertiesAPIView(APIView):
         )
 
         combined = combined[:10]
-
-        # =============================
-        # SERIALIZER
-        # =============================
         serializer = CombinedPropertyListSerializer(
             combined,
             many=True,
@@ -8293,11 +8033,6 @@ class BlogListingAPIView(APIView):
         )
 
         return Response(serializer.data,status=status.HTTP_200_OK)
-    
-
-from rest_framework.generics import RetrieveAPIView
-from .models import Blog
-from .serializers import SingleBlogSerializer
 
 
 class SingleBlogAPIView(RetrieveAPIView):
@@ -8311,9 +8046,7 @@ class SingleBlogAPIView(RetrieveAPIView):
 
 
 
-from rest_framework.generics import ListAPIView
-from .models import Blog
-# from .serializers import BlogSerializer
+
 
 
 class BlogByCategoryAPIView(ListAPIView):
@@ -8355,15 +8088,6 @@ class BlogNameSearchAPIView(ListAPIView):
 
 
 
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
-
-from .models import Wishlist
-from .authentication import UserJWTAuthentication
-
-
 class BulkWishlistDeleteAPIView(APIView):
     """
     Delete ALL wishlist items of logged-in user
@@ -8397,10 +8121,6 @@ class WishlistFilterAPIView(APIView):
 
         user = request.user
         purpose_name = request.query_params.get("purpose")
-
-        # -----------------------------------
-        # STEP 1: GET WISHLIST IDS
-        # -----------------------------------
         wishlist_qs = Wishlist.objects.filter(user_id=user.id)
 
         property_ids = list(
@@ -8410,12 +8130,9 @@ class WishlistFilterAPIView(APIView):
         property_ids = [pid for pid in property_ids if pid]
 
         wishlist_ids = set(str(pid) for pid in property_ids)
-
-        # -----------------------------------
-        # STEP 2: FETCH USER PROPERTIES
-        # -----------------------------------
         user_properties = Property.objects.filter(
-            id__in=property_ids
+            id__in=property_ids,
+            deleted=False
         ).select_related(
             "user",
             "purpose",
@@ -8423,26 +8140,15 @@ class WishlistFilterAPIView(APIView):
         ).prefetch_related(
             "images"
         )
-
-        # -----------------------------------
-        # STEP 3: FETCH AGENT PROPERTIES
-        # -----------------------------------
         agent_properties = AgentProperty.objects.filter(
-            id__in=property_ids
+            id__in=property_ids,
+            deleted=False
         ).select_related(
             "agent",
             "purpose",
             "category"
         )
-
-        # -----------------------------------
-        # STEP 4: COMBINE
-        # -----------------------------------
         combined = list(user_properties) + list(agent_properties)
-
-        # -----------------------------------
-        # STEP 5: PURPOSE FILTER
-        # -----------------------------------
         if purpose_name and purpose_name.strip().lower() != "all":
 
             purpose_name = purpose_name.strip().lower()
@@ -8452,9 +8158,6 @@ class WishlistFilterAPIView(APIView):
                 if obj.purpose and obj.purpose.name.lower() == purpose_name
             ]
 
-        # -----------------------------------
-        # STEP 6: BUILD RESPONSE (FULL FIELDS)
-        # -----------------------------------
         results = []
 
         for obj in combined:
@@ -8470,8 +8173,6 @@ class WishlistFilterAPIView(APIView):
                 "price": obj.price,
                 "sq_ft": str(getattr(obj, "sq_ft", "")),
                 "land_area": obj.land_area,
-
-                # OWNER (different for both models)
                 "owner": (
                     obj.owner if isinstance(obj, Property) and obj.owner
                     else getattr(obj, "user", None)
@@ -8480,19 +8181,11 @@ class WishlistFilterAPIView(APIView):
                 "whatsapp": getattr(obj, "whatsapp", None),
                 "phone": getattr(obj, "phone", None),
                 "location": obj.location,
-
-                # -----------------------------------
-                # IMAGES SAFE HANDLING
-                # -----------------------------------
                 "images": (
                     [img.image.url for img in obj.images.all()]
                     if hasattr(obj, "images") and obj.images.exists()
                     else ([obj.image.url] if getattr(obj, "image", None) else [])
                 ),
-
-                # -----------------------------------
-                # WISHLIST FLAG
-                # -----------------------------------
                 "is_wishlisted": str(obj.id) in wishlist_ids,
             })
 
@@ -8519,11 +8212,13 @@ class WishlistSortingAPIView(APIView):
         )
 
         user_properties = Property.objects.filter(
-            id__in=wishlist_ids
+            id__in=wishlist_ids,
+            deleted=False
         )
 
         agent_properties = AgentProperty.objects.filter(
-            id__in=wishlist_ids
+            id__in=wishlist_ids,
+            deleted=False
         )
 
         properties = list(user_properties) + list(agent_properties)
@@ -8656,7 +8351,6 @@ class WishlistSortingAPIView(APIView):
                 "phone": getattr(obj, "phone", None),
                 "location": obj.location,
 
-                # Images safe handling
                 "images": (
                     [img.image.url for img in obj.images.all()]
                     if hasattr(obj, "images") and obj.images.exists()
@@ -8676,10 +8370,6 @@ class WishlistSortingAPIView(APIView):
         )
 
 
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
 
 class UserProfileUpdateView(APIView):
 
@@ -8907,10 +8597,6 @@ class AgentDetailAPIView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
 
-    # =====================================================
-    # GET LOGGED USER
-    # =====================================================
-
     def get_logged_user(self, request):
 
         auth_header = request.headers.get(
@@ -8937,11 +8623,6 @@ class AgentDetailAPIView(APIView):
 
         except Exception:
             return None
-
-    # =====================================================
-    # GET
-    # =====================================================
-
     def get(self, request, agent_id):
 
         logged_user = self.get_logged_user(
@@ -8949,10 +8630,6 @@ class AgentDetailAPIView(APIView):
         )
 
         agent = None
-
-        # =====================================================
-        # UUID CHECK
-        # =====================================================
 
         try:
 
@@ -8965,29 +8642,17 @@ class AgentDetailAPIView(APIView):
         except ValueError:
             pass
 
-        # =====================================================
-        # AGENT CODE CHECK
-        # =====================================================
-
         if not agent:
 
             agent = AgentUserProfile.objects.filter(
                 agent_code=agent_id
             ).first()
 
-        # =====================================================
-        # NOT FOUND
-        # =====================================================
-
         if not agent:
 
             return Response({
                 "error": "Agent not found"
             }, status=404)
-
-        # =====================================================
-        # AGENT DATA
-        # =====================================================
 
         agent_data = AgentDetailSerializer(
             agent,
@@ -8996,17 +8661,10 @@ class AgentDetailAPIView(APIView):
             }
         ).data
 
-        # =====================================================
-        # PROPERTY QUERY
-        # =====================================================
-
         queryset = AgentProperty.objects.filter(
-            agent=agent
+            agent=agent,
+            deleted=False
         )
-
-        # =====================================================
-        # CATEGORY FILTER
-        # =====================================================
 
         category = request.GET.get(
             "category"
@@ -9017,10 +8675,6 @@ class AgentDetailAPIView(APIView):
             queryset = queryset.filter(
                 category__name__icontains=category
             )
-
-        # =====================================================
-        # SEARCH FILTER
-        # =====================================================
 
         search = request.GET.get(
             "search"
@@ -9041,10 +8695,6 @@ class AgentDetailAPIView(APIView):
         queryset = queryset.distinct()
 
         total_properties = queryset.count()
-
-        # =====================================================
-        # PROPERTY SERIALIZER
-        # =====================================================
 
         properties_data = []
 
@@ -9089,11 +8739,6 @@ class AgentDetailAPIView(APIView):
                     for i in wishlist_ids
                 ]
 
-                # wishlist_ids = [
-                #     str(i)
-                #     for i in wishlist_ids
-                # ]
-
             for property_data in properties_data:
 
                 property_data["is_wishlist"] = (
@@ -9102,10 +8747,6 @@ class AgentDetailAPIView(APIView):
                     in wishlist_ids
 
                 )
-
-        # =====================================================
-        # UPDATE REVIEW OWNER FIELD
-        # =====================================================
 
         reviews = agent_data.get(
             "reviews",
@@ -9140,10 +8781,6 @@ class AgentDetailAPIView(APIView):
                     in user_review_ids
 
                 )
-
-        # =====================================================
-        # RESPONSE
-        # =====================================================
 
         agent_data["properties_count"] = (
             total_properties
@@ -9220,18 +8857,8 @@ class PropertyFilterAPIView(APIView):
 
 
 
-
-import jwt
-
 from decimal import Decimal, InvalidOperation
 from itertools import chain
-
-from django.conf import settings
-from django.db.models import Q
-
-from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny
-from rest_framework.response import Response
 
 
 class PropertySearchAPIView(APIView):
@@ -9435,7 +9062,9 @@ class PropertySearchAPIView(APIView):
 
         search_words = text_query.split()
 
-        user_properties = Property.objects.select_related(
+        user_properties = Property.objects.filter(
+            deleted=False
+        ).select_related(
             "user",
             "category",
             "purpose"
@@ -9443,7 +9072,9 @@ class PropertySearchAPIView(APIView):
             "images"
         )
 
-        agent_properties = AgentProperty.objects.select_related(
+        agent_properties = AgentProperty.objects.filter(
+            deleted=False
+        ).select_related(
             "agent",
             "category",
             "purpose"
@@ -9600,11 +9231,6 @@ class PropertyEnquiryByUserAPIView(APIView):
 
 
 from math import radians, sin, cos, sqrt, atan2
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
-
 from .models import Property
 from .serializers import PropertySerializer
 
@@ -9908,13 +9534,6 @@ def normalize_location_value(value):
 
 
 
-
-
-from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny
-from rest_framework.response import Response
-
-
 def normalize_location_key(value):
     """
     Create a common key for matching equivalent location names.
@@ -9987,7 +9606,9 @@ class PropertyFilterOptionsAPIView(APIView):
 
         location_map = {}
 
-        user_properties = Property.objects.values(
+        user_properties = Property.objects.filter(
+            deleted=False
+        ).values(
             "state",
             "district",
             "city"
@@ -9997,7 +9618,9 @@ class PropertyFilterOptionsAPIView(APIView):
             "city"
         )
 
-        agent_properties = AgentProperty.objects.values(
+        agent_properties = AgentProperty.objects.filter(
+            deleted=False
+        ).values(
             "state",
             "district",
             "city"
@@ -10236,9 +9859,7 @@ class AgentPropertyLocationAPIView(APIView):
         })
     
 
-import uuid
 
-from django.db.models.functions import Lower, Trim
 
 class AgentPropertyCityFilterAPIView(APIView):
     permission_classes = [AllowAny]
@@ -10278,7 +9899,8 @@ class AgentPropertyCityFilterAPIView(APIView):
 
         cities = (
             AgentProperty.objects.filter(
-                agent=agent
+                agent=agent,
+                deleted=False
             )
             .exclude(city__isnull=True)
             .exclude(city__exact="")
@@ -10334,7 +9956,8 @@ class AgentPropertyCityFilterAPIView(APIView):
 
 
         queryset = AgentProperty.objects.filter(
-            agent=agent
+            agent=agent,
+            deleted=False
         ).annotate(
             clean_city=Lower(Trim("city"))
         ).filter(
@@ -10356,12 +9979,6 @@ class AgentPropertyCityFilterAPIView(APIView):
             "properties": serializer.data
         })
     
-
-from django.db.models import Q
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
-import uuid
 
 
 class AgentPropertySearchAPIView(APIView):
@@ -10420,7 +10037,9 @@ class AgentPropertySearchAPIView(APIView):
                 "message": "Search only available for premium/elite agents"
             })
 
-        queryset = AgentProperty.objects.select_related(
+        queryset = AgentProperty.objects.filter(
+            deleted=False
+        ).select_related(
             "category",
             "subcategory",
             "purpose",
@@ -10483,7 +10102,9 @@ class CombinedPropertyListAPIView(APIView):
 
     def get(self, request):
 
-        user_properties = Property.objects.select_related(
+        user_properties = Property.objects.filter(
+            deleted=False
+        ).select_related(
             "user",
             "category",
             "purpose"
@@ -10491,7 +10112,9 @@ class CombinedPropertyListAPIView(APIView):
             "images"
         )
 
-        agent_properties = AgentProperty.objects.select_related(
+        agent_properties = AgentProperty.objects.filter(
+            deleted=False
+        ).select_related(
             "agent",
             "category",
             "purpose"
@@ -10761,11 +10384,6 @@ class CombinedPropertyListAPIView(APIView):
 
         
 from uuid import UUID
-
-from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny
-from rest_framework.response import Response
-
 from users.models import UserProfile
 
 class UniversalPropertyDetailAPIView(APIView):
@@ -10973,19 +10591,10 @@ class UniversalPropertyDetailAPIView(APIView):
                 context={"request": request}
             )
 
-            # data = serializer.data
-
-            # return Response({
-            #     ...
-            #     "is_wishlist": is_wishlist,
-            # })
-
-        # =====================================================
-        # USER PROPERTY
-        # =====================================================
-
+          
         obj = Property.objects.filter(
-            id=uuid_obj
+            id=uuid_obj,
+            deleted=False
         ).first()
 
         if obj:
@@ -11136,7 +10745,8 @@ class UniversalPropertyDetailAPIView(APIView):
         # =====================================================
 
         obj = AgentProperty.objects.filter(
-            id=uuid_obj
+            id=uuid_obj,
+            deleted=False
         ).first()
 
         if obj:
@@ -11301,10 +10911,6 @@ class UniversalPropertyDetailAPIView(APIView):
 
 
 from uuid import UUID
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
 
 
 class UniversalPropertyEnquiryAPI(APIView):
@@ -11380,23 +10986,6 @@ class UniversalPropertyEnquiryAPI(APIView):
             {"error": "Property not found"},
             status=status.HTTP_404_NOT_FOUND
         )
-
-
-import jwt
-
-from itertools import chain
-from math import radians, sin, cos, sqrt, atan2
-
-from django.conf import settings
-
-from jwt.exceptions import (
-    ExpiredSignatureError,
-    InvalidTokenError
-)
-
-from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny
-from rest_framework.response import Response
 
 
 class NearbyPropertyAPIView(APIView):
@@ -11784,7 +11373,7 @@ class NearbyPropertyAPIView(APIView):
 
             radius = None
         user_properties = (
-            Property.objects
+            Property.objects.filter(deleted=False)
             .select_related(
                 "user",
                 "category",
@@ -11795,7 +11384,7 @@ class NearbyPropertyAPIView(APIView):
             )
         )
         agent_properties = (
-            AgentProperty.objects
+            AgentProperty.objects.filter(deleted=False)
             .select_related(
                 "agent",
                 "category",
@@ -11959,25 +11548,6 @@ class NearbyPropertyAPIView(APIView):
         )
 
 
-import jwt
-
-from itertools import chain
-
-from django.conf import settings
-from django.db.models import IntegerField
-from django.db.models import Q
-from django.db.models.functions import Cast
-
-from jwt import (
-    ExpiredSignatureError,
-    InvalidTokenError
-)
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
-from rest_framework import status
-
 
 class PropertiesFilterAPIView(APIView):
 
@@ -11990,7 +11560,9 @@ class PropertiesFilterAPIView(APIView):
         # --------------------------------
         # QUERYSETS
         # --------------------------------
-        user_queryset = Property.objects.select_related(
+        user_queryset = Property.objects.filter(
+            deleted=False
+        ).select_related(
             "user",
             "category",
             "purpose"
@@ -11999,7 +11571,9 @@ class PropertiesFilterAPIView(APIView):
         )
 
 
-        agent_queryset = AgentProperty.objects.select_related(
+        agent_queryset = AgentProperty.objects.filter(
+            deleted=False
+        ).select_related(
             "agent",
             "category",
             "purpose"
@@ -12210,11 +11784,6 @@ class PropertiesFilterAPIView(APIView):
         )
 
 
-from rest_framework.authentication import BaseAuthentication
-from rest_framework.exceptions import AuthenticationFailed
-import jwt
-
-
 class UnifiedJWTAuthentication(BaseAuthentication):
 
     def authenticate(self, request):
@@ -12346,10 +11915,6 @@ class UnifiedEnquiryListAPIView(APIView):
             status=405
         )
 
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 
 class   EnquiryDetailAPIView(APIView):
@@ -12501,7 +12066,8 @@ class UserPropertyDetailAPIView(APIView):
 
             return Property.objects.filter(
                 id=id,
-                user=request.user
+                user=request.user,
+                deleted=False
             ).select_related(
                 "category",
                 "subcategory",
@@ -12511,10 +12077,6 @@ class UserPropertyDetailAPIView(APIView):
 
         except Exception:
             return None
-
-    # =========================================================
-    # JSON PARSER
-    # =========================================================
 
     def parse_json(self, value):
 
@@ -12536,10 +12098,6 @@ class UserPropertyDetailAPIView(APIView):
                 return value
 
         return value
-
-    # =========================================================
-    # LIST PARSER
-    # =========================================================
 
     def parse_list_field(self, request, field_name):
 
@@ -12584,10 +12142,6 @@ class UserPropertyDetailAPIView(APIView):
 
         return parsed
 
-    # =========================================================
-    # GET
-    # =========================================================
-
     def get(self, request, id):
 
         obj = self.get_object(
@@ -12604,15 +12158,6 @@ class UserPropertyDetailAPIView(APIView):
 
             }, status=status.HTTP_404_NOT_FOUND)
 
-        # =====================================================
-        # PROPERTY LIMIT DATA
-        # =====================================================
-
-        # limit_data = get_property_remaining_counts(
-        #     request.user
-        # )
-        # Only subscription properties need plan limit calculation
-        # limit_data = None
         limit_data = get_property_remaining_counts(request.user)
 
         if obj.subscription:
@@ -12645,10 +12190,6 @@ class UserPropertyDetailAPIView(APIView):
 
         }, status=status.HTTP_200_OK)
 
-    # =========================================================
-    # UPDATE
-    # =========================================================
-
     def put(self, request, id):
 
         obj = self.get_object(
@@ -12665,17 +12206,9 @@ class UserPropertyDetailAPIView(APIView):
 
             }, status=status.HTTP_404_NOT_FOUND)
 
-        # =====================================================
-        # PROPERTY LIMIT DATA
-        # =====================================================
-
         limit_data = get_property_remaining_counts(
             request.user
         )
-
-        # =====================================================
-        # FIND ANY AVAILABLE PLAN EDIT
-        # =====================================================
 
         use_subscription = None
 
@@ -12691,13 +12224,11 @@ class UserPropertyDetailAPIView(APIView):
 
         for sub in active_subscriptions:
 
-            # Unlimited edit plan
             if sub.is_unlimited_edit:
 
                 use_subscription = sub
                 break
 
-            # Normal edit plan
             if (
                 not sub.has_no_edit
                 and
@@ -12707,14 +12238,7 @@ class UserPropertyDetailAPIView(APIView):
                 use_subscription = sub
                 break
 
-        # =====================================================
-        # FIND SINGLE PROPERTY EDIT
-        # =====================================================
-
         single_property_for_edit = None
-
-        # Only search for single-property edits if
-        # there is no available plan edit.
 
         if use_subscription is None:
 
@@ -12750,13 +12274,6 @@ class UserPropertyDetailAPIView(APIView):
 
                     break
 
-        # =====================================================
-        # FINAL EDIT LIMIT CHECK
-        # =====================================================
-
-        # No plan edit and no single-property edit
-        # means the user's TOTAL edit count is zero.
-
         if (
             use_subscription is None
             and
@@ -12772,90 +12289,11 @@ class UserPropertyDetailAPIView(APIView):
 
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        # =====================================================
-        # IMPORTANT
-        # =====================================================
-        #
-        # DO NOT CHANGE obj.subscription HERE.
-        #
-        # The edit count belongs to the USER'S total
-        # edit pool, not to the property currently being edited.
-        #
-        # Therefore we do NOT do:
-        #
-        # obj.subscription = use_subscription
-        # obj.package = use_subscription.plan
-        #
-        # =====================================================
-
-        # =====================================================
-        # REQUEST DATA
-        # =====================================================
-
         data = (
             request.data.dict()
             if hasattr(request.data, "dict")
             else request.data.copy()
         )
-
-        # =====================================================
-        # IMAGE SIZE VALIDATION
-        # =====================================================
-
-        # MAX_IMAGE_SIZE = 2.5 * 1024 * 1024  # 2.5 MB
-
-        # # MAIN IMAGE
-        # image = request.FILES.get("image")
-
-        # if image and image.size >= MAX_IMAGE_SIZE:
-
-        #     return Response({
-
-        #         "status": False,
-
-        #         "message":
-        #         "Main image size must be less than 2.5 MB.",
-
-        #         "image":
-        #         image.name,
-
-        #         "size_mb":
-        #         round(
-        #             image.size / (1024 * 1024),
-        #             2
-        #         )
-
-        #     }, status=status.HTTP_400_BAD_REQUEST)
-
-        # # MULTIPLE IMAGES
-        # images = request.FILES.getlist("images")
-
-        # for img in images:
-
-        #     if img.size >= MAX_IMAGE_SIZE:
-
-        #         return Response({
-
-        #             "status": False,
-
-        #             "message":
-        #             "Each image size must be less than 2.5 MB.",
-
-        #             "image":
-        #             img.name,
-
-        #             "size_mb":
-        #             round(
-        #                 img.size / (1024 * 1024),
-        #                 2
-        #             )
-
-        #         }, status=status.HTTP_400_BAD_REQUEST)
-
-        # =====================================================
-        # REMOVE READ ONLY FIELDS
-        # =====================================================
-
         for field in [
 
             "id",
@@ -12867,10 +12305,6 @@ class UserPropertyDetailAPIView(APIView):
         ]:
 
             data.pop(field, None)
-
-        # =====================================================
-        # CATEGORY VALIDATION
-        # =====================================================
 
         new_category_id = data.get("category")
 
@@ -12895,10 +12329,6 @@ class UserPropertyDetailAPIView(APIView):
                 new_category.name.lower()
             )
 
-            # =================================================
-            # NEW CATEGORY TYPE
-            # =================================================
-
             is_residential = any(
                 keyword in category_name
                 for keyword in [
@@ -12914,10 +12344,6 @@ class UserPropertyDetailAPIView(APIView):
                     "industrial"
                 ]
             )
-
-            # =================================================
-            # OLD CATEGORY
-            # =================================================
 
             old_category_name = (
                 obj.category.name.lower()
@@ -12941,10 +12367,6 @@ class UserPropertyDetailAPIView(APIView):
                 ]
             )
 
-            # =================================================
-            # RESIDENTIAL CATEGORY CHANGE
-            # =================================================
-
             if (
                 old_is_residential != is_residential
             ):
@@ -12964,10 +12386,6 @@ class UserPropertyDetailAPIView(APIView):
 
                     }, status=status.HTTP_400_BAD_REQUEST)
 
-            # =================================================
-            # COMMERCIAL CATEGORY CHANGE
-            # =================================================
-
             if (
                 old_is_commercial != is_commercial
             ):
@@ -12986,10 +12404,6 @@ class UserPropertyDetailAPIView(APIView):
                         "Commercial property limit exceeded"
 
                     }, status=status.HTTP_400_BAD_REQUEST)
-
-        # =====================================================
-        # SERIALIZER CONTEXT
-        # =====================================================
 
         context = {
 
@@ -13020,10 +12434,6 @@ class UserPropertyDetailAPIView(APIView):
             ),
         }
 
-        # =====================================================
-        # SERIALIZER
-        # =====================================================
-
         serializer = UserPropertySerializer(
 
             obj,
@@ -13045,35 +12455,19 @@ class UserPropertyDetailAPIView(APIView):
 
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        # =====================================================
-        # OLD CATEGORY
-        # =====================================================
-
         old_category_name = (
             obj.category.name
             if obj.category
             else ""
         )
 
-        # =====================================================
-        # SAVE PROPERTY
-        # =====================================================
-
         instance = serializer.save()
-
-        # =====================================================
-        # NEW CATEGORY
-        # =====================================================
 
         new_category_name = (
             instance.category.name.lower().strip()
             if instance.category
             else ""
         )
-
-        # =====================================================
-        # UPDATE USER PROFILE CATEGORY COUNT
-        # =====================================================
 
         if (
             old_category_name.lower().strip()
@@ -13085,11 +12479,6 @@ class UserPropertyDetailAPIView(APIView):
                 old_category_name,
                 new_category_name
             )
-
-            # ---------------------------------------------
-            # UPDATE SUBSCRIPTION CATEGORY COUNT
-            # ---------------------------------------------
-
             if instance.subscription:
 
                 instance.subscription.change_property_category(
@@ -13097,25 +12486,10 @@ class UserPropertyDetailAPIView(APIView):
                     new_category_name
                 )
 
-        # =====================================================
-        # CONSUME EDIT COUNT
-        # =====================================================
-
         if use_subscription:
 
-            # =================================================
-            # UNLIMITED PLAN
-            # =================================================
-
             if use_subscription.is_unlimited_edit:
-
-                # Unlimited = don't increment edit_used
-
                 pass
-
-            # =================================================
-            # NORMAL PLAN
-            # =================================================
 
             elif (
                 not use_subscription.has_no_edit
@@ -13131,10 +12505,6 @@ class UserPropertyDetailAPIView(APIView):
                     ]
                 )
 
-        # =====================================================
-        # SINGLE PROPERTY EDIT
-        # =====================================================
-
         elif single_property_for_edit:
 
             single_property_for_edit.single_property_edit_used += 1
@@ -13145,18 +12515,9 @@ class UserPropertyDetailAPIView(APIView):
                 ]
             )
 
-        # =====================================================
-        # REFRESH PROPERTY LIMITS
-        # =====================================================
-
         limit_data = get_property_remaining_counts(
             request.user
         )
-
-        # =====================================================
-        # RESPONSE
-        # =====================================================
-
         return Response({
 
             "status": True,
@@ -13182,10 +12543,7 @@ class UserPropertyDetailAPIView(APIView):
             ).data
 
         }, status=status.HTTP_200_OK)
-    # =========================================================
-    # DELETE
-    # =========================================================
-
+    
     def delete(self, request, id):
 
         obj = self.get_object(
@@ -13202,12 +12560,7 @@ class UserPropertyDetailAPIView(APIView):
 
             }, status=status.HTTP_404_NOT_FOUND)
 
-        obj.delete()
-
-        # =====================================================
-        # REFRESH LIMITS AFTER DELETE
-        # =====================================================
-
+        obj.soft_delete()
         limit_data = get_property_remaining_counts(
             request.user
         )
@@ -13233,8 +12586,6 @@ class UserPropertyDetailAPIView(APIView):
 
 
 from django.core.exceptions import ValidationError
-from rest_framework.response import Response
-from rest_framework.views import APIView
 
 
 class AgentContactMessageCreateAPIView(APIView):
@@ -13316,27 +12667,15 @@ class AgentContactMessageCreateAPIView(APIView):
 
         })
 
-import uuid
-
-from datetime import timedelta
-
-from django.utils import timezone
-
-from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from rest_framework import status
 
 from users.models import (
     Userplan,
     UserProfile,
     UserCreate
 )
-
 from users.serializers import (
     UserPlanActivateSerializer
 )
-
 from users.authentication import (
     UserJWTAuthentication
 )
@@ -13511,13 +12850,6 @@ class ActivateUserPlanAPIView(APIView):
         )
 
 
-
-from django.utils import timezone
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
 
 
 class CurrentUserPlanAPIView(APIView):
@@ -14008,13 +13340,9 @@ class OwnerDashboardAPIView(APIView):
             )
 
             total_enquiries = enquiries_qs.count()
-
-            # ==========================================================
-            # DELETED PROPERTY COUNT
-            # ==========================================================
-
             current_property_count = Property.objects.filter(
-                user=user
+                user=user,
+                deleted=False
             ).count()
 
             deleted_property_count = max(
@@ -14109,8 +13437,6 @@ class OwnerDashboardAPIView(APIView):
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-from django.utils import timezone
-
 class UserPropertyListAPIView(APIView):
 
     authentication_classes = [UserJWTAuthentication]
@@ -14122,7 +13448,7 @@ class UserPropertyListAPIView(APIView):
 
         properties = (
             Property.objects
-            .filter(user=user)
+            .filter(user=user,deleted=False)
             .select_related(
                 "category",
                 "subcategory",
@@ -14167,7 +13493,6 @@ class UserPropertyListAPIView(APIView):
             0
         )
 
-        # Get total from active subscriptions
         subscription_total_property = 0
         subscription_used_property = 0
 
@@ -14327,18 +13652,15 @@ class UserPropertyListAPIView(APIView):
 
         for subscription in active_subscriptions:
 
-            # Unlimited edit plan
             if subscription.is_unlimited_edit:
 
                 has_unlimited_edit = True
                 break
 
-            # Plan edit limit
             total_edit += (
                 subscription.edit_limit_count or 0
             )
 
-            # Plan edit used
             used_edit += (
                 subscription.edit_used or 0
             )
@@ -14973,13 +14295,6 @@ class UserPropertyCreateAPIView(APIView):
         }, status=201)
 
         
-import uuid
-import razorpay
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework.permissions import AllowAny
 
 class CreatePaymentAPIView(APIView):
 
@@ -15620,21 +14935,6 @@ class CreatePaymentAPIView(APIView):
 
             }, status=400)
 
-
-
-import hmac
-import hashlib
-
-from datetime import timedelta
-
-from django.conf import settings
-from django.utils import timezone
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
-
-from users.models import Payment, UserProfile
 
 
 class VerifyPaymentAPIView(APIView):
@@ -16896,14 +16196,7 @@ class AgentPurchaseHistoryAPIView(APIView):
             "count": len(serializer.data),
             "plans": serializer.data
         })
- 
 
-
-
-from django.conf import settings
-from rest_framework.response import Response
-from rest_framework.views import APIView
-import os
 
 
 class DebugDB(APIView):

@@ -860,7 +860,7 @@ def add_property(request):
     users = UserCreate.objects.all()
     search = request.GET.get("search", "").strip()
 
-    properties = Property.objects.select_related(
+    properties = Property.objects.filter(deleted=False).select_related(
         "category", "purpose", "subcategory", "user"
     ).order_by("-created_at")
 
@@ -1642,7 +1642,7 @@ def delete_property(request, property_id):
 
     try:
 
-        property_obj.delete()
+        property_obj.soft_delete()
 
         messages.success(request, "Property deleted successfully.")
 
@@ -1664,7 +1664,7 @@ def delete_property(request, property_id):
     property_id = property_obj.id
     property_label = property_obj.label or "Unnamed Property"
 
-    property_obj.delete()
+    property_obj.soft_delete()
 
     create_admin_notification(
         "Property Deleted",
@@ -4896,7 +4896,9 @@ def agent_property_dashboard(request):
     search = request.GET.get("search", "")
 
     properties = (
-        AgentProperty.objects.select_related(
+        AgentProperty.objects.filter(
+            deleted=False
+        ).select_related(
             "agent",
             "category",
             "subcategory",
@@ -4934,13 +4936,13 @@ def agent_property_dashboard(request):
     # DASHBOARD COUNTS
     # ============================================================
 
-    total_count = AgentProperty.objects.count()
+    total_count = AgentProperty.objects.filter(deleted=False).count()
 
     active_count = 0
 
     today = timezone.now().date()
 
-    for property in AgentProperty.objects.select_related("agent"):
+    for property in AgentProperty.objects.filter(deleted=False).select_related("agent"):
 
         # --------------------------------------------------------
         # Active subscription keeps property active
@@ -5028,7 +5030,7 @@ def delete_agent_property(request, id):
 
     property_obj = get_object_or_404(AgentProperty, id=id)
 
-    property_obj.delete()
+    property_obj.soft_delete()
 
     messages.success(request, "Property deleted successfully.")
 
@@ -7405,3 +7407,688 @@ def update_agent_contact_message_status(request, message_id):
     )
 
     return redirect("agent_contact_messages")
+
+
+
+
+import json
+from datetime import datetime
+from io import BytesIO
+
+from django.contrib.admin.views.decorators import staff_member_required
+from django.core.paginator import Paginator
+from django.db.models import Q
+from django.http import Http404, HttpResponse
+from django.shortcuts import render
+from django.utils import timezone
+from django.utils.text import slugify
+
+from openpyxl import Workbook
+from openpyxl.styles import Alignment, Font, PatternFill
+from openpyxl.utils import get_column_letter
+
+from users.models import Property, PropertyFeature
+from agents.models import (
+    AgentProperty,
+    AgentPropertyFieldValue,
+    AgentPropertySellingPoint,
+    AgentPropertyLandmark,
+)
+
+
+def get_related_name(obj, relation_name):
+    """Return a readable name without assuming a specific name field."""
+    related_obj = getattr(obj, relation_name, None)
+
+    if not related_obj:
+        return ""
+
+    for field_name in ("name", "full_name", "username", "email", "agent_code"):
+        value = getattr(related_obj, field_name, None)
+        if value:
+            return str(value)
+
+    return str(related_obj)
+
+
+def get_property_image(obj):
+    """Safely return the main property image URL."""
+    image = getattr(obj, "image", None)
+
+    if image:
+        try:
+            return image.url
+        except (ValueError, AttributeError):
+            pass
+
+    return ""
+
+
+def get_property_source(obj, property_type):
+    """
+    Determine the source using existing subscription/package/added_by fields.
+    A missing subscription alone is not proof that a master admin created it.
+    """
+    added_by = str(getattr(obj, "added_by", "") or "").strip().lower()
+
+    if property_type == "user":
+        if getattr(obj, "subscription_id", None):
+            return "User Subscription"
+
+        if getattr(obj, "single_property_package_id", None):
+            return "Single Property Package"
+
+        if "master" in added_by or "admin" in added_by:
+            return "Master Admin Added"
+
+        if not getattr(obj, "user_id", None):
+            return "Master Admin Added"
+
+        return "No Subscription Recorded"
+
+    if getattr(obj, "subscription_id", None):
+        return "Agent Subscription"
+
+    if "master" in added_by or "admin" in added_by:
+        return "Master Admin Added"
+
+    if not getattr(obj, "agent_id", None):
+        return "Master Admin Added"
+
+    return "No Subscription Recorded"
+
+
+def get_property_row(obj, property_type):
+    """Normalize user and agent property records for the shared table."""
+    is_user = property_type == "user"
+
+    if is_user:
+        owner_name = (
+            get_related_name(obj, "user")
+            or getattr(obj, "owner", "")
+            or "N/A"
+        )
+        subscription_name = (
+            get_related_name(obj, "subscription")
+            or get_related_name(obj, "single_property_package")
+            or get_related_name(obj, "package")
+            or "N/A"
+        )
+    else:
+        owner_name = (
+            get_related_name(obj, "agent")
+            or getattr(obj, "owner", "")
+            or "N/A"
+        )
+        subscription_name = (
+            get_related_name(obj, "subscription")
+            or "N/A"
+        )
+
+    return {
+        "id": str(obj.pk),
+        "kind": property_type,
+        "kind_label": "User Property" if is_user else "Agent Property",
+        "property_code": getattr(obj, "property_code", None) or str(obj.pk),
+        "label": getattr(obj, "label", "") or "Untitled Property",
+        "image": get_property_image(obj),
+        "price": getattr(obj, "price", "") or "N/A",
+        "city": getattr(obj, "city", "") or "N/A",
+        "district": getattr(obj, "district", "") or "N/A",
+        "state": getattr(obj, "state", "") or "N/A",
+        "owner_name": str(owner_name),
+        "source": get_property_source(obj, property_type),
+        "subscription_name": subscription_name,
+        "added_by": getattr(obj, "added_by", "") or "N/A",
+        "created_at": getattr(obj, "created_at", None),
+        "updated_at": getattr(obj, "updated_at", None),
+        "object": obj,
+    }
+
+
+def get_deleted_property_rows(request):
+    """Build a combined list of deleted user and agent properties."""
+    user_qs = Property.objects.filter(
+        deleted=True
+    ).select_related(
+        "user", "category", "subcategory", "purpose",
+        "package", "subscription", "single_property_package"
+    ).prefetch_related("amenities")
+
+    agent_qs = AgentProperty.objects.filter(
+        deleted=True
+    ).select_related(
+        "agent", "category", "subcategory", "purpose", "subscription"
+    ).prefetch_related("amenities")
+
+    search = request.GET.get("q", "").strip()
+    property_kind = request.GET.get("kind", "all").strip().lower()
+    source_filter = request.GET.get("source", "").strip()
+
+    if search:
+        user_qs = user_qs.filter(
+            Q(label__icontains=search)
+            | Q(property_code__icontains=search)
+            | Q(city__icontains=search)
+            | Q(district__icontains=search)
+            | Q(state__icontains=search)
+            | Q(owner__icontains=search)
+            | Q(added_by__icontains=search)
+            | Q(user__username__icontains=search)
+            | Q(user__email__icontains=search)
+        )
+
+        agent_qs = agent_qs.filter(
+            Q(label__icontains=search)
+            | Q(property_code__icontains=search)
+            | Q(city__icontains=search)
+            | Q(district__icontains=search)
+            | Q(state__icontains=search)
+            | Q(owner__icontains=search)
+            | Q(added_by__icontains=search)
+            | Q(agent__agent_code__icontains=search)
+        )
+
+    rows = []
+
+    if property_kind in ("all", "user"):
+        rows.extend(
+            get_property_row(obj, "user")
+            for obj in user_qs
+        )
+
+    if property_kind in ("all", "agent"):
+        rows.extend(
+            get_property_row(obj, "agent")
+            for obj in agent_qs
+        )
+
+    if source_filter:
+        rows = [
+            row for row in rows
+            if row["source"] == source_filter
+        ]
+
+    # Newest records first.
+    rows.sort(
+        key=lambda row: row["updated_at"] or row["created_at"]
+        or timezone.make_aware(datetime.min),
+        reverse=True
+    )
+
+    return rows
+
+
+@staff_member_required
+def master_deleted_properties(request):
+    rows = get_deleted_property_rows(request)
+
+    user_count = sum(1 for row in rows if row["kind"] == "user")
+    agent_count = sum(1 for row in rows if row["kind"] == "agent")
+    subscription_count = sum(
+        1 for row in rows
+        if row["source"] in ("User Subscription", "Agent Subscription")
+    )
+    master_added_count = sum(
+        1 for row in rows if row["source"] == "Master Admin Added"
+    )
+
+    paginator = Paginator(rows, 20)
+    page_obj = paginator.get_page(request.GET.get("page"))
+
+    context = {
+        "page_obj": page_obj,
+        "rows": page_obj.object_list,
+        "total_count": len(rows),
+        "user_count": user_count,
+        "agent_count": agent_count,
+        "subscription_count": subscription_count,
+        "master_added_count": master_added_count,
+        "search_query": request.GET.get("q", ""),
+        "selected_kind": request.GET.get("kind", "all"),
+        "selected_source": request.GET.get("source", ""),
+        "source_options": [
+            ("User Subscription", "User Subscription"),
+            ("Single Property Package", "Single Property Package"),
+            ("Agent Subscription", "Agent Subscription"),
+            ("Master Admin Added", "Master Admin Added"),
+            ("No Subscription Recorded", "No Subscription Recorded"),
+        ],
+    }
+
+    return render(
+        request,
+        "deleted_properties/deleted_property.html",
+        context
+    )
+
+
+@staff_member_required
+def master_deleted_property_detail(request, kind, property_id):
+    """Display full details of one soft-deleted property."""
+    if kind == "user":
+        obj = Property.objects.filter(
+            pk=property_id,
+            deleted=True
+        ).select_related(
+            "user", "category", "subcategory", "purpose",
+            "package", "subscription", "single_property_package"
+        ).prefetch_related(
+            "amenities", "property_features__field", "images"
+        ).first()
+
+    elif kind == "agent":
+        obj = AgentProperty.objects.filter(
+            pk=property_id,
+            deleted=True
+        ).select_related(
+            "agent", "category", "subcategory", "purpose", "subscription"
+        ).prefetch_related(
+            "amenities", "field_values__field", "images",
+            "selling_points", "landmarks"
+        ).first()
+
+    else:
+        raise Http404("Invalid property type.")
+
+    if not obj:
+        raise Http404("Deleted property not found.")
+
+    row = get_property_row(obj, kind)
+
+    if kind == "user":
+        features = [
+            {
+                "field": feature.field.field_name,
+                "value": feature.value,
+            }
+            for feature in obj.property_features.all()
+        ]
+        selling_points = getattr(obj, "selling_points", []) or []
+        landmarks = getattr(obj, "land_mark", []) or []
+    else:
+        features = [
+            {
+                "field": item.field.field_name,
+                "value": item.value,
+            }
+            for item in obj.field_values.all()
+        ]
+        selling_points = list(obj.selling_points.all())
+        landmarks = list(obj.landmarks.all())
+
+    images = []
+    for image_obj in obj.images.all():
+        try:
+            image_url = image_obj.image.url
+        except (ValueError, AttributeError):
+            image_url = ""
+
+        if image_url:
+            images.append(image_url)
+
+    context = {
+        "row": row,
+        "property": obj,
+        "kind": kind,
+        "features": features,
+        "selling_points": selling_points,
+        "landmarks": landmarks,
+        "images": images,
+        "amenities": obj.amenities.all(),
+    }
+
+    return render(
+        request,
+        "deleted_properties/deleted_property_detail.html",
+        context
+    )
+
+
+def _excel_value(value):
+    if value is None:
+        return ""
+    if hasattr(value, "isoformat"):
+        return value.isoformat()
+    if isinstance(value, (list, dict, tuple)):
+        return json.dumps(value, ensure_ascii=False, default=str)
+    return str(value)
+
+
+
+import json
+from datetime import date, datetime
+from decimal import Decimal
+from io import BytesIO
+from uuid import UUID
+
+from django.contrib.admin.views.decorators import staff_member_required
+from django.http import HttpResponse
+from django.utils import timezone
+
+from openpyxl import Workbook
+from openpyxl.styles import Alignment, Font, PatternFill
+from openpyxl.utils import get_column_letter
+
+
+def excel_safe_value(value):
+    """
+    Convert values into formats supported by openpyxl.
+    Lists and dictionaries become readable JSON strings.
+    Timezone-aware datetimes become timezone-naive datetimes.
+    """
+    if isinstance(value, (list, dict, tuple, set)):
+        return json.dumps(
+            value,
+            ensure_ascii=False,
+            default=str
+        )
+
+    if isinstance(value, datetime):
+        if timezone.is_aware(value):
+            value = timezone.make_naive(
+                value,
+                timezone.get_current_timezone()
+            )
+        return value
+
+    if isinstance(value, (UUID, Decimal)):
+        return str(value) if isinstance(value, UUID) else value
+
+    if value is None:
+        return ""
+
+    return value
+
+
+@staff_member_required
+def export_master_deleted_properties_excel(request):
+    rows = get_deleted_property_rows(request)
+
+    workbook = Workbook()
+    sheet = workbook.active
+    sheet.title = "Deleted Properties"
+
+    headers = [
+        "Property Type",
+        "Property Code",
+        "Property UUID",
+        "Property Label",
+        "Price",
+        "Per Price",
+        "Land Area",
+        "Square Feet",
+        "Category",
+        "Subcategory",
+        "Purpose",
+        "Property Owner / Agent",
+        "Owner Field",
+        "Phone",
+        "WhatsApp",
+        "Email",
+        "Source",
+        "Subscription / Package",
+        "Added By",
+        "City",
+        "District",
+        "Taluk",
+        "Village",
+        "State",
+        "Pincode",
+        "Address / Location URL",
+        "Description",
+        "Deposit",
+        "Paid",
+        "Featured",
+        "Created At",
+        "Updated At",
+        "Deleted",
+        "Duration Days",
+        "Expiry Date",
+        "Amenities",
+        "Property Features",
+        "Selling Points",
+        "Landmarks",
+        "Main Image URL",
+        "Additional Image URLs",
+        "Notes",
+    ]
+
+    sheet.append(headers)
+
+    # Style the header row
+    for cell in sheet[1]:
+        cell.font = Font(
+            bold=True,
+            color="FFFFFF"
+        )
+        cell.fill = PatternFill(
+            fill_type="solid",
+            fgColor="659D28"
+        )
+        cell.alignment = Alignment(
+            vertical="center",
+            wrap_text=True
+        )
+
+    # Export each deleted property
+    for row in rows:
+        obj = row["object"]
+        is_user = row["kind"] == "user"
+
+        if is_user:
+            # User property details
+            try:
+                email = obj.user.email if obj.user else ""
+            except (AttributeError, ValueError):
+                email = ""
+
+            sq_ft = getattr(obj, "sq_ft", "")
+
+            package_name = (
+                get_related_name(obj, "subscription")
+                or get_related_name(obj, "single_property_package")
+                or get_related_name(obj, "package")
+            )
+
+            features = [
+                {
+                    "field": feature.field.field_name,
+                    "value": feature.value,
+                }
+                for feature in obj.property_features.all()
+            ]
+
+            selling_points = (
+                getattr(obj, "selling_points", None) or []
+            )
+
+            landmarks = (
+                getattr(obj, "land_mark", None) or []
+            )
+
+            notes = getattr(obj, "note", "") or ""
+            expiry_date = getattr(obj, "expiry_date", None)
+            paid = getattr(obj, "paid", "")
+
+        else:
+            # Agent property details
+            try:
+                email = obj.agent.email if obj.agent else ""
+            except (AttributeError, ValueError):
+                email = ""
+
+            sq_ft = getattr(obj, "sq_ft", "")
+
+            package_name = get_related_name(
+                obj,
+                "subscription"
+            )
+
+            features = [
+                {
+                    "field": item.field.field_name,
+                    "value": item.value,
+                }
+                for item in obj.field_values.all()
+            ]
+
+            selling_points = list(
+                obj.selling_points.values_list(
+                    "point",
+                    flat=True
+                )
+            )
+
+            landmarks = list(
+                obj.landmarks.values(
+                    "name",
+                    "distance"
+                )
+            )
+
+            notes = getattr(obj, "notes", "") or ""
+            expiry_date = None
+            paid = getattr(obj, "paid", "")
+
+        # Amenities
+        amenities = list(
+            obj.amenities.values_list(
+                "name",
+                flat=True
+            )
+        )
+
+        # Additional image URLs
+        image_urls = []
+
+        for image_obj in obj.images.all():
+            try:
+                image_urls.append(image_obj.image.url)
+            except (ValueError, AttributeError):
+                continue
+
+        # Related names
+        category_name = get_related_name(
+            obj,
+            "category"
+        )
+
+        subcategory_name = get_related_name(
+            obj,
+            "subcategory"
+        )
+
+        purpose_name = get_related_name(
+            obj,
+            "purpose"
+        )
+
+        # Build the Excel row
+        excel_row = [
+            row.get("kind_label", ""),
+            row.get("property_code", ""),
+            row.get("id", ""),
+            row.get("label", ""),
+            getattr(obj, "price", ""),
+            getattr(obj, "perprice", ""),
+            getattr(obj, "land_area", ""),
+            sq_ft,
+            category_name,
+            subcategory_name,
+            purpose_name,
+            row.get("owner_name", ""),
+            getattr(obj, "owner", ""),
+            getattr(obj, "phone", ""),
+            getattr(obj, "whatsapp", ""),
+            email,
+            row.get("source", ""),
+            package_name,
+            row.get("added_by", ""),
+            getattr(obj, "city", ""),
+            getattr(obj, "district", ""),
+            getattr(obj, "taluk", ""),
+            getattr(obj, "village", ""),
+            getattr(obj, "state", ""),
+            getattr(obj, "pincode", ""),
+            getattr(obj, "location", ""),
+            getattr(obj, "description", ""),
+            getattr(obj, "deposit", ""),
+            paid,
+            getattr(obj, "is_featured", False),
+            getattr(obj, "created_at", None),
+            getattr(obj, "updated_at", None),
+            getattr(obj, "deleted", False),
+            getattr(obj, "duration_days", ""),
+            expiry_date,
+            amenities,
+            features,
+            selling_points,
+            landmarks,
+            get_property_image(obj),
+            image_urls,
+            notes,
+        ]
+
+        # Convert lists, dictionaries and datetimes before Excel insertion
+        sheet.append([
+            excel_safe_value(value)
+            for value in excel_row
+        ])
+
+    # Freeze header and enable filters
+    sheet.freeze_panes = "A2"
+    sheet.auto_filter.ref = sheet.dimensions
+    sheet.row_dimensions[1].height = 35
+
+    # Adjust column widths and wrap cell content
+    for column_cells in sheet.columns:
+        column_letter = get_column_letter(
+            column_cells[0].column
+        )
+
+        max_length = 0
+
+        for cell in column_cells:
+            cell.alignment = Alignment(
+                vertical="top",
+                wrap_text=True
+            )
+
+            cell_length = len(
+                str(cell.value or "")
+            )
+
+            max_length = max(
+                max_length,
+                cell_length
+            )
+
+        sheet.column_dimensions[column_letter].width = min(
+            max(max_length + 2, 14),
+            42
+        )
+
+    # Generate Excel file in memory
+    output = BytesIO()
+    workbook.save(output)
+    output.seek(0)
+
+    filename = (
+        "buysel_deleted_properties_"
+        f"{timezone.localdate().strftime('%Y%m%d')}.xlsx"
+    )
+
+    response = HttpResponse(
+        output.getvalue(),
+        content_type=(
+            "application/vnd.openxmlformats-officedocument."
+            "spreadsheetml.sheet"
+        ),
+    )
+
+    response["Content-Disposition"] = (
+        f'attachment; filename="{filename}"'
+    )
+
+    return response

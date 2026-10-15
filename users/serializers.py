@@ -3034,6 +3034,34 @@ class AgentPropertySerializer(serializers.ModelSerializer):
             property=instance
         ).delete()
 
+        # if field_values:
+
+        #     for fv in field_values:
+
+        #         if not isinstance(fv, dict):
+        #             raise serializers.ValidationError(
+        #                 "Invalid field_values format"
+        #             )
+
+        #         field_name = fv.get("name")
+        #         option_name = fv.get("option")
+        #         value = fv.get("value")
+
+        #         if not field_name:
+        #             raise serializers.ValidationError(
+        #                 "Feature name missing"
+        #             )
+
+        #         field = SubcategoryField.objects.filter(
+        #             subcategory=instance.subcategory,
+        #             field_name__iexact=field_name.strip()
+        #         ).first()
+
+        #         if not field:
+        #             raise serializers.ValidationError(
+        #                 f"Invalid feature: {field_name}"
+        #             )
+
         if field_values:
 
             for fv in field_values:
@@ -3052,15 +3080,28 @@ class AgentPropertySerializer(serializers.ModelSerializer):
                         "Feature name missing"
                     )
 
+                field_name = field_name.strip()
+
                 field = SubcategoryField.objects.filter(
                     subcategory=instance.subcategory,
-                    field_name__iexact=field_name.strip()
+                    field_name__iexact=field_name
                 ).first()
+
+                # Special handling for Independent house
+                if not field and field_name.casefold() in [
+                    "independent house",
+                    "independence house",
+                ]:
+                    field = SubcategoryField.objects.filter(
+                        field_name__iexact="Independent house"
+                    ).first()
 
                 if not field:
                     raise serializers.ValidationError(
                         f"Invalid feature: {field_name}"
                     )
+
+        # Continue with your existing option/value save logic below
 
                 # =========================================
                 # OPTION FIELD

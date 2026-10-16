@@ -339,6 +339,104 @@
 
 </div>
 
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const dateInput = document.querySelector(
+        '#addBlogModal input[name="date"]'
+    );
+
+    const dateButton = document.getElementById(
+        "addBlogDateButton"
+    );
+
+    if (!dateInput || !dateButton) {
+        console.warn("Blog date input or calendar button not found.");
+        return;
+    }
+
+    // =========================================================
+    // MAKE SURE IT IS A DATE INPUT
+    // =========================================================
+
+    dateInput.type = "date";
+
+
+    // =========================================================
+    // OPEN NATIVE CALENDAR
+    // =========================================================
+
+    dateButton.addEventListener("click", function () {
+
+        try {
+
+            // Modern Chrome / Edge
+            if (typeof dateInput.showPicker === "function") {
+                dateInput.showPicker();
+            } else {
+                // Fallback
+                dateInput.focus();
+                dateInput.click();
+            }
+
+        } catch (error) {
+
+            console.log(
+                "Native date picker could not be opened:",
+                error
+            );
+
+            dateInput.focus();
+            dateInput.click();
+        }
+
+    });
+
+
+    // =========================================================
+    // ALSO OPEN CALENDAR WHEN CLICKING THE DATE INPUT
+    // =========================================================
+
+    dateInput.addEventListener("click", function () {
+
+        try {
+
+            if (typeof dateInput.showPicker === "function") {
+                dateInput.showPicker();
+            }
+
+        } catch (error) {
+
+            console.log(
+                "Date picker could not be opened:",
+                error
+            );
+        }
+
+    });
+
+});
+
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    {% if open_add_blog_modal %}
+
+        const modal = document.getElementById("addBlogModal");
+
+        if (modal) {
+            modal.classList.remove("hidden");
+            modal.classList.add("flex");
+
+            document.body.classList.add("overflow-hidden");
+        }
+
+    {% endif %}
+
+});
+</script>
+</script>
+
 <style>
     /* ================================
        Labels

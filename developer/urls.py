@@ -32,43 +32,35 @@ urlpatterns = [
         views.delete_property,
         name="delete_property",
     ),
-    # Ads Dashboard
+  
     path("ads/", views.ads_dashboard, name="ads_dashboard"),
-    # Banner
+    
     path("ads/banner/add/", views.add_banner, name="add_banner"),
     path("ads/banner/edit/<uuid:id>/", views.edit_banner, name="edit_banner"),
     path("ads/banner/delete/<uuid:id>/", views.delete_banner, name="delete_banner"),
-    # Slider
+    
     path("ads/slider/add/", views.add_slider, name="add_slider"),
     path("ads/slider/edit/<uuid:id>/", views.edit_slider, name="edit_slider"),
     path("ads/slider/delete/<uuid:id>/", views.delete_slider, name="delete_slider"),
-    # =====================================================
-    # Dashboard
-    # =====================================================
+   
     path(
         "advertisement-notifications/",
         views.advertisement_notifications,
         name="advertisement_notifications",
     ),
-    # =====================================================
-    # Detail
-    # =====================================================
+   
     path(
         "advertisement-notifications/<str:request_type>/<uuid:id>/",
         views.notification_detail,
         name="notification_detail",
     ),
-    # =====================================================
-    # Mark Read
-    # =====================================================
+ 
     path(
         "advertisement-notifications/<str:request_type>/<uuid:id>/mark-read/",
         views.mark_notification_read,
         name="mark_notification_read",
     ),
-    # =====================================================
-    # Dashboard Notification - Mark Read
-    # =====================================================
+   
     path(
         "dashboard/notifications/mark-read/",
         views.mark_dashboard_notification_read,
@@ -80,9 +72,7 @@ urlpatterns = [
         views.mark_all_dashboard_notifications_read,
         name="mark_all_dashboard_notifications_read"
     ),
-    # =====================================================
-    # Update Status
-    # =====================================================
+    
     path(
         "advertisement-notifications/<str:request_type>/<uuid:id>/update-status/",
         views.update_status,
@@ -93,9 +83,7 @@ urlpatterns = [
         views.subscription_dashboard,
         name="subscription_dashboard",
     ),
-    # ==========================================
-    # AGENT
-    # ==========================================
+  
     path("edit-agent/<uuid:pk>/", views.edit_agent, name="edit_agent"),
     path("delete-agent/<uuid:pk>/", views.delete_agent, name="delete_agent"),
     path(
@@ -140,9 +128,6 @@ urlpatterns = [
         views.delete_agent_property,
         name="delete_agent_property",
     ),
-    # =========================================================
-    # EXPIRED AGENT PROPERTIES
-    # =========================================================
     path(
         "expired-agent-properties/",
         views.expired_agent_properties,
@@ -240,7 +225,7 @@ urlpatterns = [
         views.delete_package,
         name="delete_package",
     ),
-    # agentcontactmessage
+   
     path(
         "agent-contact-messages/",
         views.agent_contact_messages,

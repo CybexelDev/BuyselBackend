@@ -1,7 +1,5 @@
 from django.core.management.base import BaseCommand
-
 from developer.views import sync_agent_property_statuses
-
 
 class Command(BaseCommand):
     help = "Sync agent property expiry and restoration statuses."

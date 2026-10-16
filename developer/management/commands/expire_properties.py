@@ -14,22 +14,7 @@ class Command(BaseCommand):
         "UserPlanSubscription."
     )
 
-    # ==============================================================
-    # SUBSCRIPTION ACTIVE CHECK
-    # ==============================================================
-
     def is_subscription_active(self, subscription):
-
-        """
-        Check whether the property's UserPlanSubscription
-        is currently active.
-
-        This function intentionally checks the fields that are
-        commonly used in subscription models.
-
-        If your UserPlanSubscription has a specific status field,
-        this can be adjusted exactly to that field.
-        """
 
         def handle(self, *args, **kwargs):
 
@@ -54,11 +39,6 @@ class Command(BaseCommand):
             )
 
             self.stdout.write("")
-
-            # ==========================================================
-            # STEP 0
-            # Deactivate expired UserPlanSubscription
-            # ==========================================================
 
             self.stdout.write(
                 self.style.NOTICE(
@@ -102,11 +82,6 @@ class Command(BaseCommand):
 
             self.stdout.write("")
 
-            # ==========================================================
-            # STEP 1
-            # Reduce duration_days by one
-            # ==========================================================
-
             self.stdout.write(
                 self.style.NOTICE(
                     "STEP 1: Reducing property durations..."
@@ -117,10 +92,6 @@ class Command(BaseCommand):
 
             return False
 
-        # ----------------------------------------------------------
-        # DEBUG: print subscription information
-        # ----------------------------------------------------------
-
         self.stdout.write(
             self.style.NOTICE(
                 "      Subscription found:"
@@ -130,10 +101,6 @@ class Command(BaseCommand):
         self.stdout.write(
             f"        ID: {subscription.pk}"
         )
-
-        # ----------------------------------------------------------
-        # Check is_active
-        # ----------------------------------------------------------
 
         if hasattr(subscription, "is_active"):
 
@@ -150,10 +117,6 @@ class Command(BaseCommand):
             if value is True:
 
                 return True
-
-        # ----------------------------------------------------------
-        # Check status
-        # ----------------------------------------------------------
 
         if hasattr(subscription, "status"):
 
@@ -183,10 +146,6 @@ class Command(BaseCommand):
 
                     return True
 
-        # ----------------------------------------------------------
-        # Check plan_expiry_date
-        # ----------------------------------------------------------
-
         if hasattr(
             subscription,
             "plan_expiry_date"
@@ -210,10 +169,6 @@ class Command(BaseCommand):
                 if expiry_date > now:
 
                     return True
-
-        # ----------------------------------------------------------
-        # Check expiry_date
-        # ----------------------------------------------------------
 
         if hasattr(
             subscription,
@@ -239,10 +194,6 @@ class Command(BaseCommand):
 
                     return True
 
-        # ----------------------------------------------------------
-        # No active indicator found
-        # ----------------------------------------------------------
-
         self.stdout.write(
             self.style.WARNING(
                 "        Subscription is NOT considered active."
@@ -250,10 +201,6 @@ class Command(BaseCommand):
         )
 
         return False
-
-    # ==============================================================
-    # MAIN COMMAND
-    # ==============================================================
 
     def handle(self, *args, **kwargs):
 
@@ -279,11 +226,6 @@ class Command(BaseCommand):
 
         self.stdout.write("")
 
-        # ==========================================================
-        # STEP 1
-        # Reduce duration_days by one
-        # ==========================================================
-
         self.stdout.write(
             self.style.NOTICE(
                 "STEP 1: Reducing property durations..."
@@ -307,11 +249,6 @@ class Command(BaseCommand):
         )
 
         self.stdout.write("")
-
-        # ==========================================================
-        # STEP 2
-        # Get properties that reached zero
-        # ==========================================================
 
         self.stdout.write(
             self.style.NOTICE(
@@ -349,21 +286,12 @@ class Command(BaseCommand):
 
         self.stdout.write("")
 
-        # ==========================================================
-        # Counters
-        # ==========================================================
-
         expired_count = 0
         active_subscription_count = 0
         no_subscription_count = 0
         inactive_subscription_count = 0
         skipped_count = 0
         failed_count = 0
-
-        # ==========================================================
-        # STEP 3
-        # Process properties individually
-        # ==========================================================
 
         for property_id in expired_property_ids:
 
@@ -392,10 +320,6 @@ class Command(BaseCommand):
                             pk=property_id
                         )
                     )
-
-                    # ==================================================
-                    # PROPERTY DEBUG INFORMATION
-                    # ==================================================
 
                     self.stdout.write("")
 
@@ -452,10 +376,6 @@ class Command(BaseCommand):
                         f"{property_obj.subscription_id}"
                     )
 
-                    # ==================================================
-                    # SAFETY CHECK
-                    # ==================================================
-
                     if property_obj.duration_days > 0:
 
                         skipped_count += 1
@@ -473,17 +393,9 @@ class Command(BaseCommand):
 
                         continue
 
-                    # ==================================================
-                    # CHECK USER PLAN SUBSCRIPTION
-                    # ==================================================
-
                     subscription = (
                         property_obj.subscription
                     )
-
-                    # --------------------------------------------------
-                    # NO SUBSCRIPTION
-                    # --------------------------------------------------
 
                     if not subscription:
 
@@ -501,10 +413,6 @@ class Command(BaseCommand):
                             )
                         )
 
-                    # --------------------------------------------------
-                    # SUBSCRIPTION EXISTS
-                    # --------------------------------------------------
-
                     else:
 
                         is_active = (
@@ -512,10 +420,6 @@ class Command(BaseCommand):
                                 subscription
                             )
                         )
-
-                        # ----------------------------------------------
-                        # ACTIVE SUBSCRIPTION
-                        # ----------------------------------------------
 
                         if is_active:
 
@@ -543,10 +447,6 @@ class Command(BaseCommand):
 
                             continue
 
-                        # ----------------------------------------------
-                        # INACTIVE SUBSCRIPTION
-                        # ----------------------------------------------
-
                         else:
 
                             inactive_subscription_count += 1
@@ -564,10 +464,6 @@ class Command(BaseCommand):
                                 )
                             )
 
-                    # ==================================================
-                    # EXPIRE PROPERTY
-                    # ==================================================
-
                     property_code = (
                         property_obj.property_code
                     )
@@ -582,16 +478,6 @@ class Command(BaseCommand):
                             "ExpiredProperty..."
                         )
                     )
-
-                    # --------------------------------------------------
-                    # This method:
-                    #
-                    # 1. Creates ExpiredProperty
-                    # 2. Copies amenities
-                    # 3. Copies features
-                    # 4. Copies images
-                    # 5. Deletes active Property
-                    # --------------------------------------------------
 
                     property_obj.expire_property()
 
@@ -613,10 +499,6 @@ class Command(BaseCommand):
                         f"{property_code}"
                     )
 
-            # ======================================================
-            # PROPERTY NO LONGER EXISTS
-            # ======================================================
-
             except Property.DoesNotExist:
 
                 skipped_count += 1
@@ -637,10 +519,6 @@ class Command(BaseCommand):
 
                 continue
 
-            # ======================================================
-            # OTHER ERROR
-            # ======================================================
-
             except Exception as error:
 
                 failed_count += 1
@@ -659,9 +537,6 @@ class Command(BaseCommand):
                     f"Error: {error}"
                 )
 
-        # ==========================================================
-        # FINAL SUMMARY
-        # ==========================================================
 
         self.stdout.write("")
 
@@ -723,10 +598,6 @@ class Command(BaseCommand):
                 "=========================================="
             )
         )
-
-        # ==========================================================
-        # FINAL STATUS
-        # ==========================================================
 
         if failed_count:
 

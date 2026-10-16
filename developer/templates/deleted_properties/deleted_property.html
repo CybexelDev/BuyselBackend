@@ -1183,6 +1183,15 @@
             <option value="agent" {% if selected_kind == "agent" %}selected{% endif %}>
                 Agent properties
             </option>
+            <option value="expired_user"
+                {% if selected_kind == "expired_user" %}selected{% endif %}>
+                Expired User Property
+            </option>
+
+            <option value="expired_agent"
+                {% if selected_kind == "expired_agent" %}selected{% endif %}>
+                Expired Agent Property
+            </option>
         </select>
 
         <select name="source" class="agent-property-select">
@@ -1246,17 +1255,20 @@
             <tbody>
                 {% for row in rows %}
                 <tr>
+                    
                     <td>
                         <div class="agent-property-agent">
                             {% if row.image %}
                                 <img src="{{ row.image }}"
-                                     class="agent-property-image"
-                                     alt="Property image">
+                                    class="agent-property-image"
+                                    alt="Property image"
+                                    loading="lazy">
                             {% else %}
                                 <div class="agent-property-image-empty">
                                     <i class="fas fa-home"></i>
                                 </div>
                             {% endif %}
+
                             <div class="agent-property-main">
                                 <strong>{{ row.label }}</strong>
                                 <small>{{ row.id }}</small>

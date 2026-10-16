@@ -1715,6 +1715,11 @@ class ExpiredAgentProperty(models.Model):
         default=False
     )
 
+    deleted = models.BooleanField(
+        default=False,
+        db_index=True
+    )
+
     notes = models.CharField(
         max_length=255,
         blank=True,
@@ -1754,59 +1759,13 @@ class ExpiredAgentProperty(models.Model):
         auto_now_add=True
     )
 
-
-    # def clean(self):
-
-        # purpose_name = ""
-
-        # if self.purpose:
-        #     purpose_name = self.purpose.name.lower().strip()
-
-        # # =========================
-        # # SALE
-        # # =========================
-
-        # if purpose_name == "sale":
-
-        #     if not self.price:
-        #         raise ValidationError({
-        #             "price": "Price is required for sale"
-        #         })
-
-        #     if not self.perprice:
-        #         raise ValidationError({
-        #             "perprice": "Per price is required for sale"
-        #         })
-
-        # # =========================
-        # # RENT
-        # # =========================
-
-        # elif purpose_name == "rent":
-
-        #     if not self.price:
-        #         raise ValidationError({
-        #             "price": "Rent amount is required"
-        #         })
-
-        #     if not self.deposit:
-        #         raise ValidationError({
-        #             "deposit": "Deposit is required for rent"
-        #         })
-
-        # # =========================
-        # # LEASE
-        # # =========================
-
-        # elif purpose_name == "lease":
-
-        #     if not self.price:
-        #         raise ValidationError({
-        #             "price": "Price is required for lease"
-        #         })
-
     def __str__(self):
         return f"{self.label} - {self.city}"
+
+    def soft_delete(self):
+        if not self.deleted:
+            self.deleted = True
+            self.save(update_fields=["deleted"])
 
     def save(self, *args, **kwargs):
 

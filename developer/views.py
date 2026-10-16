@@ -5,6 +5,47 @@ from django.views.decorators.cache import never_cache
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.models import AnonymousUser
 import json
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
+from django.db.models import Q
+from agents.models import AgentProperty
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from django.views.decorators.http import require_http_methods
+from django.views.decorators.csrf import csrf_exempt
+import json
+from datetime import datetime
+from io import BytesIO
+from django.contrib.admin.views.decorators import staff_member_required
+from django.core.paginator import Paginator
+from django.db.models import Q
+from django.http import Http404, HttpResponse
+from django.shortcuts import render
+from django.utils import timezone
+from django.utils.text import slugify
+from openpyxl import Workbook
+from openpyxl.styles import Alignment, Font, PatternFill
+from openpyxl.utils import get_column_letter
+from users.models import Property, PropertyFeature
+from agents.models import (
+    AgentProperty,
+    AgentPropertyFieldValue,
+    AgentPropertySellingPoint,
+    AgentPropertyLandmark,
+)
+from developer.models import (
+    ExpiredProperty,
+    PropertyImage,
+    ExpiredPropertyFeature,
+    Amenities,
+    Category,
+    Subcategory,
+    Purpose,
+    SubcategoryField,
+)
+import json
 import openpyxl
 from django.views.decorators.http import require_http_methods
 from django.core.exceptions import ValidationError
@@ -30,6 +71,7 @@ from agents.models import (
     AgentPropertyLandmark,
     AgentUserProfile,
 )
+from django.shortcuts import get_object_or_404
 from developer.models import (
     Category,
     Purpose,
@@ -93,6 +135,21 @@ from django.contrib import messages
 from django.db import transaction
 from agents.models import *
 from users.image_compression import compress_image
+import json
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib import messages
+from django.views.decorators.cache import never_cache
+from django.contrib.auth.decorators import user_passes_test
+from datetime import date, datetime
+from decimal import Decimal
+from io import BytesIO
+from uuid import UUID
+from django.contrib.admin.views.decorators import staff_member_required
+from django.http import HttpResponse
+from django.utils import timezone
+from openpyxl import Workbook
+from openpyxl.styles import Alignment, Font, PatternFill
+from openpyxl.utils import get_column_letter
 
 #added by mehreena
 def create_admin_notification(title, message, notification_type="info"):
@@ -135,7 +192,7 @@ def superuser_login_view(request):
                         holder.rate_limit = 0
                         holder.save()
                     login(request, user)
-                    return redirect(reverse("dashboard"))  # ✅ redirect to dashboard
+                    return redirect(reverse("dashboard"))  
                 else:
                     if holder:
                         holder.rate_limit += 1
@@ -153,16 +210,11 @@ def superuser_required(user):
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 def Dashboard(request):
 
-    # ===========================
-    # PROPERTY COUNTS
-    # ===========================
-
     total_active = Property.objects.count()
     total_expired = ExpiredProperty.objects.count()
     total_agent_active = AgentProperty.objects.count()
     total_agent_expired = ExpiredAgentProperty.objects.count()
 
-    # ALL PROPERTIES IN THE SYSTEM
     total_all = (
         total_active
         + total_expired
@@ -172,7 +224,6 @@ def Dashboard(request):
 
     active_by_purpose_map = defaultdict(int)
 
-    # Normal active properties
     for item in (
         Property.objects
         .values("purpose__name")
@@ -180,7 +231,6 @@ def Dashboard(request):
     ):
         active_by_purpose_map[item["purpose__name"]] += item["total"]
 
-    # Agent active properties
     for item in (
         AgentProperty.objects
         .values("purpose__name")
@@ -188,7 +238,6 @@ def Dashboard(request):
     ):
         active_by_purpose_map[item["purpose__name"]] += item["total"]
 
-    # Convert to template-friendly list
     active_by_purpose = [
         {
             "purpose__name": purpose,
@@ -196,10 +245,6 @@ def Dashboard(request):
         }
         for purpose, total in sorted(active_by_purpose_map.items())
     ]
-
-    # ===========================
-    # AGENT PROPERTY REPORT
-    # ===========================
 
     all_purposes = list(
         AgentProperty.objects
@@ -256,7 +301,6 @@ def Dashboard(request):
         .order_by("-created_at")
     )
 
-    # General Developer/Admin notifications
     admin_notifications = (
         AdminNotification.objects
         .order_by("-created_at")
@@ -264,7 +308,6 @@ def Dashboard(request):
 
     notifications = []
 
-    # Advertisement notifications
     for item in advertisement_notifications:
 
         notifications.append(
@@ -278,7 +321,6 @@ def Dashboard(request):
             }
         )
 
-    # Reel notifications
     for item in reel_notifications:
 
         notifications.append(
@@ -292,7 +334,6 @@ def Dashboard(request):
             }
         )
 
-    # General Admin/Developer notifications
     for item in admin_notifications:
 
         notifications.append(
@@ -306,22 +347,16 @@ def Dashboard(request):
             }
         )
 
-    # Latest notification first
     notifications.sort(
         key=lambda x: x["created_at"],
         reverse=True
     )
 
-    # Unread notification count
     unread_count = sum(
         1
         for notification in notifications
         if not notification["is_read"]
     )
-
-    # ===========================
-    # CONTEXT
-    # ===========================
 
     context = {
         "total_active": total_active,
@@ -334,7 +369,6 @@ def Dashboard(request):
         "all_purposes": all_purposes,
         "premium_report": premium_report,
 
-        # Notifications
         "notifications": notifications,
         "unread_count": unread_count,
     }
@@ -353,9 +387,6 @@ def superuser_logout_view(request):
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 def categories(request):
 
-    # =========================
-    # FETCH DATA
-    # =========================
     categories = Category.objects.all().order_by("-id")
     purposes = Purpose.objects.all().order_by("-id")
     subcategories = Subcategory.objects.select_related("category").all().order_by("-id")
@@ -374,16 +405,8 @@ def categories(request):
     )
 
     amenities = Amenities.objects.all().order_by("-id")  # ✅ NEW
-
-    # =========================
-    # POST ACTIONS
-    # =========================
     if request.method == "POST":
         action = request.POST.get("action")
-
-        # =========================
-        # CATEGORY
-        # =========================
         if action == "add_category":
             name = request.POST.get("name")
             icon = request.FILES.get("icon")
@@ -436,9 +459,6 @@ def categories(request):
                 "warning",
             )
 
-        # =========================
-        # PURPOSE
-        # =========================
         elif action == "add_purpose":
             name = request.POST.get("name")
 
@@ -483,9 +503,6 @@ def categories(request):
                 "warning",
             )
 
-        # =========================
-        # SUBCATEGORY
-        # =========================
         elif action == "add_subcategory":
             name = request.POST.get("name")
             category_id = request.POST.get("category_id")
@@ -540,9 +557,7 @@ def categories(request):
                 f"Subcategory #{subcategory_id} • {subcategory_name} was deleted successfully.",
                 "warning",
             )
-        # =========================
-        # SUBCATEGORY FIELDS
-        # =========================
+       
         elif action == "add_field":
 
             field = SubcategoryField.objects.create(
@@ -586,9 +601,6 @@ def categories(request):
 
             if request.FILES.get("icon"):
                 field.icon = request.FILES.get("icon")
-            print("POST:", request.POST)
-            print("FILES:", request.FILES)
-            print("ICON:", request.FILES.get("icon"))
 
             field.save()
 
@@ -607,8 +619,6 @@ def categories(request):
                     continue
 
                 option_id = option_ids[index]
-
-                # Existing option
                 if option_id:
 
                     option = get_object_or_404(FieldOption, id=option_id, field=field)
@@ -623,8 +633,6 @@ def categories(request):
                     option.save()
 
                     used_option_ids.append(option.id)
-
-                # New option
                 else:
 
                     option = FieldOption.objects.create(field=field, name=name)
@@ -668,10 +676,6 @@ def categories(request):
                 f"Subcategory Field #{field_id} • {field_name} was deleted successfully.",
                 "warning",
             )
-
-        # =========================
-        # AMENITIES  ✅ NEW
-        # =========================
         elif action == "add_amenity":
             name = request.POST.get("name")
             icon = request.FILES.get("icon")
@@ -742,8 +746,6 @@ def categories(request):
 def parse_listing(listing):
     if not listing:
         return {}
-
-    # ✅ Already dict (JSONField)
     if isinstance(listing, dict):
         return {k.lower(): int(v) for k, v in listing.items()}
 
@@ -783,10 +785,6 @@ def can_add_property(owner, category, purpose, is_admin=False):
         return True, None
 
     category_name = category.name.lower()
-
-    # ==========================
-    # UPGRADE PLAN
-    # ==========================
     if owner.upgrade_plan:
 
         listing_data = parse_listing(owner.upgrade_plan.listing)
@@ -810,9 +808,6 @@ def can_add_property(owner, category, purpose, is_admin=False):
 
         return True, None
 
-    # ==========================
-    # NORMAL PLAN
-    # ==========================
     if owner.user_plans.exists():
 
         plan = owner.user_plans.first()
@@ -833,10 +828,6 @@ def can_add_property(owner, category, purpose, is_admin=False):
             return False, f"{category.name} limit reached"
 
         return True, None
-
-    # ==========================
-    # FREE USER
-    # ==========================
     now = timezone.now()
 
     if owner.last_plan_expiry and now > owner.last_plan_expiry:
@@ -1186,16 +1177,12 @@ def get_property(request, property_id):
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 def get_subcategories(request, category_id):
 
-    print("Category ID:", category_id)
-
     subcategories = Subcategory.objects.filter(category_id=category_id).order_by("name")
-
-    print("Count:", subcategories.count())
 
     data = []
 
     for sub in subcategories:
-        print(sub.name)
+        
 
         data.append({"id": sub.id, "name": sub.name})
 
@@ -1301,24 +1288,20 @@ def get_user_details(request, user_id):
     listing = ""
     expiry_date = ""
 
-    # ✅ Upgrade Plan
     if user.upgrade_plan:
         plan = user.upgrade_plan
 
         plan_name = plan.name
         validity = plan.validity
-        listing = plan.listing  # ✅ correct
+        listing = plan.listing  
 
         expiry_date = user.created + timedelta(days=validity)
 
-    # ✅ Userplan
     elif user.user_plans.exists():
         plan = user.user_plans.first()
 
         plan_name = plan.name
         validity = plan.validity
-
-        # ✅ convert numeric → string format
         listing = f"{plan.residential_limit or 0} Residential / {plan.commercial_limit or 0} Commercial"
 
         expiry_date = user.created + timedelta(days=validity)
@@ -1344,10 +1327,6 @@ def edit_property(request, property_id):
 
     try:
 
-        # ====================================
-        # CATEGORY / PURPOSE / SUBCATEGORY
-        # ====================================
-
         category = Category.objects.get(id=request.POST.get("category"))
 
         purpose = Purpose.objects.get(id=request.POST.get("purpose"))
@@ -1363,10 +1342,6 @@ def edit_property(request, property_id):
         if request.POST.get("user"):
 
             user = UserCreate.objects.get(id=request.POST.get("user"))
-
-        # ====================================
-        # BASIC DETAILS
-        # ====================================
 
         property_obj.category = category
         property_obj.subcategory = subcategory
@@ -1408,19 +1383,11 @@ def edit_property(request, property_id):
 
         property_obj.duration_days = int(request.POST.get("duration_days", 30))
 
-        # ====================================
-        # SELLING POINTS
-        # ====================================
-
         property_obj.selling_points = [
             point.strip()
             for point in request.POST.getlist("selling_points")
             if point.strip()
         ]
-
-        # ====================================
-        # LANDMARKS
-        # ====================================
 
         landmarks = []
 
@@ -1435,29 +1402,6 @@ def edit_property(request, property_id):
                 landmarks.append({"name": name.strip(), "distance": distance.strip()})
 
         property_obj.land_mark = landmarks
-        # ====================================
-        # MAIN IMAGE
-        # ====================================
-
-        # uploaded_images = request.FILES.getlist("images")
-
-        # if uploaded_images:
-        #     try:
-        #         uploaded_images = [
-        #             compress_image(image)
-        #             for image in uploaded_images
-        #         ]
-        #     except ValueError as e:
-        #         messages.error(request, str(e))
-        #         return redirect("add_property")
-
-        #     property_obj.image = uploaded_images[0]
-
-        # property_obj.save()
-
-        # ====================================
-        # UPDATE DYNAMIC FEATURES
-        # ====================================
 
         PropertyFeature.objects.filter(property=property_obj).delete()
 
@@ -1472,26 +1416,13 @@ def edit_property(request, property_id):
             for field in fields:
 
                 key = f"field_{field.id}"
-
-                # --------------------------
-                # BOOLEAN
-                # --------------------------
-
                 if field.field_type == "boolean":
 
                     value = "Yes" if key in request.POST else "No"
 
-                # --------------------------
-                # MULTI SELECT
-                # --------------------------
-
                 elif field.field_type == "multi_select":
 
                     value = request.POST.get(key)
-
-                # --------------------------
-                # NORMAL
-                # --------------------------
 
                 else:
 
@@ -1500,10 +1431,6 @@ def edit_property(request, property_id):
                 if value in [None, ""]:
 
                     continue
-
-                # --------------------------
-                # MULTI SELECT SAVE
-                # --------------------------
 
                 if field.field_type == "multi_select":
 
@@ -1532,10 +1459,6 @@ def edit_property(request, property_id):
                             icon=option.icon if option else None,
                         )
 
-                # --------------------------
-                # SELECT
-                # --------------------------
-
                 elif field.field_type == "select":
 
                     option = FieldOption.objects.filter(field=field, name=value).first()
@@ -1547,27 +1470,15 @@ def edit_property(request, property_id):
                         icon=option.icon if option else None,
                     )
 
-                # --------------------------
-                # NORMAL FIELD
-                # --------------------------
-
                 else:
 
                     PropertyFeature.objects.create(
                         property=property_obj, field=field, value=value
                     )
 
-        # ====================================
-        # UPDATE AMENITIES
-        # ====================================
-
         amenity_ids = request.POST.getlist("amenities")
 
         property_obj.amenities.set(Amenities.objects.filter(id__in=amenity_ids))
-
-        # ====================================
-        # REMOVE SELECTED IMAGES
-        # ====================================
 
         deleted_images = request.POST.get("deleted_images", "")
 
@@ -1576,10 +1487,6 @@ def edit_property(request, property_id):
             ids = [i.strip() for i in deleted_images.split(",") if i.strip()]
 
             PropertyImage.objects.filter(property=property_obj, id__in=ids).delete()
-
-        # ====================================
-        # ADD NEW IMAGES
-        # ====================================
 
         uploaded_images = request.FILES.getlist("images")
 
@@ -1593,8 +1500,6 @@ def edit_property(request, property_id):
                     compressed_images.append(compressed_image)
 
                 uploaded_images = compressed_images
-
-                # Set first compressed image as the main image
                 property_obj.image = uploaded_images[0]
 
             except ValueError as e:
@@ -1607,9 +1512,6 @@ def edit_property(request, property_id):
             image.seek(0)
             PropertyImage.objects.create(property=property_obj, image=image)
 
-        # ====================================
-        # SUCCESS
-        # ====================================
         create_admin_notification(
             "Property Updated",
             f"Property #{property_obj.id} • {property_obj.label or 'Unnamed Property'} was updated successfully.",
@@ -1626,12 +1528,6 @@ def edit_property(request, property_id):
         messages.error(request, str(e))
 
     return redirect("add_property")
-
-
-from django.shortcuts import get_object_or_404, redirect
-from django.contrib import messages
-from django.views.decorators.cache import never_cache
-from django.contrib.auth.decorators import user_passes_test
 
 
 @never_cache
@@ -1688,9 +1584,6 @@ def admin_premiumagents(request):
 
     all_premium = Premium.objects.all()
 
-    # -------------------------
-    # 🔍 TEXT SEARCH
-    # -------------------------
     if search_query:
         all_premium = all_premium.annotate(
             created_str=Cast("created_at", output_field=CharField()),
@@ -1709,19 +1602,14 @@ def admin_premiumagents(request):
             | Q(duration_str__icontains=search_query)
         )
 
-    # -------------------------
-    # 📅 DATE RANGE FILTER
-    # -------------------------
     if from_date:
         all_premium = all_premium.filter(created_at__date__gte=from_date)
 
     if to_date:
         all_premium = all_premium.filter(created_at__date__lte=to_date)
 
-    # Sort latest first
     all_premium = all_premium.order_by("-created_at")
 
-    # Pagination
     paginator = Paginator(all_premium, 20)
     premium = paginator.get_page(request.GET.get("page", 1))
 
@@ -1746,10 +1634,6 @@ def admin_agents(request):
 
     agents = AgentUserProfile.objects.all()
 
-    # ================================
-    # SEARCH
-    # ================================
-
     if search_query:
 
         agents = agents.filter(
@@ -1761,10 +1645,6 @@ def admin_agents(request):
             | Q(agent_type__icontains=search_query)
         )
 
-    # ================================
-    # DATE FILTER
-    # ================================
-
     if from_date:
 
         agents = agents.filter(created_at__date__gte=from_date)
@@ -1774,10 +1654,6 @@ def admin_agents(request):
         agents = agents.filter(created_at__date__lte=to_date)
 
     agents = agents.order_by("-created_at")
-
-    # ================================
-    # PAGINATION
-    # ================================
 
     paginator = Paginator(agents, 20)
 
@@ -1827,10 +1703,6 @@ def add_admin_agent(request):
 
         image = request.FILES.get("image")
 
-        # =========================================
-        # REQUIRED VALIDATION
-        # =========================================
-
         if not username:
             messages.error(request, "Username is required.")
             return redirect("admin_agents")
@@ -1855,10 +1727,6 @@ def add_admin_agent(request):
             messages.error(request, "Pin code is required.")
             return redirect("admin_agents")
 
-        # =========================================
-        # DUPLICATE CHECK
-        # =========================================
-
         if AgentUserProfile.objects.filter(username=username).exists():
 
             messages.error(request, "Username already exists.")
@@ -1869,10 +1737,6 @@ def add_admin_agent(request):
             messages.error(request, "Email already exists.")
             return redirect("admin_agents")
 
-        # =========================================
-        # PIN CODE
-        # =========================================
-
         try:
             pin_code_value = int(pin_code)
         except (TypeError, ValueError):
@@ -1880,16 +1744,7 @@ def add_admin_agent(request):
             messages.error(request, "Pin code must contain numbers only.")
 
             return redirect("admin_agents")
-
-        # =========================================
-        # ACTIVE STATUS
-        # =========================================
-
         active_value = True if is_active == "true" else False
-
-        # =========================================
-        # CREATE AGENT
-        # =========================================
 
         agent = AgentUserProfile(
             username=username,
@@ -1905,13 +1760,6 @@ def add_admin_agent(request):
             is_active=active_value,
             is_agent=True,
         )
-
-        # =========================================
-        # IMAGE
-        # =========================================
-
-        # if image:
-        #     agent.profile_image = image
 
         if image: 
             try: 
@@ -1942,7 +1790,6 @@ def add_admin_agent(request):
 
         return redirect("admin_agents")
 
-# agent edit function
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 def edit_agent(request, pk):
@@ -1978,10 +1825,6 @@ def edit_agent(request, pk):
         if status:
             agent.is_active = True if status == "true" else False
 
-        # if request.FILES.get("image"):
-
-        #     agent.profile_image = request.FILES.get("image")
-
         uploaded_image = request.FILES.get("image") 
         if uploaded_image: 
             try: 
@@ -2007,7 +1850,7 @@ def edit_agent(request, pk):
 
     return redirect("admin_agents")
 
-# agent delete function 
+
 def delete_agent(request, pk):
     agent = get_object_or_404(AgentUserProfile, pk=pk)
 
@@ -2041,7 +1884,6 @@ def edit_premium(request, pk):
         premium.location = request.POST.get("location", premium.location)
         premium.city = request.POST.get("city", premium.city)
 
-        # 🔥 Convert to int to avoid TypeError
         premium.duration_days = int(
             request.POST.get("duration_days") or premium.duration_days
         )
@@ -2049,7 +1891,7 @@ def edit_premium(request, pk):
         if "image" in request.FILES:
             premium.image = request.FILES["image"]
 
-        premium.save()  # triggers auto-move to ExpiredPremium if duration <= 0
+        premium.save()  
 
         return redirect("admin_premiumagents")
 
@@ -2070,9 +1912,8 @@ def delete_premium(request, pk):
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 def admin_contact(request):
-    contact_list = Contact.objects.all().order_by("-created_at")  # latest first
+    contact_list = Contact.objects.all().order_by("-created_at")  
 
-    # pagination: 10 contacts per page
     paginator = Paginator(contact_list, 20)
     page_number = request.GET.get("page")
     contacts = paginator.get_page(page_number)
@@ -2093,9 +1934,8 @@ def delete_contact(request, pk):
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 def admin_message(request):
-    message_list = Inbox.objects.all().order_by("-created_at")  # latest first
+    message_list = Inbox.objects.all().order_by("-created_at") 
 
-    # pagination: 10 per page
     paginator = Paginator(message_list, 20)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
@@ -2109,7 +1949,7 @@ def admin_message(request):
 def delete_message(request, pk):
     message = get_object_or_404(Inbox, pk=pk)
     message.delete()
-    messages.success(request, "🗑️ Message deleted successfully!")  # flash message
+    messages.success(request, "🗑️ Message deleted successfully!")  
     return redirect("admin_message")
 
 
@@ -2121,12 +1961,8 @@ def admin_agent_reg(request):
     from_date = request.GET.get("from_date", "")
     to_date = request.GET.get("to_date", "")
 
-    # Base query
     agent_list = AgentForm.objects.all()
 
-    # ---------------------------------------
-    # 🔍 TEXT SEARCH
-    # ---------------------------------------
     if search_query:
         agent_list = agent_list.annotate(
             created_str=Cast("created_at", output_field=CharField())
@@ -2139,16 +1975,12 @@ def admin_agent_reg(request):
             | Q(created_str__icontains=search_query)
         )
 
-    # ---------------------------------------
-    # 📅 DATE RANGE FILTER (Calendar)
-    # ---------------------------------------
     if from_date:
         agent_list = agent_list.filter(created_at__date__gte=from_date)
 
     if to_date:
         agent_list = agent_list.filter(created_at__date__lte=to_date)
 
-    # Sort latest first
     agent_list = agent_list.order_by("-created_at")
 
     # Pagination
@@ -2235,9 +2067,9 @@ def delete_property_list(request, pk):
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 def admin_request(request):
-    requestforms = Request.objects.all().order_by("-created_at")  # latest first
+    requestforms = Request.objects.all().order_by("-created_at")  
 
-    paginator = Paginator(requestforms, 20)  # paginate (2 per page for testing)
+    paginator = Paginator(requestforms, 20)  
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
@@ -2268,12 +2100,11 @@ def expired_property(request):
     start_date = request.GET.get("start_date", "")
     end_date = request.GET.get("end_date", "")
 
-    expired_list = ExpiredProperty.objects.all().order_by("-id")
+    expired_list = ExpiredProperty.objects.filter(deleted=False).order_by("-id")
 
-    # 🔍 SEARCH (including property_code)
     if search:
         expired_list = expired_list.filter(
-            Q(property_code__icontains=search)  # ✅ added
+            Q(property_code__icontains=search)  
             | Q(label__icontains=search)
             | Q(purpose__name__icontains=search)
             | Q(category__name__icontains=search)
@@ -2285,14 +2116,12 @@ def expired_property(request):
             | Q(price__icontains=search)
         )
 
-    # 📅 DATE RANGE FILTER
     if start_date:
         expired_list = expired_list.filter(created_at__date__gte=start_date)
 
     if end_date:
         expired_list = expired_list.filter(created_at__date__lte=end_date)
 
-    # Pagination
     paginator = Paginator(expired_list, 20)
     page_number = request.GET.get("page")
     expired = paginator.get_page(page_number)
@@ -2316,7 +2145,7 @@ def expired_property(request):
 @require_POST
 def expired_property_delete(request, pk):
     prop = get_object_or_404(ExpiredProperty, pk=pk)
-    prop.delete()
+    prop.soft_delete()
     return redirect("expired_property")
 
 @never_cache
@@ -2333,7 +2162,6 @@ def edit_expirepremium(request, pk):
         premium.location = request.POST.get("location", premium.location)
         premium.city = request.POST.get("city", premium.city)
 
-        # 🔥 Convert to int safely
         premium.duration_days = int(
             request.POST.get("duration_days") or premium.duration_days
         )
@@ -2341,20 +2169,17 @@ def edit_expirepremium(request, pk):
         if "image" in request.FILES:
             premium.image = request.FILES["image"]
 
-        premium.save()  # triggers auto-move back to Premium if duration >= 1
+        premium.save()  
 
         return redirect("expired_agent")
 
     return render(request, "agents/expired_agents.html", {"premium": premium})
 
 
-# -----------------------------
-# Expired Premium List with search & filters
-# -----------------------------
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 def expire_premium(request):
-    # ===== AGENTS SEARCH & FILTER =====
+
     agents_search = request.GET.get("agents_search", "")
     agents_from = request.GET.get("agents_from", "")
     agents_to = request.GET.get("agents_to", "")
@@ -2448,7 +2273,7 @@ def edit_expireagent(request, pk):
 
         agent.save()
         messages.success(request, "✅ Agent updated successfully!")
-        return redirect("expired_agent")  # adjust to your listing page
+        return redirect("expired_agent")  
 
     return redirect("expired_agent")
 
@@ -2469,8 +2294,6 @@ def property_live_search(request):
     results = []
 
     if query:
-
-        # ---------------- ACTIVE PROPERTIES ----------------
         active = Property.objects.filter(
             Q(property_code__icontains=query)
             | Q(label__icontains=query)
@@ -2492,7 +2315,6 @@ def property_live_search(request):
                 }
             )
 
-        # ---------------- EXPIRED PROPERTIES ----------------
         expired = ExpiredProperty.objects.filter(
             Q(property_code__icontains=query)
             | Q(label__icontains=query)
@@ -2511,7 +2333,6 @@ def property_live_search(request):
                 }
             )
 
-        # ---------------- PREMIUM AGENTS ----------------
         premium = Premium.objects.filter(
             Q(name__icontains=query)
             | Q(city__icontains=query)
@@ -2530,7 +2351,6 @@ def property_live_search(request):
                 }
             )
 
-        # ---------------- EXPIRED PREMIUM ----------------
         expired_premium = ExpiredPremium.objects.filter(
             Q(name__icontains=query)
             | Q(phone__icontains=query)
@@ -2548,7 +2368,6 @@ def property_live_search(request):
                 }
             )
 
-        # ---------------- AGENTS ----------------
         agents = Agents.objects.filter(
             Q(agentsname__icontains=query)
             | Q(agentscity__icontains=query)
@@ -2566,8 +2385,6 @@ def property_live_search(request):
                 }
             )
 
-        # new code added by mehreena
-        # ---------------- EXPIRED AGENTS ----------------
         exp_agents = ExpireAgents.objects.filter(
             Q(agent__username__icontains=query)
             | Q(agent__phone_number__icontains=query)
@@ -2597,10 +2414,6 @@ def AddUser(request):
         action = request.POST.get("action")
 
         try:
-
-            # ==================================================
-            # ADD USER
-            # ==================================================
             if action == "add":
 
                 name = request.POST.get("name", "").strip()
@@ -2615,7 +2428,6 @@ def AddUser(request):
                     "email.com",
                 ]
 
-                # ---------------- VALIDATION ----------------
 
                 if not name or not email:
 
@@ -2637,8 +2449,6 @@ def AddUser(request):
 
                         error = "Only Gmail, Yahoo and Email.com addresses are allowed."
 
-                # ---------------- CREATE USER ----------------
-
                 if not error:
 
                     with transaction.atomic():
@@ -2657,8 +2467,6 @@ def AddUser(request):
 
                             user.user_plans.set(plans)
 
-                        # Save again so your model updates
-                        # role/profile after assigning plans
                         user.save()
 
                     create_admin_notification(
@@ -2669,9 +2477,6 @@ def AddUser(request):
 
                     success = "User created successfully."
 
-            # ==================================================
-            # EDIT USER
-            # ==================================================
             elif action == "edit":
 
                 user_id = request.POST.get("user_id")
@@ -2693,8 +2498,6 @@ def AddUser(request):
 
                     plan_ids = request.POST.getlist("plan_id")
 
-                    # ------------ VALIDATION ------------
-
                     if not name or not email:
 
                         error = "Name and Email are required."
@@ -2710,8 +2513,6 @@ def AddUser(request):
                     elif mobile and (not mobile.isdigit() or len(mobile) != 10):
 
                         error = "Mobile number must contain exactly 10 digits."
-
-                    # ------------ UPDATE ------------
 
                     if not error:
 
@@ -2741,9 +2542,6 @@ def AddUser(request):
 
                     success = "User updated successfully."
 
-            # ==================================================
-            # DELETE USER
-            # ==================================================
             elif action == "delete":
 
                 user_id = request.POST.get("user_id")
@@ -2771,13 +2569,9 @@ def AddUser(request):
 
         except Exception as e:
 
-            print(e)
+            
 
             error = str(e)
-
-    # ==================================================
-    # PAGE DATA
-    # ==================================================
 
     users = UserCreate.objects.prefetch_related("user_plans").order_by("-created_at")
 
@@ -2802,10 +2596,6 @@ def plans(request):
     error = None
     edit_plan = None
 
-    # =========================================
-    # DELETE
-    # =========================================
-
     delete_id = request.GET.get("delete_id")
     delete_type = request.GET.get("delete_type")
 
@@ -2827,9 +2617,6 @@ def plans(request):
 
         return redirect("userplan")
 
-    # =========================================
-    # EDIT FETCH
-    # =========================================
 
     edit_id = request.GET.get("edit_id")
     edit_type = request.GET.get("type")
@@ -2838,17 +2625,9 @@ def plans(request):
 
         edit_plan = get_object_or_404(Userplan, id=edit_id)
 
-    # =========================================
-    # POST
-    # =========================================
-
     if request.method == "POST":
 
         form_type = request.POST.get("form_type")
-
-        # =====================================
-        # USER PLAN
-        # =====================================
 
         if form_type == "userplan":
 
@@ -2856,95 +2635,39 @@ def plans(request):
 
             plan = get_object_or_404(Userplan, id=plan_id) if plan_id else Userplan()
 
-            # =================================
-            # BASIC
-            # =================================
-
             plan.name = request.POST.get("name", "")
 
             plan.validity = request.POST.get("validity", "")
 
             plan.price = request.POST.get("price") or 0
 
-            # =================================
-            # PROPERTY LISTING
-            # =================================
-
             plan.property_listing_limit = request.POST.get("property_listing_limit", "")
 
             plan.listing_type = request.POST.get("listing_type", "")
 
-            # =================================
-            # ENQUIRIES
-            # =================================
-
             plan.enquiry_limit = request.POST.get("enquiry_limit", "")
-
-            # =================================
-            # EDIT OPTION
-            # =================================
 
             plan.property_edit_option = request.POST.get("property_edit_option", "")
 
-            # =================================
-            # PROPERTY VISIBILITY
-            # =================================
-
             plan.property_visibility = request.POST.get("property_visibility", "")
-
-            # =================================
-            # PRIORITY SEARCH
-            # =================================
 
             plan.priority_search = request.POST.get("priority_search", "")
 
-            # =================================
-            # META ADS PROMOTION
-            # =================================
-
             plan.meta_ads_promotion = request.POST.get("meta_ads_promotion", "")
-
-            # =================================
-            # BULK WHATSAPP MESSAGE
-            # =================================
 
             plan.bulk_whatsapp_message = request.POST.get("bulk_whatsapp_message", "")
 
-            # =================================
-            # POSTER CREATION
-            # =================================
-
             plan.poster_creation = request.POST.get("poster_creation", "")
-
-            # =================================
-            # SOCIAL MEDIA MARKETING
-            # =================================
 
             plan.social_media_marketing = request.POST.get("social_media_marketing", "")
 
-            # =================================
-            # LEAD FOLLOW SUPPORT
-            # =================================
-
             plan.lead_follow_support = request.POST.get("lead_follow_support", "")
 
-            # =================================
-            # BEST SUITED FOR
-            # =================================
-
             plan.best_suited_for = request.POST.get("best_suited_for", "")
-
-            # =================================
-            # SAVE
-            # =================================
 
             plan.save()
 
             return redirect("userplan")
-
-        # =====================================
-        # ELITE PLAN
-        # =====================================
 
         elif form_type == "eliteplan":
 
@@ -2980,10 +2703,6 @@ def plans(request):
             plan.save()
 
             return redirect("userplan")
-
-        # =====================================
-        # PREMIUM PLAN
-        # =====================================
 
         elif form_type == "premiumplan":
 
@@ -3026,10 +2745,6 @@ def plans(request):
             plan.save()
 
             return redirect("userplan")
-
-        # =====================================
-        # AGENT PLAN
-        # =====================================
 
         elif form_type == "agentplan":
 
@@ -3147,10 +2862,6 @@ def plans(request):
 
             return redirect("userplan")
 
-    # =========================================
-    # RENDER
-    # =========================================
-
     return render(
         request,
         "plans/plans.html",
@@ -3177,10 +2888,6 @@ def export_users_excel(request):
 
     sheet.title = "Users"
 
-    # ==========================
-    # HEADER
-    # ==========================
-
     sheet.append(
         [
             "ID",
@@ -3195,10 +2902,6 @@ def export_users_excel(request):
             "Created",
         ]
     )
-
-    # ==========================
-    # USERS
-    # ==========================
 
     users = UserCreate.objects.prefetch_related("user_plans").order_by("-created_at")
 
@@ -3262,10 +2965,6 @@ def export_users_excel(request):
                 user.created_at.strftime("%Y-%m-%d %H:%M"),
             ]
         )
-
-    # ==========================
-    # RESPONSE
-    # ==========================
 
     response = HttpResponse(
         content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
@@ -3370,13 +3069,11 @@ def approve_agent(request, agent_id):
         "success",
     )
 
-    # Delete pending
     pending.delete()
 
     messages.success(request, f"{agent.username} approved successfully.")
     return redirect("pending_agents_list")
 
-# pending agent rejected 
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view") 
 @require_POST
@@ -3470,9 +3167,6 @@ def edit_testimonial(request, id):
         testimonial.description = request.POST.get("description")
         testimonial.designation = request.POST.get("designation")
 
-       
-        # if request.FILES.get("image"):
-        #     testimonial.image = request.FILES["image"]
         if uploaded_image: 
             testimonial.image = uploaded_image
 
@@ -3501,9 +3195,6 @@ def userprofile_list_view(request):
                     ) 
                     return redirect("userprofiles")
 
-            # =====================================================
-            # UPDATE EDITABLE PROFILE DETAILS
-            # =====================================================
             profile.full_name = request.POST.get("full_name", "").strip()
             profile.username = request.POST.get("username", "").strip()
             profile.mobile = request.POST.get("mobile", "").strip()
@@ -3513,10 +3204,6 @@ def userprofile_list_view(request):
 
             profile.is_active = request.POST.get("is_active") == "True"
 
-            # if request.FILES.get("image"):
-            #     profile.image = request.FILES.get("image")
-
-            # profile.save()
             profile.save()
 
             create_admin_notification(
@@ -3528,7 +3215,7 @@ def userprofile_list_view(request):
             messages.success(request, "User profile updated successfully.")
 
         except Exception as error:
-            print("USER PROFILE UPDATE ERROR:", error)
+            
             messages.error(
                 request, "Unable to update the user profile. Please try again."
             )
@@ -3543,13 +3230,8 @@ def userprofile_list_view(request):
 def delete_userprofile(request, id):
 
     try:
-        # =========================================================
-        # FIND AND DELETE USER PROFILE
-        # Returns a 404 page when the profile does not exist
-        # =========================================================
         profile = get_object_or_404(UserProfile, id=id)
 
-        # Store the name before deleting for the toast message
         profile_name = profile.full_name or profile.username or "User profile"
 
         profile_id = profile.id
@@ -3565,12 +3247,8 @@ def delete_userprofile(request, id):
         messages.success(request, f"{profile_name} deleted successfully.")
 
     except Exception as error:
-        print("USER PROFILE DELETE ERROR:", error)
+        
 
-        # =========================================================
-        # TOAST NOTIFICATION — DELETE ERROR
-        # This message appears as a red toast when deletion fails
-        # =========================================================
         messages.error(request, "Unable to delete the user profile. Please try again.")
 
     return redirect("userprofiles")
@@ -3594,9 +3272,7 @@ def edit_userprofile(request, id):
                         f"Unable to process profile image: {str(error)}" 
                     ) 
                     return redirect("userprofiles")
-            # =====================================================
-            # UPDATE USER PROFILE FROM SEPARATE EDIT PAGE
-            # =====================================================
+            
             profile.full_name = request.POST.get("full_name", "").strip()
 
             profile.username = request.POST.get("username", profile.username).strip()
@@ -3613,22 +3289,12 @@ def edit_userprofile(request, id):
 
             profile.is_active = request.POST.get("is_active") == "True"
 
-            # if uploaded_image:
-            #     profile.image = uploaded_image
-
             profile.save()
-
-            # =====================================================
-            # TOAST NOTIFICATION — EDIT SUCCESS
-            # =====================================================
             messages.success(request, "User profile updated successfully.")
 
         except Exception as error:
-            print("USER PROFILE EDIT ERROR:", error)
+           
 
-            # =====================================================
-            # TOAST NOTIFICATION — EDIT ERROR
-            # =====================================================
             messages.error(
                 request, "Unable to update the user profile. Please try again."
             )
@@ -3643,10 +3309,6 @@ def package_dashboard(request):
 
         pkg_type = request.POST.get("main_type")
         pkg_id = request.POST.get("id")
-
-        # =====================================================
-        # ADVERTISEMENT PACKAGE
-        # =====================================================
 
         if pkg_type == "ad":
 
@@ -3687,10 +3349,6 @@ def package_dashboard(request):
                     "success",
                 )
 
-        # =====================================================
-        # REEL PACKAGE
-        # =====================================================
-        # new code added by mehreena
         elif pkg_type == "reel":
 
             if pkg_id:
@@ -3730,22 +3388,12 @@ def package_dashboard(request):
 
             return redirect("package_dashboard")
 
-    # =====================================================
-    # FETCH DATA
-    # =====================================================
-
     ads = AdvertisementPackage.objects.all().order_by("-id")
 
     reels = ReelPackage.objects.all().order_by("-id")
 
     return render(request, "plans/packages.html", {"ads": ads, "reels": reels})
 
-
-# =====================================================
-# DELETE PACKAGE
-# =====================================================
-
-# promotional plan delete 
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 @require_POST
@@ -3820,7 +3468,6 @@ def agent_registration(request):
         context,
     )
 
-# add blog function
 def blog_dashboard(request):
 
     blogs = Blog.objects.select_related("category").order_by("-date")
@@ -3840,7 +3487,6 @@ def blog_dashboard(request):
             if uploaded_image: 
                 try: 
                     compressed_image = compress_image(uploaded_image) 
-                    # Replace the original upload with the compressed image 
                     form.instance.image = compressed_image 
                 except ValueError as error: 
                     form.add_error("image", str(error)) 
@@ -3950,45 +3596,6 @@ def edit_blog(request, id):
 
     return redirect("blog_dashboard")
 
-# @never_cache
-# @user_passes_test(superuser_required, login_url="superuser_login_view")
-# def edit_blog(request, id):
-
-#     blog = get_object_or_404(Blog, id=id)
-
-#     if request.method == "POST":
-
-#         form = BlogForm(request.POST, request.FILES, instance=blog)
-
-#         if form.is_valid():
-
-#             # Keep old image if no new image uploaded
-#             if not request.FILES.get("image"):
-
-#                 form.instance.image = blog.image
-
-#             blog = form.save()
-
-#             create_admin_notification(
-#                 "Blog Updated",
-#                 f"Blog • {blog.blog_head or 'Untitled Blog'} was updated successfully.",
-#                 "info",
-#             )
-
-#             messages.success(request, "Blog updated successfully.")
-#             return redirect("blog_dashboard")
-
-#         else:
-
-#             messages.error(request, "Please correct the errors below.")
-
-#             return redirect("blog_dashboard")
-
-#     messages.error(request, "Invalid request.")
-
-#     return render("blog_dashboard")
-
-# delete blog function
 def delete_blog(request, id):
     blog = get_object_or_404(Blog, id=id)
 
@@ -4022,8 +3629,6 @@ def ads_dashboard(request):
     return render(request, "ads/ads_dashboard.html", context)
 
 
-
-# added by mehreena 
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 @require_POST
@@ -4063,9 +3668,8 @@ def add_banner(request):
 
     return redirect("ads_dashboard")
 
-from django.shortcuts import get_object_or_404
 
-# ads management banner edit 
+
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 @require_POST
@@ -4092,7 +3696,7 @@ def edit_banner(request, id):
 
     return redirect("ads_dashboard")
 
-# ads management banner delete
+
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 @require_POST
@@ -4114,7 +3718,7 @@ def delete_banner(request, id):
 
     return redirect("ads_dashboard")
 
-# ads management slider add 
+
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 @require_POST
@@ -4139,7 +3743,6 @@ def add_slider(request):
 
             slider.save()
             form.save_m2m()
-            # slider = form.save()
 
             create_admin_notification(
                 "Slider Added",
@@ -4154,7 +3757,7 @@ def add_slider(request):
 
     return redirect("ads_dashboard")
 
-# ads management slider edit 
+
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 @require_POST
@@ -4198,7 +3801,7 @@ def edit_slider(request, id):
 
     return redirect("ads_dashboard")
 
-# ads management slider delete
+
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 @require_POST
@@ -4220,9 +3823,6 @@ def delete_slider(request, id):
 
     return redirect("ads_dashboard")
 
-# ============================================================
-# Advertisement & Reel Dashboard
-# ============================================================
 # @login_required
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
@@ -4235,10 +3835,6 @@ def advertisement_notifications(request):
     reel_requests = ReelPurchaseNotification.objects.select_related(
         "agent", "payment", "payment__reel_package"
     ).order_by("-created_at")
-
-    # -----------------------------------
-    # Search
-    # -----------------------------------
 
     search = request.GET.get("search", "").strip()
 
@@ -4256,10 +3852,6 @@ def advertisement_notifications(request):
             | Q(title__icontains=search)
         )
 
-    # -----------------------------------
-    # Type Filter
-    # -----------------------------------
-
     request_type = request.GET.get("type", "")
 
     if request_type == "advertisement":
@@ -4270,10 +3862,6 @@ def advertisement_notifications(request):
 
         advertisement_requests = AdvertisementRequestNotification.objects.none()
 
-    # -----------------------------------
-    # Status Filter
-    # -----------------------------------
-
     status = request.GET.get("status", "")
 
     if status:
@@ -4281,10 +3869,6 @@ def advertisement_notifications(request):
         advertisement_requests = advertisement_requests.filter(status=status)
 
         reel_requests = reel_requests.filter(status=status)
-
-    # -----------------------------------
-    # Create One Common List
-    # -----------------------------------
 
     notifications = []
 
@@ -4331,10 +3915,6 @@ def advertisement_notifications(request):
         )
 
     notifications = sorted(notifications, key=lambda x: x["created_at"], reverse=True)
-
-    # -----------------------------------
-    # Dashboard Counts
-    # -----------------------------------
 
     advertisement_count = AdvertisementRequestNotification.objects.count()
 
@@ -4386,11 +3966,6 @@ def advertisement_notifications(request):
         context,
     )
 
-
-# ============================================================
-# MARK AS READ
-# ============================================================
-
 # @login_required
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
@@ -4419,10 +3994,6 @@ def mark_notification_read(request, request_type, id):
 
     return redirect("advertisement_notifications")
 
-# ============================================================
-# DASHBOARD NOTIFICATION - MARK AS READ
-# ============================================================
-
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 @require_POST
@@ -4442,9 +4013,6 @@ def mark_dashboard_notification_read(request):
     try:
         source, pk = notification_id.split("-", 1)
 
-        # ------------------------------------------
-        # General Admin / Developer Notification
-        # ------------------------------------------
         if source == "admin":
 
             updated = AdminNotification.objects.filter(
@@ -4453,9 +4021,6 @@ def mark_dashboard_notification_read(request):
                 is_read=True
             )
 
-        # ------------------------------------------
-        # Advertisement Notification
-        # ------------------------------------------
         elif source == "advertisement":
 
             updated = AdvertisementRequestNotification.objects.filter(
@@ -4464,9 +4029,6 @@ def mark_dashboard_notification_read(request):
                 is_read=True
             )
 
-        # ------------------------------------------
-        # Reel Notification
-        # ------------------------------------------
         elif source == "reel":
 
             updated = ReelPurchaseNotification.objects.filter(
@@ -4508,27 +4070,14 @@ def mark_dashboard_notification_read(request):
 )
 @require_POST
 def mark_all_dashboard_notifications_read(request):
-    print("========== MARK ALL ==========")
-    print("PATH:", request.path)
-    print("METHOD:", request.method)
-    print("USER:", request.user)
-    print("AUTH:", request.user.is_authenticated)
 
     try:
-
-        # ------------------------------------------
-        # Mark all Admin / Developer notifications
-        # ------------------------------------------
 
         admin_updated = AdminNotification.objects.filter(
             is_read=False
         ).update(
             is_read=True
         )
-
-        # ------------------------------------------
-        # Mark all Advertisement notifications
-        # ------------------------------------------
 
         advertisement_updated = (
             AdvertisementRequestNotification.objects
@@ -4540,10 +4089,6 @@ def mark_all_dashboard_notifications_read(request):
             )
         )
 
-        # ------------------------------------------
-        # Mark all Reel notifications
-        # ------------------------------------------
-
         reel_updated = (
             ReelPurchaseNotification.objects
             .filter(
@@ -4553,10 +4098,6 @@ def mark_all_dashboard_notifications_read(request):
                 is_read=True
             )
         )
-
-        # ------------------------------------------
-        # TOTAL UPDATED
-        # ------------------------------------------
 
         total_updated = (
             admin_updated
@@ -4595,9 +4136,6 @@ def mark_all_dashboard_notifications_read(request):
                 str(error)
 
         }, status=400)
-# ============================================================
-# UPDATE STATUS
-# ============================================================
 
 
 # @login_required
@@ -4608,10 +4146,6 @@ def update_status(request, request_type, id):
 
     status = request.POST.get("status")
 
-    # -----------------------------
-    # Advertisement Request
-    # -----------------------------
-
     if request_type == "advertisement":
 
         notification = get_object_or_404(AdvertisementRequestNotification, id=id)
@@ -4621,10 +4155,6 @@ def update_status(request, request_type, id):
             "in_progress",
             "completed",
         ]
-
-    # -----------------------------
-    # Reel Request
-    # -----------------------------
 
     elif request_type == "reel":
 
@@ -4641,10 +4171,6 @@ def update_status(request, request_type, id):
         messages.error(request, "Invalid request type.")
 
         return redirect("advertisement_notifications")
-
-    # -----------------------------
-    # Validate Status
-    # -----------------------------
 
     if status not in allowed_status:
 
@@ -4663,9 +4189,6 @@ def update_status(request, request_type, id):
     return redirect("advertisement_notifications")
 
 
-# ============================================================
-# VIEW DETAILS
-# ============================================================
 # @login_required
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
@@ -4814,81 +4337,6 @@ def expired_agents_dashboard(request):
     return render(request, "agents/expired_agents.html", context)
 
 
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from django.core.paginator import Paginator
-from django.db.models import Q
-
-from agents.models import AgentProperty
-
-from django.core.paginator import Paginator
-from django.db.models import Q
-
-
-# @never_cache
-# @user_passes_test(superuser_required, login_url="superuser_login_view")
-# def agent_property_dashboard(request):
-
-#     search = request.GET.get("search", "")
-
-#     properties = (
-#         AgentProperty.objects.select_related(
-#             "agent",
-#             "category",
-#             "subcategory",
-#             "purpose",
-#             "subscription",
-#         )
-#         .prefetch_related(
-#             "amenities",
-#             "images",
-#             "field_values",
-#             "selling_points",
-#             "landmarks",
-#         )
-#         .order_by("-created_at")
-#     )
-
-#     if search:
-
-#         properties = properties.filter(
-#             Q(label__icontains=search)
-#             | Q(city__icontains=search)
-#             | Q(district__icontains=search)
-#             | Q(state__icontains=search)
-#             | Q(agent__username__icontains=search)
-#         )
-
-#     paginator = Paginator(properties, 10)
-
-#     page_number = request.GET.get("page")
-
-#     page_obj = paginator.get_page(page_number)
-
-#     context = {
-#         # Table
-#         "page_obj": page_obj,
-#         "properties": page_obj,
-#         # Modal Data
-#         "agents": AgentUserProfile.objects.all().order_by("username"),
-#         "categories": Category.objects.all().order_by("name"),
-#         "purposes": Purpose.objects.all().order_by("name"),
-#         "amenities": Amenities.objects.all().order_by("name"),
-#         # Dashboard Counts
-#         "total_properties": AgentProperty.objects.count(),
-#         "featured_properties": AgentProperty.objects.filter(is_featured=True).count(),
-#         "paid_properties": AgentProperty.objects.filter(paid=True).count(),
-#         # Search
-#         "search": search,
-#     }
-
-#     return render(
-#         request,
-#         "agent_property/agent_property_dashboard.html",
-#         context,
-#     )
-
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 def agent_property_dashboard(request):
@@ -4932,9 +4380,6 @@ def agent_property_dashboard(request):
 
     page_obj = paginator.get_page(page_number)
 
-    # ============================================================
-    # DASHBOARD COUNTS
-    # ============================================================
 
     total_count = AgentProperty.objects.filter(deleted=False).count()
 
@@ -4944,18 +4389,9 @@ def agent_property_dashboard(request):
 
     for property in AgentProperty.objects.filter(deleted=False).select_related("agent"):
 
-        # --------------------------------------------------------
-        # Active subscription keeps property active
-        # --------------------------------------------------------
-
         if property.has_active_subscription():
 
             active_count += 1
-
-        # --------------------------------------------------------
-        # No active subscription
-        # Duration must still be available
-        # --------------------------------------------------------
 
         elif property.duration_days > 0:
 
@@ -4964,22 +4400,15 @@ def agent_property_dashboard(request):
     expired_count = ExpiredAgentProperty.objects.count()
 
     context = {
-        # Table
         "page_obj": page_obj,
         "properties": page_obj,
-
-        # Modal Data
         "agents": AgentUserProfile.objects.all().order_by("username"),
         "categories": Category.objects.all().order_by("name"),
         "purposes": Purpose.objects.all().order_by("name"),
         "amenities": Amenities.objects.all().order_by("name"),
-
-        # Dashboard Counts
         "total_count": total_count,
         "active_count": active_count,
         "expired_count": expired_count,
-
-        # Existing Counts
         "featured_properties": AgentProperty.objects.filter(
             is_featured=True
         ).count(),
@@ -4988,7 +4417,6 @@ def agent_property_dashboard(request):
             paid=True
         ).count(),
 
-        # Search
         "search": search,
     }
 
@@ -5022,7 +4450,7 @@ def agent_property_detail(request, id):
 
     return render(request, "agent_property/agent_property_detail.html", context)
 
-#added by mehreena
+
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 @require_POST
@@ -5054,8 +4482,6 @@ def add_agent_property(request):
     )
 
     if not form.is_valid():
-
-        print("FORM ERRORS =", form.errors)
 
         messages.error(
             request,
@@ -5098,10 +4524,6 @@ def add_agent_property(request):
         property_obj.agent = agent
 
         property_obj.subscription = None
-
-        # -------------------------------------------------
-        # PAID
-        # -------------------------------------------------
 
         property_obj.paid = (
             request.POST.get("paid") == "on"
@@ -5191,10 +4613,6 @@ def add_agent_property(request):
 
                 field_name = f"field_{field.id}"
 
-                # -----------------------------------------
-                # MULTI SELECT
-                # -----------------------------------------
-
                 if field.field_type == "multi_select":
 
                     raw = request.POST.get(
@@ -5212,8 +4630,6 @@ def add_agent_property(request):
 
                         values = []
 
-                    # Avoid creating empty values
-
                     if values:
 
                         AgentPropertyFieldValue.objects.create(
@@ -5221,10 +4637,6 @@ def add_agent_property(request):
                             field=field,
                             value=json.dumps(values)
                         )
-
-                # -----------------------------------------
-                # BOOLEAN
-                # -----------------------------------------
 
                 elif field.field_type == "boolean":
 
@@ -5241,10 +4653,6 @@ def add_agent_property(request):
                         field=field,
                         value=value
                     )
-
-                # -----------------------------------------
-                # NORMAL FIELD
-                # -----------------------------------------
 
                 else:
 
@@ -5266,10 +4674,6 @@ def add_agent_property(request):
                         value=value
                     )
 
-        # =================================================
-        # SELLING POINTS
-        # =================================================
-
         selling_points = request.POST.getlist(
             "selling_points"
         )
@@ -5285,10 +4689,6 @@ def add_agent_property(request):
                 property=property_obj,
                 point=point
             )
-
-        # =================================================
-        # LANDMARKS
-        # =================================================
 
         names = request.POST.getlist(
             "landmark_name"
@@ -5316,10 +4716,6 @@ def add_agent_property(request):
                 distance=distance
             )
 
-        # =================================================
-        # SUCCESS
-        # =================================================
-
         messages.success(
             request,
             "Agent property added successfully."
@@ -5343,7 +4739,6 @@ def add_agent_property(request):
         )
 
 
-# new code added by mehreena
 
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
@@ -5351,9 +4746,6 @@ def add_agent_property(request):
 def get_agent_property(request, id):
 
     property = get_object_or_404(AgentProperty, id=id)
-    # =========================
-    # IMAGES
-    # =========================
     images = []
     for image in property.images.all():
         try:
@@ -5362,30 +4754,19 @@ def get_agent_property(request, id):
             url = str(image.image)
         images.append({"id": str(image.id), "url": url})
 
-    # =========================
-    # AMENITIES
-    # =========================
 
     amenities = []
     for amenity in property.amenities.all():
         amenities.append({"id": str(amenity.id), "name": amenity.name})
-    # =========================
-    # DYNAMIC FIELDS
-    # =========================
-
+   
     dynamic_fields = {}
     for item in property.field_values.all():
         dynamic_fields[f"field_{item.field.id}"] = item.value
 
-    # =========================
-    # SELLING POINTS
-    # =========================
     selling_points = []
     for point in property.selling_points.all():
         selling_points.append(point.point)
-    # =========================
-    # LANDMARKS
-    # =========================
+    
     landmarks = []
     for landmark in property.landmarks.all():
         landmarks.append({"name": landmark.name, "distance": landmark.distance or ""})
@@ -5453,19 +4834,11 @@ def edit_agent_property(request, id):
             if land_area is not None and land_area.strip() != "":
                 property.land_area = land_area.strip()
 
-            # ------------------------------------------
-            # SQ FT
-            # Only update if a value was entered
-            # ------------------------------------------
 
             sq_ft = request.POST.get("sq_ft")
 
             if sq_ft is not None and sq_ft.strip() != "":
                 property.sq_ft = sq_ft.strip()
-
-            # ==========================================
-            # DURATION DAYS
-            # ==========================================
 
             duration_raw = request.POST.get("duration_days")
 
@@ -5499,56 +4872,28 @@ def edit_agent_property(request, id):
 
             property.duration_days = duration_days
 
-            # ==========================================
-            # PRICE
-            # ==========================================
-
-            # ------------------------------------------
-            # PRICE
-            # ------------------------------------------
-
             price = request.POST.get("price")
 
             if price is not None and price.strip() != "":
                 property.price = price.strip()
-
-            # ------------------------------------------
-            # PER PRICE
-            # ------------------------------------------
 
             perprice = request.POST.get("perprice")
 
             if perprice is not None and perprice.strip() != "":
                 property.perprice = perprice.strip()
 
-            # ------------------------------------------
-            # DEPOSIT
-            # ------------------------------------------
-
             deposit = request.POST.get("deposit")
 
             if deposit is not None and deposit.strip() != "":
                 property.deposit = deposit.strip()
 
-            # ==========================================
-            # DESCRIPTION
-            # ==========================================
-
             property.description = request.POST.get("description")
-
-            # ==========================================
-            # OWNER DETAILS
-            # ==========================================
 
             property.owner = request.POST.get("owner")
 
             property.phone = request.POST.get("phone")
 
             property.whatsapp = request.POST.get("whatsapp")
-
-            # ==========================================
-            # LOCATION
-            # ==========================================
 
             property.city = request.POST.get("city")
 
@@ -5560,21 +4905,12 @@ def edit_agent_property(request, id):
 
             property.village = request.POST.get("village")
 
-            # ------------------------------------------
-            # PINCODE
-            # Only update if entered
-            # ------------------------------------------
-
             pincode = request.POST.get("pincode")
 
             if pincode is not None and pincode.strip() != "":
                 property.pincode = pincode.strip()
 
             property.location = request.POST.get("location")
-
-            # ==========================================
-            # NOTES
-            # ==========================================
 
             property.notes = request.POST.get("notes", "")
 
@@ -5586,10 +4922,6 @@ def edit_agent_property(request, id):
                 or None
             )
 
-            # ==========================================
-            # MARKET STAFF
-            # ==========================================
-
             property.market_staff = (
                 request.POST.get(
                     "market_staff",
@@ -5598,29 +4930,13 @@ def edit_agent_property(request, id):
                 or None
             )
 
-            # ==========================================
-            # STATUS
-            # ==========================================
-
             property.is_featured = "is_featured" in request.POST
 
             property.paid = "paid" in request.POST
 
-            # ==========================================
-            # AGENT OPTIONAL
-            # ==========================================
-
             property.agent_id = request.POST.get("agent") or None
 
-            # ==========================================
-            # SAVE MAIN PROPERTY
-            # ==========================================
-
             property.save()
-
-            # ==========================================
-            # DYNAMIC FIELD VALUES
-            # ==========================================
 
             property.field_values.all().delete()
 
@@ -5628,8 +4944,6 @@ def edit_agent_property(request, id):
 
                 if not key.startswith("field_"):
                     continue
-
-                # Ignore empty or whitespace values
 
                 if value is None or value.strip() == "":
                     continue
@@ -5652,20 +4966,12 @@ def edit_agent_property(request, id):
 
                     continue
 
-            # ==========================================
-            # AMENITIES
-            # ==========================================
-
             property.amenities.clear()
 
             amenities = request.POST.getlist("amenities")
 
             if amenities:
                 property.amenities.add(*amenities)
-
-            # ==========================================
-            # SELLING POINTS
-            # ==========================================
 
             property.selling_points.all().delete()
 
@@ -5684,10 +4990,6 @@ def edit_agent_property(request, id):
                     property=property,
                     point=point
                 )
-
-            # ==========================================
-            # LANDMARKS
-            # ==========================================
 
             property.landmarks.all().delete()
 
@@ -5718,22 +5020,14 @@ def edit_agent_property(request, id):
                     distance=distance
                 )
 
-            # ==========================================
-            # IMAGES
-            # ==========================================
-
             existing = request.POST.getlist(
                 "old_images"
             )
-
-            # Delete images removed from modal
 
             for image in property.images.all():
 
                 if str(image.id) not in existing:
                     image.delete()
-
-            # Add newly uploaded images
 
             images = request.FILES.getlist("images")
             compressed_images = []
@@ -5749,7 +5043,6 @@ def edit_agent_property(request, id):
 
                 compressed_images.append(compressed)
 
-            # Save the compressed images
             for image in compressed_images:
                 image.seek(0)
 
@@ -5757,10 +5050,6 @@ def edit_agent_property(request, id):
                     property=property,
                     image=image
                 )
-
-        # ==========================================
-        # SUCCESS
-        # ==========================================
 
         messages.success(
             request,
@@ -5772,11 +5061,6 @@ def edit_agent_property(request, id):
 
     except Exception as error:
 
-        print(
-            "EDIT AGENT PROPERTY ERROR:",
-            repr(error)
-        )
-
         messages.error(
             request,
             f"Unable to update property: {error}"
@@ -5785,40 +5069,15 @@ def edit_agent_property(request, id):
     return redirect("agent_property_dashboard")
 
 
-from django.http import JsonResponse
-from django.shortcuts import get_object_or_404
-from django.views.decorators.http import require_http_methods
-from django.views.decorators.csrf import csrf_exempt
 
-from developer.models import (
-    ExpiredProperty,
-    PropertyImage,
-    ExpiredPropertyFeature,
-    Amenities,
-    Category,
-    Subcategory,
-    Purpose,
-    SubcategoryField,
-)
-
-import json
 
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 @require_http_methods(["GET", "POST", "DELETE"])
 def expired_property_edit_delete(request, id):
-    print("ID received:", id)
-
     property_obj = get_object_or_404(ExpiredProperty, id=id)
-    # =====================================================
-    # GET
-    # =====================================================
-
+    
     if request.method == "GET":
-
-        # ------------------------------------------
-        # Images
-        # ------------------------------------------
 
         images = []
 
@@ -5826,15 +5085,7 @@ def expired_property_edit_delete(request, id):
 
             images.append({"id": img.id, "image": img.image.url})
 
-        # ------------------------------------------
-        # Amenities
-        # ------------------------------------------
-
         amenities = list(property_obj.amenities.values_list("id", flat=True))
-
-        # ------------------------------------------
-        # Dynamic Fields
-        # ------------------------------------------
 
         from collections import defaultdict
 
@@ -5881,10 +5132,6 @@ def expired_property_edit_delete(request, id):
                         ],
                     }
                 )
-
-        # ------------------------------------------
-        # Response
-        # ------------------------------------------
 
         data = {
             "status": True,
@@ -5996,17 +5243,9 @@ def expired_property_edit_delete(request, id):
 
         property_obj.save()
 
-        # -----------------------
-        # Amenities
-        # -----------------------
-
         amenity_ids = request.POST.getlist("amenities")
 
         property_obj.amenities.set(amenity_ids)
-
-        # -----------------------
-        # Delete Images
-        # -----------------------
 
         deleted = request.POST.get("deleted_images")
 
@@ -6020,29 +5259,15 @@ def expired_property_edit_delete(request, id):
                 id__in=ids, expired_property=property_obj
             ).delete()
 
-        # -----------------------
-        # Upload Images
-        # -----------------------
-
         for image in request.FILES.getlist("images"):
 
             PropertyImage.objects.create(expired_property=property_obj, image=image)
-        print(request.POST)
-        print("deleted_images =", request.POST.get("deleted_images"))
-
-        # ====================================
-        # SELLING POINTS
-        # ====================================
 
         property_obj.selling_points = [
             point.strip()
             for point in request.POST.getlist("selling_points")
             if point.strip()
         ]
-
-        # ====================================
-        # LANDMARKS
-        # ====================================
 
         landmarks = []
 
@@ -6056,15 +5281,11 @@ def expired_property_edit_delete(request, id):
                 landmarks.append({"name": name.strip(), "distance": distance.strip()})
 
         property_obj.land_mark = landmarks
-        # ====================================
-        # DYNAMIC FIELDS
-        # ====================================
-
+      
         subcategory_id = request.POST.get("subcategory")
 
         if subcategory_id:
 
-            # Remove old features
             ExpiredPropertyFeature.objects.filter(
                 expired_property=property_obj
             ).delete()
@@ -6074,10 +5295,6 @@ def expired_property_edit_delete(request, id):
             ).prefetch_related("options")
 
             for field in fields:
-
-                # ==========================================
-                # SELECT
-                # ==========================================
 
                 if field.field_type == "select":
 
@@ -6096,10 +5313,6 @@ def expired_property_edit_delete(request, id):
                             icon=option.icon if option else None,
                         )
 
-                # ==========================================
-                # MULTI SELECT
-                # ==========================================
-
                 elif field.field_type == "multi_select":
 
                     for option in field.options.all():
@@ -6107,8 +5320,6 @@ def expired_property_edit_delete(request, id):
                         key = f"dynamic_{field.id}_{option.id}"
 
                         value = request.POST.get(key)
-
-                        print(key, "=", value)
 
                         if value in [None, ""]:
                             continue
@@ -6120,10 +5331,6 @@ def expired_property_edit_delete(request, id):
                             icon=option.icon,
                         )
 
-                # ==========================================
-                # BOOLEAN
-                # ==========================================
-
                 elif field.field_type == "boolean":
 
                     value = request.POST.get(f"dynamic_{field.id}", "No")
@@ -6131,10 +5338,6 @@ def expired_property_edit_delete(request, id):
                     ExpiredPropertyFeature.objects.create(
                         expired_property=property_obj, field=field, value=value
                     )
-
-                # ==========================================
-                # TEXT / NUMBER / COUNTABLE
-                # ==========================================
 
                 else:
 
@@ -6159,11 +5362,19 @@ def expired_property_edit_delete(request, id):
             {"status": True, "message": "Expired Property Updated Successfully."}
         )
 
-    # =====================================================
-    # DELETE
-    # =====================================================
+    # property_obj.soft_delete()
 
-    property_obj.delete()
+    
+    elif request.method == "DELETE":
+
+        property_obj.deleted = True
+        property_obj.save(update_fields=["deleted"])
+
+        return JsonResponse({
+            "status": True,
+            "message": "Expired Property Deleted Successfully."
+        })
+
 
     return JsonResponse(
         {"status": True, "message": "Expired Property Deleted Successfully."}
@@ -6173,24 +5384,11 @@ def expired_property_edit_delete(request, id):
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 @require_POST
 def restore_expired_property(request, id):
-    """
-    Restore one ExpiredProperty into Property without changing
-    the existing URL.
-
-    Also restores:
-    - amenities
-    - dynamic PropertyFeature rows
-    - property images
-    - JSON selling points
-    - JSON landmarks
-    - package/subscription fields
-    """
+    
 
     try:
         with transaction.atomic():
 
-            # Lock the expired record so two restore requests cannot
-            # restore the same property simultaneously.
             expired = get_object_or_404(
                 ExpiredProperty.objects.select_for_update()
                 .select_related(
@@ -6210,10 +5408,7 @@ def restore_expired_property(request, id):
                 id=id,
             )
 
-            # -------------------------------------------------
-            # Prevent duplicate property code
-            # -------------------------------------------------
-
+           
             if (
                 expired.property_code
                 and Property.objects.filter(
@@ -6230,10 +5425,6 @@ def restore_expired_property(request, id):
                     status=400,
                 )
 
-            # -------------------------------------------------
-            # Restore duration
-            # -------------------------------------------------
-
             try:
                 duration_days = int(
                     request.POST.get("duration_days") or expired.duration_days or 30
@@ -6247,14 +5438,9 @@ def restore_expired_property(request, id):
             restored_at = timezone.now()
             restored_expiry_date = restored_at + timedelta(days=duration_days)
 
-            # Save related data before deleting expired property.
             amenities = list(expired.amenities.all())
             expired_features = list(expired.property_features.all())
             expired_images = list(expired.images.all())
-
-            # -------------------------------------------------
-            # Create active property
-            # -------------------------------------------------
 
             restored_property = Property.objects.create(
                 category=expired.category,
@@ -6300,13 +5486,6 @@ def restore_expired_property(request, id):
                 expiry_date=restored_expiry_date,
             )
 
-            # -------------------------------------------------
-            # Important:
-            # Property.save() may change duration based on package.
-            # Force the selected restore duration after creation.
-            # QuerySet.update() avoids calling Property.save() again.
-            # -------------------------------------------------
-
             Property.objects.filter(pk=restored_property.pk).update(
                 created_at=restored_at,
                 duration_days=duration_days,
@@ -6317,15 +5496,7 @@ def restore_expired_property(request, id):
             restored_property.duration_days = duration_days
             restored_property.expiry_date = restored_expiry_date
 
-            # -------------------------------------------------
-            # Restore amenities
-            # -------------------------------------------------
-
             restored_property.amenities.set(amenities)
-
-            # -------------------------------------------------
-            # Restore dynamic features
-            # -------------------------------------------------
 
             for expired_feature in expired_features:
 
@@ -6336,10 +5507,6 @@ def restore_expired_property(request, id):
                     icon=expired_feature.icon,
                 )
 
-            # -------------------------------------------------
-            # Restore images
-            # -------------------------------------------------
-
             for expired_image in expired_images:
 
                 PropertyImage.objects.create(
@@ -6347,14 +5514,6 @@ def restore_expired_property(request, id):
                     image=expired_image.image,
                     created_at=expired_image.created_at,
                 )
-
-            # -------------------------------------------------
-            # Delete expired property only after everything
-            # has been restored successfully.
-            #
-            # Related ExpiredPropertyFeature and expired images
-            # are deleted automatically through CASCADE.
-            # -------------------------------------------------
 
             expired.delete()
 
@@ -6413,7 +5572,9 @@ def restore_expired_property(request, id):
 def expired_agent_properties(request):
 
     properties = (
-        ExpiredAgentProperty.objects.select_related(
+        ExpiredAgentProperty.objects.filter(
+            deleted=False
+        ).select_related(
             "agent",
             "category",
             "subcategory",
@@ -6561,19 +5722,12 @@ def edit_expired_agent_property(request, property_id):
             {"success": False, "message": "POST request required."}, status=405
         )
 
-    # =========================================================
-    # SUPPORT BOTH JSON AND multipart/form-data
-    # =========================================================
-
     content_type = request.content_type or ""
 
     uploaded_images = []
 
     if "multipart/form-data" in content_type:
 
-        # ---------------------------------------------
-        # Normal form fields
-        # ---------------------------------------------
         data = {}
 
         for key in request.POST.keys():
@@ -6585,9 +5739,6 @@ def edit_expired_agent_property(request, property_id):
             else:
                 data[key] = request.POST.get(key)
 
-        # ---------------------------------------------
-        # JSON fields sent inside FormData
-        # ---------------------------------------------
         json_fields = [
             "amenities",
             "dynamic_fields",
@@ -6626,10 +5777,6 @@ def edit_expired_agent_property(request, property_id):
             return JsonResponse(
                 {"success": False, "message": "Invalid JSON."}, status=400
             )
-
-    # =========================================================
-    # HELPERS
-    # =========================================================
 
     def is_empty(value):
 
@@ -6680,15 +5827,6 @@ def edit_expired_agent_property(request, property_id):
 
         return bool(value)
 
-    # =========================================================
-    # MAIN TEXT / STRING FIELDS
-    #
-    # IMPORTANT:
-    # land_area, perprice, price, deposit are CharFields
-    # in your model.
-    # DO NOT convert them to float.
-    # =========================================================
-
     string_fields = [
         "label",
         "land_area",
@@ -6721,10 +5859,6 @@ def edit_expired_agent_property(request, property_id):
                 property_obj, field_name, clean_string(data[field_name], current_value)
             )
 
-    # =========================================================
-    # SQ FT
-    # =========================================================
-
     if "sq_ft" in data:
 
         value = data.get("sq_ft")
@@ -6749,21 +5883,12 @@ def edit_expired_agent_property(request, property_id):
                     status=400,
                 )
 
-    # =========================================================
-    # PINCODE
-    #
-    # Your model has CharField, so keep it STRING.
-    # =========================================================
 
     if "pincode" in data:
 
         if not is_empty(data["pincode"]):
 
             property_obj.pincode = str(data["pincode"]).strip()
-
-    # =========================================================
-    # BOOLEAN
-    # =========================================================
 
     if "paid" in data:
 
@@ -6772,10 +5897,6 @@ def edit_expired_agent_property(request, property_id):
     if "is_featured" in data:
 
         property_obj.is_featured = clean_boolean(data["is_featured"])
-
-    # =========================================================
-    # DURATION
-    # =========================================================
 
     if "duration_days" in data:
 
@@ -6796,10 +5917,6 @@ def edit_expired_agent_property(request, property_id):
                     {"success": False, "message": "Invalid duration."}, status=400
                 )
 
-    # =========================================================
-    # CATEGORY
-    # =========================================================
-
     if "category_id" in data:
 
         category_id = data.get("category_id")
@@ -6811,10 +5928,6 @@ def edit_expired_agent_property(request, property_id):
             )
 
         property_obj.category_id = category_id
-
-    # =========================================================
-    # SUBCATEGORY
-    # =========================================================
 
     if "subcategory_id" in data:
 
@@ -6828,10 +5941,6 @@ def edit_expired_agent_property(request, property_id):
 
             property_obj.subcategory_id = subcategory_id
 
-    # =========================================================
-    # PURPOSE
-    # =========================================================
-
     if "purpose_id" in data:
 
         purpose_id = data.get("purpose_id")
@@ -6843,12 +5952,6 @@ def edit_expired_agent_property(request, property_id):
             )
 
         property_obj.purpose_id = purpose_id
-
-    # =========================================================
-    # AGENT
-    #
-    # THIS WAS MISSING IN YOUR ORIGINAL CODE.
-    # =========================================================
 
     if "agent_id" in data:
 
@@ -6873,15 +5976,7 @@ def edit_expired_agent_property(request, property_id):
 
         property_obj.agent = agent
 
-    # =========================================================
-    # SAVE MAIN PROPERTY
-    # =========================================================
-
     property_obj.save()
-
-    # =========================================================
-    # AMENITIES
-    # =========================================================
 
     if "amenities" in data:
 
@@ -6917,34 +6012,12 @@ def edit_expired_agent_property(request, property_id):
 
         property_obj.amenities.set(valid_amenity_ids)
 
-    # =========================================================
-    # DYNAMIC FIELDS
-    #
-    # JS must send:
-    #
-    # [
-    #   {
-    #       "field_id": 1,
-    #       "value": "10"
-    #   }
-    # ]
-    # =========================================================
-
     if "dynamic_fields" in data:
 
         dynamic_fields = data.get("dynamic_fields")
 
         if dynamic_fields is None:
             dynamic_fields = []
-
-        # ---------------------------------------------
-        # Accept old object format too:
-        #
-        # {
-        #   "field_1": "10",
-        #   "field_2": "Yes"
-        # }
-        # ---------------------------------------------
 
         if isinstance(dynamic_fields, dict):
 
@@ -6999,10 +6072,6 @@ def edit_expired_agent_property(request, property_id):
             ):
                 continue
 
-            # -----------------------------------------
-            # MULTI SELECT values may already be JSON
-            # -----------------------------------------
-
             if isinstance(value, (list, dict)):
 
                 value = json.dumps(value, ensure_ascii=False)
@@ -7018,10 +6087,6 @@ def edit_expired_agent_property(request, property_id):
                 field_id=field_id,
                 value=value,
             )
-
-    # =========================================================
-    # SELLING POINTS
-    # =========================================================
 
     if "selling_points" in data:
 
@@ -7056,10 +6121,6 @@ def edit_expired_agent_property(request, property_id):
                 ExpiredAgentPropertySellingPoint.objects.create(
                     property=property_obj, point=point
                 )
-
-    # =========================================================
-    # LANDMARKS
-    # =========================================================
 
     if "landmarks" in data:
 
@@ -7106,12 +6167,6 @@ def edit_expired_agent_property(request, property_id):
                     distance=distance,
                 )
 
-    # =========================================================
-    # DELETE EXISTING IMAGES
-    #
-    # THIS WAS COMPLETELY MISSING.
-    # =========================================================
-
     deleted_images = data.get("deleted_images", [])
 
     if deleted_images is None:
@@ -7136,10 +6191,6 @@ def edit_expired_agent_property(request, property_id):
         if not image_obj:
             continue
 
-        # ---------------------------------------------
-        # Delete Cloudinary file if possible
-        # ---------------------------------------------
-
         try:
 
             if image_obj.image:
@@ -7147,20 +6198,10 @@ def edit_expired_agent_property(request, property_id):
                 image_obj.image.delete(save=False)
 
         except Exception:
-
-            # Do not fail entire transaction
-            # if Cloudinary deletion fails.
             pass
 
         image_obj.delete()
 
-    # =========================================================
-    # ADD NEW IMAGES
-    #
-    # The template now needs:
-    #
-    # <input type="file" name="new_images" multiple>
-    # =========================================================
 
     for uploaded_image in uploaded_images:
 
@@ -7170,10 +6211,6 @@ def edit_expired_agent_property(request, property_id):
         ExpiredAgentPropertyImage.objects.create(
             property=property_obj, image=uploaded_image
         )
-
-    # =========================================================
-    # SUCCESS
-    # =========================================================
 
     return JsonResponse(
         {
@@ -7215,10 +6252,6 @@ def restore_expired_agent_property(request, property_id):
         pk=property_id,
     )
 
-    # =========================================================
-    # PREVENT DUPLICATE ACTIVE PROPERTY
-    # =========================================================
-
     if AgentProperty.objects.filter(pk=expired.pk).exists():
 
         return JsonResponse(
@@ -7228,10 +6261,6 @@ def restore_expired_agent_property(request, property_id):
             },
             status=400,
         )
-
-    # =========================================================
-    # CREATE ACTIVE PROPERTY
-    # =========================================================
 
     active_property = AgentProperty.objects.create(
         id=expired.id,
@@ -7266,22 +6295,10 @@ def restore_expired_agent_property(request, property_id):
         added_by=expired.added_by,
         market_staff=expired.market_staff,
         subscription=expired.subscription,
-        # IMPORTANT
-        #
-        # Restored property gets duration again.
-        #
         duration_days=30,
     )
 
-    # =========================================================
-    # AMENITIES
-    # =========================================================
-
     active_property.amenities.set(expired.amenities.all())
-
-    # =========================================================
-    # DYNAMIC FIELDS
-    # =========================================================
 
     for item in expired.field_values.all():
 
@@ -7289,17 +6306,9 @@ def restore_expired_agent_property(request, property_id):
             property=active_property, field=item.field, value=item.value
         )
 
-    # =========================================================
-    # IMAGES
-    # =========================================================
-
     for item in expired.images.all():
 
         AgentPropertyImage.objects.create(property=active_property, image=item.image)
-
-    # =========================================================
-    # SELLING POINTS
-    # =========================================================
 
     for item in expired.selling_points.all():
 
@@ -7307,19 +6316,11 @@ def restore_expired_agent_property(request, property_id):
             property=active_property, point=item.point
         )
 
-    # =========================================================
-    # LANDMARKS
-    # =========================================================
-
     for item in expired.landmarks.all():
 
         AgentPropertyLandmark.objects.create(
             property=active_property, name=item.name, distance=item.distance
         )
-
-    # =========================================================
-    # DELETE EXPIRED PROPERTY
-    # =========================================================
 
     expired.delete()
 
@@ -7343,14 +6344,13 @@ def delete_expired_agent_property(request, property_id):
 
     property_obj = get_object_or_404(ExpiredAgentProperty, pk=property_id)
 
-    property_obj.delete()
+    property_obj.soft_delete()
 
     return JsonResponse(
         {"success": True, "message": "Expired property deleted successfully."}
     )
 
 
-# Agentcontactmessage 
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 def agent_contact_messages(request):
@@ -7366,7 +6366,7 @@ def agent_contact_messages(request):
         }
     )
 
-# Agent Contact Message Status Update
+
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 @require_POST
@@ -7410,34 +6410,7 @@ def update_agent_contact_message_status(request, message_id):
 
 
 
-
-import json
-from datetime import datetime
-from io import BytesIO
-
-from django.contrib.admin.views.decorators import staff_member_required
-from django.core.paginator import Paginator
-from django.db.models import Q
-from django.http import Http404, HttpResponse
-from django.shortcuts import render
-from django.utils import timezone
-from django.utils.text import slugify
-
-from openpyxl import Workbook
-from openpyxl.styles import Alignment, Font, PatternFill
-from openpyxl.utils import get_column_letter
-
-from users.models import Property, PropertyFeature
-from agents.models import (
-    AgentProperty,
-    AgentPropertyFieldValue,
-    AgentPropertySellingPoint,
-    AgentPropertyLandmark,
-)
-
-
 def get_related_name(obj, relation_name):
-    """Return a readable name without assuming a specific name field."""
     related_obj = getattr(obj, relation_name, None)
 
     if not related_obj:
@@ -7452,7 +6425,6 @@ def get_related_name(obj, relation_name):
 
 
 def get_property_image(obj):
-    """Safely return the main property image URL."""
     image = getattr(obj, "image", None)
 
     if image:
@@ -7465,13 +6437,11 @@ def get_property_image(obj):
 
 
 def get_property_source(obj, property_type):
-    """
-    Determine the source using existing subscription/package/added_by fields.
-    A missing subscription alone is not proof that a master admin created it.
-    """
+   
     added_by = str(getattr(obj, "added_by", "") or "").strip().lower()
+    is_user = property_type in ("user", "expired_user")
 
-    if property_type == "user":
+    if is_user:
         if getattr(obj, "subscription_id", None):
             return "User Subscription"
 
@@ -7498,9 +6468,58 @@ def get_property_source(obj, property_type):
     return "No Subscription Recorded"
 
 
+# def get_property_row(obj, property_type):
+    
+#     is_user = property_type == "user"
+
+#     if is_user:
+#         owner_name = (
+#             get_related_name(obj, "user")
+#             or getattr(obj, "owner", "")
+#             or "N/A"
+#         )
+#         subscription_name = (
+#             get_related_name(obj, "subscription")
+#             or get_related_name(obj, "single_property_package")
+#             or get_related_name(obj, "package")
+#             or "N/A"
+#         )
+#     else:
+#         owner_name = (
+#             get_related_name(obj, "agent")
+#             or getattr(obj, "owner", "")
+#             or "N/A"
+#         )
+#         subscription_name = (
+#             get_related_name(obj, "subscription")
+#             or "N/A"
+#         )
+
+#     return {
+#         "id": str(obj.pk),
+#         "kind": property_type,
+#         "kind_label": "User Property" if is_user else "Agent Property",
+#         "property_code": getattr(obj, "property_code", None) or str(obj.pk),
+#         "label": getattr(obj, "label", "") or "Untitled Property",
+#         "image": get_property_image(obj),
+#         "price": getattr(obj, "price", "") or "N/A",
+#         "city": getattr(obj, "city", "") or "N/A",
+#         "district": getattr(obj, "district", "") or "N/A",
+#         "state": getattr(obj, "state", "") or "N/A",
+#         "owner_name": str(owner_name),
+#         "source": get_property_source(obj, property_type),
+#         "subscription_name": subscription_name,
+#         "added_by": getattr(obj, "added_by", "") or "N/A",
+#         "created_at": getattr(obj, "created_at", None),
+#         "updated_at": getattr(obj, "updated_at", None),
+#         "object": obj,
+#     }
+
+
 def get_property_row(obj, property_type):
-    """Normalize user and agent property records for the shared table."""
-    is_user = property_type == "user"
+
+    is_user = property_type in ("user", "expired_user")
+    is_expired = property_type in ("expired_user", "expired_agent")
 
     if is_user:
         owner_name = (
@@ -7508,6 +6527,7 @@ def get_property_row(obj, property_type):
             or getattr(obj, "owner", "")
             or "N/A"
         )
+
         subscription_name = (
             get_related_name(obj, "subscription")
             or get_related_name(obj, "single_property_package")
@@ -7520,18 +6540,48 @@ def get_property_row(obj, property_type):
             or getattr(obj, "owner", "")
             or "N/A"
         )
+
         subscription_name = (
             get_related_name(obj, "subscription")
             or "N/A"
         )
+    main_image = get_property_image(obj)
+    images = []
+    images_manager = getattr(obj, "images", None)
+
+    if images_manager is not None:
+        for image_obj in images_manager.all():
+            try:
+                image_url = image_obj.image.url
+            except (ValueError, AttributeError):
+                image_url = ""
+
+            if image_url and image_url not in images:
+                images.append(image_url)
+
+    # Use the first related image if the main image is unavailable.
+    display_image = main_image or (images[0] if images else "")
+
+    kind_labels = {
+        "user": "User Property",
+        "agent": "Agent Property",
+        "expired_user": "Expired User Property",
+        "expired_agent": "Expired Agent Property",
+    }
 
     return {
         "id": str(obj.pk),
         "kind": property_type,
-        "kind_label": "User Property" if is_user else "Agent Property",
-        "property_code": getattr(obj, "property_code", None) or str(obj.pk),
+        "kind_label": kind_labels.get(
+            property_type, "Property"
+        ),
+        "property_code": (
+            getattr(obj, "property_code", None)
+            or str(obj.pk)
+        ),
         "label": getattr(obj, "label", "") or "Untitled Property",
-        "image": get_property_image(obj),
+        "image": display_image,
+        "images": images,
         "price": getattr(obj, "price", "") or "N/A",
         "city": getattr(obj, "city", "") or "N/A",
         "district": getattr(obj, "district", "") or "N/A",
@@ -7546,8 +6596,80 @@ def get_property_row(obj, property_type):
     }
 
 
+# def get_deleted_property_rows(request):
+    
+#     user_qs = Property.objects.filter(
+#         deleted=True
+#     ).select_related(
+#         "user", "category", "subcategory", "purpose",
+#         "package", "subscription", "single_property_package"
+#     ).prefetch_related("amenities")
+
+#     agent_qs = AgentProperty.objects.filter(
+#         deleted=True
+#     ).select_related(
+#         "agent", "category", "subcategory", "purpose", "subscription"
+#     ).prefetch_related("amenities")
+
+#     search = request.GET.get("q", "").strip()
+#     property_kind = request.GET.get("kind", "all").strip().lower()
+#     source_filter = request.GET.get("source", "").strip()
+
+#     if search:
+#         user_qs = user_qs.filter(
+#             Q(label__icontains=search)
+#             | Q(property_code__icontains=search)
+#             | Q(city__icontains=search)
+#             | Q(district__icontains=search)
+#             | Q(state__icontains=search)
+#             | Q(owner__icontains=search)
+#             | Q(added_by__icontains=search)
+#             | Q(user__username__icontains=search)
+#             | Q(user__email__icontains=search)
+#         )
+
+#         agent_qs = agent_qs.filter(
+#             Q(label__icontains=search)
+#             | Q(property_code__icontains=search)
+#             | Q(city__icontains=search)
+#             | Q(district__icontains=search)
+#             | Q(state__icontains=search)
+#             | Q(owner__icontains=search)
+#             | Q(added_by__icontains=search)
+#             | Q(agent__agent_code__icontains=search)
+#         )
+
+#     rows = []
+
+#     if property_kind in ("all", "user"):
+#         rows.extend(
+#             get_property_row(obj, "user")
+#             for obj in user_qs
+#         )
+
+#     if property_kind in ("all", "agent"):
+#         rows.extend(
+#             get_property_row(obj, "agent")
+#             for obj in agent_qs
+#         )
+
+#     if source_filter:
+#         rows = [
+#             row for row in rows
+#             if row["source"] == source_filter
+#         ]
+
+#     rows.sort(
+#         key=lambda row: row["updated_at"] or row["created_at"]
+#         or timezone.make_aware(datetime.min),
+#         reverse=True
+#     )
+
+#     return rows
+
+
 def get_deleted_property_rows(request):
-    """Build a combined list of deleted user and agent properties."""
+
     user_qs = Property.objects.filter(
         deleted=True
     ).select_related(
@@ -7561,12 +6683,27 @@ def get_deleted_property_rows(request):
         "agent", "category", "subcategory", "purpose", "subscription"
     ).prefetch_related("amenities")
 
+    expired_user_qs = ExpiredProperty.objects.filter(
+        deleted=True
+    ).select_related(
+        "user", "category", "subcategory", "purpose",
+        "package", "subscription", "single_property_package"
+    ).prefetch_related("amenities")
+
+    expired_agent_qs = ExpiredAgentProperty.objects.filter(
+        deleted=True
+    ).select_related(
+        "agent", "category", "subcategory", "purpose", "subscription"
+    ).prefetch_related("amenities")
+
     search = request.GET.get("q", "").strip()
-    property_kind = request.GET.get("kind", "all").strip().lower()
+    property_kind = request.GET.get(
+        "kind", "all"
+    ).strip().lower()
     source_filter = request.GET.get("source", "").strip()
 
     if search:
-        user_qs = user_qs.filter(
+        user_search = (
             Q(label__icontains=search)
             | Q(property_code__icontains=search)
             | Q(city__icontains=search)
@@ -7578,7 +6715,7 @@ def get_deleted_property_rows(request):
             | Q(user__email__icontains=search)
         )
 
-        agent_qs = agent_qs.filter(
+        agent_search = (
             Q(label__icontains=search)
             | Q(property_code__icontains=search)
             | Q(city__icontains=search)
@@ -7588,6 +6725,12 @@ def get_deleted_property_rows(request):
             | Q(added_by__icontains=search)
             | Q(agent__agent_code__icontains=search)
         )
+
+        user_qs = user_qs.filter(user_search)
+        expired_user_qs = expired_user_qs.filter(user_search)
+
+        agent_qs = agent_qs.filter(agent_search)
+        expired_agent_qs = expired_agent_qs.filter(agent_search)
 
     rows = []
 
@@ -7603,28 +6746,53 @@ def get_deleted_property_rows(request):
             for obj in agent_qs
         )
 
+    if property_kind in ("all", "expired_user"):
+        rows.extend(
+            get_property_row(obj, "expired_user")
+            for obj in expired_user_qs
+        )
+
+    if property_kind in ("all", "expired_agent"):
+        rows.extend(
+            get_property_row(obj, "expired_agent")
+            for obj in expired_agent_qs
+        )
+
     if source_filter:
         rows = [
             row for row in rows
             if row["source"] == source_filter
         ]
 
-    # Newest records first.
     rows.sort(
-        key=lambda row: row["updated_at"] or row["created_at"]
-        or timezone.make_aware(datetime.min),
+        key=lambda row: (
+            row["updated_at"]
+            or row["created_at"]
+            or timezone.make_aware(datetime.min)
+        ),
         reverse=True
     )
 
     return rows
 
 
-@staff_member_required
+
+@never_cache
+@user_passes_test(superuser_required, login_url="superuser_login_view")
 def master_deleted_properties(request):
     rows = get_deleted_property_rows(request)
 
-    user_count = sum(1 for row in rows if row["kind"] == "user")
-    agent_count = sum(1 for row in rows if row["kind"] == "agent")
+    user_count = sum(1 for row in rows if row["kind"] in ("user", "expired_user"))
+    agent_count = sum(1 for row in rows if row["kind"] in ("agent", "expired_agent"))
+    expired_user_count = sum(
+        1 for row in rows
+        if row["kind"] == "expired_user"
+    )
+
+    expired_agent_count = sum(
+        1 for row in rows
+        if row["kind"] == "expired_agent"
+    )
     subscription_count = sum(
         1 for row in rows
         if row["source"] in ("User Subscription", "Agent Subscription")
@@ -7642,6 +6810,8 @@ def master_deleted_properties(request):
         "total_count": len(rows),
         "user_count": user_count,
         "agent_count": agent_count,
+        "expired_user_count": expired_user_count,
+        "expired_agent_count": expired_agent_count,
         "subscription_count": subscription_count,
         "master_added_count": master_added_count,
         "search_query": request.GET.get("q", ""),
@@ -7663,9 +6833,9 @@ def master_deleted_properties(request):
     )
 
 
-@staff_member_required
+@never_cache
+@user_passes_test(superuser_required, login_url="superuser_login_view")
 def master_deleted_property_detail(request, kind, property_id):
-    """Display full details of one soft-deleted property."""
     if kind == "user":
         obj = Property.objects.filter(
             pk=property_id,
@@ -7688,6 +6858,39 @@ def master_deleted_property_detail(request, kind, property_id):
             "selling_points", "landmarks"
         ).first()
 
+    elif kind == "expired_user":
+        obj = ExpiredProperty.objects.filter(
+            pk=property_id,
+            deleted=True
+        ).select_related(
+            "user",
+            "category",
+            "subcategory",
+            "purpose",
+            "package",
+            "subscription",
+            "single_property_package"
+        ).prefetch_related(
+            "amenities",
+            "property_features__field",
+            "images"
+        ).first()
+
+    elif kind == "expired_agent":
+      
+        obj = ExpiredAgentProperty.objects.filter(
+            pk=property_id,
+            deleted=True
+        ).select_related(
+            "agent",
+            "category",
+            "subcategory",
+            "purpose",
+            "subscription"
+        ).prefetch_related(
+            "amenities"
+        ).first()
+
     else:
         raise Http404("Invalid property type.")
 
@@ -7696,7 +6899,7 @@ def master_deleted_property_detail(request, kind, property_id):
 
     row = get_property_row(obj, kind)
 
-    if kind == "user":
+    if kind in ("user", "expired_user"):
         features = [
             {
                 "field": feature.field.field_name,
@@ -7756,27 +6959,7 @@ def _excel_value(value):
 
 
 
-import json
-from datetime import date, datetime
-from decimal import Decimal
-from io import BytesIO
-from uuid import UUID
-
-from django.contrib.admin.views.decorators import staff_member_required
-from django.http import HttpResponse
-from django.utils import timezone
-
-from openpyxl import Workbook
-from openpyxl.styles import Alignment, Font, PatternFill
-from openpyxl.utils import get_column_letter
-
-
 def excel_safe_value(value):
-    """
-    Convert values into formats supported by openpyxl.
-    Lists and dictionaries become readable JSON strings.
-    Timezone-aware datetimes become timezone-naive datetimes.
-    """
     if isinstance(value, (list, dict, tuple, set)):
         return json.dumps(
             value,
@@ -7799,6 +6982,289 @@ def excel_safe_value(value):
         return ""
 
     return value
+
+
+# @staff_member_required
+# def export_master_deleted_properties_excel(request):
+#     rows = get_deleted_property_rows(request)
+
+#     workbook = Workbook()
+#     sheet = workbook.active
+#     sheet.title = "Deleted Properties"
+
+#     headers = [
+#         "Property Type",
+#         "Property Code",
+#         "Property UUID",
+#         "Property Label",
+#         "Price",
+#         "Per Price",
+#         "Land Area",
+#         "Square Feet",
+#         "Category",
+#         "Subcategory",
+#         "Purpose",
+#         "Property Owner / Agent",
+#         "Owner Field",
+#         "Phone",
+#         "WhatsApp",
+#         "Email",
+#         "Source",
+#         "Subscription / Package",
+#         "Added By",
+#         "City",
+#         "District",
+#         "Taluk",
+#         "Village",
+#         "State",
+#         "Pincode",
+#         "Address / Location URL",
+#         "Description",
+#         "Deposit",
+#         "Paid",
+#         "Featured",
+#         "Created At",
+#         "Updated At",
+#         "Deleted",
+#         "Duration Days",
+#         "Expiry Date",
+#         "Amenities",
+#         "Property Features",
+#         "Selling Points",
+#         "Landmarks",
+#         "Main Image URL",
+#         "Additional Image URLs",
+#         "Notes",
+#     ]
+
+#     sheet.append(headers)
+
+#     for cell in sheet[1]:
+#         cell.font = Font(
+#             bold=True,
+#             color="FFFFFF"
+#         )
+#         cell.fill = PatternFill(
+#             fill_type="solid",
+#             fgColor="659D28"
+#         )
+#         cell.alignment = Alignment(
+#             vertical="center",
+#             wrap_text=True
+#         )
+
+#     for row in rows:
+#         obj = row["object"]
+#         is_user = row["kind"] in ("user", "expired_user")
+
+#         if is_user:
+#             try:
+#                 email = obj.user.email if obj.user else ""
+#             except (AttributeError, ValueError):
+#                 email = ""
+
+#             sq_ft = getattr(obj, "sq_ft", "")
+
+#             package_name = (
+#                 get_related_name(obj, "subscription")
+#                 or get_related_name(obj, "single_property_package")
+#                 or get_related_name(obj, "package")
+#             )
+
+#             features = [
+#                 {
+#                     "field": feature.field.field_name,
+#                     "value": feature.value,
+#                 }
+#                 for feature in obj.property_features.all()
+#             ]
+
+#             selling_points = (
+#                 getattr(obj, "selling_points", None) or []
+#             )
+
+#             landmarks = (
+#                 getattr(obj, "land_mark", None) or []
+#             )
+
+#             notes = getattr(obj, "note", "") or ""
+#             expiry_date = getattr(obj, "expiry_date", None)
+#             paid = getattr(obj, "paid", "")
+
+#         else:
+#             # Agent property details
+#             try:
+#                 email = obj.agent.email if obj.agent else ""
+#             except (AttributeError, ValueError):
+#                 email = ""
+
+#             sq_ft = getattr(obj, "sq_ft", "")
+
+#             package_name = get_related_name(
+#                 obj,
+#                 "subscription"
+#             )
+
+#             features = [
+#                 {
+#                     "field": item.field.field_name,
+#                     "value": item.value,
+#                 }
+#                 for item in obj.field_values.all()
+#             ]
+
+#             selling_points = list(
+#                 obj.selling_points.values_list(
+#                     "point",
+#                     flat=True
+#                 )
+#             )
+
+#             landmarks = list(
+#                 obj.landmarks.values(
+#                     "name",
+#                     "distance"
+#                 )
+#             )
+
+#             notes = getattr(obj, "notes", "") or ""
+#             expiry_date = None
+#             paid = getattr(obj, "paid", "")
+
+#         amenities = list(
+#             obj.amenities.values_list(
+#                 "name",
+#                 flat=True
+#             )
+#         )
+
+#         image_urls = []
+
+#         for image_obj in obj.images.all():
+#             try:
+#                 image_urls.append(image_obj.image.url)
+#             except (ValueError, AttributeError):
+#                 continue
+
+#         category_name = get_related_name(
+#             obj,
+#             "category"
+#         )
+
+#         subcategory_name = get_related_name(
+#             obj,
+#             "subcategory"
+#         )
+
+#         purpose_name = get_related_name(
+#             obj,
+#             "purpose"
+#         )
+
+#         excel_row = [
+#             row.get("kind_label", ""),
+#             row.get("property_code", ""),
+#             row.get("id", ""),
+#             row.get("label", ""),
+#             getattr(obj, "price", ""),
+#             getattr(obj, "perprice", ""),
+#             getattr(obj, "land_area", ""),
+#             sq_ft,
+#             category_name,
+#             subcategory_name,
+#             purpose_name,
+#             row.get("owner_name", ""),
+#             getattr(obj, "owner", ""),
+#             getattr(obj, "phone", ""),
+#             getattr(obj, "whatsapp", ""),
+#             email,
+#             row.get("source", ""),
+#             package_name,
+#             row.get("added_by", ""),
+#             getattr(obj, "city", ""),
+#             getattr(obj, "district", ""),
+#             getattr(obj, "taluk", ""),
+#             getattr(obj, "village", ""),
+#             getattr(obj, "state", ""),
+#             getattr(obj, "pincode", ""),
+#             getattr(obj, "location", ""),
+#             getattr(obj, "description", ""),
+#             getattr(obj, "deposit", ""),
+#             paid,
+#             getattr(obj, "is_featured", False),
+#             getattr(obj, "created_at", None),
+#             getattr(obj, "updated_at", None),
+#             getattr(obj, "deleted", False),
+#             getattr(obj, "duration_days", ""),
+#             expiry_date,
+#             amenities,
+#             features,
+#             selling_points,
+#             landmarks,
+#             get_property_image(obj),
+#             image_urls,
+#             notes,
+#         ]
+
+#         sheet.append([
+#             excel_safe_value(value)
+#             for value in excel_row
+#         ])
+
+#     sheet.freeze_panes = "A2"
+#     sheet.auto_filter.ref = sheet.dimensions
+#     sheet.row_dimensions[1].height = 35
+
+#     for column_cells in sheet.columns:
+#         column_letter = get_column_letter(
+#             column_cells[0].column
+#         )
+
+#         max_length = 0
+
+#         for cell in column_cells:
+#             cell.alignment = Alignment(
+#                 vertical="top",
+#                 wrap_text=True
+#             )
+
+#             cell_length = len(
+#                 str(cell.value or "")
+#             )
+
+#             max_length = max(
+#                 max_length,
+#                 cell_length
+#             )
+
+#         sheet.column_dimensions[column_letter].width = min(
+#             max(max_length + 2, 14),
+#             42
+#         )
+
+#     output = BytesIO()
+#     workbook.save(output)
+#     output.seek(0)
+
+#     filename = (
+#         "buysel_deleted_properties_"
+#         f"{timezone.localdate().strftime('%Y%m%d')}.xlsx"
+#     )
+
+#     response = HttpResponse(
+#         output.getvalue(),
+#         content_type=(
+#             "application/vnd.openxmlformats-officedocument."
+#             "spreadsheetml.sheet"
+#         ),
+#     )
+
+#     response["Content-Disposition"] = (
+#         f'attachment; filename="{filename}"'
+#     )
+
+#     return response
+
 
 
 @staff_member_required
@@ -7856,12 +7322,9 @@ def export_master_deleted_properties_excel(request):
 
     sheet.append(headers)
 
-    # Style the header row
+    # Header formatting
     for cell in sheet[1]:
-        cell.font = Font(
-            bold=True,
-            color="FFFFFF"
-        )
+        cell.font = Font(bold=True, color="FFFFFF")
         cell.fill = PatternFill(
             fill_type="solid",
             fgColor="659D28"
@@ -7871,19 +7334,20 @@ def export_master_deleted_properties_excel(request):
             wrap_text=True
         )
 
-    # Export each deleted property
     for row in rows:
         obj = row["object"]
-        is_user = row["kind"] == "user"
+        kind = row["kind"]
 
+        is_user = kind in ("user", "expired_user")
+        is_agent = kind in ("agent", "expired_agent")
+
+        # --------------------------------------------------
+        # Owner, email and package
+        # --------------------------------------------------
         if is_user:
-            # User property details
-            try:
-                email = obj.user.email if obj.user else ""
-            except (AttributeError, ValueError):
-                email = ""
+            owner_obj = getattr(obj, "user", None)
 
-            sq_ft = getattr(obj, "sq_ft", "")
+            email = getattr(owner_obj, "email", "") if owner_obj else ""
 
             package_name = (
                 get_related_name(obj, "subscription")
@@ -7891,100 +7355,199 @@ def export_master_deleted_properties_excel(request):
                 or get_related_name(obj, "package")
             )
 
-            features = [
-                {
-                    "field": feature.field.field_name,
-                    "value": feature.value,
-                }
-                for feature in obj.property_features.all()
-            ]
-
-            selling_points = (
-                getattr(obj, "selling_points", None) or []
+            notes = (
+                getattr(obj, "note", "")
+                or getattr(obj, "notes", "")
+                or ""
             )
 
-            landmarks = (
-                getattr(obj, "land_mark", None) or []
-            )
-
-            notes = getattr(obj, "note", "") or ""
             expiry_date = getattr(obj, "expiry_date", None)
-            paid = getattr(obj, "paid", "")
 
         else:
-            # Agent property details
-            try:
-                email = obj.agent.email if obj.agent else ""
-            except (AttributeError, ValueError):
-                email = ""
+            owner_obj = getattr(obj, "agent", None)
 
-            sq_ft = getattr(obj, "sq_ft", "")
+            email = getattr(owner_obj, "email", "") if owner_obj else ""
 
             package_name = get_related_name(
                 obj,
                 "subscription"
             )
 
-            features = [
-                {
-                    "field": item.field.field_name,
-                    "value": item.value,
-                }
-                for item in obj.field_values.all()
-            ]
-
-            selling_points = list(
-                obj.selling_points.values_list(
-                    "point",
-                    flat=True
-                )
+            notes = (
+                getattr(obj, "notes", "")
+                or getattr(obj, "note", "")
+                or ""
             )
 
-            landmarks = list(
-                obj.landmarks.values(
-                    "name",
-                    "distance"
-                )
-            )
+            expiry_date = getattr(obj, "expiry_date", None)
 
-            notes = getattr(obj, "notes", "") or ""
-            expiry_date = None
-            paid = getattr(obj, "paid", "")
+        sq_ft = getattr(obj, "sq_ft", "") or ""
 
-        # Amenities
-        amenities = list(
-            obj.amenities.values_list(
-                "name",
-                flat=True
-            )
+        paid = getattr(obj, "paid", "")
+
+        # --------------------------------------------------
+        # Property features
+        # --------------------------------------------------
+        features = []
+
+        feature_manager_name = (
+            "property_features" if is_user else "field_values"
         )
 
-        # Additional image URLs
+        feature_manager = getattr(
+            obj,
+            feature_manager_name,
+            None
+        )
+
+        if feature_manager is not None:
+            for feature in feature_manager.all():
+                field_obj = getattr(feature, "field", None)
+
+                features.append({
+                    "field": getattr(
+                        field_obj,
+                        "field_name",
+                        ""
+                    ),
+                    "value": getattr(feature, "value", ""),
+                })
+
+        # --------------------------------------------------
+        # Selling points
+        # --------------------------------------------------
+        selling_points = []
+
+        selling_manager = getattr(
+            obj,
+            "selling_points",
+            None
+        )
+
+        if selling_manager is not None:
+            if hasattr(selling_manager, "all"):
+                for point_obj in selling_manager.all():
+                    # Supports related selling-point objects.
+                    point_value = getattr(
+                        point_obj,
+                        "point",
+                        None
+                    )
+
+                    selling_points.append(
+                        point_value
+                        if point_value is not None
+                        else str(point_obj)
+                    )
+
+            elif isinstance(selling_manager, (list, tuple)):
+                selling_points = list(selling_manager)
+
+        # --------------------------------------------------
+        # Landmarks
+        # --------------------------------------------------
+        landmarks = []
+
+        landmarks_manager = getattr(
+            obj,
+            "landmarks",
+            None
+        )
+
+        if landmarks_manager is not None and hasattr(
+            landmarks_manager, "all"
+        ):
+            for landmark_obj in landmarks_manager.all():
+                landmarks.append({
+                    "name": getattr(
+                        landmark_obj,
+                        "name",
+                        str(landmark_obj)
+                    ),
+                    "distance": getattr(
+                        landmark_obj,
+                        "distance",
+                        ""
+                    ),
+                })
+
+        # Fallback for models storing landmarks in land_mark.
+        if not landmarks:
+            land_mark_value = getattr(
+                obj,
+                "land_mark",
+                None
+            )
+
+            if land_mark_value:
+                if isinstance(land_mark_value, (list, tuple, dict)):
+                    landmarks = land_mark_value
+                else:
+                    landmarks = [land_mark_value]
+
+        # --------------------------------------------------
+        # Amenities
+        # --------------------------------------------------
+        amenities = []
+
+        amenities_manager = getattr(
+            obj,
+            "amenities",
+            None
+        )
+
+        if amenities_manager is not None:
+            try:
+                amenities = list(
+                    amenities_manager.values_list(
+                        "name",
+                        flat=True
+                    )
+                )
+            except (AttributeError, TypeError, ValueError):
+                amenities = [
+                    str(item)
+                    for item in amenities_manager.all()
+                ]
+
+        # --------------------------------------------------
+        # Main image and related images
+        # --------------------------------------------------
+        main_image_url = get_property_image(obj)
         image_urls = []
 
-        for image_obj in obj.images.all():
-            try:
-                image_urls.append(image_obj.image.url)
-            except (ValueError, AttributeError):
-                continue
+        images_manager = getattr(obj, "images", None)
 
+        if images_manager is not None:
+            for image_obj in images_manager.all():
+                try:
+                    image_url = image_obj.image.url
+                except (ValueError, AttributeError):
+                    image_url = ""
+
+                if image_url and image_url not in image_urls:
+                    image_urls.append(image_url)
+
+        # If no direct main image exists, use the first related image.
+        if not main_image_url and image_urls:
+            main_image_url = image_urls[0]
+
+        # Exclude the main image from additional images.
+        additional_image_urls = [
+            url for url in image_urls
+            if url != main_image_url
+        ]
+
+        # --------------------------------------------------
         # Related names
-        category_name = get_related_name(
-            obj,
-            "category"
-        )
+        # --------------------------------------------------
+        category_name = get_related_name(obj, "category")
+        subcategory_name = get_related_name(obj, "subcategory")
+        purpose_name = get_related_name(obj, "purpose")
 
-        subcategory_name = get_related_name(
-            obj,
-            "subcategory"
-        )
-
-        purpose_name = get_related_name(
-            obj,
-            "purpose"
-        )
-
-        # Build the Excel row
+        # --------------------------------------------------
+        # Build Excel row
+        # --------------------------------------------------
         excel_row = [
             row.get("kind_label", ""),
             row.get("property_code", ""),
@@ -8025,23 +7588,23 @@ def export_master_deleted_properties_excel(request):
             features,
             selling_points,
             landmarks,
-            get_property_image(obj),
-            image_urls,
+            main_image_url,
+            additional_image_urls,
             notes,
         ]
 
-        # Convert lists, dictionaries and datetimes before Excel insertion
         sheet.append([
             excel_safe_value(value)
             for value in excel_row
         ])
 
-    # Freeze header and enable filters
+    # --------------------------------------------------
+    # Excel formatting
+    # --------------------------------------------------
     sheet.freeze_panes = "A2"
     sheet.auto_filter.ref = sheet.dimensions
     sheet.row_dimensions[1].height = 35
 
-    # Adjust column widths and wrap cell content
     for column_cells in sheet.columns:
         column_letter = get_column_letter(
             column_cells[0].column
@@ -8055,21 +7618,17 @@ def export_master_deleted_properties_excel(request):
                 wrap_text=True
             )
 
-            cell_length = len(
-                str(cell.value or "")
-            )
-
-            max_length = max(
-                max_length,
-                cell_length
-            )
+            cell_length = len(str(cell.value or ""))
+            max_length = max(max_length, cell_length)
 
         sheet.column_dimensions[column_letter].width = min(
             max(max_length + 2, 14),
             42
         )
 
-    # Generate Excel file in memory
+    # --------------------------------------------------
+    # Return Excel file
+    # --------------------------------------------------
     output = BytesIO()
     workbook.save(output)
     output.seek(0)

@@ -3359,6 +3359,11 @@ class ExpiredProperty(models.Model):
         db_index=True
     )
 
+    deleted = models.BooleanField(
+        default=False,
+        db_index=True
+    )
+
     created_at = models.DateTimeField(
         default=timezone.now
     )
@@ -3385,6 +3390,10 @@ class ExpiredProperty(models.Model):
     def is_active_again(self):
         return self.duration_days > 0
 
+    def soft_delete(self):
+        if not self.deleted:
+            self.deleted = True
+            self.save(update_fields=["deleted"])
 
     def clean(self):
 

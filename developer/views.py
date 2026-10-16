@@ -6467,55 +6467,6 @@ def get_property_source(obj, property_type):
 
     return "No Subscription Recorded"
 
-
-# def get_property_row(obj, property_type):
-    
-#     is_user = property_type == "user"
-
-#     if is_user:
-#         owner_name = (
-#             get_related_name(obj, "user")
-#             or getattr(obj, "owner", "")
-#             or "N/A"
-#         )
-#         subscription_name = (
-#             get_related_name(obj, "subscription")
-#             or get_related_name(obj, "single_property_package")
-#             or get_related_name(obj, "package")
-#             or "N/A"
-#         )
-#     else:
-#         owner_name = (
-#             get_related_name(obj, "agent")
-#             or getattr(obj, "owner", "")
-#             or "N/A"
-#         )
-#         subscription_name = (
-#             get_related_name(obj, "subscription")
-#             or "N/A"
-#         )
-
-#     return {
-#         "id": str(obj.pk),
-#         "kind": property_type,
-#         "kind_label": "User Property" if is_user else "Agent Property",
-#         "property_code": getattr(obj, "property_code", None) or str(obj.pk),
-#         "label": getattr(obj, "label", "") or "Untitled Property",
-#         "image": get_property_image(obj),
-#         "price": getattr(obj, "price", "") or "N/A",
-#         "city": getattr(obj, "city", "") or "N/A",
-#         "district": getattr(obj, "district", "") or "N/A",
-#         "state": getattr(obj, "state", "") or "N/A",
-#         "owner_name": str(owner_name),
-#         "source": get_property_source(obj, property_type),
-#         "subscription_name": subscription_name,
-#         "added_by": getattr(obj, "added_by", "") or "N/A",
-#         "created_at": getattr(obj, "created_at", None),
-#         "updated_at": getattr(obj, "updated_at", None),
-#         "object": obj,
-#     }
-
-
 def get_property_row(obj, property_type):
 
     is_user = property_type in ("user", "expired_user")
@@ -6559,7 +6510,6 @@ def get_property_row(obj, property_type):
             if image_url and image_url not in images:
                 images.append(image_url)
 
-    # Use the first related image if the main image is unavailable.
     display_image = main_image or (images[0] if images else "")
 
     kind_labels = {
@@ -6594,78 +6544,6 @@ def get_property_row(obj, property_type):
         "updated_at": getattr(obj, "updated_at", None),
         "object": obj,
     }
-
-
-# def get_deleted_property_rows(request):
-    
-#     user_qs = Property.objects.filter(
-#         deleted=True
-#     ).select_related(
-#         "user", "category", "subcategory", "purpose",
-#         "package", "subscription", "single_property_package"
-#     ).prefetch_related("amenities")
-
-#     agent_qs = AgentProperty.objects.filter(
-#         deleted=True
-#     ).select_related(
-#         "agent", "category", "subcategory", "purpose", "subscription"
-#     ).prefetch_related("amenities")
-
-#     search = request.GET.get("q", "").strip()
-#     property_kind = request.GET.get("kind", "all").strip().lower()
-#     source_filter = request.GET.get("source", "").strip()
-
-#     if search:
-#         user_qs = user_qs.filter(
-#             Q(label__icontains=search)
-#             | Q(property_code__icontains=search)
-#             | Q(city__icontains=search)
-#             | Q(district__icontains=search)
-#             | Q(state__icontains=search)
-#             | Q(owner__icontains=search)
-#             | Q(added_by__icontains=search)
-#             | Q(user__username__icontains=search)
-#             | Q(user__email__icontains=search)
-#         )
-
-#         agent_qs = agent_qs.filter(
-#             Q(label__icontains=search)
-#             | Q(property_code__icontains=search)
-#             | Q(city__icontains=search)
-#             | Q(district__icontains=search)
-#             | Q(state__icontains=search)
-#             | Q(owner__icontains=search)
-#             | Q(added_by__icontains=search)
-#             | Q(agent__agent_code__icontains=search)
-#         )
-
-#     rows = []
-
-#     if property_kind in ("all", "user"):
-#         rows.extend(
-#             get_property_row(obj, "user")
-#             for obj in user_qs
-#         )
-
-#     if property_kind in ("all", "agent"):
-#         rows.extend(
-#             get_property_row(obj, "agent")
-#             for obj in agent_qs
-#         )
-
-#     if source_filter:
-#         rows = [
-#             row for row in rows
-#             if row["source"] == source_filter
-#         ]
-
-#     rows.sort(
-#         key=lambda row: row["updated_at"] or row["created_at"]
-#         or timezone.make_aware(datetime.min),
-#         reverse=True
-#     )
-
-#     return rows
 
 
 def get_deleted_property_rows(request):
@@ -6984,290 +6862,8 @@ def excel_safe_value(value):
     return value
 
 
-# @staff_member_required
-# def export_master_deleted_properties_excel(request):
-#     rows = get_deleted_property_rows(request)
-
-#     workbook = Workbook()
-#     sheet = workbook.active
-#     sheet.title = "Deleted Properties"
-
-#     headers = [
-#         "Property Type",
-#         "Property Code",
-#         "Property UUID",
-#         "Property Label",
-#         "Price",
-#         "Per Price",
-#         "Land Area",
-#         "Square Feet",
-#         "Category",
-#         "Subcategory",
-#         "Purpose",
-#         "Property Owner / Agent",
-#         "Owner Field",
-#         "Phone",
-#         "WhatsApp",
-#         "Email",
-#         "Source",
-#         "Subscription / Package",
-#         "Added By",
-#         "City",
-#         "District",
-#         "Taluk",
-#         "Village",
-#         "State",
-#         "Pincode",
-#         "Address / Location URL",
-#         "Description",
-#         "Deposit",
-#         "Paid",
-#         "Featured",
-#         "Created At",
-#         "Updated At",
-#         "Deleted",
-#         "Duration Days",
-#         "Expiry Date",
-#         "Amenities",
-#         "Property Features",
-#         "Selling Points",
-#         "Landmarks",
-#         "Main Image URL",
-#         "Additional Image URLs",
-#         "Notes",
-#     ]
-
-#     sheet.append(headers)
-
-#     for cell in sheet[1]:
-#         cell.font = Font(
-#             bold=True,
-#             color="FFFFFF"
-#         )
-#         cell.fill = PatternFill(
-#             fill_type="solid",
-#             fgColor="659D28"
-#         )
-#         cell.alignment = Alignment(
-#             vertical="center",
-#             wrap_text=True
-#         )
-
-#     for row in rows:
-#         obj = row["object"]
-#         is_user = row["kind"] in ("user", "expired_user")
-
-#         if is_user:
-#             try:
-#                 email = obj.user.email if obj.user else ""
-#             except (AttributeError, ValueError):
-#                 email = ""
-
-#             sq_ft = getattr(obj, "sq_ft", "")
-
-#             package_name = (
-#                 get_related_name(obj, "subscription")
-#                 or get_related_name(obj, "single_property_package")
-#                 or get_related_name(obj, "package")
-#             )
-
-#             features = [
-#                 {
-#                     "field": feature.field.field_name,
-#                     "value": feature.value,
-#                 }
-#                 for feature in obj.property_features.all()
-#             ]
-
-#             selling_points = (
-#                 getattr(obj, "selling_points", None) or []
-#             )
-
-#             landmarks = (
-#                 getattr(obj, "land_mark", None) or []
-#             )
-
-#             notes = getattr(obj, "note", "") or ""
-#             expiry_date = getattr(obj, "expiry_date", None)
-#             paid = getattr(obj, "paid", "")
-
-#         else:
-#             # Agent property details
-#             try:
-#                 email = obj.agent.email if obj.agent else ""
-#             except (AttributeError, ValueError):
-#                 email = ""
-
-#             sq_ft = getattr(obj, "sq_ft", "")
-
-#             package_name = get_related_name(
-#                 obj,
-#                 "subscription"
-#             )
-
-#             features = [
-#                 {
-#                     "field": item.field.field_name,
-#                     "value": item.value,
-#                 }
-#                 for item in obj.field_values.all()
-#             ]
-
-#             selling_points = list(
-#                 obj.selling_points.values_list(
-#                     "point",
-#                     flat=True
-#                 )
-#             )
-
-#             landmarks = list(
-#                 obj.landmarks.values(
-#                     "name",
-#                     "distance"
-#                 )
-#             )
-
-#             notes = getattr(obj, "notes", "") or ""
-#             expiry_date = None
-#             paid = getattr(obj, "paid", "")
-
-#         amenities = list(
-#             obj.amenities.values_list(
-#                 "name",
-#                 flat=True
-#             )
-#         )
-
-#         image_urls = []
-
-#         for image_obj in obj.images.all():
-#             try:
-#                 image_urls.append(image_obj.image.url)
-#             except (ValueError, AttributeError):
-#                 continue
-
-#         category_name = get_related_name(
-#             obj,
-#             "category"
-#         )
-
-#         subcategory_name = get_related_name(
-#             obj,
-#             "subcategory"
-#         )
-
-#         purpose_name = get_related_name(
-#             obj,
-#             "purpose"
-#         )
-
-#         excel_row = [
-#             row.get("kind_label", ""),
-#             row.get("property_code", ""),
-#             row.get("id", ""),
-#             row.get("label", ""),
-#             getattr(obj, "price", ""),
-#             getattr(obj, "perprice", ""),
-#             getattr(obj, "land_area", ""),
-#             sq_ft,
-#             category_name,
-#             subcategory_name,
-#             purpose_name,
-#             row.get("owner_name", ""),
-#             getattr(obj, "owner", ""),
-#             getattr(obj, "phone", ""),
-#             getattr(obj, "whatsapp", ""),
-#             email,
-#             row.get("source", ""),
-#             package_name,
-#             row.get("added_by", ""),
-#             getattr(obj, "city", ""),
-#             getattr(obj, "district", ""),
-#             getattr(obj, "taluk", ""),
-#             getattr(obj, "village", ""),
-#             getattr(obj, "state", ""),
-#             getattr(obj, "pincode", ""),
-#             getattr(obj, "location", ""),
-#             getattr(obj, "description", ""),
-#             getattr(obj, "deposit", ""),
-#             paid,
-#             getattr(obj, "is_featured", False),
-#             getattr(obj, "created_at", None),
-#             getattr(obj, "updated_at", None),
-#             getattr(obj, "deleted", False),
-#             getattr(obj, "duration_days", ""),
-#             expiry_date,
-#             amenities,
-#             features,
-#             selling_points,
-#             landmarks,
-#             get_property_image(obj),
-#             image_urls,
-#             notes,
-#         ]
-
-#         sheet.append([
-#             excel_safe_value(value)
-#             for value in excel_row
-#         ])
-
-#     sheet.freeze_panes = "A2"
-#     sheet.auto_filter.ref = sheet.dimensions
-#     sheet.row_dimensions[1].height = 35
-
-#     for column_cells in sheet.columns:
-#         column_letter = get_column_letter(
-#             column_cells[0].column
-#         )
-
-#         max_length = 0
-
-#         for cell in column_cells:
-#             cell.alignment = Alignment(
-#                 vertical="top",
-#                 wrap_text=True
-#             )
-
-#             cell_length = len(
-#                 str(cell.value or "")
-#             )
-
-#             max_length = max(
-#                 max_length,
-#                 cell_length
-#             )
-
-#         sheet.column_dimensions[column_letter].width = min(
-#             max(max_length + 2, 14),
-#             42
-#         )
-
-#     output = BytesIO()
-#     workbook.save(output)
-#     output.seek(0)
-
-#     filename = (
-#         "buysel_deleted_properties_"
-#         f"{timezone.localdate().strftime('%Y%m%d')}.xlsx"
-#     )
-
-#     response = HttpResponse(
-#         output.getvalue(),
-#         content_type=(
-#             "application/vnd.openxmlformats-officedocument."
-#             "spreadsheetml.sheet"
-#         ),
-#     )
-
-#     response["Content-Disposition"] = (
-#         f'attachment; filename="{filename}"'
-#     )
-
-#     return response
-
-
-
-@staff_member_required
+@never_cache
+@user_passes_test(superuser_required, login_url="superuser_login_view")
 def export_master_deleted_properties_excel(request):
     rows = get_deleted_property_rows(request)
 
@@ -7322,7 +6918,6 @@ def export_master_deleted_properties_excel(request):
 
     sheet.append(headers)
 
-    # Header formatting
     for cell in sheet[1]:
         cell.font = Font(bold=True, color="FFFFFF")
         cell.fill = PatternFill(
@@ -7341,9 +6936,6 @@ def export_master_deleted_properties_excel(request):
         is_user = kind in ("user", "expired_user")
         is_agent = kind in ("agent", "expired_agent")
 
-        # --------------------------------------------------
-        # Owner, email and package
-        # --------------------------------------------------
         if is_user:
             owner_obj = getattr(obj, "user", None)
 
@@ -7385,9 +6977,6 @@ def export_master_deleted_properties_excel(request):
 
         paid = getattr(obj, "paid", "")
 
-        # --------------------------------------------------
-        # Property features
-        # --------------------------------------------------
         features = []
 
         feature_manager_name = (
@@ -7413,9 +7002,6 @@ def export_master_deleted_properties_excel(request):
                     "value": getattr(feature, "value", ""),
                 })
 
-        # --------------------------------------------------
-        # Selling points
-        # --------------------------------------------------
         selling_points = []
 
         selling_manager = getattr(
@@ -7427,7 +7013,6 @@ def export_master_deleted_properties_excel(request):
         if selling_manager is not None:
             if hasattr(selling_manager, "all"):
                 for point_obj in selling_manager.all():
-                    # Supports related selling-point objects.
                     point_value = getattr(
                         point_obj,
                         "point",
@@ -7443,9 +7028,6 @@ def export_master_deleted_properties_excel(request):
             elif isinstance(selling_manager, (list, tuple)):
                 selling_points = list(selling_manager)
 
-        # --------------------------------------------------
-        # Landmarks
-        # --------------------------------------------------
         landmarks = []
 
         landmarks_manager = getattr(
@@ -7471,7 +7053,6 @@ def export_master_deleted_properties_excel(request):
                     ),
                 })
 
-        # Fallback for models storing landmarks in land_mark.
         if not landmarks:
             land_mark_value = getattr(
                 obj,
@@ -7485,9 +7066,6 @@ def export_master_deleted_properties_excel(request):
                 else:
                     landmarks = [land_mark_value]
 
-        # --------------------------------------------------
-        # Amenities
-        # --------------------------------------------------
         amenities = []
 
         amenities_manager = getattr(
@@ -7510,9 +7088,6 @@ def export_master_deleted_properties_excel(request):
                     for item in amenities_manager.all()
                 ]
 
-        # --------------------------------------------------
-        # Main image and related images
-        # --------------------------------------------------
         main_image_url = get_property_image(obj)
         image_urls = []
 
@@ -7528,26 +7103,18 @@ def export_master_deleted_properties_excel(request):
                 if image_url and image_url not in image_urls:
                     image_urls.append(image_url)
 
-        # If no direct main image exists, use the first related image.
         if not main_image_url and image_urls:
             main_image_url = image_urls[0]
 
-        # Exclude the main image from additional images.
         additional_image_urls = [
             url for url in image_urls
             if url != main_image_url
         ]
 
-        # --------------------------------------------------
-        # Related names
-        # --------------------------------------------------
         category_name = get_related_name(obj, "category")
         subcategory_name = get_related_name(obj, "subcategory")
         purpose_name = get_related_name(obj, "purpose")
 
-        # --------------------------------------------------
-        # Build Excel row
-        # --------------------------------------------------
         excel_row = [
             row.get("kind_label", ""),
             row.get("property_code", ""),
@@ -7598,9 +7165,6 @@ def export_master_deleted_properties_excel(request):
             for value in excel_row
         ])
 
-    # --------------------------------------------------
-    # Excel formatting
-    # --------------------------------------------------
     sheet.freeze_panes = "A2"
     sheet.auto_filter.ref = sheet.dimensions
     sheet.row_dimensions[1].height = 35
@@ -7626,9 +7190,6 @@ def export_master_deleted_properties_excel(request):
             42
         )
 
-    # --------------------------------------------------
-    # Return Excel file
-    # --------------------------------------------------
     output = BytesIO()
     workbook.save(output)
     output.seek(0)

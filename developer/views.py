@@ -210,10 +210,10 @@ def superuser_required(user):
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 def Dashboard(request):
 
-    total_active = Property.objects.count()
-    total_expired = ExpiredProperty.objects.count()
-    total_agent_active = AgentProperty.objects.count()
-    total_agent_expired = ExpiredAgentProperty.objects.count()
+    total_active = Property.objects.filter(deleted=False).count()
+    total_expired = ExpiredProperty.objects.filter(deleted=False).count()
+    total_agent_active = AgentProperty.objects.filter(deleted=False).count()
+    total_agent_expired = ExpiredAgentProperty.objects.filter(deleted=False).count()
 
     total_all = (
         total_active
@@ -226,6 +226,7 @@ def Dashboard(request):
 
     for item in (
         Property.objects
+        .filter(deleted=False)
         .values("purpose__name")
         .annotate(total=Count("id"))
     ):
@@ -233,6 +234,7 @@ def Dashboard(request):
 
     for item in (
         AgentProperty.objects
+        .filter(deleted=False)
         .values("purpose__name")
         .annotate(total=Count("id"))
     ):
@@ -248,6 +250,7 @@ def Dashboard(request):
 
     all_purposes = list(
         AgentProperty.objects
+        .filter(deleted=False)
         .values_list("purpose__name", flat=True)
         .distinct()
         .order_by("purpose__name")
@@ -259,7 +262,7 @@ def Dashboard(request):
 
     for index, agent in enumerate(agents, start=1):
 
-        properties = AgentProperty.objects.filter(agent=agent)
+        properties = AgentProperty.objects.filter(agent=agent,deleted=False)
 
         purpose_map = {}
 

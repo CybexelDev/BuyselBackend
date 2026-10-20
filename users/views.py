@@ -9907,7 +9907,13 @@ class AgentPropertyCityFilterAPIView(APIView):
             .annotate(
                 clean_city=Lower(Trim("city"))
             )
-            .order_by("clean_city")
+            .exclude(
+                clean_city__startswith="legacy city"
+            )
+            .exclude(
+                clean_city="n/a"
+            )
+            .order_by("clean_city")              
             .values_list("city", flat=True)
             .distinct()
         )

@@ -226,7 +226,7 @@ def send_otp_email(
                                 ">
 
                                     <img
-                                        src="https://nil-deviation-contractor-office.trycloudflare.com/static/img/logo.png"
+                                        src="https://buysel.in/static/img/logo.png"
                                         alt="BuySel"
                                         style="
                                             display:block;

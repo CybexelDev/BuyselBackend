@@ -8812,9 +8812,6 @@ class PropertyFilterAPIView(APIView):
         min_price = request.data.get("min_price")
         max_price = request.data.get("max_price")
 
-        # -----------------------------
-        # FILTERS
-        # -----------------------------
         if purpose and purpose.lower() != "all":
             queryset = queryset.filter(purpose__name__icontains=purpose)
 
@@ -8827,9 +8824,6 @@ class PropertyFilterAPIView(APIView):
         if district and district.lower() != "all":
             queryset = queryset.filter(district__icontains=district)
 
-        # -----------------------------
-        # PRICE FILTER
-        # -----------------------------
         if min_price or max_price:
             queryset = queryset.annotate(
                 price_int=Cast("price", IntegerField())

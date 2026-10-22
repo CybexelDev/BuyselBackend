@@ -10051,17 +10051,30 @@ class AgentPropertySearchAPIView(APIView):
         ).filter(
             agent=agent
         )
+        # if search:
+
+        #     queryset = queryset.filter(
+
+        #         Q(label__icontains=search)
+
+        #         |
+
+        #         Q(price__icontains=search)
+
+        #     )
+        
         if search:
+            search_words = search.split()
 
-            queryset = queryset.filter(
+            for word in search_words:
+                queryset = queryset.filter(
+                    Q(label__icontains=word)
+                    | Q(price__icontains=word)
+                    | Q(city__icontains=word)
+                    | Q(district__icontains=word)
+                    | Q(state__icontains=word)
+                )
 
-                Q(label__icontains=search)
-
-                |
-
-                Q(price__icontains=search)
-
-            )
 
         if category:
 

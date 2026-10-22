@@ -9085,12 +9085,14 @@ class PropertySearchAPIView(APIView):
                 Q(label__iregex=word_prefix_regex)
                 | Q(city__iregex=word_prefix_regex)
                 | Q(district__iregex=word_prefix_regex)
+                | Q(state__iregex=word_prefix_regex)
             )
 
             agent_properties = agent_properties.filter(
                 Q(label__iregex=word_prefix_regex)
                 | Q(city__iregex=word_prefix_regex)
                 | Q(district__iregex=word_prefix_regex)
+                | Q(state__iregex=word_prefix_regex)
             )
 
         combined = list(

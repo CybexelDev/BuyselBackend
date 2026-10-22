@@ -8798,58 +8798,295 @@ class AgentDetailAPIView(APIView):
         )
 
 
-class PropertyFilterAPIView(APIView):
+# class PropertyFilterAPIView(APIView):
 
+#     permission_classes = [AllowAny]
+#     authentication_classes = []
+
+#     def post(self, request):
+
+#         queryset = Property.objects.all().order_by("-created_at")
+
+#         purpose = request.data.get("purpose")
+#         category = request.data.get("category")
+#         city = request.data.get("city")
+#         district = request.data.get("district")
+#         min_price = request.data.get("min_price")
+#         max_price = request.data.get("max_price")
+
+#         if purpose and purpose.lower() != "all":
+#             queryset = queryset.filter(purpose__name__icontains=purpose)
+
+#         if category and category.lower() != "all":
+#             queryset = queryset.filter(category__name__icontains=category)
+
+#         if city and city.lower() != "all":
+#             queryset = queryset.filter(city__icontains=city)
+
+#         if district and district.lower() != "all":
+#             queryset = queryset.filter(district__icontains=district)
+
+#         if min_price or max_price:
+#             queryset = queryset.annotate(
+#                 price_int=Cast("price", IntegerField())
+#             )
+
+#             if min_price:
+#                 try:
+#                     queryset = queryset.filter(price_int__gte=int(min_price))
+#                 except:
+#                     pass
+
+#             if max_price:
+#                 try:
+#                     queryset = queryset.filter(price_int__lte=int(max_price))
+#                 except:
+#                     pass
+
+#         serializer = PropertyCardSerializer(queryset, many=True)
+
+#         return Response({
+#             "count": queryset.count(),
+#             "data": serializer.data
+#         }, status=status.HTTP_200_OK)
+
+
+import re
+
+from django.db.models import Q, Value, IntegerField, CharField
+from django.db.models.functions import (
+    Lower,
+    Replace,
+    Trim,
+    Cast,
+    Coalesce,
+)
+
+from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+from rest_framework import status
+
+
+
+class PropertyFilterAPIView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
 
-    def post(self, request):
+    @staticmethod
+    def normalize_text(value):
+        """Remove spaces, hyphens and underscores; ignore capitalization."""
+        if value is None:
+            return ""
 
-        queryset = Property.objects.all().order_by("-created_at")
+        return re.sub(r"[\s\-_]+", "", str(value).strip().lower())
 
-        purpose = request.data.get("purpose")
-        category = request.data.get("category")
-        city = request.data.get("city")
-        district = request.data.get("district")
-        min_price = request.data.get("min_price")
-        max_price = request.data.get("max_price")
+    @staticmethod
+    def normalize_db_field(field_name):
+        """Apply the same normalization to database field values."""
+        expression = Lower(
+            Trim(
+                Coalesce(
+                    field_name,
+                    Value(""),
+                    output_field=CharField(),
+                )
+            )
+        )
 
-        if purpose and purpose.lower() != "all":
-            queryset = queryset.filter(purpose__name__icontains=purpose)
+        for separator in [" ", "-", "_"]:
+            expression = Replace(
+                expression,
+                Value(separator),
+                Value(""),
+            )
 
-        if category and category.lower() != "all":
-            queryset = queryset.filter(category__name__icontains=category)
+        return expression
 
-        if city and city.lower() != "all":
-            queryset = queryset.filter(city__icontains=city)
+    def filter_any_location(self, queryset, value):
+        """
+        Match a location against city, district or state.
+        Supports partial matches after normalization.
+        """
+        normalized_value = self.normalize_text(value)
 
-        if district and district.lower() != "all":
-            queryset = queryset.filter(district__icontains=district)
+        if not normalized_value:
+            return queryset
 
-        if min_price or max_price:
+        return queryset.filter(
+            Q(normalized_city__contains=normalized_value)
+            | Q(normalized_district__contains=normalized_value)
+            | Q(normalized_state__contains=normalized_value)
+        )
+
+    def apply_location_annotations(self, queryset):
+        """Normalize location fields for either property model."""
+        return queryset.annotate(
+            normalized_city=self.normalize_db_field("city"),
+            normalized_district=self.normalize_db_field("district"),
+            normalized_state=self.normalize_db_field("state"),
+        )
+
+    def apply_filters(self, queryset, request_data):
+        """Apply common purpose, category, location and price filters."""
+
+        purpose = request_data.get("purpose")
+        category = request_data.get("category")
+
+        state = request_data.get("state")
+        district = request_data.get("district")
+        city = request_data.get("city")
+
+        min_price = request_data.get("min_price")
+        max_price = request_data.get("max_price")
+
+        # Purpose filter
+        if purpose and str(purpose).strip().lower() != "all":
+            queryset = queryset.filter(
+                purpose__name__icontains=str(purpose).strip()
+            )
+
+        # Category filter
+        if category and str(category).strip().lower() != "all":
+            queryset = queryset.filter(
+                category__name__icontains=str(category).strip()
+            )
+
+        # Location filters:
+        # Each supplied value can match city, district or state.
+        for location in [state, district, city]:
+            if location and str(location).strip().lower() != "all":
+                queryset = self.filter_any_location(queryset, location)
+
+        # Price filters
+        if min_price not in (None, "") or max_price not in (None, ""):
+            try:
+                min_value = (
+                    int(min_price)
+                    if min_price not in (None, "")
+                    else None
+                )
+
+                max_value = (
+                    int(max_price)
+                    if max_price not in (None, "")
+                    else None
+                )
+
+            except (ValueError, TypeError):
+                raise ValueError("Prices must be valid integers.")
+
+            if (
+                min_value is not None
+                and max_value is not None
+                and min_value > max_value
+            ):
+                raise ValueError("min_price cannot exceed max_price.")
+
             queryset = queryset.annotate(
                 price_int=Cast("price", IntegerField())
             )
 
-            if min_price:
-                try:
-                    queryset = queryset.filter(price_int__gte=int(min_price))
-                except:
-                    pass
+            if min_value is not None:
+                queryset = queryset.filter(price_int__gte=min_value)
 
-            if max_price:
-                try:
-                    queryset = queryset.filter(price_int__lte=int(max_price))
-                except:
-                    pass
+            if max_value is not None:
+                queryset = queryset.filter(price_int__lte=max_value)
 
-        serializer = PropertyCardSerializer(queryset, many=True)
+        return queryset
 
-        return Response({
-            "count": queryset.count(),
-            "data": serializer.data
-        }, status=status.HTTP_200_OK)
+    def post(self, request):
+        # User properties
+        user_queryset = (
+            Property.objects
+            .filter(deleted=False)
+            .select_related("category", "purpose", "user")
+            .prefetch_related("images", "amenities")
+        )
 
+        # Agent properties
+        agent_queryset = (
+            AgentProperty.objects
+            .filter(deleted=False)
+            .select_related("category", "purpose", "agent")
+            .prefetch_related("images", "amenities")
+        )
+
+        # Normalize location fields on both querysets
+        user_queryset = self.apply_location_annotations(user_queryset)
+        agent_queryset = self.apply_location_annotations(agent_queryset)
+
+        # Apply the same filters to both models
+        try:
+            user_queryset = self.apply_filters(
+                user_queryset,
+                request.data,
+            )
+
+            agent_queryset = self.apply_filters(
+                agent_queryset,
+                request.data,
+            )
+
+        except ValueError as exc:
+            return Response(
+                {"error": str(exc)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Order both querysets by newest first
+        user_queryset = user_queryset.order_by("-created_at")
+        agent_queryset = agent_queryset.order_by("-created_at")
+
+        # Serialize user properties
+        user_properties = list(user_queryset)
+        user_serializer = PropertyCardSerializer(
+            user_properties,
+            many=True,
+            context={"request": request},
+        )
+
+        # Serialize agent properties
+        agent_properties = list(agent_queryset)
+        agent_serializer = AgentPropertyCardSerializer(
+            agent_properties,
+            many=True,
+            context={"request": request},
+        )
+
+        # Combine both results and maintain global newest-first ordering
+        combined_results = []
+
+        for obj, serialized_data in zip(
+            user_properties,
+            user_serializer.data,
+        ):
+            combined_results.append(
+                (obj.created_at, dict(serialized_data))
+            )
+
+        for obj, serialized_data in zip(
+            agent_properties,
+            agent_serializer.data,
+        ):
+            combined_results.append(
+                (obj.created_at, dict(serialized_data))
+            )
+
+        combined_results.sort(
+            key=lambda item: item[0],
+            reverse=True,
+        )
+
+        data = [item[1] for item in combined_results]
+
+        return Response(
+            {
+                "count": len(data),
+                "data": data,
+            },
+            status=status.HTTP_200_OK,
+        )
 
 
 

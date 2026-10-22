@@ -24,6 +24,8 @@ from jwt.exceptions import (
     ExpiredSignatureError,
     InvalidTokenError
 )
+from django.db.models import Q, Value
+from django.db.models.functions import Replace, Lower
 from users.models import Payment, UserProfile
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import AuthenticationFailed
@@ -10063,17 +10065,28 @@ class AgentPropertySearchAPIView(APIView):
 
         #     )
         
+        
         if search:
-            search_words = search.split()
+            normalized_search = search.lower().replace(" ", "").strip()
 
-            for word in search_words:
-                queryset = queryset.filter(
-                    Q(label__icontains=word)
-                    | Q(price__icontains=word)
-                    | Q(city__icontains=word)
-                    | Q(district__icontains=word)
-                    | Q(state__icontains=word)
-                )
+            queryset = queryset.annotate(
+                normalized_city=Replace(
+                    Lower("city"), Value(" "), Value("")
+                ),
+                normalized_district=Replace(
+                    Lower("district"), Value(" "), Value("")
+                ),
+                normalized_state=Replace(
+                    Lower("state"), Value(" "), Value("")
+                ),
+            ).filter(
+                Q(label__icontains=search)
+                | Q(price__icontains=search)
+                | Q(normalized_city__contains=normalized_search)
+                | Q(normalized_district__contains=normalized_search)
+                | Q(normalized_state__contains=normalized_search)
+            )
+
 
 
         if category:

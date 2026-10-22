@@ -10053,18 +10053,6 @@ class AgentPropertySearchAPIView(APIView):
         ).filter(
             agent=agent
         )
-        # if search:
-
-        #     queryset = queryset.filter(
-
-        #         Q(label__icontains=search)
-
-        #         |
-
-        #         Q(price__icontains=search)
-
-        #     )
-        
         
         if search:
             normalized_search = search.lower().replace(" ", "").strip()

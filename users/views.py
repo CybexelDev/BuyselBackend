@@ -8851,8 +8851,6 @@ class AgentDetailAPIView(APIView):
 #         }, status=status.HTTP_200_OK)
 
 
-import re
-
 from django.db.models import Q, Value, IntegerField, CharField
 from django.db.models.functions import (
     Lower,
@@ -8861,12 +8859,6 @@ from django.db.models.functions import (
     Cast,
     Coalesce,
 )
-
-from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny
-from rest_framework.response import Response
-from rest_framework import status
-
 
 
 class PropertyFilterAPIView(APIView):

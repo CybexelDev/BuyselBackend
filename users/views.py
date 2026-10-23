@@ -3109,6 +3109,7 @@ class AgentLoginAPIView(APIView):
                 "email": user.email,
                 "phone_number": user.phone_number,
                 "agent_type": user.agent_type,
+                "is_company_agent": user.is_company_agent,
                 "city": user.city or "",
                 "profile_image": profile_image
             }
@@ -8722,6 +8723,9 @@ class AgentDetailAPIView(APIView):
                 }
 
             ).data
+            agent_data["secret_properties"] = bool(
+                agent.secret_properties
+            )
             wishlist_ids = []
             if logged_user:
 
@@ -16454,3 +16458,60 @@ class DebugDB(APIView):
             else 0,
         })
 
+
+
+
+
+class ToggleSecretUserAPIView(APIView):
+
+    authentication_classes = [AgentJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+
+        agent = request.user
+
+        if not agent.is_company_agent:
+            return Response(
+                {
+                    "error": "Only company agents can enable secret properties."
+                },
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        enabled = request.data.get("secret_properties")
+
+        if isinstance(enabled, str):
+            enabled = enabled.strip().lower()
+
+            if enabled == "true":
+                enabled = True
+            elif enabled == "false":
+                enabled = False
+            else:
+                return Response(
+                    {
+                        "error": "secret_properties must be true or false."
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+        elif not isinstance(enabled, bool):
+            return Response(
+                {
+                    "error": "secret_properties must be true or false."
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        agent.secret_properties = enabled
+        agent.save(update_fields=["secret_properties"])
+
+        return Response(
+            {
+                "message": "Secret property permission updated successfully.",
+                "is_company_agent": agent.is_company_agent,
+                "secret_properties": agent.secret_properties
+            },
+            status=status.HTTP_200_OK
+        )

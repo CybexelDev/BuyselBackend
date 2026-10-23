@@ -172,7 +172,7 @@ urlpatterns = [
     path("filter/nearby-properties/",NearbyPropertyAPIView.as_view()),
     path("property-filter/",PropertiesFilterAPIView.as_view(),name="property-filter"),
     path("enquiry-detail/<uuid:enquiry_id>/",EnquiryDetailAPIView.as_view(),name="enquiry-detail"),
-
+    path("agent/toggle-secret-user/",ToggleSecretUserAPIView.as_view(),name="toggle-secret-user"),
 
     path("activate-userplan/",ActivateUserPlanAPIView.as_view(),name="activate_user_plan"),
     path("current-userplan/",CurrentUserPlanAPIView.as_view(),name="current_userplan"),

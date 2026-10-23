@@ -5618,7 +5618,7 @@ class AgentDetailSerializer(serializers.ModelSerializer):
             "plan_expiry_date",
             "operating_cities",
             "served_area",
-
+            "secret_properties",
             "instagram",
             "facebook",
             "website",

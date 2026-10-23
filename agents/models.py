@@ -47,7 +47,8 @@ class AgentUserProfile(models.Model):
 
     is_agent = models.BooleanField(default=True)
     is_active = models.BooleanField(default=True)
-
+    secret_properties = models.BooleanField(default=False)
+    is_company_agent = models.BooleanField(default=False)
     agent_type = models.CharField(max_length=20, choices=AGENT_TYPES, default='basic')
     basic_plan = models.ForeignKey(
         "developer.AgentPlan",
@@ -999,6 +1000,8 @@ class AgentProperty(models.Model):
     )
 
     is_featured = models.BooleanField(default=False)
+
+    secret = models.BooleanField(default=True)
 
     deleted = models.BooleanField(
         default=False,

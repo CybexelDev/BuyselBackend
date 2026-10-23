@@ -17048,11 +17048,10 @@ class SecretUserPropertyListAPIView(APIView):
             )
 
         # =========================================
-        # GET ONLY SECRET PROPERTIES
+        # GET ALL SECRET AGENT PROPERTIES
         # =========================================
 
         properties = AgentProperty.objects.filter(
-            agent_id=secret_user.agent_id,
             secret=True,
             deleted=False
         ).select_related(
@@ -17083,7 +17082,6 @@ class SecretUserPropertyListAPIView(APIView):
             },
             status=status.HTTP_200_OK
         )
-
 
 class SecretUserPropertyDetailAPIView(APIView):
 

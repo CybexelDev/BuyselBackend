@@ -1002,7 +1002,7 @@ class AgentProperty(models.Model):
 
     is_featured = models.BooleanField(default=False)
 
-    secret = models.BooleanField(default=True)
+    secret = models.BooleanField(default=False)
 
     deleted = models.BooleanField(
         default=False,

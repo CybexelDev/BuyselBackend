@@ -16515,3 +16515,861 @@ class ToggleSecretUserAPIView(APIView):
             },
             status=status.HTTP_200_OK
         )
+
+
+
+class SecretUserLoginAPIView(APIView):
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        username = request.data.get("username")
+        password = request.data.get("password")
+
+        if not username or not password:
+            return Response(
+                {"error": "Username and password are required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        secret_user = SecretUser.objects.filter(
+            username=username.strip(),
+            is_active=True
+        ).select_related("agent").first()
+
+        if not secret_user or not secret_user.check_password(password):
+            return Response(
+                {"error": "Invalid username or password."},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        agent = secret_user.agent
+
+        if (
+            not agent.is_active
+            or not agent.is_company_agent
+            or not agent.secret_properties
+        ):
+            return Response(
+                {"error": "Secret user access is disabled."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        request.session.cycle_key()
+        request.session["secret_user_id"] = str(secret_user.id)
+        request.session["secret_user_agent_id"] = str(agent.id)
+        request.session.set_expiry(60 * 60 * 8)  # 8 hours
+
+        return Response(
+            {
+                "message": "Secret user login successful.",
+                "login_as": "secret_user",
+                "secret_user": {
+                    "id": str(secret_user.id),
+                    "username": secret_user.username,
+                    "agent_id": str(agent.id)
+                }
+            },
+            status=status.HTTP_200_OK
+        )
+
+
+
+
+# class SecretUserManageAPIView(APIView):
+#     authentication_classes = [AgentJWTAuthentication]
+#     permission_classes = [IsAuthenticated]
+
+#     def post(self, request):
+#         agent = request.user
+
+#         if not agent.is_company_agent or not agent.secret_properties:
+#             return Response(
+#                 {"error": "You are not allowed to manage secret users."},
+#                 status=status.HTTP_403_FORBIDDEN
+#             )
+
+#         username = request.data.get("username")
+#         password = request.data.get("password")
+
+#         if not username or not password:
+#             return Response(
+#                 {"error": "Username and password are required."},
+#                 status=status.HTTP_400_BAD_REQUEST
+#             )
+
+#         username = username.strip()
+
+#         if not username:
+#             return Response(
+#                 {"error": "Username cannot be empty."},
+#                 status=status.HTTP_400_BAD_REQUEST
+#             )
+
+#         if len(password) < 8:
+#             return Response(
+#                 {"error": "Password must contain at least 8 characters."},
+#                 status=status.HTTP_400_BAD_REQUEST
+#             )
+
+#         if SecretUser.objects.filter(username__iexact=username).exists():
+#             return Response(
+#                 {"error": "Username already exists."},
+#                 status=status.HTTP_400_BAD_REQUEST
+#             )
+
+#         secret_user = SecretUser(
+#             agent=agent,
+#             username=username
+#         )
+#         secret_user.set_password(password)
+#         secret_user.save()
+
+#         return Response(
+#             {
+#                 "message": "Secret user created successfully.",
+#                 "id": str(secret_user.id),
+#                 "username": secret_user.username,
+#                 "is_active": secret_user.is_active
+#             },
+#             status=status.HTTP_201_CREATED
+#         )
+
+#     def delete(self, request):
+#         agent = request.user
+
+#         if not agent.is_company_agent or not agent.secret_properties:
+#             return Response(
+#                 {"error": "You are not allowed to manage secret users."},
+#                 status=status.HTTP_403_FORBIDDEN
+#             )
+
+#         secret_user_id = request.data.get("id")
+
+#         if not secret_user_id:
+#             return Response(
+#                 {"error": "Secret user id is required."},
+#                 status=status.HTTP_400_BAD_REQUEST
+#             )
+
+#         secret_user = SecretUser.objects.filter(
+#             id=secret_user_id,
+#             agent=agent
+#         ).first()
+
+#         if not secret_user:
+#             return Response(
+#                 {"error": "Secret user not found."},
+#                 status=status.HTTP_404_NOT_FOUND
+#             )
+
+#         secret_user.delete()
+
+#         return Response(
+#             {"message": "Secret user deleted successfully."},
+#             status=status.HTTP_200_OK
+#         )
+
+
+class SecretUserManageAPIView(APIView):
+    authentication_classes = [AgentJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    # =====================================================
+    # CHECK PERMISSION
+    # =====================================================
+
+    def check_agent_permission(self, agent):
+        return agent.is_company_agent and agent.secret_properties
+
+    # =====================================================
+    # CREATE SECRET USER
+    # =====================================================
+
+    def post(self, request):
+        agent = request.user
+
+        if not self.check_agent_permission(agent):
+            return Response(
+                {"error": "You are not allowed to manage secret users."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        username = request.data.get("username")
+        password = request.data.get("password")
+
+        if not username or not password:
+            return Response(
+                {"error": "Username and password are required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        username = username.strip()
+
+        if not username:
+            return Response(
+                {"error": "Username cannot be empty."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if len(password) < 8:
+            return Response(
+                {"error": "Password must contain at least 8 characters."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if SecretUser.objects.filter(username__iexact=username).exists():
+            return Response(
+                {"error": "Username already exists."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        secret_user = SecretUser(
+            agent=agent,
+            username=username
+        )
+        secret_user.set_password(password)
+        secret_user.save()
+
+        return Response(
+            {
+                "message": "Secret user created successfully.",
+                "id": str(secret_user.id),
+                "username": secret_user.username,
+                "is_active": secret_user.is_active
+            },
+            status=status.HTTP_201_CREATED
+        )
+
+    # =====================================================
+    # UPDATE SECRET USER
+    # =====================================================
+
+    def put(self, request):
+        agent = request.user
+
+        if not self.check_agent_permission(agent):
+            return Response(
+                {"error": "You are not allowed to manage secret users."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        secret_user_id = request.data.get("id")
+
+        if not secret_user_id:
+            return Response(
+                {"error": "Secret user id is required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        secret_user = SecretUser.objects.filter(
+            id=secret_user_id,
+            agent=agent
+        ).first()
+
+        if not secret_user:
+            return Response(
+                {"error": "Secret user not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Update username if supplied
+        username = request.data.get("username")
+
+        if username is not None:
+            username = username.strip()
+
+            if not username:
+                return Response(
+                    {"error": "Username cannot be empty."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            if SecretUser.objects.filter(
+                username__iexact=username
+            ).exclude(id=secret_user.id).exists():
+                return Response(
+                    {"error": "Username already exists."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            secret_user.username = username
+
+        # Update password only if supplied
+        password = request.data.get("password")
+
+        if password is not None:
+            if not password:
+                return Response(
+                    {"error": "Password cannot be empty."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            if len(password) < 8:
+                return Response(
+                    {"error": "Password must contain at least 8 characters."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            secret_user.set_password(password)
+
+        # Optionally enable or disable this secret user
+        is_active = request.data.get("is_active")
+
+        if is_active is not None:
+            if not isinstance(is_active, bool):
+                return Response(
+                    {"error": "is_active must be true or false."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            secret_user.is_active = is_active
+
+        secret_user.save()
+
+        return Response(
+            {
+                "message": "Secret user updated successfully.",
+                "id": str(secret_user.id),
+                "username": secret_user.username,
+                "is_active": secret_user.is_active
+            },
+            status=status.HTTP_200_OK
+        )
+
+    # =====================================================
+    # DELETE SECRET USER
+    # =====================================================
+
+    def delete(self, request):
+        agent = request.user
+
+        if not self.check_agent_permission(agent):
+            return Response(
+                {"error": "You are not allowed to manage secret users."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        secret_user_id = request.data.get("id")
+
+        if not secret_user_id:
+            return Response(
+                {"error": "Secret user id is required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        secret_user = SecretUser.objects.filter(
+            id=secret_user_id,
+            agent=agent
+        ).first()
+
+        if not secret_user:
+            return Response(
+                {"error": "Secret user not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        secret_user.delete()
+
+        return Response(
+            {"message": "Secret user deleted successfully."},
+            status=status.HTTP_200_OK
+        )
+
+class SecretUserListAPIView(APIView):
+    authentication_classes = [AgentJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        agent = request.user
+
+        if not agent.is_company_agent or not agent.secret_properties:
+            return Response(
+                {"error": "You are not allowed to view secret users."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        secret_users = SecretUser.objects.filter(
+            agent=agent
+        ).order_by("-created_at")
+
+        data = [
+            {
+                "id": str(user.id),
+                "username": user.username,
+                "is_active": user.is_active,
+                "created_at": user.created_at
+            }
+            for user in secret_users
+        ]
+
+        return Response(
+            {
+                "count": len(data),
+                "secret_users": data
+            },
+            status=status.HTTP_200_OK
+        )
+
+
+class SecretUserChangePasswordAPIView(APIView):
+    authentication_classes = [AgentJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        agent = request.user
+
+        if not agent.is_company_agent or not agent.secret_properties:
+            return Response(
+                {"error": "You are not allowed to change secret user passwords."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        secret_user_id = request.data.get("secret_user_id")
+        new_password = request.data.get("new_password")
+        confirm_password = request.data.get("confirm_password")
+
+        if not secret_user_id or not new_password or not confirm_password:
+            return Response(
+                {
+                    "error": (
+                        "secret_user_id, new_password, and "
+                        "confirm_password are required."
+                    )
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        secret_user = SecretUser.objects.filter(
+            id=secret_user_id,
+            agent=agent
+        ).first()
+
+        if not secret_user:
+            return Response(
+                {"error": "Secret user not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        if len(new_password) < 8:
+            return Response(
+                {"error": "Password must contain at least 8 characters."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if new_password != confirm_password:
+            return Response(
+                {"error": "Passwords do not match."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        secret_user.set_password(new_password)
+        secret_user.save(update_fields=["password"])
+
+        return Response(
+            {"message": "Secret user password changed successfully."},
+            status=status.HTTP_200_OK
+        )
+
+
+
+def get_secret_user_properties(request):
+
+    secret_user_id = request.session.get("secret_user_id")
+    agent_id = request.session.get("secret_user_agent_id")
+
+    if not secret_user_id or not agent_id:
+        return None
+
+    secret_user = SecretUser.objects.filter(
+        id=secret_user_id,
+        agent_id=agent_id,
+        is_active=True,
+        agent__is_active=True,
+        agent__is_company_agent=True,
+        agent__secret_properties=True
+    ).select_related("agent").first()
+
+    if not secret_user:
+        return None
+
+    return AgentProperty.objects.filter(
+        agent_id=secret_user.agent_id,
+        secret=True,
+        deleted=False
+    ).select_related(
+        "agent"
+    ).prefetch_related(
+        "images",
+        "amenities"
+    ).order_by("-id")
+
+
+class SecretUserPropertyListAPIView(APIView):
+
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+
+        # =========================================
+        # CHECK SECRET USER SESSION
+        # =========================================
+
+        secret_user_id = request.session.get("secret_user_id")
+        agent_id = request.session.get("secret_user_agent_id")
+
+        if not secret_user_id or not agent_id:
+            return Response(
+                {"error": "Please log in as a secret user."},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        # =========================================
+        # VALIDATE SECRET USER
+        # =========================================
+
+        secret_user = SecretUser.objects.filter(
+            id=secret_user_id,
+            agent_id=agent_id,
+            is_active=True,
+            agent__is_active=True,
+            agent__is_company_agent=True,
+            agent__secret_properties=True
+        ).select_related("agent").first()
+
+        if not secret_user:
+            request.session.pop("secret_user_id", None)
+            request.session.pop("secret_user_agent_id", None)
+
+            return Response(
+                {"error": "Secret user access is disabled."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        # =========================================
+        # GET ONLY SECRET PROPERTIES
+        # =========================================
+
+        properties = AgentProperty.objects.filter(
+            agent_id=secret_user.agent_id,
+            secret=True,
+            deleted=False
+        ).select_related(
+            "agent"
+        ).prefetch_related(
+            "images",
+            "amenities"
+        ).order_by("-id")
+
+        # =========================================
+        # SERIALIZE PROPERTIES
+        # =========================================
+
+        serializer = CombinedPropertyListSerializer(
+            properties,
+            many=True,
+            context={
+                "request": request,
+                "wishlist_ids": set()
+            }
+        )
+
+        return Response(
+            {
+                "message": "Secret properties retrieved successfully.",
+                "count": properties.count(),
+                "results": serializer.data
+            },
+            status=status.HTTP_200_OK
+        )
+
+
+class SecretUserPropertyDetailAPIView(APIView):
+
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+    def get_secret_user(self, request):
+
+        secret_user_id = request.session.get("secret_user_id")
+        agent_id = request.session.get("secret_user_agent_id")
+
+        if not secret_user_id or not agent_id:
+            return None
+
+        return SecretUser.objects.filter(
+            id=secret_user_id,
+            agent_id=agent_id,
+            is_active=True,
+            agent__is_active=True,
+            agent__is_company_agent=True,
+            agent__secret_properties=True
+        ).select_related("agent").first()
+
+    def get_profile_image(self, person, request):
+
+        if not person:
+            return None
+
+        if getattr(person, "profile_image", None):
+
+            try:
+                return request.build_absolute_uri(
+                    person.profile_image.url
+                )
+            except Exception:
+                try:
+                    return person.profile_image.url
+                except Exception:
+                    pass
+
+        if getattr(person, "avatar_url", None):
+            return person.avatar_url
+
+        return None
+
+    def get_owner_name(self, owner_text, agent_obj):
+
+        if owner_text and str(owner_text).strip():
+            return str(owner_text).strip()
+
+        if agent_obj:
+
+            linked_user = getattr(agent_obj, "user", None)
+
+            if linked_user:
+                for field in ("name", "full_name", "username", "email"):
+                    value = getattr(linked_user, field, None)
+                    if value:
+                        return value
+
+            for field in ("full_name", "username"):
+                value = getattr(agent_obj, field, None)
+                if value:
+                    return value
+
+        return ""
+
+    def get(self, request, uuid_id):
+
+        secret_user = self.get_secret_user(request)
+
+        if not secret_user:
+
+            if (
+                request.session.get("secret_user_id")
+                or request.session.get("secret_user_agent_id")
+            ):
+                request.session.pop("secret_user_id", None)
+                request.session.pop("secret_user_agent_id", None)
+
+                return Response(
+                    {"error": "Secret user access is disabled."},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+
+            return Response(
+                {"error": "Please log in as a secret user."},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        try:
+            uuid_obj = uuid.UUID(str(uuid_id))
+        except (ValueError, TypeError, AttributeError):
+            return Response(
+                {"error": "Invalid UUID format."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        obj = AgentProperty.objects.filter(
+            id=uuid_obj,
+            agent_id=secret_user.agent_id,
+            secret=True,
+            deleted=False
+        ).select_related(
+            "agent",
+            "category",
+            "purpose"
+        ).prefetch_related(
+            "amenities",
+            "images"
+        ).first()
+
+        if not obj:
+            return Response(
+                {"error": "Property not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        serializer = AgentPropertySerializer(
+            obj,
+            context={"request": request}
+        )
+
+        data = serializer.data
+        agent_obj = obj.agent
+
+        return Response(
+            {
+                "id": str(obj.id),
+
+                "property_code": f"AG-{obj.id}",
+
+                "label": data.get("label"),
+
+                "images": data.get("images", []),
+
+                "purpose": (
+                    obj.purpose.name
+                    if obj.purpose else None
+                ),
+
+                "category": {
+                    "id": obj.category.id,
+                    "name": obj.category.name,
+                    "image": None
+                } if obj.category else None,
+
+                "description": obj.description,
+
+                "city": obj.city,
+
+                "state": obj.state,
+
+                "location": obj.location,
+
+                "land_mark": data.get("landmarks", []),
+
+                "created_at": (
+                    obj.created_at.strftime("%Y-%m-%d")
+                    if obj.created_at else None
+                ),
+
+                "property_features": data.get("features", []),
+
+                "price_details": {
+                    "price": obj.price,
+                    "sq_ft": (
+                        str(obj.sq_ft)
+                        if obj.sq_ft is not None else None
+                    ),
+                    "land_area": obj.land_area,
+                    "perprice": obj.perprice
+                },
+
+                "contact_details": {
+                    "owner": self.get_owner_name(
+                        obj.owner,
+                        agent_obj
+                    ),
+
+                    "property_owner": "agent",
+
+                    "whatsapp": obj.whatsapp,
+
+                    "phone": obj.phone,
+
+                    "owner_profile_image": self.get_profile_image(
+                        agent_obj,
+                        request
+                    )
+                },
+
+                "amenities": [
+                    {
+                        "name": amenity.name,
+
+                        "icon": (
+                            request.build_absolute_uri(amenity.icon.url)
+                            if getattr(amenity, "icon", None)
+                            else None
+                        )
+                    }
+                    for amenity in obj.amenities.all()
+                ],
+
+                "key_selling_points": data.get(
+                    "selling_points",
+                    []
+                ),
+
+                "location_details": {
+                    "village": obj.village,
+                    "city": obj.city,
+                    "state": obj.state,
+                    "pincode": obj.pincode
+                },
+
+                "is_wishlist": False
+            },
+            status=status.HTTP_200_OK
+        )
+
+class TogglePropertySecretAPIView(APIView):
+
+    authentication_classes = [AgentJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, property_id):
+
+        agent = request.user
+
+        if not agent.is_company_agent:
+            return Response(
+                {
+                    "error": "Only company agents can manage secret properties."
+                },
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        property_obj = AgentProperty.objects.filter(
+            id=property_id,
+            agent=agent,
+            deleted=False
+        ).first()
+
+        if not property_obj:
+            return Response(
+                {"error": "Property not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        secret_value = request.data.get("secret")
+
+        # Accept boolean or string values
+        if isinstance(secret_value, bool):
+            pass
+        elif isinstance(secret_value, str):
+            secret_value = secret_value.strip().lower()
+
+            if secret_value == "true":
+                secret_value = True
+            elif secret_value == "false":
+                secret_value = False
+            else:
+                return Response(
+                    {"error": "The secret field must be true or false."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        else:
+            return Response(
+                {"error": "The secret field must be true or false."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        property_obj.secret = secret_value
+        property_obj.save(update_fields=["secret"])
+
+        return Response(
+            {
+                "message": (
+                    "Property marked as secret."
+                    if property_obj.secret
+                    else "Property marked as public."
+                ),
+                "property_id": str(property_obj.id),
+                "secret": property_obj.secret
+            },
+            status=status.HTTP_200_OK
+        )

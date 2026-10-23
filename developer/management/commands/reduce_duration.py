@@ -6,9 +6,7 @@ class Command(BaseCommand):
     help = "Reduce duration_days daily and move expired items for Property, Premium, and Agents"
 
     def handle(self, *args, **kwargs):
-        # -----------------------------
-        # 1️⃣ Reduce duration safely
-        # -----------------------------
+      
         Property.objects.filter(duration_days__gt=0).update(
             duration_days=F('duration_days') - 1
         )
@@ -21,9 +19,6 @@ class Command(BaseCommand):
             duration_days=F('duration_days') - 1
         )
 
-        # -----------------------------
-        # 2️⃣ Trigger expiry move
-        # -----------------------------
         for prop in Property.objects.filter(duration_days__lte=0):
             prop.save()  # Moves to ExpiredProperty
 

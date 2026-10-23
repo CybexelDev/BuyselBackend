@@ -1,0 +1,359 @@
+
+{% extends "base3.html" %}
+
+{% block content %}
+<style>
+    .deleted-detail-page {
+        color: #34402f;
+    }
+
+    .deleted-detail-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 16px;
+        padding: 25px;
+        border-radius: 22px;
+        color: white;
+        background: linear-gradient(135deg, #8bc83f, #659d28);
+        box-shadow: 0 18px 40px rgba(75,112,35,.16);
+    }
+
+    .deleted-detail-header h1 {
+        margin: 0;
+        color: white;
+        font-size: 28px;
+        font-weight: 800;
+    }
+
+    .deleted-detail-header p {
+        margin: 7px 0 0;
+        color: rgba(255,255,255,.85);
+        font-size: 12px;
+    }
+
+    .deleted-detail-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 16px;
+        border-radius: 12px;
+        color: #527c2c;
+        background: white;
+        font-size: 12px;
+        font-weight: 700;
+        text-decoration: none;
+    }
+
+    .deleted-detail-card {
+        margin-top: 20px;
+        padding: 22px;
+        border: 1px solid #dce8d2;
+        border-radius: 20px;
+        background: white;
+        box-shadow: 0 12px 30px rgba(49,70,36,.06);
+    }
+
+    .deleted-detail-card h2 {
+        margin: 0 0 18px;
+        font-size: 17px;
+    }
+
+    .deleted-detail-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+    }
+
+    .deleted-detail-field {
+        min-width: 0;
+        padding: 13px;
+        border: 1px solid #edf1e9;
+        border-radius: 12px;
+        background: #fbfdf9;
+        overflow-wrap: anywhere;
+    }
+
+    .deleted-detail-field small {
+        display: block;
+        margin-bottom: 7px;
+        color: #84907d;
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .deleted-detail-field strong {
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .deleted-detail-images {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 12px;
+    }
+
+    .deleted-detail-images img {
+        width: 100%;
+        height: 130px;
+        border: 1px solid #dce8d2;
+        border-radius: 12px;
+        object-fit: cover;
+    }
+
+    .deleted-detail-list {
+        margin: 0;
+        padding-left: 20px;
+        color: #586451;
+        font-size: 12px;
+        line-height: 2;
+    }
+
+    @media(max-width: 800px) {
+        .deleted-detail-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media(max-width: 480px) {
+        .deleted-detail-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="deleted-detail-page">
+    <div class="deleted-detail-header">
+        <div>
+            <h1>Deleted Property Details</h1>
+            <p>
+                {{ row.kind_label }} · {{ row.property_code }}
+            </p>
+        </div>
+
+<a href="{% url 'deleted_properties' %}"
+   class="deleted-detail-back">
+    <i class="fas fa-arrow-left"></i>
+    Back to Deleted Properties
+</a>
+
+    </div>
+
+    <div class="deleted-detail-card">
+        <h2>Property Information</h2>
+
+        <div class="deleted-detail-grid">
+            <div class="deleted-detail-field">
+                <small>Property Label</small>
+                <strong>{{ property.label|default:"N/A" }}</strong>
+            </div>
+
+            <div class="deleted-detail-field">
+                <small>Property Code</small>
+                <strong>{{ row.property_code }}</strong>
+            </div>
+
+            <div class="deleted-detail-field">
+                <small>Property Type</small>
+                <strong>{{ row.kind_label }}</strong>
+            </div>
+
+            <div class="deleted-detail-field">
+                <small>Price</small>
+                <strong>{{ property.price|default:"N/A" }}</strong>
+            </div>
+
+            <div class="deleted-detail-field">
+                <small>Per Price</small>
+                <strong>{{ property.perprice|default:"N/A" }}</strong>
+            </div>
+
+            <div class="deleted-detail-field">
+                <small>Land Area</small>
+                <strong>{{ property.land_area|default:"N/A" }}</strong>
+            </div>
+
+            <div class="deleted-detail-field">
+                <small>Category</small>
+                <strong>{{ property.category|default:"N/A" }}</strong>
+            </div>
+
+            <div class="deleted-detail-field">
+                <small>Subcategory</small>
+                <strong>{{ property.subcategory|default:"N/A" }}</strong>
+            </div>
+
+            <div class="deleted-detail-field">
+                <small>Purpose</small>
+                <strong>{{ property.purpose|default:"N/A" }}</strong>
+            </div>
+
+            <div class="deleted-detail-field">
+                <small>Owner / Agent</small>
+                <strong>{{ row.owner_name }}</strong>
+            </div>
+
+            <div class="deleted-detail-field">
+                <small>Source</small>
+                <strong>{{ row.source }}</strong>
+            </div>
+
+            <div class="deleted-detail-field">
+                <small>Subscription / Package</small>
+                <strong>{{ row.subscription_name }}</strong>
+            </div>
+
+            <div class="deleted-detail-field">
+                <small>Added By</small>
+                <strong>{{ row.added_by }}</strong>
+            </div>
+
+            <div class="deleted-detail-field">
+                <small>City</small>
+                <strong>{{ property.city|default:"N/A" }}</strong>
+            </div>
+
+            <div class="deleted-detail-field">
+                <small>District</small>
+                <strong>{{ property.district|default:"N/A" }}</strong>
+            </div>
+
+            <div class="deleted-detail-field">
+                <small>State</small>
+                <strong>{{ property.state|default:"N/A" }}</strong>
+            </div>
+
+            <div class="deleted-detail-field">
+                <small>Pincode</small>
+                <strong>{{ property.pincode|default:"N/A" }}</strong>
+            </div>
+
+            <div class="deleted-detail-field">
+                <small>Phone</small>
+                <strong>{{ property.phone|default:"N/A" }}</strong>
+            </div>
+
+            <div class="deleted-detail-field">
+                <small>WhatsApp</small>
+                <strong>{{ property.whatsapp|default:"N/A" }}</strong>
+            </div>
+
+            <div class="deleted-detail-field">
+                <small>Created At</small>
+                <strong>{{ property.created_at|date:"d M Y, h:i A"|default:"N/A" }}</strong>
+            </div>
+
+            <div class="deleted-detail-field">
+                <small>Updated At</small>
+                <strong>{{ property.updated_at|date:"d M Y, h:i A"|default:"N/A" }}</strong>
+            </div>
+
+            <div class="deleted-detail-field">
+                <small>Deleted Status</small>
+                <strong>{{ property.deleted|yesno:"Deleted,Active" }}</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="deleted-detail-card">
+        <h2>Description</h2>
+        <p style="white-space:pre-line;line-height:1.8;font-size:13px;">
+            {{ property.description|default:"No description available." }}
+        </p>
+
+        {% if property.location %}
+        <p style="font-size:12px;overflow-wrap:anywhere;">
+            <strong>Location:</strong>
+            <a href="{{ property.location }}" target="_blank" rel="noopener noreferrer">
+                Open property location
+            </a>
+        </p>
+        {% endif %}
+    </div>
+
+    <div class="deleted-detail-card">
+        <h2>Amenities</h2>
+        {% if amenities %}
+            <ul class="deleted-detail-list">
+                {% for amenity in amenities %}
+                    <li>{{ amenity }}</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No amenities recorded.</p>
+        {% endif %}
+    </div>
+
+    <div class="deleted-detail-card">
+        <h2>Property Features</h2>
+        {% if features %}
+            <div class="deleted-detail-grid">
+                {% for feature in features %}
+                    <div class="deleted-detail-field">
+                        <small>{{ feature.field }}</small>
+                        <strong>{{ feature.value }}</strong>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>No additional property features recorded.</p>
+        {% endif %}
+    </div>
+
+    <div class="deleted-detail-card">
+        <h2>Additional Images</h2>
+        {% if images %}
+            <div class="deleted-detail-images">
+                {% for image_url in images %}
+                    <a href="{{ image_url }}" target="_blank" rel="noopener noreferrer">
+                        <img src="{{ image_url }}" alt="Property image">
+                    </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>No additional images recorded.</p>
+        {% endif %}
+    </div>
+
+    <div class="deleted-detail-card">
+        <h2>Selling Points</h2>
+        {% if selling_points %}
+            <ul class="deleted-detail-list">
+                {% for point in selling_points %}
+                    <li>
+                        {% if point.point %}
+                            {{ point.point }}
+                        {% else %}
+                            {{ point }}
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No selling points recorded.</p>
+        {% endif %}
+    </div>
+
+    <div class="deleted-detail-card">
+        <h2>Landmarks</h2>
+        {% if landmarks %}
+            <ul class="deleted-detail-list">
+                {% for landmark in landmarks %}
+                    <li>
+                        {% if landmark.name %}
+                            {{ landmark.name }}
+                            {% if landmark.distance %} — {{ landmark.distance }}{% endif %}
+                        {% else %}
+                            {{ landmark }}
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No landmarks recorded.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

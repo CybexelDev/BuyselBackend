@@ -1,7 +1,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import *
-from agents.views import PlanListAPIView
+# from agents.views import PlanListAPIView
 
 
 # from django.urls import path
@@ -31,6 +31,7 @@ urlpatterns = [
     path("premium/change-password/", PremiumPasswordChangeAPIView.as_view()),
 
     path('google-login/', GoogleLoginView.as_view(), name='google_login'),
+    path('facebook-login/', FacebookLoginAPI.as_view(), name='facebook_login'),
 
     # ✅ Featured Properties (PATH METHOD)
     path(
@@ -49,7 +50,7 @@ urlpatterns = [
 
     path("user/change-password/",UserChangePasswordAPI.as_view()),
     path("userlogin/", UserLoginAPI.as_view(), name="user-login"),
-    path("auth/facebook/login/", FacebookLoginAPI.as_view()),
+    # path("auth/facebook/login/", FacebookLoginAPI.as_view()),
 
     path("profile/", UserProfileView.as_view()),
     path("profile/image/", UserProfileImageUpdateView.as_view()),
@@ -171,7 +172,42 @@ urlpatterns = [
     path("filter/nearby-properties/",NearbyPropertyAPIView.as_view()),
     path("property-filter/",PropertiesFilterAPIView.as_view(),name="property-filter"),
     path("enquiry-detail/<uuid:enquiry_id>/",EnquiryDetailAPIView.as_view(),name="enquiry-detail"),
-
+    path("agent/toggle-secret-properties/",ToggleSecretUserAPIView.as_view(),name="toggle-secret-user"),
+    path(
+        "secret-user/login/",
+        SecretUserLoginAPIView.as_view(),
+        name="secret-user-login"
+    ),
+    path(
+        "secret-user/change-password/",
+        SecretUserChangePasswordAPIView.as_view(),
+        name="secret-user-change-password"
+    ),
+    path(
+        "secret-users/manage/",
+        SecretUserManageAPIView.as_view(),
+        name="secret-user-manage"
+    ),
+    path(
+        "secret-users/",
+        SecretUserListAPIView.as_view(),
+        name="secret-user-list"
+    ),
+    path(
+        "secret-properties/",
+        SecretUserPropertyListAPIView.as_view(),
+        name="secret-user-property-list"
+    ),
+    path(
+        "secret-properties/<uuid:uuid_id>/",
+        SecretUserPropertyDetailAPIView.as_view(),
+        name="secret-user-property-detail"
+    ),
+    path(
+        "agent/property/toggle-secret/<uuid:property_id>/",
+        TogglePropertySecretAPIView.as_view(),
+        name="toggle-property-secret"
+    ),
 
     path("activate-userplan/",ActivateUserPlanAPIView.as_view(),name="activate_user_plan"),
     path("current-userplan/",CurrentUserPlanAPIView.as_view(),name="current_userplan"),

@@ -1207,7 +1207,8 @@ class FeaturedPropertyViewSet(viewsets.ModelViewSet):
         )
         agent_properties = AgentProperty.objects.filter(
             is_featured=True,
-            deleted=False
+            deleted=False,
+            secret=False
         ).prefetch_related(
             "images",
             "category",
@@ -5566,7 +5567,8 @@ class AgentPropertyListAPIView(APIView):
 
         properties = AgentProperty.objects.filter(
             agent=user,
-            deleted=False
+            deleted=False,
+            secret=False
         ).select_related(
             "category",
             "subcategory",
@@ -6170,20 +6172,12 @@ class AgentPropertyAPIView(APIView):
 
             }, status=400)
 
-        # =================================================
-        # SELECT SUBSCRIPTION
-        # =================================================
-
         selected_subscription = (
             self.select_subscription(
                 active_subscriptions,
                 category_type
             )
         )
-
-        # =================================================
-        # RESIDENTIAL LIMIT
-        # =================================================
 
         if (
             category_type == "residential"
@@ -6215,10 +6209,6 @@ class AgentPropertyAPIView(APIView):
 
             }, status=400)
 
-        # =================================================
-        # COMMERCIAL LIMIT
-        # =================================================
-
         if (
             category_type == "commercial"
             and not selected_subscription
@@ -6249,10 +6239,6 @@ class AgentPropertyAPIView(APIView):
 
             }, status=400)
 
-        # =================================================
-        # UNKNOWN CATEGORY
-        # =================================================
-
         if (
             category_type is None
             and not selected_subscription
@@ -6275,10 +6261,6 @@ class AgentPropertyAPIView(APIView):
                     commercial_remaining
 
             }, status=400)
-
-        # =================================================
-        # SERIALIZER
-        # =================================================
 
         serializer = AgentPropertySerializer(
 
@@ -6323,10 +6305,6 @@ class AgentPropertyAPIView(APIView):
                 status=400
             )
 
-        # =================================================
-        # CREATE PROPERTY
-        # =================================================
-
         with transaction.atomic():
 
             property_obj = serializer.save(
@@ -6337,10 +6315,6 @@ class AgentPropertyAPIView(APIView):
                 paid=True
 
             )
-
-            # =============================================
-            # UPDATE SUBSCRIPTION USAGE
-            # =============================================
 
             selected_subscription.used_listings = (
                 selected_subscription.used_listings
@@ -6353,10 +6327,6 @@ class AgentPropertyAPIView(APIView):
                 ]
             )
 
-            # =============================================
-            # UPDATE AGENT TOTAL
-            # =============================================
-
             agent.total_property_used = (
                 agent.total_property_used
                 or 0
@@ -6367,10 +6337,6 @@ class AgentPropertyAPIView(APIView):
                     "total_property_used"
                 ]
             )
-
-        # =================================================
-        # FEATURED SUBSCRIPTION
-        # =================================================
 
         selected_featured_subscription = None
 
@@ -6398,10 +6364,6 @@ class AgentPropertyAPIView(APIView):
                 )
 
                 break
-
-        # =================================================
-        # FEATURED PROPERTY
-        # =================================================
 
         if selected_featured_subscription:
 
@@ -6463,10 +6425,6 @@ class AgentPropertyAPIView(APIView):
 
             property_obj.save()
 
-        # =================================================
-        # FINAL ACTIVE SUBSCRIPTIONS
-        # =================================================
-
         active_subscriptions = (
             Subscription.objects.filter(
                 agent=agent,
@@ -6475,19 +6433,11 @@ class AgentPropertyAPIView(APIView):
             .order_by("end_date")
         )
 
-        # =================================================
-        # FINAL TOTAL REMAINING
-        # =================================================
-
         remaining = (
             self.get_total_remaining(
                 active_subscriptions
             )
         )
-
-        # =================================================
-        # FINAL CATEGORY REMAINING
-        # =================================================
 
         (
             residential_remaining,
@@ -6496,10 +6446,6 @@ class AgentPropertyAPIView(APIView):
             active_subscriptions,
             agent
         )
-
-        # =================================================
-        # LOW REMAINING WARNING
-        # =================================================
 
         if (
             remaining <= 2
@@ -6512,10 +6458,6 @@ class AgentPropertyAPIView(APIView):
                 f"Only {remaining} property listings remaining.",
                 "usage"
             )
-
-        # =================================================
-        # TOTAL LIMIT REACHED
-        # =================================================
 
         if remaining == 0:
 
@@ -6556,9 +6498,6 @@ class PublicPropertyListAPIView(APIView):
 
         queryset = AgentProperty.objects.all()
 
-        # =============================
-        # 1. CATEGORY FILTER
-        # =============================
         category = request.GET.get("category")
 
         if category:
@@ -6566,10 +6505,6 @@ class PublicPropertyListAPIView(APIView):
                 category__name__icontains=category
             )
 
-        # =============================
-        # 2. SEARCH FILTER
-        # (price + city + label)
-        # =============================
         search = request.GET.get("search")
 
         if search:
@@ -7667,7 +7602,7 @@ class WishlistView(APIView):
             ).values_list("id", flat=True)
         ).exclude(
             property_uuid__in=AgentProperty.objects.filter(
-                deleted=True
+                Q(deleted=True) | Q(secret=True)
             ).values_list("id", flat=True)
         )
 
@@ -7708,7 +7643,8 @@ class WishlistView(APIView):
 
             AgentProperty.objects.filter(
                 id=property_id,
-                deleted=False
+                deleted=False,
+                secret=False
             ).exists()
         )
 
@@ -7946,7 +7882,8 @@ class RelatedPropertiesAPIView(APIView):
                 "purpose"
             ).filter(
                 id=uuid_obj,
-                deleted=False
+                deleted=False,
+                secret=False
             ).first()
 
             if obj:
@@ -7975,7 +7912,8 @@ class RelatedPropertiesAPIView(APIView):
         agent_related = AgentProperty.objects.filter(
             category=current_property.category,
             purpose=current_property.purpose,
-            deleted=False
+            deleted=False,
+            secret=False
         ).exclude(
             id=current_property.id   
         ).select_related(
@@ -8092,18 +8030,13 @@ class BlogNameSearchAPIView(ListAPIView):
 
 
 class BulkWishlistDeleteAPIView(APIView):
-    """
-    Delete ALL wishlist items of logged-in user
-    """
-
+    
     authentication_classes = [UserJWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def delete(self, request):
 
-        user = request.user   # authenticated user
-
-        # delete all wishlist items of this user
+        user = request.user   
         deleted_count, _ = Wishlist.objects.filter(user=user).delete()
 
         return Response(
@@ -8145,7 +8078,8 @@ class WishlistFilterAPIView(APIView):
         )
         agent_properties = AgentProperty.objects.filter(
             id__in=property_ids,
-            deleted=False
+            deleted=False,
+            secret=False
         ).select_related(
             "agent",
             "purpose",
@@ -8221,7 +8155,8 @@ class WishlistSortingAPIView(APIView):
 
         agent_properties = AgentProperty.objects.filter(
             id__in=wishlist_ids,
-            deleted=False
+            deleted=False,
+            secret=False
         )
 
         properties = list(user_properties) + list(agent_properties)
@@ -8666,7 +8601,8 @@ class AgentDetailAPIView(APIView):
 
         queryset = AgentProperty.objects.filter(
             agent=agent,
-            deleted=False
+            deleted=False, 
+            secret=False
         )
 
         category = request.GET.get(
@@ -8802,58 +8738,6 @@ class AgentDetailAPIView(APIView):
         )
 
 
-# class PropertyFilterAPIView(APIView):
-
-#     permission_classes = [AllowAny]
-#     authentication_classes = []
-
-#     def post(self, request):
-
-#         queryset = Property.objects.all().order_by("-created_at")
-
-#         purpose = request.data.get("purpose")
-#         category = request.data.get("category")
-#         city = request.data.get("city")
-#         district = request.data.get("district")
-#         min_price = request.data.get("min_price")
-#         max_price = request.data.get("max_price")
-
-#         if purpose and purpose.lower() != "all":
-#             queryset = queryset.filter(purpose__name__icontains=purpose)
-
-#         if category and category.lower() != "all":
-#             queryset = queryset.filter(category__name__icontains=category)
-
-#         if city and city.lower() != "all":
-#             queryset = queryset.filter(city__icontains=city)
-
-#         if district and district.lower() != "all":
-#             queryset = queryset.filter(district__icontains=district)
-
-#         if min_price or max_price:
-#             queryset = queryset.annotate(
-#                 price_int=Cast("price", IntegerField())
-#             )
-
-#             if min_price:
-#                 try:
-#                     queryset = queryset.filter(price_int__gte=int(min_price))
-#                 except:
-#                     pass
-
-#             if max_price:
-#                 try:
-#                     queryset = queryset.filter(price_int__lte=int(max_price))
-#                 except:
-#                     pass
-
-#         serializer = PropertyCardSerializer(queryset, many=True)
-
-#         return Response({
-#             "count": queryset.count(),
-#             "data": serializer.data
-#         }, status=status.HTTP_200_OK)
-
 
 from django.db.models import Q, Value, IntegerField, CharField
 from django.db.models.functions import (
@@ -8871,7 +8755,7 @@ class PropertyFilterAPIView(APIView):
 
     @staticmethod
     def normalize_text(value):
-        """Remove spaces, hyphens and underscores; ignore capitalization."""
+       
         if value is None:
             return ""
 
@@ -8879,7 +8763,7 @@ class PropertyFilterAPIView(APIView):
 
     @staticmethod
     def normalize_db_field(field_name):
-        """Apply the same normalization to database field values."""
+        
         expression = Lower(
             Trim(
                 Coalesce(
@@ -8900,10 +8784,7 @@ class PropertyFilterAPIView(APIView):
         return expression
 
     def filter_any_location(self, queryset, value):
-        """
-        Match a location against city, district or state.
-        Supports partial matches after normalization.
-        """
+       
         normalized_value = self.normalize_text(value)
 
         if not normalized_value:
@@ -8916,7 +8797,7 @@ class PropertyFilterAPIView(APIView):
         )
 
     def apply_location_annotations(self, queryset):
-        """Normalize location fields for either property model."""
+       
         return queryset.annotate(
             normalized_city=self.normalize_db_field("city"),
             normalized_district=self.normalize_db_field("district"),
@@ -8924,7 +8805,7 @@ class PropertyFilterAPIView(APIView):
         )
 
     def apply_filters(self, queryset, request_data):
-        """Apply common purpose, category, location and price filters."""
+        
 
         purpose = request_data.get("purpose")
         category = request_data.get("category")
@@ -8948,13 +8829,12 @@ class PropertyFilterAPIView(APIView):
                 category__name__icontains=str(category).strip()
             )
 
-        # Location filters:
-        # Each supplied value can match city, district or state.
+        
         for location in [state, district, city]:
             if location and str(location).strip().lower() != "all":
                 queryset = self.filter_any_location(queryset, location)
 
-        # Price filters
+       
         if min_price not in (None, "") or max_price not in (None, ""):
             try:
                 min_value = (
@@ -8992,7 +8872,7 @@ class PropertyFilterAPIView(APIView):
         return queryset
 
     def post(self, request):
-        # User properties
+        
         user_queryset = (
             Property.objects
             .filter(deleted=False)
@@ -9000,19 +8880,19 @@ class PropertyFilterAPIView(APIView):
             .prefetch_related("images", "amenities")
         )
 
-        # Agent properties
+       
         agent_queryset = (
             AgentProperty.objects
-            .filter(deleted=False)
+            .filter(deleted=False,secret=False)
             .select_related("category", "purpose", "agent")
             .prefetch_related("images", "amenities")
         )
 
-        # Normalize location fields on both querysets
+       
         user_queryset = self.apply_location_annotations(user_queryset)
         agent_queryset = self.apply_location_annotations(agent_queryset)
 
-        # Apply the same filters to both models
+       
         try:
             user_queryset = self.apply_filters(
                 user_queryset,
@@ -9302,7 +9182,8 @@ class PropertySearchAPIView(APIView):
         )
 
         agent_properties = AgentProperty.objects.filter(
-            deleted=False
+            deleted=False,
+            secret=False
         ).select_related(
             "agent",
             "category",
@@ -9850,7 +9731,8 @@ class PropertyFilterOptionsAPIView(APIView):
         )
 
         agent_properties = AgentProperty.objects.filter(
-            deleted=False
+            deleted=False,
+            secret=False
         ).values(
             "state",
             "district",
@@ -10131,7 +10013,8 @@ class AgentPropertyCityFilterAPIView(APIView):
         cities = (
             AgentProperty.objects.filter(
                 agent=agent,
-                deleted=False
+                deleted=False,
+                secret=False
             )
             .exclude(city__isnull=True)
             .exclude(city__exact="")
@@ -10194,7 +10077,8 @@ class AgentPropertyCityFilterAPIView(APIView):
 
         queryset = AgentProperty.objects.filter(
             agent=agent,
-            deleted=False
+            deleted=False,
+            secret=False
         ).annotate(
             clean_city=Lower(Trim("city"))
         ).filter(
@@ -10275,7 +10159,8 @@ class AgentPropertySearchAPIView(APIView):
             })
 
         queryset = AgentProperty.objects.filter(
-            deleted=False
+            deleted=False,
+            secret=False
         ).select_related(
             "category",
             "subcategory",
@@ -10362,7 +10247,8 @@ class CombinedPropertyListAPIView(APIView):
         )
 
         agent_properties = AgentProperty.objects.filter(
-            deleted=False
+            deleted=False,
+            secret=False
         ).select_related(
             "agent",
             "category",
@@ -11302,13 +11188,6 @@ class NearbyPropertyAPIView(APIView):
             except (ValueError, TypeError):
                 pass
 
-        # --------------------------------
-        # 1. @LAT,LNG
-        #
-        # Example:
-        # https://www.google.com/maps/@10.1234,76.1234,15z
-        # --------------------------------
-
         match = re.search(
             r'@(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)',
             url
@@ -11331,13 +11210,6 @@ class NearbyPropertyAPIView(APIView):
             except (ValueError, TypeError):
 
                 pass
-
-        # --------------------------------
-        # 2. !2dLONG!3dLAT
-        #
-        # Example:
-        # !2d76.1234!3d10.1234
-        # --------------------------------
 
         match = re.search(
             r'!2d(-?\d+(?:\.\d+)?)!3d(-?\d+(?:\.\d+)?)',
@@ -11362,13 +11234,6 @@ class NearbyPropertyAPIView(APIView):
 
                 pass
 
-        # --------------------------------
-        # 3. q=LAT,LNG
-        #
-        # Example:
-        # https://www.google.com/maps?q=10.1234,76.1234
-        # --------------------------------
-
         match = re.search(
             r'(?:[?&]q=|[?&]query=)(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)',
             url
@@ -11391,14 +11256,6 @@ class NearbyPropertyAPIView(APIView):
             except (ValueError, TypeError):
 
                 pass
-
-        # --------------------------------
-        # 4. /place/LAT,LNG
-        #
-        # Sometimes Google Maps URLs contain:
-        #
-        # /place/10.1234,76.1234
-        # --------------------------------
 
         match = re.search(
             r'/place/(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)',
@@ -11425,9 +11282,6 @@ class NearbyPropertyAPIView(APIView):
 
         return None, None
 
-    # --------------------------------
-    # RESOLVE GOOGLE SHORT URL
-    # --------------------------------
     def resolve_short_google_url(
         self,
         url
@@ -11438,7 +11292,6 @@ class NearbyPropertyAPIView(APIView):
 
         url = str(url).strip()
 
-        # Only resolve shortened Google Maps URLs
         if (
             "goo.gl/maps/" not in url
             and
@@ -11477,9 +11330,6 @@ class NearbyPropertyAPIView(APIView):
 
         return None
 
-    # --------------------------------
-    # EXTRACT LAT LNG
-    # --------------------------------
     def extract_lat_lng(
         self,
         url
@@ -11541,17 +11391,13 @@ class NearbyPropertyAPIView(APIView):
 
         return True
 
-    # --------------------------------
-    # GET
-    # --------------------------------
+    
     def get(
         self,
         request
     ):
 
-        # --------------------------------
-        # USER LOCATION
-        # --------------------------------
+        
 
         try:
 
@@ -11575,10 +11421,6 @@ class NearbyPropertyAPIView(APIView):
                 status=400
             )
 
-        # --------------------------------
-        # VALIDATE USER LOCATION
-        # --------------------------------
-
         if not self.valid_coordinates(
             user_lat,
             user_lng
@@ -11590,10 +11432,6 @@ class NearbyPropertyAPIView(APIView):
                 },
                 status=400
             )
-
-        # --------------------------------
-        # RADIUS
-        # --------------------------------
 
         radius = request.GET.get(
             "radius"
@@ -11633,7 +11471,7 @@ class NearbyPropertyAPIView(APIView):
             )
         )
         agent_properties = (
-            AgentProperty.objects.filter(deleted=False)
+            AgentProperty.objects.filter(deleted=False,secret=False)
             .select_related(
                 "agent",
                 "category",
@@ -11700,9 +11538,9 @@ class NearbyPropertyAPIView(APIView):
 
                 pass
         results = []
-
+        coordinate_cache = {}
         for prop in all_properties:
-            coordinate_cache = {}
+            
             import time  
 
             location_url = getattr(prop, "location", None)

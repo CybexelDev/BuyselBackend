@@ -179,11 +179,6 @@ urlpatterns = [
         name="secret-user-login"
     ),
     path(
-        "secret-user/change-password/",
-        SecretUserChangePasswordAPIView.as_view(),
-        name="secret-user-change-password"
-    ),
-    path(
         "secret-users/manage/",
         SecretUserManageAPIView.as_view(),
         name="secret-user-manage"

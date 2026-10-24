@@ -16912,67 +16912,6 @@ class SecretUserListAPIView(APIView):
         )
 
 
-class SecretUserChangePasswordAPIView(APIView):
-    authentication_classes = [AgentJWTAuthentication]
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request):
-        agent = request.user
-
-        if not agent.is_company_agent or not agent.secret_properties:
-            return Response(
-                {"error": "You are not allowed to change secret user passwords."},
-                status=status.HTTP_403_FORBIDDEN
-            )
-
-        secret_user_id = request.data.get("secret_user_id")
-        new_password = request.data.get("new_password")
-        confirm_password = request.data.get("confirm_password")
-
-        if not secret_user_id or not new_password or not confirm_password:
-            return Response(
-                {
-                    "error": (
-                        "secret_user_id, new_password, and "
-                        "confirm_password are required."
-                    )
-                },
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        secret_user = SecretUser.objects.filter(
-            id=secret_user_id,
-            agent=agent
-        ).first()
-
-        if not secret_user:
-            return Response(
-                {"error": "Secret user not found."},
-                status=status.HTTP_404_NOT_FOUND
-            )
-
-        if len(new_password) < 8:
-            return Response(
-                {"error": "Password must contain at least 8 characters."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        if new_password != confirm_password:
-            return Response(
-                {"error": "Passwords do not match."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        secret_user.set_password(new_password)
-        secret_user.save(update_fields=["password"])
-
-        return Response(
-            {"message": "Secret user password changed successfully."},
-            status=status.HTTP_200_OK
-        )
-
-
-
 def get_secret_user_properties(request):
 
     secret_user_id = request.session.get("secret_user_id")
@@ -17012,10 +16951,6 @@ class SecretUserPropertyListAPIView(APIView):
 
     def get(self, request):
 
-        # =========================================
-        # CHECK SECRET USER SESSION
-        # =========================================
-
         secret_user_id = request.session.get("secret_user_id")
         agent_id = request.session.get("secret_user_agent_id")
 
@@ -17024,10 +16959,6 @@ class SecretUserPropertyListAPIView(APIView):
                 {"error": "Please log in as a secret user."},
                 status=status.HTTP_401_UNAUTHORIZED
             )
-
-        # =========================================
-        # VALIDATE SECRET USER
-        # =========================================
 
         secret_user = SecretUser.objects.filter(
             id=secret_user_id,
@@ -17047,11 +16978,8 @@ class SecretUserPropertyListAPIView(APIView):
                 status=status.HTTP_403_FORBIDDEN
             )
 
-        # =========================================
-        # GET ALL SECRET AGENT PROPERTIES
-        # =========================================
-
         properties = AgentProperty.objects.filter(
+            agent_id=secret_user.agent_id,
             secret=True,
             deleted=False
         ).select_related(
@@ -17061,10 +16989,6 @@ class SecretUserPropertyListAPIView(APIView):
             "amenities"
         ).order_by("-id")
 
-        # =========================================
-        # SERIALIZE PROPERTIES
-        # =========================================
-
         serializer = CombinedPropertyListSerializer(
             properties,
             many=True,
@@ -17073,6 +16997,10 @@ class SecretUserPropertyListAPIView(APIView):
                 "wishlist_ids": set()
             }
         )
+
+        results = serializer.data
+        for property_data in results:
+            property_data.pop("is_wishlisted", None)
 
         return Response(
             {
@@ -17298,8 +17226,6 @@ class SecretUserPropertyDetailAPIView(APIView):
                     "state": obj.state,
                     "pincode": obj.pincode
                 },
-
-                "is_wishlist": False
             },
             status=status.HTTP_200_OK
         )
@@ -17335,7 +17261,6 @@ class TogglePropertySecretAPIView(APIView):
 
         secret_value = request.data.get("secret")
 
-        # Accept boolean or string values
         if isinstance(secret_value, bool):
             pass
         elif isinstance(secret_value, str):

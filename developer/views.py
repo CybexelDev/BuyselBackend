@@ -4348,7 +4348,8 @@ def agent_property_dashboard(request):
 
     properties = (
         AgentProperty.objects.filter(
-            deleted=False
+            deleted=False,
+            secret=False
         ).select_related(
             "agent",
             "category",
@@ -4384,13 +4385,13 @@ def agent_property_dashboard(request):
     page_obj = paginator.get_page(page_number)
 
 
-    total_count = AgentProperty.objects.filter(deleted=False).count()
+    total_count = AgentProperty.objects.filter(deleted=False,secret=False).count()
 
     active_count = 0
 
     today = timezone.now().date()
 
-    for property in AgentProperty.objects.filter(deleted=False).select_related("agent"):
+    for property in AgentProperty.objects.filter(deleted=False,secret=False).select_related("agent"):
 
         if property.has_active_subscription():
 
@@ -4400,7 +4401,7 @@ def agent_property_dashboard(request):
 
             active_count += 1
 
-    expired_count = ExpiredAgentProperty.objects.count()
+    expired_count = ExpiredAgentProperty.objects.filter(deleted=False).count()
 
     context = {
         "page_obj": page_obj,
@@ -4413,11 +4414,15 @@ def agent_property_dashboard(request):
         "active_count": active_count,
         "expired_count": expired_count,
         "featured_properties": AgentProperty.objects.filter(
-            is_featured=True
+            is_featured=True,
+            deleted=False,
+            secret=False
         ).count(),
 
         "paid_properties": AgentProperty.objects.filter(
-            paid=True
+            paid=True,
+            deleted=False,
+            secret=False
         ).count(),
 
         "search": search,

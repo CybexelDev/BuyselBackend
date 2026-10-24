@@ -1353,7 +1353,8 @@ class AgentProperty(models.Model):
             paid=self.paid,
 
             is_featured=self.is_featured,
-
+            secret=self.secret,
+            deleted=self.deleted,
             notes=self.notes,
             added_by=self.added_by,
             market_staff=self.market_staff,
@@ -1718,6 +1719,8 @@ class ExpiredAgentProperty(models.Model):
     is_featured = models.BooleanField(
         default=False
     )
+
+    secret = models.BooleanField(default=False)
 
     deleted = models.BooleanField(
         default=False,

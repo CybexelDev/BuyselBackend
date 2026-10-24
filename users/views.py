@@ -16636,8 +16636,7 @@ class SecretUserListAPIView(APIView):
         )
 
 
-def get_secret_user_properties(request):
-
+def get_secret_user_from_session(request):
     secret_user_id = request.session.get("secret_user_id")
     agent_id = request.session.get("secret_user_agent_id")
 
@@ -16653,8 +16652,14 @@ def get_secret_user_properties(request):
         agent__secret_properties=True
     ).select_related("agent").first()
 
+    return secret_user
+
+
+def get_secret_user_properties(request):
+    secret_user = get_secret_user_from_session(request)
+
     if not secret_user:
-        return None
+        return AgentProperty.objects.none()
 
     return AgentProperty.objects.filter(
         agent_id=secret_user.agent_id,
@@ -16666,7 +16671,6 @@ def get_secret_user_properties(request):
         "images",
         "amenities"
     ).order_by("-id")
-
 
 class SecretUserPropertyListAPIView(APIView):
 
@@ -16684,34 +16688,19 @@ class SecretUserPropertyListAPIView(APIView):
                 status=status.HTTP_401_UNAUTHORIZED
             )
 
-        secret_user = SecretUser.objects.filter(
-            id=secret_user_id,
-            agent_id=agent_id,
-            is_active=True,
-            agent__is_active=True,
-            agent__is_company_agent=True,
-            agent__secret_properties=True
-        ).select_related("agent").first()
+        secret_user = get_secret_user_from_session(request)
 
         if not secret_user:
             request.session.pop("secret_user_id", None)
             request.session.pop("secret_user_agent_id", None)
+            request.session.modified = True
 
             return Response(
                 {"error": "Secret user access is disabled."},
                 status=status.HTTP_403_FORBIDDEN
             )
 
-        properties = AgentProperty.objects.filter(
-            agent_id=secret_user.agent_id,
-            secret=True,
-            deleted=False
-        ).select_related(
-            "agent"
-        ).prefetch_related(
-            "images",
-            "amenities"
-        ).order_by("-id")
+        properties = get_secret_user_properties(request)
 
         serializer = CombinedPropertyListSerializer(
             properties,
@@ -16723,14 +16712,15 @@ class SecretUserPropertyListAPIView(APIView):
         )
 
         results = serializer.data
+
         for property_data in results:
             property_data.pop("is_wishlisted", None)
 
         return Response(
             {
                 "message": "Secret properties retrieved successfully.",
-                "count": properties.count(),
-                "results": serializer.data
+                "count": len(results),
+                "results": results
             },
             status=status.HTTP_200_OK
         )

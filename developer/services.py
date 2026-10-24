@@ -12,14 +12,6 @@ from developer.models import (
 
 
 def get_restore_duration_days(subscription):
-    """
-    Calculate the duration for a restored property.
-
-    Priority:
-        1. Remaining subscription duration
-        2. Plan validity
-        3. 30 days fallback
-    """
 
     import re
 

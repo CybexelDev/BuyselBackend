@@ -8024,3 +8024,67 @@ class PurchaseHistorySerializer(serializers.Serializer):
 
         return data
     
+
+
+class AgentPropertyListSimpleSerializer(serializers.ModelSerializer):
+
+    subcategory = serializers.SerializerMethodField()
+    image = serializers.SerializerMethodField()
+    images = serializers.SerializerMethodField()
+    secret = serializers.BooleanField(read_only=True)
+
+    class Meta:
+        model = AgentProperty
+        fields = [
+            "id",
+            "subcategory",
+            "label",
+            "property_code",
+            "price",
+            "image",
+            "images",
+            "secret",
+        ]
+
+    def get_subcategory(self, obj):
+        if obj.subcategory:
+            return str(obj.subcategory)
+        return None
+
+    def get_image(self, obj):
+        request = self.context.get("request")
+
+        if not obj.image:
+            return ""
+
+        try:
+            url = obj.image.url
+
+            if request:
+                return request.build_absolute_uri(url)
+
+            return url
+
+        except (ValueError, AttributeError):
+            return ""
+
+    def get_images(self, obj):
+        request = self.context.get("request")
+        image_urls = []
+
+        for item in obj.images.all():
+            if not item.image:
+                continue
+
+            try:
+                url = item.image.url
+
+                if request:
+                    url = request.build_absolute_uri(url)
+
+                image_urls.append(url)
+
+            except (ValueError, AttributeError):
+                continue
+
+        return image_urls

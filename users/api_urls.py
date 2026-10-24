@@ -178,6 +178,7 @@ urlpatterns = [
         SecretUserLoginAPIView.as_view(),
         name="secret-user-login"
     ),
+
     path(
         "secret-users/manage/",
         SecretUserManageAPIView.as_view(),
@@ -203,6 +204,7 @@ urlpatterns = [
         TogglePropertySecretAPIView.as_view(),
         name="toggle-property-secret"
     ),
+    path('agent/secret-property/list/', AgentPropertySecretAPIView.as_view(), name='agent-property-list'),
 
     path("activate-userplan/",ActivateUserPlanAPIView.as_view(),name="activate_user_plan"),
     path("current-userplan/",CurrentUserPlanAPIView.as_view(),name="current_userplan"),

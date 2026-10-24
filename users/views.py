@@ -16574,117 +16574,14 @@ class SecretUserLoginAPIView(APIView):
         )
 
 
-
-
-# class SecretUserManageAPIView(APIView):
-#     authentication_classes = [AgentJWTAuthentication]
-#     permission_classes = [IsAuthenticated]
-
-#     def post(self, request):
-#         agent = request.user
-
-#         if not agent.is_company_agent or not agent.secret_properties:
-#             return Response(
-#                 {"error": "You are not allowed to manage secret users."},
-#                 status=status.HTTP_403_FORBIDDEN
-#             )
-
-#         username = request.data.get("username")
-#         password = request.data.get("password")
-
-#         if not username or not password:
-#             return Response(
-#                 {"error": "Username and password are required."},
-#                 status=status.HTTP_400_BAD_REQUEST
-#             )
-
-#         username = username.strip()
-
-#         if not username:
-#             return Response(
-#                 {"error": "Username cannot be empty."},
-#                 status=status.HTTP_400_BAD_REQUEST
-#             )
-
-#         if len(password) < 8:
-#             return Response(
-#                 {"error": "Password must contain at least 8 characters."},
-#                 status=status.HTTP_400_BAD_REQUEST
-#             )
-
-#         if SecretUser.objects.filter(username__iexact=username).exists():
-#             return Response(
-#                 {"error": "Username already exists."},
-#                 status=status.HTTP_400_BAD_REQUEST
-#             )
-
-#         secret_user = SecretUser(
-#             agent=agent,
-#             username=username
-#         )
-#         secret_user.set_password(password)
-#         secret_user.save()
-
-#         return Response(
-#             {
-#                 "message": "Secret user created successfully.",
-#                 "id": str(secret_user.id),
-#                 "username": secret_user.username,
-#                 "is_active": secret_user.is_active
-#             },
-#             status=status.HTTP_201_CREATED
-#         )
-
-#     def delete(self, request):
-#         agent = request.user
-
-#         if not agent.is_company_agent or not agent.secret_properties:
-#             return Response(
-#                 {"error": "You are not allowed to manage secret users."},
-#                 status=status.HTTP_403_FORBIDDEN
-#             )
-
-#         secret_user_id = request.data.get("id")
-
-#         if not secret_user_id:
-#             return Response(
-#                 {"error": "Secret user id is required."},
-#                 status=status.HTTP_400_BAD_REQUEST
-#             )
-
-#         secret_user = SecretUser.objects.filter(
-#             id=secret_user_id,
-#             agent=agent
-#         ).first()
-
-#         if not secret_user:
-#             return Response(
-#                 {"error": "Secret user not found."},
-#                 status=status.HTTP_404_NOT_FOUND
-#             )
-
-#         secret_user.delete()
-
-#         return Response(
-#             {"message": "Secret user deleted successfully."},
-#             status=status.HTTP_200_OK
-#         )
-
-
 class SecretUserManageAPIView(APIView):
     authentication_classes = [AgentJWTAuthentication]
     permission_classes = [IsAuthenticated]
 
-    # =====================================================
-    # CHECK PERMISSION
-    # =====================================================
 
     def check_agent_permission(self, agent):
         return agent.is_company_agent and agent.secret_properties
 
-    # =====================================================
-    # CREATE SECRET USER
-    # =====================================================
 
     def post(self, request):
         agent = request.user
@@ -16741,10 +16638,6 @@ class SecretUserManageAPIView(APIView):
             status=status.HTTP_201_CREATED
         )
 
-    # =====================================================
-    # UPDATE SECRET USER
-    # =====================================================
-
     def put(self, request):
         agent = request.user
 
@@ -16773,7 +16666,6 @@ class SecretUserManageAPIView(APIView):
                 status=status.HTTP_404_NOT_FOUND
             )
 
-        # Update username if supplied
         username = request.data.get("username")
 
         if username is not None:
@@ -16795,7 +16687,6 @@ class SecretUserManageAPIView(APIView):
 
             secret_user.username = username
 
-        # Update password only if supplied
         password = request.data.get("password")
 
         if password is not None:
@@ -16813,7 +16704,6 @@ class SecretUserManageAPIView(APIView):
 
             secret_user.set_password(password)
 
-        # Optionally enable or disable this secret user
         is_active = request.data.get("is_active")
 
         if is_active is not None:
@@ -16836,11 +16726,7 @@ class SecretUserManageAPIView(APIView):
             },
             status=status.HTTP_200_OK
         )
-
-    # =====================================================
-    # DELETE SECRET USER
-    # =====================================================
-
+    
     def delete(self, request):
         agent = request.user
 
@@ -17293,6 +17179,130 @@ class TogglePropertySecretAPIView(APIView):
                 ),
                 "property_id": str(property_obj.id),
                 "secret": property_obj.secret
+            },
+            status=status.HTTP_200_OK
+        )
+
+
+class AgentPropertySecretAPIView(APIView):
+
+    authentication_classes = [AgentJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+
+        user = request.user
+
+        properties = AgentProperty.objects.filter(
+            agent=user,
+            deleted=False
+        ).select_related(
+            "category",
+            "subcategory",
+            "purpose"
+        ).prefetch_related(
+            "images",
+            "amenities",
+            "selling_points",
+            "landmarks",
+            "field_values"
+        ).order_by("-created_at")
+
+        serializer = AgentPropertyListSimpleSerializer(
+            properties,
+            many=True,
+            context={"request": request}
+        )
+
+        total_properties = properties.count()
+
+        active_subscriptions = list(
+            Subscription.objects.filter(
+                agent=user,
+                is_active=True
+            )
+        )
+
+        total_limit = sum(
+            sub.property_limit
+            for sub in active_subscriptions
+        )
+
+        total_used = sum(
+            sub.used_listings
+            for sub in active_subscriptions
+        )
+
+        remaining_listings = max(
+            total_limit - total_used,
+            0
+        )
+
+        subscription_details = []
+
+        for subscription in active_subscriptions:
+
+            subscription_details.append({
+                "subscription_id": str(subscription.id),
+                "plan_name": subscription.plan_name,
+                "property_limit": subscription.property_limit,
+                "used_listings": subscription.used_listings,
+                "remaining_listings": max(
+                    subscription.property_limit -
+                    subscription.used_listings,
+                    0
+                ),
+                "start_date": subscription.start_date,
+                "end_date": subscription.end_date,
+                "is_active": subscription.is_active
+            })
+
+        total_edit_limit = 0
+
+        for sub in active_subscriptions:
+
+            edit_value = None
+
+            if sub.plan_type == "premium":
+
+                premium = PremiumPlan.objects.filter(
+                    name=sub.plan_name
+                ).first()
+
+                if premium:
+                    edit_value = premium.edit
+
+            elif sub.plan_type == "elite":
+
+                elite = ElitePlan.objects.filter(
+                    name=sub.plan_name
+                ).first()
+
+                if elite:
+                    edit_value = elite.edit
+
+            if not edit_value:
+                continue
+
+            match = re.search(r"\d+", str(edit_value))
+
+            if match:
+                total_edit_limit += int(match.group())
+
+        total_used_edits = sum(
+            sub.edit_used
+            for sub in active_subscriptions
+        )
+
+        remaining_edits = max(
+            total_edit_limit - total_used_edits,
+            0
+        )
+
+        return Response(
+            {
+                "status": True,
+                "data": serializer.data
             },
             status=status.HTTP_200_OK
         )

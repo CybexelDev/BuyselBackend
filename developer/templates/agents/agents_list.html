@@ -1739,6 +1739,65 @@ Manage Agents - Buysel Admin
         0 0 0 4px rgba(139,200,63,.12);
 }
 
+.company-agent-form {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.company-agent-toggle {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    width: 76px;
+    height: 32px;
+    padding: 0 8px;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 700;
+    transition: background 0.2s ease;
+}
+
+.company-agent-toggle.is-on {
+    background: #659d28;
+    color: #fff;
+    justify-content: flex-end;
+}
+
+.company-agent-toggle.is-off {
+    background: #e5e7eb;
+    color: #374151;
+    justify-content: flex-start;
+}
+
+.company-agent-knob {
+    position: absolute;
+    top: 4px;
+    width: 24px;
+    height: 24px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    transition: left 0.2s ease;
+}
+
+.company-agent-toggle.is-on .company-agent-knob {
+    left: 4px;
+}
+
+.company-agent-toggle.is-off .company-agent-knob {
+    left: 48px;
+}
+
+.company-agent-toggle:focus-visible {
+    outline: 2px solid #659d28;
+    outline-offset: 3px;
+}
+
 
 /* =========================================================
    FILE
@@ -2661,6 +2720,8 @@ Manage Agents - Buysel Admin
                         Location
                     </th>
 
+                    <th>Company Agent</th>
+
                     <th>
                         Agent Type
                     </th>
@@ -2794,6 +2855,40 @@ Manage Agents - Buysel Admin
 
                         </span>
 
+                    </td>
+
+                    <td>
+                        <form
+                            method="POST"
+                            action="{% url 'toggle_company_agent' agent.id %}"
+                            class="company-agent-form"
+                        >
+                            {% csrf_token %}
+
+                            {% if agent.is_company_agent %}
+                                <input type="hidden" name="is_company_agent" value="false">
+
+                                <button
+                                    type="submit"
+                                    class="company-agent-toggle is-on"
+                                    title="Turn off company agent"
+                                >
+                                    <span class="company-agent-knob"></span>
+                                    <span>ON</span>
+                                </button>
+                            {% else %}
+                                <input type="hidden" name="is_company_agent" value="true">
+
+                                <button
+                                    type="submit"
+                                    class="company-agent-toggle is-off"
+                                    title="Turn on company agent"
+                                >
+                                    <span class="company-agent-knob"></span>
+                                    <span>OFF</span>
+                                </button>
+                            {% endif %}
+                        </form>
                     </td>
 
 

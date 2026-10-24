@@ -99,6 +99,11 @@ urlpatterns = [
     path("admin_agents/add/", views.add_admin_agent, name="add_admin_agent"),
     path("admin_agents/<int:pk>/", views.edit_agent, name="edit_agent"),
     path("agents/delete/<int:pk>/", views.delete_agent, name="delete_agent"),
+    path(
+        "toggle-company-agent/<uuid:agent_id>/",
+        views.toggle_company_agent,
+        name="toggle_company_agent",
+    ),
     path("blogs/", views.blog_dashboard, name="blog_dashboard"),
     path("blogs/edit/<uuid:id>/", views.edit_blog, name="edit_blog"),
     path("blogs/delete/<uuid:id>/", views.delete_blog, name="delete_blog"),

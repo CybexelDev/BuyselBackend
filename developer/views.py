@@ -1677,6 +1677,26 @@ def admin_agents(request):
 
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
+@require_POST
+def toggle_company_agent(request, agent_id):
+
+    agent = get_object_or_404(AgentUserProfile, id=agent_id)
+
+    value = request.POST.get("is_company_agent")
+
+    if value not in ["true", "false"]:
+        return JsonResponse(
+            {"success": False, "message": "Invalid company agent status."},
+            status=400,
+        )
+
+    agent.is_company_agent = value == "true"
+    agent.save(update_fields=["is_company_agent"])
+
+    return redirect("admin_agents")
+
+@never_cache
+@user_passes_test(superuser_required, login_url="superuser_login_view")
 def add_admin_agent(request):
 
     if request.method != "POST":
@@ -5664,6 +5684,7 @@ def expired_agent_property_detail(request, property_id):
         "village": property_obj.village,
         "state": property_obj.state,
         "paid": property_obj.paid,
+        "secret": property_obj.secret,
         "is_featured": property_obj.is_featured,
         "notes": property_obj.notes,
         "added_by": property_obj.added_by or "",
@@ -5724,6 +5745,8 @@ def edit_expired_agent_property(request, property_id):
         ),
         pk=property_id,
     )
+
+    secret_value = property_obj.secret
 
     if request.method != "POST":
         return JsonResponse(
@@ -5983,6 +6006,8 @@ def edit_expired_agent_property(request, property_id):
             )
 
         property_obj.agent = agent
+
+    property_obj.secret = secret_value
 
     property_obj.save()
 
@@ -6298,6 +6323,7 @@ def restore_expired_agent_property(request, property_id):
         village=expired.village,
         state=expired.state,
         paid=expired.paid,
+        secret=expired.secret,
         is_featured=expired.is_featured,
         notes=expired.notes,
         added_by=expired.added_by,

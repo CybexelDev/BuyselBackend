@@ -13,19 +13,13 @@ class Command(BaseCommand):
         counters = defaultdict(int)
 
         def extract_number(code):
-            """
-            Extract trailing number from codes like:
-            KE-S-3, KES3, KESELL12 → 3, 3, 12
-            """
+            
             match = re.search(r"(\d+)$", code)
             return int(match.group(1)) if match else 0
 
         # Combine both models into a single list
         all_models = [Property, ExpiredProperty]
 
-        # ==================================================
-        # STEP 1: CLEAN EXISTING CODES (REMOVE HYPHENS)
-        # ==================================================
         for model in all_models:
             for obj in model.objects.exclude(property_code__isnull=True):
                 clean_code = obj.property_code.replace("-", "")
@@ -33,9 +27,6 @@ class Command(BaseCommand):
                     obj.property_code = clean_code
                     obj.save(update_fields=["property_code"])
 
-        # ==================================================
-        # STEP 2: READ ALL EXISTING CODES (ACTIVE + EXPIRED)
-        # ==================================================
         for model in all_models:
             for obj in model.objects.exclude(property_code__isnull=True):
                 state_prefix = (obj.state[:2].upper() if obj.state else "NA")
@@ -46,9 +37,6 @@ class Command(BaseCommand):
                     extract_number(obj.property_code)
                 )
 
-        # ==================================================
-        # STEP 3: GENERATE FOR PROPERTIES (ACTIVE + EXPIRED)
-        # ==================================================
         for model in all_models:
             for obj in model.objects.filter(property_code__isnull=True).order_by("id"):
                 state_prefix = obj.state[:2].upper() if obj.state else "NA"

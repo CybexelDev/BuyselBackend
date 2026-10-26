@@ -650,6 +650,7 @@
                                                     data-validity="{{ p.plan_validity_days }}"
                                                     data-total="{{ p.total_property_listings }}"
                                                     data-sale="{{ p.featured_listings_limit }}"
+                                                    data-edit="{{ p.edit|default_if_none:'' }}"
                                                     data-priority="{{ p.priority_search }}"
                                                     data-meta="{{ p.meta_ads_promotion }}"
                                                     data-bulk="{{ p.bulk_whatsapp_messages }}"
@@ -1091,6 +1092,7 @@
 
                         <input type="number" name="total_listing" placeholder="Total Listings" class="input" required>
                         <input type="number" name="sale" placeholder="Featured Listings" class="input">
+                        <input type="text" name="edit" id="edit" placeholder="Edit Limit" class="input">
 
                         <input type="text" name="priority_search" placeholder="Priority Search" class="input">
                         <input type="text" name="meta_ads" placeholder="Meta Ads" class="input">
@@ -1495,6 +1497,21 @@
                             <label class="text-sm text-gray-600 mb-1 block">Featured Listings</label>
                             <input id="elite_sale" type="number" name="sale"
                                 class="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#8bc83f]">
+                        </div>
+                        <!-- EDIT LIMIT -->
+                        <div>
+                            <label class="text-sm text-gray-600 mb-1 block">
+                                Edit Limit
+                            </label>
+
+                            <input
+                                id="elite_edit"
+                                type="text"
+                                name="edit"
+                                min="0"
+                                placeholder="Edit Limit"
+                                class="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#8bc83f]"
+                            >
                         </div>
 
                         <!-- PRIORITY SEARCH -->
@@ -1931,7 +1948,8 @@
                         document.getElementById("elite_validity").value = get(this.dataset.validity);
                         document.getElementById("elite_total").value = get(this.dataset.total);
                         document.getElementById("elite_sale").value = get(this.dataset.sale);
-
+                        //  document.getElementById("elite_edit").value = get(this.dataset.edit);
+                        document.getElementById("elite_edit").value = get(this.dataset.edit);
                         document.getElementById("elite_priority").value = get(this.dataset.priority);
                         document.getElementById("elite_meta").value = get(this.dataset.meta);
                         document.getElementById("elite_bulk").value = get(this.dataset.bulk);

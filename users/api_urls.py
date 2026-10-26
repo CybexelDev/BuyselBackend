@@ -211,7 +211,11 @@ urlpatterns = [
     path("owner-dashboard/",OwnerDashboardAPIView.as_view(),name="owner-dashboard"),
     path("owner/property/list/",UserPropertyListAPIView.as_view(),name="user-properety-list"),
     path("owner/property/",UserPropertyCreateAPIView.as_view(),name="user-property-create"),
-
+    path(
+        "agent-operating-cities/",
+        AllAgentOperatingCitiesAPIView.as_view(),
+        name="all-agent-operating-cities"
+    ),
 
     path("create-payment/",CreatePaymentAPIView.as_view(),name="create_payment"),
 

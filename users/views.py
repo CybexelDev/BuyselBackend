@@ -2970,7 +2970,7 @@ class LogoutAPIView(APIView):
 
 class InboxCreateAPIView(APIView):
 
-    authentication_classes = []   # public message form
+    authentication_classes = []   
     permission_classes = []
 
     def post(self, request):
@@ -2995,24 +2995,45 @@ class InboxCreateAPIView(APIView):
 
 class InboxListAPIView(APIView):
 
-    authentication_classes = [AgentJWTAuthentication]  # ✅ FIX
+    authentication_classes = [AgentJWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         agent = request.user
+        agent_pin_code = str(agent.pin_code or "").strip()
+        operating_cities = agent.operating_cities or []
 
-        inbox_messages = Inbox.objects.filter(
-            pin_code=str(agent.pin_code),
-            is_removed=False
-        ).order_by("-created_at")
+        if not isinstance(operating_cities, list):
+            operating_cities = []
 
-        serializer = InboxSerializer(inbox_messages, many=True)
+        location_query = Q()
+
+        if agent_pin_code:
+            location_query |= Q(pin_code=agent_pin_code)
+
+        for city in operating_cities:
+            if isinstance(city, str) and city.strip():
+                location_query |= Q(
+                    cities__icontains=city.strip()
+                )
+
+        if not location_query:
+            inbox_messages = Inbox.objects.none()
+        else:
+            inbox_messages = Inbox.objects.filter(
+                location_query,
+                is_removed=False
+            ).order_by("-created_at").distinct()
+
+        serializer = InboxSerializer(
+            inbox_messages,
+            many=True
+        )
 
         return Response({
             "message": "Inbox messages fetched successfully",
             "data": serializer.data
         })
-
 
 class InboxDeleteAPIView(APIView):
     authentication_classes = [AgentJWTAuthentication]
@@ -3021,27 +3042,60 @@ class InboxDeleteAPIView(APIView):
     def delete(self, request, id):
         agent = request.user
 
-        try:
-            message = Inbox.objects.get(
-                id=id,
-                pin_code=str(agent.pin_code),
-                is_removed=False
+        agent_pin_code = str(agent.pin_code or "").strip()
+
+        agent_cities = agent.operating_cities or []
+
+        if not isinstance(agent_cities, list):
+            agent_cities = []
+
+        agent_city_set = {
+            city.strip().casefold()
+            for city in agent_cities
+            if isinstance(city, str) and city.strip()
+        }
+
+        inbox_messages = Inbox.objects.filter(
+            is_removed=False
+        )
+
+        message = None
+
+        for inbox_message in inbox_messages:
+            pin_matches = (
+                str(inbox_message.pin_code or "").strip()
+                == agent_pin_code
             )
-        except Inbox.DoesNotExist:
+
+            inbox_cities = inbox_message.cities or []
+
+            if not isinstance(inbox_cities, list):
+                inbox_cities = []
+
+            city_matches = any(
+                isinstance(city, str)
+                and city.strip().casefold() in agent_city_set
+                for city in inbox_cities
+            )
+
+            if pin_matches or city_matches:
+                if str(inbox_message.id) == str(id):
+                    message = inbox_message
+                    break
+
+        if message is None:
             return Response({
                 "status": False,
                 "message": "Message not found"
-            }, status=404)
+            }, status=status.HTTP_404_NOT_FOUND)
 
-        # Soft delete
         message.is_removed = True
         message.save()
 
         return Response({
             "status": True,
             "message": "Message deleted successfully"
-        })
-
+        }, status=status.HTTP_200_OK)
 
 class AgentRegisterAPIView(APIView):
     parser_classes = [MultiPartParser, FormParser, JSONParser]
@@ -3148,7 +3202,7 @@ class AgentForgotPasswordAPI(APIView):
         try:
             agent = AgentUserProfile.objects.get(email=email)
 
-            # ❗ Only verified agents (optional)
+            
             if not agent.is_active:
                 return Response({"error": "Agent is inactive"}, status=400)
 
@@ -3374,6 +3428,83 @@ class AgentPendingRegisterAPIView(APIView):
                 data[key] = files
             else:
                 data[key] = files[0]
+
+        operating_cities = data.get("operating_cities")
+
+        if operating_cities is None or operating_cities == "":
+            return Response(
+                {
+                    "status": False,
+                    "message": "Operating cities are required."
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if isinstance(operating_cities, str):
+            try:
+                operating_cities = json.loads(operating_cities)
+            except json.JSONDecodeError:
+                return Response(
+                    {
+                        "status": False,
+                        "message": "Operating cities must be a valid list."
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+        if not isinstance(operating_cities, list):
+            return Response(
+                {
+                    "status": False,
+                    "message": "Operating cities must be a list."
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        cleaned_cities = []
+        seen_cities = set()
+
+        for city_name in operating_cities:
+
+            if not isinstance(city_name, str):
+                return Response(
+                    {
+                        "status": False,
+                        "message": "Each operating city must be text."
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            city_name = city_name.strip()
+
+            if not city_name:
+                continue
+
+            city_key = city_name.casefold()
+
+            if city_key not in seen_cities:
+                cleaned_cities.append(city_name)
+                seen_cities.add(city_key)
+
+        if not cleaned_cities:
+            return Response(
+                {
+                    "status": False,
+                    "message": "Select at least one operating city."
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        data["operating_cities"] = cleaned_cities
+
+        data["email"] = str(
+            data.get("email", "")
+        ).strip().lower()
+
+        data["agent_type"] = str(
+            data.get("agent_type", "")
+        ).strip().lower()
+
 
         data["email"] = str(
             data.get("email", "")
@@ -17131,6 +17262,53 @@ class AgentPropertySecretAPIView(APIView):
             {
                 "status": True,
                 "data": serializer.data
+            },
+            status=status.HTTP_200_OK
+        )
+
+class AllAgentOperatingCitiesAPIView(APIView):
+
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+
+        agents = AgentUserProfile.objects.filter(
+            is_agent=True
+        ).values_list("operating_cities", flat=True)
+
+        unique_cities = []
+        seen_cities = set()
+
+        for operating_cities in agents:
+
+            if not isinstance(operating_cities, list):
+                continue
+
+            for city_name in operating_cities:
+
+                if not isinstance(city_name, str):
+                    continue
+
+                city_name = city_name.strip()
+
+                if not city_name:
+                    continue
+
+                city_key = city_name.casefold()
+
+                if city_key not in seen_cities:
+                    unique_cities.append(city_name)
+                    seen_cities.add(city_key)
+
+        unique_cities.sort(key=str.casefold)
+
+        return Response(
+            {
+                "status": True,
+                "message": "All agent operating cities retrieved successfully.",
+                "count": len(unique_cities),
+                "operating_cities": unique_cities
             },
             status=status.HTTP_200_OK
         )

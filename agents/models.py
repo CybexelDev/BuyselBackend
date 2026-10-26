@@ -523,6 +523,7 @@ class PendingAgentRegistration(models.Model):
 
     city = models.CharField(max_length=100, validators=[validate_safe_text])
     pin_code = models.CharField(max_length=10, validators=[validate_pincode])
+    operating_cities = models.JSONField(null=True, blank=True)
     address = models.TextField(validators=[validate_safe_message])
 
     
@@ -645,6 +646,7 @@ class PendingAgentRegistration(models.Model):
                 address=self.address,
                 city=self.city,
                 pin_code=int(self.pin_code),
+                operating_cities=self.operating_cities,
                 agent_type=self.agent_type,
                 years_of_experience=self.years_of_experience,
                 deals_closed=self.deals_closed,
@@ -733,6 +735,7 @@ class Inbox(models.Model):
     id = models.UUIDField(primary_key=True,default=uuid.uuid4,editable=False)
     name = models.CharField(max_length=50, validators=[validate_agent_name])
     pin_code = models.CharField(max_length=50, validators=[validate_pincode])
+    cities = models.JSONField(default=list, blank=True)
     contact = models.CharField(max_length=50, validators=[validate_phone_number])
     messages_text = models.TextField(validators=[validate_safe_message])
     created_at = models.DateTimeField(auto_now_add=True)

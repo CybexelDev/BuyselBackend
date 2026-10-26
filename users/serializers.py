@@ -1001,16 +1001,11 @@ class AmenitiesSerializer(serializers.ModelSerializer):
             return obj.icon.url
         return None
 
-# class InboxSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Inbox
-#         fields = "__all__"
-#         read_only_fields = ["created_at", "is_read", "is_removed"]
 
 class InboxSerializer(serializers.ModelSerializer):
 
     created_at = serializers.DateTimeField(
-        format="%d-%m-%Y %-I:%M:%S %p",
+        format="%d-%m-%Y %I:%M:%S %p",
         read_only=True
     )
 
@@ -1061,6 +1056,39 @@ class InboxSerializer(serializers.ModelSerializer):
             )
 
         return value
+
+    def validate_cities(self, value):
+        if not isinstance(value, list):
+            raise serializers.ValidationError(
+                "Cities must be provided as a list."
+            )
+
+        cleaned_cities = []
+        seen_cities = set()
+
+        for city in value:
+            if not isinstance(city, str):
+                raise serializers.ValidationError(
+                    "Each city must be text."
+                )
+
+            city = city.strip()
+
+            if not city:
+                continue
+
+            key = city.casefold()
+
+            if key not in seen_cities:
+                cleaned_cities.append(city)
+                seen_cities.add(key)
+
+        if not cleaned_cities:
+            raise serializers.ValidationError(
+                "Select at least one city."
+            )
+
+        return cleaned_cities
 
     def validate_contact(self, value):
 
@@ -1430,18 +1458,10 @@ class PendingAgentRegistrationSerializer(
             "pin_code",
             "address",
             "agent_type",
-
-            # ==========================================
-            # BASIC PLAN
-            # ==========================================
             "basic_plan",
-
-            # ==========================================
-            # PREMIUM / ELITE
-            # ==========================================
             "premium_plan",
             "elite_plan",
-
+            "operating_cities", 
             "years_of_experience",
             "deals_closed",
         ]
@@ -1450,6 +1470,11 @@ class PendingAgentRegistrationSerializer(
             "password": {
                 "write_only": True,
                 "min_length": 8,
+            },
+
+            "operating_cities": {
+                "required": True,
+                "allow_null": False,
             },
 
             "basic_plan": {
@@ -1468,37 +1493,35 @@ class PendingAgentRegistrationSerializer(
             },
         }
 
-    # =================================================
-    # FULL NAME
-    # =================================================
-
     def validate_full_name(self, value):
 
         value = value.strip()
 
         if not value:
-
             raise serializers.ValidationError(
                 "Full name is required."
             )
 
         if len(value) < 2:
-
             raise serializers.ValidationError(
                 "Full name must contain at least 2 characters."
             )
 
         if len(value) > 150:
-
             raise serializers.ValidationError(
                 "Full name cannot exceed 150 characters."
             )
 
-        return value
+        if AgentUserProfile.objects.filter(
+            username__iexact=value
+        ).exists():
 
-    # =================================================
-    # EMAIL
-    # =================================================
+            raise serializers.ValidationError(
+                "An agent profile with this name already exists. "
+                "Please use your registered profile or contact support."
+            )
+
+        return value
 
     def validate_email(self, value):
 
@@ -1529,10 +1552,6 @@ class PendingAgentRegistrationSerializer(
 
         return value
 
-    # =================================================
-    # PHONE
-    # =================================================
-
     def validate_phone_number(self, value):
 
         value = value.strip()
@@ -1549,10 +1568,6 @@ class PendingAgentRegistrationSerializer(
             )
 
         return value
-
-    # =================================================
-    # PASSWORD
-    # =================================================
 
     def validate_password(self, value):
 
@@ -1612,10 +1627,6 @@ class PendingAgentRegistrationSerializer(
 
         return value
 
-    # =================================================
-    # CITY
-    # =================================================
-
     def validate_city(self, value):
 
         value = value.strip()
@@ -1627,10 +1638,6 @@ class PendingAgentRegistrationSerializer(
             )
 
         return value
-
-    # =================================================
-    # PIN CODE
-    # =================================================
 
     def validate_pin_code(self, value):
 
@@ -1655,10 +1662,6 @@ class PendingAgentRegistrationSerializer(
 
         return value
 
-    # =================================================
-    # ADDRESS
-    # =================================================
-
     def validate_address(self, value):
 
         value = value.strip()
@@ -1676,10 +1679,6 @@ class PendingAgentRegistrationSerializer(
             )
 
         return value
-
-    # =================================================
-    # AGENT TYPE
-    # =================================================
 
     def validate_agent_type(self, value):
 
@@ -1699,10 +1698,6 @@ class PendingAgentRegistrationSerializer(
 
         return value
 
-    # =================================================
-    # BASIC PLAN
-    # =================================================
-
     def validate_basic_plan(self, value):
 
         if value is None:
@@ -1717,10 +1712,6 @@ class PendingAgentRegistrationSerializer(
             )
 
         return value
-
-    # =================================================
-    # PREMIUM PLAN
-    # =================================================
 
     def validate_premium_plan(self, value):
 
@@ -1737,10 +1728,6 @@ class PendingAgentRegistrationSerializer(
 
         return value
 
-    # =================================================
-    # ELITE PLAN
-    # =================================================
-
     def validate_elite_plan(self, value):
 
         if value is None:
@@ -1756,9 +1743,36 @@ class PendingAgentRegistrationSerializer(
 
         return value
 
-    # =================================================
-    # YEARS OF EXPERIENCE
-    # =================================================
+    def validate_operating_cities(self, value):
+        if not isinstance(value, list):
+            raise serializers.ValidationError(
+                "Operating cities must be provided as a list."
+            )
+
+        cleaned_cities = []
+        seen_cities = set()
+
+        for city_name in value:
+            if not isinstance(city_name, str):
+                raise serializers.ValidationError(
+                    "Each operating city must be text."
+                )
+
+            city_name = city_name.strip()
+
+            if not city_name:
+                continue
+
+            if city_name.casefold() not in seen_cities:
+                cleaned_cities.append(city_name)
+                seen_cities.add(city_name.casefold())
+
+        if not cleaned_cities:
+            raise serializers.ValidationError(
+                "Select at least one operating city."
+            )
+
+        return cleaned_cities
 
     def validate_years_of_experience(self, value):
 
@@ -1779,10 +1793,6 @@ class PendingAgentRegistrationSerializer(
 
         return value
 
-    # =================================================
-    # DEALS CLOSED
-    # =================================================
-
     def validate_deals_closed(self, value):
 
         if value is None:
@@ -1802,10 +1812,6 @@ class PendingAgentRegistrationSerializer(
 
         return value
 
-    # =================================================
-    # CROSS FIELD VALIDATION
-    # =================================================
-
     def validate(self, attrs):
 
         agent_type = attrs.get(
@@ -1824,13 +1830,7 @@ class PendingAgentRegistrationSerializer(
             "elite_plan"
         )
 
-        # =================================================
-        # BASIC
-        # =================================================
-
         if agent_type == "basic":
-
-            # Basic now MUST have a basic plan
 
             if not basic_plan:
 
@@ -1852,10 +1852,6 @@ class PendingAgentRegistrationSerializer(
                     "elite_plan":
                     "Basic agent cannot have an elite plan."
                 })
-
-        # =================================================
-        # PREMIUM
-        # =================================================
 
         elif agent_type == "premium":
 
@@ -1879,10 +1875,6 @@ class PendingAgentRegistrationSerializer(
                     "elite_plan":
                     "Premium agent cannot have an elite plan."
                 })
-
-        # =================================================
-        # ELITE
-        # =================================================
 
         elif agent_type == "elite":
 
@@ -1909,14 +1901,7 @@ class PendingAgentRegistrationSerializer(
 
         return attrs
 
-    # =================================================
-    # CREATE
-    # =================================================
-
     def create(self, validated_data):
-
-        # submitted_by is intentionally NOT accepted
-        # from frontend.
 
         submitted_by = validated_data.pop(
             "submitted_by",

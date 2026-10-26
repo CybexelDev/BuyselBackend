@@ -853,13 +853,8 @@
 
 <div class="expired-agent-page">
 
-
-    <!-- =====================================================
-         HERO
-    ====================================================== -->
-
+    <!-- HERO -->
     <section class="expired-agent-hero">
-
         <div class="expired-agent-hero-copy">
 
             <div class="expired-agent-hero-icon">
@@ -867,370 +862,247 @@
             </div>
 
             <div>
-
                 <span class="expired-agent-eyebrow">
                     SUBSCRIPTION MANAGEMENT
                 </span>
 
-                <h1>
-                    Expired Agents
-                </h1>
+                <h1>Expired Agents</h1>
 
                 <p>
                     View and manage all agents whose subscriptions have expired.
                     Review expired agent accounts and their subscription details.
                 </p>
-
             </div>
-
         </div>
-
-
-        <!-- STATUS -->
 
         <div class="expired-agent-hero-status">
-
             <span class="expired-agent-status-dot"></span>
-
             <div>
-
-                <small>
-                    Subscription Status
-                </small>
-
-                <strong>
-                    Expired
-                </strong>
-
+                <small>Subscription Status</small>
+                <strong>Expired</strong>
             </div>
-
         </div>
-
     </section>
 
-
-
-    <!-- =====================================================
-         EXPIRED AGENT CARD
-    ====================================================== -->
-
+    <!-- EXPIRED AGENT CARD -->
     <section class="expired-agent-card">
-
-
-        <!-- =================================================
-             CARD HEADER
-        ================================================== -->
 
         <div class="expired-agent-card-header">
 
             <div class="expired-agent-card-title">
-
                 <div class="expired-agent-card-icon">
                     <i class="fa-solid fa-user-clock"></i>
                 </div>
 
                 <div>
-
-                    <h2>
-                        Expired Agent List
-                    </h2>
-
-                    <p>
-                        Agents with expired subscriptions
-                    </p>
-
+                    <h2>Expired Agent List</h2>
+                    <p>Agents with expired subscriptions</p>
                 </div>
-
             </div>
 
-
-            <!-- COUNT -->
-
+            <!-- TOTAL COUNT -->
             <div class="expired-agent-count">
-
-                <span>
-                    Records
-                </span>
-
-                <strong>
-                    {{ expired_agents|length }}
-                </strong>
-
+                <span>Records</span>
+                <strong>{{ total_expired|default:0 }}</strong>
             </div>
 
         </div>
 
-
-
-        <!-- =================================================
-             TABLE
-        ================================================== -->
-
+        <!-- TABLE -->
         <div class="expired-agent-table-wrap">
 
             <table class="expired-agent-table">
 
                 <thead>
-
                     <tr>
-
-                        <th>
-                            Image
-                        </th>
-
-                        <th>
-                            Agent
-                        </th>
-
-                        <th>
-                            Contact
-                        </th>
-
-                        <th>
-                            City
-                        </th>
-
-                        <th>
-                            Type
-                        </th>
-
-                        <th>
-                            Expired On
-                        </th>
-
-                        <th>
-                            Status
-                        </th>
-
+                        <th>Image</th>
+                        <th>Agent</th>
+                        <th>Contact</th>
+                        <th>City</th>
+                        <th>Type</th>
+                        <th>Expired On</th>
+                        <th>Status</th>
                     </tr>
-
                 </thead>
 
-
                 <tbody>
-
 
                     {% for item in expired_agents %}
 
                     <tr>
 
-
-                        <!-- =================================
-                             IMAGE
-                        ================================== -->
-
+                        <!-- IMAGE -->
                         <td>
+                            {% if item.agent %}
 
-                            {% if item.agent.profile_image %}
-
-                            <img src="{{ item.agent.profile_image.url }}" class="expired-agent-image"
-                                alt="{{ item.agent.username }}">
-
-                            {% elif item.agent.avatar_url %}
-
-                            <img src="{{ item.agent.avatar_url }}" class="expired-agent-image"
-                                alt="{{ item.agent.username }}">
+                                {% if item.agent.profile_image %}
+                                    <img
+                                        src="{{ item.agent.profile_image.url }}"
+                                        class="expired-agent-image"
+                                        alt="{{ item.agent.username|default:'Agent' }}"
+                                    >
+                                {% elif item.agent.avatar_url %}
+                                    <img
+                                        src="{{ item.agent.avatar_url }}"
+                                        class="expired-agent-image"
+                                        alt="{{ item.agent.username|default:'Agent' }}"
+                                    >
+                                {% else %}
+                                    <div class="expired-agent-placeholder">
+                                        <i class="fa-solid fa-user"></i>
+                                    </div>
+                                {% endif %}
 
                             {% else %}
-
-                            <div class="expired-agent-placeholder">
-
-                                <i class="fa-solid fa-user"></i>
-
-                            </div>
-
+                                <div class="expired-agent-placeholder">
+                                    <i class="fa-solid fa-user"></i>
+                                </div>
                             {% endif %}
-
                         </td>
 
-
-
-                        <!-- =================================
-                             AGENT
-                        ================================== -->
-
+                        <!-- AGENT -->
                         <td>
-
                             <div class="expired-agent-name">
-
-                                {{ item.agent.username }}
-
+                                {% if item.agent %}
+                                    {{ item.agent.username|default:"—" }}
+                                {% else %}
+                                    —
+                                {% endif %}
                             </div>
 
-
-                            {% if item.agent.agent_code %}
-
-                            <div class="expired-agent-code">
-
-                                {{ item.agent.agent_code }}
-
-                            </div>
-
+                            {% if item.agent and item.agent.agent_code %}
+                                <div class="expired-agent-code">
+                                    {{ item.agent.agent_code }}
+                                </div>
                             {% endif %}
-
                         </td>
 
-
-
-                        <!-- =================================
-                             CONTACT
-                        ================================== -->
-
+                        <!-- CONTACT -->
                         <td>
+                            {% if item.agent %}
+                                <div class="expired-agent-email">
+                                    {{ item.agent.email|default:"—" }}
+                                </div>
 
-                            <div class="expired-agent-email">
-
-                                {{ item.agent.email }}
-
-                            </div>
-
-
-                            {% if item.agent.phone_number %}
-
-                            <div class="expired-agent-phone">
-
-                                <i class="fa-solid fa-phone"></i>
-
-                                {{ item.agent.phone_number }}
-
-                            </div>
-
+                                {% if item.agent.phone_number %}
+                                    <div class="expired-agent-phone">
+                                        <i class="fa-solid fa-phone"></i>
+                                        {{ item.agent.phone_number }}
+                                    </div>
+                                {% endif %}
+                            {% else %}
+                                <div class="expired-agent-email">—</div>
                             {% endif %}
-
                         </td>
 
-
-
-                        <!-- =================================
-                             CITY
-                        ================================== -->
-
+                        <!-- CITY -->
                         <td>
-
                             <span class="expired-agent-city">
-
                                 <i class="fa-solid fa-location-dot"></i>
-
-                                {{ item.agent.city }}
-
+                                {% if item.agent %}
+                                    {{ item.agent.city|default:"—" }}
+                                {% else %}
+                                    —
+                                {% endif %}
                             </span>
-
                         </td>
 
-
-
-                        <!-- =================================
-                             TYPE
-                        ================================== -->
-
+                        <!-- TYPE -->
                         <td>
+                            {% if item.agent %}
 
+                                {% if item.agent.agent_type == "premium" %}
+                                    <span class="expired-agent-type premium">
+                                        <i class="fa-solid fa-crown"></i>
+                                        {{ item.agent.get_agent_type_display|default:"Premium" }}
+                                    </span>
 
-                            {% if item.agent.agent_type == "premium" %}
+                                {% elif item.agent.agent_type == "elite" %}
+                                    <span class="expired-agent-type elite">
+                                        <i class="fa-solid fa-gem"></i>
+                                        {{ item.agent.get_agent_type_display|default:"Elite" }}
+                                    </span>
 
-                            <span class="expired-agent-type premium">
-
-                                <i class="fa-solid fa-crown"></i>
-
-                                {{ item.agent.get_agent_type_display }}
-
-                            </span>
-
-
-                            {% elif item.agent.agent_type == "elite" %}
-
-                            <span class="expired-agent-type elite">
-
-                                <i class="fa-solid fa-gem"></i>
-
-                                {{ item.agent.get_agent_type_display }}
-
-                            </span>
-
+                                {% else %}
+                                    <span class="expired-agent-type">
+                                        <i class="fa-solid fa-user"></i>
+                                        {{ item.agent.get_agent_type_display|default:item.agent.agent_type|default:"—" }}
+                                    </span>
+                                {% endif %}
 
                             {% else %}
-
-                            <span class="expired-agent-type">
-
-                                <i class="fa-solid fa-user"></i>
-
-                                {{ item.agent.get_agent_type_display }}
-
-                            </span>
-
+                                <span class="expired-agent-type">—</span>
                             {% endif %}
-
-
                         </td>
 
-
-
-                        <!-- =================================
-                             EXPIRED DATE
-                        ================================== -->
-
+                        <!-- EXPIRED DATE -->
                         <td>
-
                             <span class="expired-agent-date">
-
                                 <i class="fa-regular fa-calendar"></i>
-
-                                {{ item.expired_on|date:"d M Y" }}
-
+                                {{ item.expired_on|date:"d M Y"|default:"—" }}
                             </span>
-
                         </td>
 
-
-
-                        <!-- =================================
-                             STATUS
-                        ================================== -->
-
+                        <!-- STATUS -->
                         <td>
-
-                            <span class="expired-agent-status">
-
-                                <span class="expired-agent-status-dot"></span>
-
-                                Expired
-
-                            </span>
-
+                            {% if item.renewed %}
+                                <span class="expired-agent-status">
+                                    <span class="expired-agent-status-dot"></span>
+                                    Renewed
+                                </span>
+                            {% else %}
+                                <span class="expired-agent-status">
+                                    <span class="expired-agent-status-dot"></span>
+                                    Expired
+                                </span>
+                            {% endif %}
                         </td>
-
 
                     </tr>
-
 
                     {% empty %}
 
-
-                    <!-- =================================
-                         EMPTY STATE
-                    ================================== -->
-
                     <tr>
-
                         <td colspan="7" class="expired-agent-empty">
-
                             <i class="fa-regular fa-folder-open"></i>
-
-                            No expired agents.
-
+                            No expired agents found.
                         </td>
-
                     </tr>
 
-
                     {% endfor %}
-
 
                 </tbody>
 
             </table>
 
         </div>
+
+        <!-- PAGINATION -->
+        {% if page_obj and page_obj.paginator.num_pages > 1 %}
+
+        <div class="expired-agent-card-header">
+
+            <span>
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            </span>
+
+            <div>
+                {% if page_obj.has_previous %}
+                    <a href="?page={{ page_obj.previous_page_number }}&search={{ search|urlencode }}&agent_type={{ agent_type|urlencode }}&date={{ date_filter|urlencode }}">
+                        Previous
+                    </a>
+                {% endif %}
+
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}&search={{ search|urlencode }}&agent_type={{ agent_type|urlencode }}&date={{ date_filter|urlencode }}">
+                        Next
+                    </a>
+                {% endif %}
+            </div>
+
+        </div>
+
+        {% endif %}
 
     </section>
 

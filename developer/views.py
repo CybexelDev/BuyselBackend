@@ -4285,79 +4285,28 @@ def subscription_dashboard(request):
         context,
     )
 
+
 @never_cache
 @user_passes_test(superuser_required, login_url="superuser_login_view")
 def expired_agents_dashboard(request):
 
-    expired_agents = ExpireAgents.objects.select_related("agent").order_by(
-        "-expired_on"
+    expired_agents = (
+        ExpireAgents.objects
+        .filter(agent__isnull=False)
+        .select_related("agent", "subscription")
+        .order_by("-expired_on")
     )
 
-    search = request.GET.get("search", "").strip()
-
-    if search:
-        expired_agents = expired_agents.filter(
-            Q(agent__username__icontains=search)
-            | Q(agent__email__icontains=search)
-            | Q(agent__phone_number__icontains=search)
-            | Q(agent__city__icontains=search)
-            | Q(agent__agent_code__icontains=search)
-        )
-
-    agent_type = request.GET.get("agent_type", "")
-
-    if agent_type:
-        expired_agents = expired_agents.filter(agent__agent_type=agent_type)
-
-    date_filter = request.GET.get("date", "")
-
-    today = timezone.now()
-
-    if date_filter == "today":
-
-        expired_agents = expired_agents.filter(expired_on__date=today.date())
-
-    elif date_filter == "month":
-
-        expired_agents = expired_agents.filter(
-            expired_on__month=today.month, expired_on__year=today.year
-        )
-
-    total_expired = ExpireAgents.objects.count()
-
-    expired_today = ExpireAgents.objects.filter(expired_on__date=today.date()).count()
-
-    expired_month = ExpireAgents.objects.filter(
-        expired_on__month=today.month, expired_on__year=today.year
-    ).count()
-
-    premium_count = ExpireAgents.objects.filter(agent__agent_type="premium").count()
-
-    elite_count = ExpireAgents.objects.filter(agent__agent_type="elite").count()
-
-    basic_count = ExpireAgents.objects.filter(agent__agent_type="basic").count()
-
-    paginator = Paginator(expired_agents, 10)
-
-    page_number = request.GET.get("page")
-
-    page_obj = paginator.get_page(page_number)
-
     context = {
-        "page_obj": page_obj,
-        "expired_agents": page_obj,
-        "search": search,
-        "agent_type": agent_type,
-        "date_filter": date_filter,
-        "total_expired": total_expired,
-        "expired_today": expired_today,
-        "expired_month": expired_month,
-        "premium_count": premium_count,
-        "elite_count": elite_count,
-        "basic_count": basic_count,
+        "expired_agents": expired_agents,
+        "total_expired": expired_agents.count(),
     }
 
-    return render(request, "agents/expired_agents.html", context)
+    return render(
+        request,
+        "agents/expired_agents.html",
+        context,
+    )
 
 
 @never_cache
@@ -7246,3 +7195,384 @@ def export_master_deleted_properties_excel(request):
     )
 
     return response
+
+
+
+from django.shortcuts import render
+from django.http import HttpResponse
+from django.core.paginator import Paginator
+from django.db.models import Q
+from django.views.decorators.cache import never_cache
+from django.contrib.auth.decorators import user_passes_test
+from django.utils import timezone
+from openpyxl import Workbook
+from openpyxl.styles import Font, PatternFill, Alignment
+from openpyxl.utils import get_column_letter
+
+from agents.models import AgentProperty
+from developer.models import Category, Purpose
+
+
+def get_secret_property_queryset(request):
+    """
+    Return only secret, non-deleted agent properties
+    with the dashboard filters applied.
+    """
+
+    properties = (
+        AgentProperty.objects
+        .filter(secret=True, deleted=False)
+        .select_related(
+            "agent",
+            "category",
+            "subcategory",
+            "purpose",
+            "subscription",
+        )
+        .prefetch_related(
+            "images",
+            "amenities",
+            "field_values__field",
+            "selling_points",
+            "landmarks",
+        )
+        .order_by("-created_at")
+    )
+
+    search = request.GET.get("search", "").strip()
+
+    if search:
+        properties = properties.filter(
+            Q(property_code__icontains=search)
+            | Q(property_hash_id__icontains=search)
+            | Q(label__icontains=search)
+            | Q(price__icontains=search)
+            | Q(city__icontains=search)
+            | Q(district__icontains=search)
+            | Q(state__icontains=search)
+            | Q(location__icontains=search)
+            | Q(owner__icontains=search)
+            | Q(agent__username__icontains=search)
+            | Q(agent__email__icontains=search)
+        )
+
+    category_id = request.GET.get("category", "").strip()
+
+    if category_id.isdigit():
+        properties = properties.filter(category_id=category_id)
+    else:
+        category_id = ""
+
+    purpose_id = request.GET.get("purpose", "").strip()
+
+    if purpose_id.isdigit():
+        properties = properties.filter(purpose_id=purpose_id)
+    else:
+        purpose_id = ""
+
+    city = request.GET.get("city", "").strip()
+
+    if city:
+        properties = properties.filter(city__icontains=city)
+
+    featured = request.GET.get("featured", "").strip()
+
+    if featured in ("yes", "no"):
+        properties = properties.filter(
+            is_featured=(featured == "yes")
+        )
+    else:
+        featured = ""
+
+    paid = request.GET.get("paid", "").strip()
+
+    if paid in ("yes", "no"):
+        properties = properties.filter(
+            paid=(paid == "yes")
+        )
+    else:
+        paid = ""
+
+    filters = {
+        "search": search,
+        "category": category_id,
+        "purpose": purpose_id,
+        "city": city,
+        "featured": featured,
+        "paid": paid,
+    }
+
+    return properties, filters
+
+
+def safe_excel_value(value):
+    """Prevent spreadsheet formula execution from text values."""
+
+    if value is None:
+        return ""
+
+    value = str(value)
+
+    if value.lstrip().startswith(("=", "+", "-", "@")):
+        return "'" + value
+
+    return value
+
+
+@never_cache
+@user_passes_test(superuser_required, login_url="superuser_login_view")
+def secret_properties_dashboard(request):
+
+    properties, filters = get_secret_property_queryset(request)
+
+    total_secret = AgentProperty.objects.filter(
+        secret=True,
+        deleted=False,
+    ).count()
+
+    featured_count = AgentProperty.objects.filter(
+        secret=True,
+        deleted=False,
+        is_featured=True,
+    ).count()
+
+    paid_count = AgentProperty.objects.filter(
+        secret=True,
+        deleted=False,
+        paid=True,
+    ).count()
+
+    filtered_total = properties.count()
+
+    # ==========================================
+    # EXPORT FILTERED PROPERTIES TO EXCEL
+    # ==========================================
+
+    if request.GET.get("export") == "excel":
+
+        workbook = Workbook()
+        worksheet = workbook.active
+        worksheet.title = "Secret Properties"
+
+        headers = [
+            "Property Code",
+            "Property ID",
+            "Property Name",
+            "Agent Username",
+            "Agent Email",
+            "Category",
+            "Subcategory",
+            "Purpose",
+            "Price",
+            "Per Price",
+            "Deposit",
+            "Land Area",
+            "Square Feet",
+            "Description",
+            "Owner",
+            "Phone",
+            "WhatsApp",
+            "Location",
+            "City",
+            "District",
+            "State",
+            "Pincode",
+            "Taluk",
+            "Village",
+            "Landmark",
+            "Amenities",
+            "Custom Fields",
+            "Selling Points",
+            "Nearby Landmarks",
+            "Main Image URL",
+            "Additional Image URLs",
+            "Screenshot URL",
+            "Featured",
+            "Paid",
+            "Secret",
+            "Added By",
+            "Market Staff",
+            "Notes",
+            "Subscription",
+            "Duration Days",
+            "Created At",
+            "Updated At",
+        ]
+
+        worksheet.append(headers)
+
+        for cell in worksheet[1]:
+            cell.font = Font(
+                bold=True,
+                color="FFFFFF",
+            )
+            cell.fill = PatternFill(
+                fill_type="solid",
+                fgColor="659D28",
+            )
+            cell.alignment = Alignment(
+                horizontal="center",
+                vertical="center",
+            )
+
+        for prop in properties.iterator(chunk_size=200):
+
+            agent = prop.agent
+
+            amenities = ", ".join(
+                str(item) for item in prop.amenities.all()
+            )
+
+            custom_fields = "; ".join(
+                f"{item.field.field_name}: {item.value}"
+                for item in prop.field_values.all()
+            )
+
+            selling_points = "; ".join(
+                item.point for item in prop.selling_points.all()
+            )
+
+            landmarks = "; ".join(
+                (
+                    f"{item.name}"
+                    + (
+                        f" ({item.distance})"
+                        if item.distance else ""
+                    )
+                )
+                for item in prop.landmarks.all()
+            )
+
+            additional_images = ", ".join(
+                image.image.url
+                for image in prop.images.all()
+                if image.image
+            )
+
+            main_image_url = (
+                prop.image.url if prop.image else ""
+            )
+
+            screenshot_url = (
+                prop.screenshot.url if prop.screenshot else ""
+            )
+
+            row = [
+                prop.property_code,
+                str(prop.pk),
+                prop.label,
+                agent.username if agent else "",
+                agent.email if agent else "",
+                str(prop.category) if prop.category else "",
+                str(prop.subcategory) if prop.subcategory else "",
+                str(prop.purpose) if prop.purpose else "",
+                prop.price,
+                prop.perprice,
+                prop.deposit,
+                prop.land_area,
+                prop.sq_ft,
+                prop.description,
+                prop.owner,
+                prop.phone,
+                prop.whatsapp,
+                prop.location,
+                prop.city,
+                prop.district,
+                prop.state,
+                prop.pincode,
+                prop.taluk,
+                prop.village,
+                prop.land_mark,
+                amenities,
+                custom_fields,
+                selling_points,
+                landmarks,
+                main_image_url,
+                additional_images,
+                screenshot_url,
+                "Yes" if prop.is_featured else "No",
+                "Yes" if prop.paid else "No",
+                "Yes" if prop.secret else "No",
+                prop.added_by,
+                prop.market_staff,
+                prop.notes,
+                str(prop.subscription) if prop.subscription else "",
+                prop.duration_days,
+                timezone.localtime(prop.created_at).replace(tzinfo=None)
+                if prop.created_at else None,
+                timezone.localtime(prop.updated_at).replace(tzinfo=None)
+                if prop.updated_at else None,
+            ]
+
+            worksheet.append([
+                safe_excel_value(value)
+                if not hasattr(value, "strftime")
+                else value
+                for value in row
+            ])
+
+        # Format dates and widths
+        worksheet.freeze_panes = "A2"
+        worksheet.auto_filter.ref = worksheet.dimensions
+        worksheet.row_dimensions[1].height = 30
+
+        for column_cells in worksheet.columns:
+            column_letter = get_column_letter(
+                column_cells[0].column
+            )
+
+            max_length = max(
+                (
+                    len(str(cell.value))
+                    for cell in column_cells
+                    if cell.value is not None
+                ),
+                default=12,
+            )
+
+            worksheet.column_dimensions[column_letter].width = min(
+                max(max_length + 2, 14),
+                40,
+            )
+
+        for row in worksheet.iter_rows(min_row=2):
+            for cell in row:
+                cell.alignment = Alignment(
+                    vertical="top",
+                    wrap_text=True,
+                )
+
+        response = HttpResponse(
+            content_type=(
+                "application/vnd.openxmlformats-officedocument."
+                "spreadsheetml.sheet"
+            )
+        )
+
+        response["Content-Disposition"] = (
+            'attachment; filename="secret_properties.xlsx"'
+        )
+
+        workbook.save(response)
+        return response
+
+    paginator = Paginator(properties, 20)
+    page_obj = paginator.get_page(request.GET.get("page"))
+
+    context = {
+        "properties": page_obj,
+        "page_obj": page_obj,
+        "filters": filters,
+        "categories": Category.objects.all(),
+        "purposes": Purpose.objects.all(),
+        "total_secret": total_secret,
+        "filtered_total": filtered_total,
+        "featured_count": featured_count,
+        "paid_count": paid_count,
+    }
+
+    return render(
+        request,
+        "secret_properties/secret_properties.html",
+        context,
+    )

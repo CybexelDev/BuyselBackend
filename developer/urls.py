@@ -87,7 +87,7 @@ urlpatterns = [
     path("edit-agent/<uuid:pk>/", views.edit_agent, name="edit_agent"),
     path("delete-agent/<uuid:pk>/", views.delete_agent, name="delete_agent"),
     path(
-        "expired-agents/",
+        "expired_agent/",
         views.expired_agents_dashboard,
         name="expired_agents_dashboard",
     ),
@@ -256,5 +256,12 @@ urlpatterns = [
         views.master_deleted_property_detail,
         name="deleted_property_detail",
     ),
+    
+    path(
+        "secret-properties/",
+        views.secret_properties_dashboard,
+        name="secret_properties_dashboard",
+    ),
+
     re_path(r"^.*$", views.superuser_login_view, name="redirect_to_index"),
 ]

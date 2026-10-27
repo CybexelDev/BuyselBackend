@@ -2961,7 +2961,10 @@ Manage Agents - Buysel Admin
                                     '{{ agent.city|default_if_none:""|escapejs }}',
                                     '{{ agent.pin_code|default_if_none:""|escapejs }}',
                                     '{{ agent.agent_type|default_if_none:"basic"|escapejs }}',
-                                    '{{ agent.is_active|yesno:"true,false" }}'
+                                    '{{ agent.is_active|yesno:"true,false" }}',
+                                    '{{ agent.years_of_experience|default_if_none:"" }}',
+                                    '{{ agent.deals_closed|default_if_none:"0" }}',
+                                    '{{ agent.operating_cities|default_if_none:""|join:", "|escapejs }}'
                                 )"
                             >
 
@@ -3385,6 +3388,41 @@ Manage Agents - Buysel Admin
 
                 </div>
 
+                <div class="agent-add-group">
+                    <label>Years of Experience</label>
+                    <input
+                        type="number"
+                        name="years_of_experience"
+                        placeholder="Enter years of experience"
+                        min="0"
+                    >
+                </div>
+
+                <!-- DEALS CLOSED -->
+                <div class="agent-add-group">
+                    <label>Deals Closed</label>
+                    <input
+                        type="number"
+                        name="deals_closed"
+                        placeholder="Enter deals closed"
+                        min="0"
+                        value="0"
+                    >
+                </div>
+
+                <!-- OPERATING CITIES -->
+                <div class="agent-add-group agent-add-full">
+                    <label>Operating Cities</label>
+                    <input
+                        type="text"
+                        name="operating_cities"
+                        placeholder="e.g. Coimbatore, Chennai, Madurai"
+                    >
+                    <small>
+                        Enter multiple cities separated by commas.
+                    </small>
+                </div>
+
 
                 <!-- ADDRESS -->
 
@@ -3662,6 +3700,64 @@ Manage Agents - Buysel Admin
                     >
 
                 </div>
+
+                
+<!-- YEARS OF EXPERIENCE -->
+<div class="agent-form-group">
+
+    <label>
+        Years of Experience
+    </label>
+
+    <input
+        id="agentYearsExperience"
+        type="number"
+        name="years_of_experience"
+        min="0"
+        placeholder="Enter years of experience"
+    >
+
+</div>
+
+
+<!-- DEALS CLOSED -->
+<div class="agent-form-group">
+
+    <label>
+        Deals Closed
+    </label>
+
+    <input
+        id="agentDealsClosed"
+        type="number"
+        name="deals_closed"
+        min="0"
+        placeholder="Enter deals closed"
+    >
+
+</div>
+
+
+<!-- OPERATING CITIES -->
+<div class="agent-form-group agent-form-full">
+
+    <label>
+        Operating Cities
+    </label>
+
+    <input
+        id="agentOperatingCities"
+        type="text"
+        name="operating_cities"
+        placeholder="e.g. Coimbatore, Chennai, Madurai"
+    >
+
+    <small>
+        Enter multiple cities separated by commas.
+    </small>
+
+</div>
+
 
 
                 <div class="agent-form-group">
@@ -3947,7 +4043,10 @@ function openAgentProfileEditModal(
     city,
     pincode,
     agentType,
-    isActive
+    isActive,
+    yearsExperience,
+    dealsClosed,
+    operatingCities
 ) {
 
     const modal =
@@ -4021,6 +4120,17 @@ function openAgentProfileEditModal(
             ? "true"
             : "false";
 
+    form.querySelector(
+        '[name="years_of_experience"]'
+    ).value = yearsExperience ?? "";
+
+    form.querySelector(
+        '[name="deals_closed"]'
+    ).value = dealsClosed ?? "0";
+
+    form.querySelector(
+        '[name="operating_cities"]'
+    ).value = operatingCities || "";
 
     const image =
         form.querySelector(

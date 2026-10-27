@@ -1723,6 +1723,24 @@ def add_admin_agent(request):
         pin_code = request.POST.get("pin_code", "").strip()
 
         address = request.POST.get("address", "").strip()
+        years_of_experience = request.POST.get(
+            "years_of_experience", ""
+        ).strip()
+
+        deals_closed = request.POST.get(
+            "deals_closed", "0"
+        ).strip()
+
+        # operating_cities = request.POST.getlist("operating_cities")
+        operating_cities_input = request.POST.get(
+            "operating_cities", ""
+        ).strip()
+
+        operating_cities = [
+            item.strip()
+            for item in operating_cities_input.split(",")
+            if item.strip()
+        ]
 
         image = request.FILES.get("image")
 
@@ -1767,6 +1785,27 @@ def add_admin_agent(request):
             messages.error(request, "Pin code must contain numbers only.")
 
             return redirect("admin_agents")
+        try:
+            years_value = (
+                int(years_of_experience)
+                if years_of_experience
+                else None
+            )
+
+            deals_value = int(deals_closed or "0")
+
+            if years_value is not None and years_value < 0:
+                raise ValueError
+
+            if deals_value < 0:
+                raise ValueError
+
+        except (TypeError, ValueError):
+            messages.error(
+                request,
+                "Years of experience and deals closed must be valid non-negative numbers."
+            )
+            return redirect("admin_agents")
         active_value = True if is_active == "true" else False
 
         agent = AgentUserProfile(
@@ -1782,6 +1821,9 @@ def add_admin_agent(request):
             agent_type=agent_type,
             is_active=active_value,
             is_agent=True,
+            years_of_experience=years_value,
+            deals_closed=deals_value,
+            operating_cities=operating_cities or None,
         )
 
         if image: 
@@ -1842,6 +1884,52 @@ def edit_agent(request, pk):
         agent.pin_code = request.POST.get("pin_code", agent.pin_code)
 
         agent.agent_type = request.POST.get("agent_type", agent.agent_type)
+
+        years_of_experience = request.POST.get(
+            "years_of_experience", ""
+        ).strip()
+
+        deals_closed = request.POST.get(
+            "deals_closed", str(agent.deals_closed)
+        ).strip()
+
+        operating_cities_input = request.POST.get(
+            "operating_cities", ""
+        ).strip()
+
+        operating_cities = [
+            item.strip()
+            for item in operating_cities_input.split(",")
+            if item.strip()
+        ]
+
+        try:
+            agent.years_of_experience = (
+                int(years_of_experience)
+                if years_of_experience
+                else None
+            )
+
+            agent.deals_closed = int(deals_closed or "0")
+
+            if (
+                agent.years_of_experience is not None
+                and agent.years_of_experience < 0
+            ):
+                raise ValueError
+
+            if agent.deals_closed < 0:
+                raise ValueError
+
+        except (TypeError, ValueError):
+            messages.error(
+                request,
+                "Years of experience and deals closed must be valid non-negative numbers."
+            )
+            return redirect("admin_agents")
+
+        agent.operating_cities = operating_cities or None
+
 
         status = request.POST.get("is_active")
 
@@ -7198,21 +7286,6 @@ def export_master_deleted_properties_excel(request):
 
 
 
-from django.shortcuts import render
-from django.http import HttpResponse
-from django.core.paginator import Paginator
-from django.db.models import Q
-from django.views.decorators.cache import never_cache
-from django.contrib.auth.decorators import user_passes_test
-from django.utils import timezone
-from openpyxl import Workbook
-from openpyxl.styles import Font, PatternFill, Alignment
-from openpyxl.utils import get_column_letter
-
-from agents.models import AgentProperty
-from developer.models import Category, Purpose
-
-
 def get_secret_property_queryset(request):
     """
     Return only secret, non-deleted agent properties
@@ -7306,7 +7379,6 @@ def get_secret_property_queryset(request):
 
 
 def safe_excel_value(value):
-    """Prevent spreadsheet formula execution from text values."""
 
     if value is None:
         return ""
@@ -7343,10 +7415,6 @@ def secret_properties_dashboard(request):
     ).count()
 
     filtered_total = properties.count()
-
-    # ==========================================
-    # EXPORT FILTERED PROPERTIES TO EXCEL
-    # ==========================================
 
     if request.GET.get("export") == "excel":
 

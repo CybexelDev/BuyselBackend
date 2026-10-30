@@ -3411,29 +3411,128 @@ class AgentPendingRegisterAPIView(APIView):
                 status=status.HTTP_401_UNAUTHORIZED
             )
 
+        # data = {}
+
+        # for key in request.POST.keys():
+
+        #     values = request.POST.getlist(key)
+
+        #     if len(values) > 1:
+        #         data[key] = values
+        #     else:
+        #         data[key] = values[0]
+
+        # for key in request.FILES.keys():
+
+        #     files = request.FILES.getlist(key)
+
+        #     if len(files) > 1:
+        #         data[key] = files
+        #     else:
+        #         data[key] = files[0]
+
+        # operating_cities = data.get("operating_cities")
+
+        # if operating_cities is None or operating_cities == "":
+        #     return Response(
+        #         {
+        #             "status": False,
+        #             "message": "Operating cities are required."
+        #         },
+        #         status=status.HTTP_400_BAD_REQUEST
+        #     )
+
+        # if isinstance(operating_cities, str):
+        #     try:
+        #         operating_cities = json.loads(operating_cities)
+        #     except json.JSONDecodeError:
+        #         return Response(
+        #             {
+        #                 "status": False,
+        #                 "message": "Operating cities must be a valid list."
+        #             },
+        #             status=status.HTTP_400_BAD_REQUEST
+        #         )
+
+        # if not isinstance(operating_cities, list):
+        #     return Response(
+        #         {
+        #             "status": False,
+        #             "message": "Operating cities must be a list."
+        #         },
+        #         status=status.HTTP_400_BAD_REQUEST
+        #     )
+
+        # cleaned_cities = []
+        # seen_cities = set()
+
+        # for city_name in operating_cities:
+
+        #     if not isinstance(city_name, str):
+        #         return Response(
+        #             {
+        #                 "status": False,
+        #                 "message": "Each operating city must be text."
+        #             },
+        #             status=status.HTTP_400_BAD_REQUEST
+        #         )
+
+        #     city_name = city_name.strip()
+
+        #     if not city_name:
+        #         continue
+
+        #     city_key = city_name.casefold()
+
+        #     if city_key not in seen_cities:
+        #         cleaned_cities.append(city_name)
+        #         seen_cities.add(city_key)
+
+        # if not cleaned_cities:
+        #     return Response(
+        #         {
+        #             "status": False,
+        #             "message": "Select at least one operating city."
+        #         },
+        #         status=status.HTTP_400_BAD_REQUEST
+        #     )
+
+        # data["operating_cities"] = cleaned_cities
+
         data = {}
 
-        for key in request.POST.keys():
+        if request.content_type == "application/json":
 
-            values = request.POST.getlist(key)
+            data = request.data.copy()
 
-            if len(values) > 1:
-                data[key] = values
-            else:
-                data[key] = values[0]
+        else:
 
-        for key in request.FILES.keys():
+            for key in request.POST.keys():
 
-            files = request.FILES.getlist(key)
+                values = request.POST.getlist(key)
 
-            if len(files) > 1:
-                data[key] = files
-            else:
-                data[key] = files[0]
+                if len(values) > 1:
+                    data[key] = values
+                else:
+                    data[key] = values[0]
+
+            for key in request.FILES.keys():
+
+                files = request.FILES.getlist(key)
+
+                if len(files) > 1:
+                    data[key] = files
+                else:
+                    data[key] = files[0]
+
+        # =========================================
+        # OPERATING CITIES VALIDATION
+        # =========================================
 
         operating_cities = data.get("operating_cities")
 
         if operating_cities is None or operating_cities == "":
+
             return Response(
                 {
                     "status": False,
@@ -3443,9 +3542,12 @@ class AgentPendingRegisterAPIView(APIView):
             )
 
         if isinstance(operating_cities, str):
+
             try:
                 operating_cities = json.loads(operating_cities)
+
             except json.JSONDecodeError:
+
                 return Response(
                     {
                         "status": False,
@@ -3455,6 +3557,7 @@ class AgentPendingRegisterAPIView(APIView):
                 )
 
         if not isinstance(operating_cities, list):
+
             return Response(
                 {
                     "status": False,
@@ -3469,6 +3572,7 @@ class AgentPendingRegisterAPIView(APIView):
         for city_name in operating_cities:
 
             if not isinstance(city_name, str):
+
                 return Response(
                     {
                         "status": False,
@@ -3485,10 +3589,12 @@ class AgentPendingRegisterAPIView(APIView):
             city_key = city_name.casefold()
 
             if city_key not in seen_cities:
+
                 cleaned_cities.append(city_name)
                 seen_cities.add(city_key)
 
         if not cleaned_cities:
+
             return Response(
                 {
                     "status": False,

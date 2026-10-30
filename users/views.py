@@ -3394,6 +3394,7 @@ class AgentPendingRegisterAPIView(APIView):
     parser_classes = (
         MultiPartParser,
         FormParser,
+        JSONParser,
     )
 
     def post(self, request):

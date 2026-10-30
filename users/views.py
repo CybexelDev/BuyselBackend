@@ -3164,6 +3164,7 @@ class AgentLoginAPIView(APIView):
                 "email": user.email,
                 "phone_number": user.phone_number,
                 "agent_type": user.agent_type,
+                "secret_properties":user.secret_properties,
                 "is_company_agent": user.is_company_agent,
                 "city": user.city or "",
                 "profile_image": profile_image

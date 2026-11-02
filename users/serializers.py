@@ -2271,6 +2271,11 @@ class AgentPropertySerializer(serializers.ModelSerializer):
     landmarks = serializers.SerializerMethodField()
     features = serializers.SerializerMethodField()
 
+    visited_count = serializers.IntegerField(
+        read_only=True,
+        default=0
+    )
+
     # =========================================
     # INPUT FIELDS
     # =========================================
@@ -3204,6 +3209,12 @@ class AgentPropertySerializer(serializers.ModelSerializer):
 
             data.pop("deposit", None)
             data.pop("perprice", None)
+
+        data["visited_count"] = getattr(
+            instance,
+            "visited_count",
+            0
+        )
 
         return data
     

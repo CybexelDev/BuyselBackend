@@ -5808,6 +5808,14 @@ class AgentPropertyListAPIView(APIView):
             agent=user,
             deleted=False,
             secret=False
+        ).annotate(
+            visited_count=Count(
+                "property_marks",
+                filter=Q(
+                    property_marks__agent=user,
+                    property_marks__is_visited=True
+                )
+            )
         ).select_related(
             "category",
             "subcategory",

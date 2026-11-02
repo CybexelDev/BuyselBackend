@@ -17420,3 +17420,80 @@ class AllAgentOperatingCitiesAPIView(APIView):
             },
             status=status.HTTP_200_OK
         )
+
+
+class AgentPropertyMarkAPIView(APIView):
+
+    authentication_classes = [AgentJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    # GET - Retrieve notes for one property
+    def get(self, request, property_id):
+
+        property_obj = AgentProperty.objects.filter(
+            id=property_id,
+            agent=request.user,
+            deleted=False
+        ).first()
+
+        if not property_obj:
+            return Response({
+                "error": "Property not found or unauthorized."
+            }, status=404)
+
+        marks = AgentPropertyMark.objects.filter(
+            property=property_obj,
+            agent=request.user
+        ).order_by("-created_at")
+
+        serializer = AgentPropertyMarkSerializer(
+            marks,
+            many=True
+        )
+
+        visited_count = marks.filter(
+            is_visited=True
+        ).count()
+
+        return Response({
+            # "property_id": str(property_obj.id),
+            # "property_code": property_obj.property_code,
+            "visited_count": visited_count,
+            # "total_entries": marks.count(),
+            "notes": serializer.data
+        }, status=200)
+
+    
+    def post(self, request, property_id):
+
+        property_obj = AgentProperty.objects.filter(
+            id=property_id,
+            agent=request.user,
+            deleted=False
+        ).first()
+
+        if not property_obj:
+            return Response({
+                "error": "Property not found or unauthorized."
+            }, status=404)
+
+        serializer = AgentPropertyMarkSerializer(
+            data=request.data
+        )
+
+        if serializer.is_valid():
+
+            mark = serializer.save(
+                agent=request.user,
+                property=property_obj
+            )
+
+            return Response({
+                "message": "Property note added successfully.",
+                "data": AgentPropertyMarkSerializer(mark).data
+            }, status=201)
+
+        return Response(
+            serializer.errors,
+            status=400
+        )

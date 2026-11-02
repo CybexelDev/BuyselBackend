@@ -224,6 +224,11 @@ urlpatterns = [
     path("agent/advertisement-request/",AdvertisementRequestAPIView.as_view(),name="advertisement-request"),
     path("agent/reel-notifications/",AgentReelPurchaseNotificationAPIView.as_view(),name="agent-reel-notifications"),
     path("agent/purchase-history/",AgentPurchaseHistoryAPIView.as_view(),name="agent-purchase-history"),
+    path(
+            "agent-property-mark/<uuid:property_id>/",
+            AgentPropertyMarkAPIView.as_view(),
+            name="agent-property-mark"
+        ),
     
     # path(
     #     "properties/",

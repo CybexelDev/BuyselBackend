@@ -61,7 +61,7 @@ urlpatterns = [
     path("upload-agent_screenshot/", views.upload_agents_screenshot, name="upload_agents_screenshot"),
     path('privacy', views.privacy, name="privacy"),
 
-
+    
     # path('admin_panel/superuser-login/', superuser_login_view, name="superuser_login_view"),
     # path('admin_panel/dashboard/', Dashboard, name='dashboard'),
 

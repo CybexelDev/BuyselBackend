@@ -8073,3 +8073,22 @@ class AgentPropertyListSimpleSerializer(serializers.ModelSerializer):
                 continue
 
         return image_urls
+
+
+class AgentPropertyMarkSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = AgentPropertyMark
+        fields = [
+            "id",
+            "is_visited",
+            "notes",
+            "created_at",
+            "updated_at"
+        ]
+
+        read_only_fields = [
+            "id",
+            "created_at",
+            "updated_at"
+        ]

@@ -2205,3 +2205,43 @@ class SecretUser(models.Model):
     def __str__(self):
         return self.username
 
+
+
+class AgentPropertyMark(models.Model):
+
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False
+    )
+
+    agent = models.ForeignKey(
+        AgentUserProfile,
+        on_delete=models.CASCADE,
+        related_name="property_marks"
+    )
+
+    property = models.ForeignKey(
+        AgentProperty,
+        on_delete=models.CASCADE,
+        related_name="property_marks"
+    )
+
+    is_visited = models.BooleanField(default=False)
+
+    notes = models.CharField(
+        max_length=500,
+        blank=True,
+        null=True,
+        validators=[validate_safe_message]
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.agent} - {self.property.property_code}"

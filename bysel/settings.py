@@ -325,26 +325,6 @@ RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET")
 
 
 
-# import os
-
-# if os.environ.get("USE_REDIS") == "true":
-#     CACHES = {
-#         "default": {
-#             "BACKEND": "django_redis.cache.RedisCache",
-#             "LOCATION": os.environ["REDIS_URL"],
-#             "OPTIONS": {
-#                 "CLIENT_CLASS": "django_redis.client.DefaultClient",
-#             },
-#             "TIMEOUT": 3600,
-#         }
-#     }
-# else:
-#     CACHES = {
-#         "default": {
-#             "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
-#         }
-#     }
-
 import os
 
 if os.environ.get("USE_REDIS") == "true":
@@ -362,13 +342,9 @@ else:
     CACHES = {
         "default": {
             "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
-            "LOCATION": "buysel-cache",
-            "TIMEOUT": 1800,
-            "OPTIONS": {
-                "MAX_ENTRIES": 20,
-            },
         }
     }
+
 
 BREVO_API_KEY = os.getenv("BREVO_API_KEY")
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")

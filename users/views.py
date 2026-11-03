@@ -5980,54 +5980,807 @@ class AgentPropertyLimitAPIView(APIView):
 
 
 
+# class AgentPropertyAPIView(APIView):
+#     authentication_classes = [AgentJWTAuthentication]
+#     permission_classes = [IsAuthenticated]
+#     # parser_classes = [MultiPartParser, FormParser]
+#     parser_classes = [
+#         ImageCompressionMultiPartParser,
+#         FormParser,
+#     ]
+
+#     def parse_list_field(self, request, field_name):
+
+#         raw_values = request.data.getlist(field_name)
+
+#         if not raw_values:
+
+#             value = request.data.get(field_name)
+
+#             if value:
+#                 raw_values = [value]
+
+#         parsed = []
+
+#         for v in raw_values:
+
+#             if not v:
+#                 continue
+
+#             if isinstance(v, str):
+
+#                 try:
+#                     decoded = json.loads(v)
+#                 except Exception:
+#                     continue
+
+#             else:
+#                 decoded = v
+
+#             if isinstance(decoded, list):
+
+#                 parsed.extend(decoded)
+
+#             elif isinstance(decoded, dict):
+
+#                 parsed.append(decoded)
+
+#         return parsed
+
+    
+#     def handle_exception(self, exc):
+#         if isinstance(exc, ParseError):
+#             return Response({
+#                 "status": False,
+#                 "message": "Image can't be compressed. Please upload another image."
+#             }, status=400)
+
+#         return super().handle_exception(exc)
+
+
+#     def get_category_type(self, category_name):
+
+#         category_name = category_name.lower().strip()
+
+#         if any(
+#             keyword in category_name
+#             for keyword in [
+#                 "residential",
+#                 "land / plot"
+#             ]
+#         ):
+#             return "residential"
+
+#         if any(
+#             keyword in category_name
+#             for keyword in [
+#                 "commercial",
+#                 "industrial"
+#             ]
+#         ):
+#             return "commercial"
+
+#         return None
+
+#     def get_premium_plan(self, subscription):
+
+#         premium = PremiumPlan.objects.filter(
+#             name__iexact=str(
+#                 subscription.plan_name
+#             ).strip()
+#         ).first()
+
+#         return premium
+
+#     def get_subscription_category_usage(
+#         self,
+#         subscription
+#     ):
+
+#         residential_used = AgentProperty.objects.filter(
+#             subscription=subscription
+#         ).filter(
+#             Q(
+#                 category__name__icontains="residential"
+#             )
+#             |
+#             Q(
+#                 category__name__icontains="land / plot"
+#             )
+#         ).count()
+
+#         commercial_used = AgentProperty.objects.filter(
+#             subscription=subscription
+#         ).filter(
+#             Q(
+#                 category__name__icontains="commercial"
+#             )
+#             |
+#             Q(
+#                 category__name__icontains="industrial"
+#             )
+#         ).count()
+
+#         return (
+#             residential_used,
+#             commercial_used
+#         )
+
+#     def select_subscription(
+#         self,
+#         active_subscriptions,
+#         category_type
+#     ):
+
+#         selected_subscription = None
+
+#         for subscription in active_subscriptions.order_by(
+#             "end_date"
+#         ):
+
+#             if subscription.plan_type == "elite":
+
+#                 used_listings = (
+#                     subscription.used_listings or 0
+#                 )
+
+#                 property_limit = (
+#                     subscription.property_limit or 0
+#                 )
+
+#                 if used_listings < property_limit:
+
+#                     selected_subscription = (
+#                         subscription
+#                     )
+
+#                     break
+
+#                 continue
+
+#             premium = self.get_premium_plan(
+#                 subscription
+#             )
+
+#             if not premium:
+
+#                 continue
+
+#             (
+#                 residential_used,
+#                 commercial_used
+#             ) = self.get_subscription_category_usage(
+#                 subscription
+#             )
+
+#             if category_type == "residential":
+
+#                 residential_limit = (
+#                     premium.residential_limit or 0
+#                 )
+
+#                 if residential_used < residential_limit:
+
+#                     selected_subscription = (
+#                         subscription
+#                     )
+
+#                     break
+
+#             elif category_type == "commercial":
+
+#                 commercial_limit = (
+#                     premium.commercial_limit or 0
+#                 )
+
+#                 if commercial_used < commercial_limit:
+
+#                     selected_subscription = (
+#                         subscription
+#                     )
+
+#                     break
+
+#         return selected_subscription
+
+#     def get_category_remaining(
+#         self,
+#         active_subscriptions,
+#         agent
+#     ):
+
+#         residential_limit = 0
+#         commercial_limit = 0
+
+#         for subscription in active_subscriptions:
+
+#             if subscription.plan_type == "elite":
+
+#                 continue
+
+#             premium = self.get_premium_plan(
+#                 subscription
+#             )
+
+#             if not premium:
+
+#                 continue
+
+#             residential_limit += (
+#                 premium.residential_limit or 0
+#             )
+
+#             commercial_limit += (
+#                 premium.commercial_limit or 0
+#             )
+
+       
+#         residential_used = AgentProperty.objects.filter(
+#             agent=agent
+#         ).filter(
+#             Q(
+#                 category__name__icontains="residential"
+#             )
+#             |
+#             Q(
+#                 category__name__icontains="land / plot"
+#             )
+#         ).count()
+
+#         commercial_used = AgentProperty.objects.filter(
+#             agent=agent
+#         ).filter(
+#             Q(
+#                 category__name__icontains="commercial"
+#             )
+#             |
+#             Q(
+#                 category__name__icontains="industrial"
+#             )
+#         ).count()
+
+#         residential_remaining = max(
+#             residential_limit - residential_used,
+#             0
+#         )
+
+#         commercial_remaining = max(
+#             commercial_limit - commercial_used,
+#             0
+#         )
+
+#         return (
+#             residential_remaining,
+#             commercial_remaining
+#         )
+
+#     def get_total_remaining(
+#         self,
+#         active_subscriptions
+#     ):
+
+#         total_limit = 0
+#         total_used = 0
+
+#         for subscription in active_subscriptions:
+
+#             if subscription.plan_type == "elite":
+
+#                 total_limit += (
+#                     subscription.property_limit or 0
+#                 )
+
+#                 total_used += (
+#                     subscription.used_listings or 0
+#                 )
+
+#                 continue
+
+#             premium = self.get_premium_plan(
+#                 subscription
+#             )
+
+#             if not premium:
+
+#                 continue
+
+#             total_limit += (
+#                 (premium.residential_limit or 0)
+#                 +
+#                 (premium.commercial_limit or 0)
+#             )
+
+#             (
+#                 residential_used,
+#                 commercial_used
+#             ) = self.get_subscription_category_usage(
+#                 subscription
+#             )
+
+#             total_used += (
+#                 residential_used
+#                 +
+#                 commercial_used
+#             )
+
+#         remaining = max(
+#             total_limit - total_used,
+#             0
+#         )
+
+#         return remaining
+
+    
+#     def post(self, request):
+
+#         agent = request.user
+
+       
+#         category_id = request.data.get(
+#             "category"
+#         )
+
+#         if not category_id:
+
+#             return Response({
+
+#                 "status": False,
+
+#                 "message":
+#                     "Category is required"
+
+#             }, status=400)
+
+#         try:
+
+#             category = Category.objects.get(
+#                 id=category_id
+#             )
+
+#         except Category.DoesNotExist:
+
+#             return Response({
+
+#                 "status": False,
+
+#                 "message":
+#                     "Invalid category"
+
+#             }, status=400)
+
+#         category_name = (
+#             category.name
+#             .lower()
+#             .strip()
+#         )
+
+#         category_type = self.get_category_type(
+#             category_name
+#         )
+
+#         active_subscriptions = (
+#             Subscription.objects.filter(
+#                 agent=agent,
+#                 is_active=True
+#             )
+#             .order_by("end_date")
+#         )
+
+#         if not active_subscriptions.exists():
+
+#             return Response({
+
+#                 "status": False,
+
+#                 "message":
+#                     "No active subscription found. Please upgrade your plan."
+
+#             }, status=400)
+
+#         remaining_property = (
+#             self.get_total_remaining(
+#                 active_subscriptions
+#             )
+#         )
+
+
+#         (
+#             residential_remaining,
+#             commercial_remaining
+#         ) = self.get_category_remaining(
+#             active_subscriptions,
+#             agent
+#         )
+
+#         if remaining_property <= 0:
+
+#             create_notification(
+#                 agent,
+#                 "Property Limit Reached",
+#                 "You have reached your total property listing limit. Please upgrade your plan.",
+#                 "usage"
+#             )
+
+#             return Response({
+
+#                 "status": False,
+
+#                 "message":
+#                     "Property limit reached. Please upgrade your plan.",
+
+#                 "remaining_property":
+#                     0,
+
+#                 "residential_remaining":
+#                     residential_remaining,
+
+#                 "commercial_remaining":
+#                     commercial_remaining
+
+#             }, status=400)
+
+#         selected_subscription = (
+#             self.select_subscription(
+#                 active_subscriptions,
+#                 category_type
+#             )
+#         )
+
+#         if (
+#             category_type == "residential"
+#             and not selected_subscription
+#         ):
+
+#             create_notification(
+#                 agent,
+#                 "Residential Limit Reached",
+#                 "You have reached your residential property listing limit. Please upgrade your plan.",
+#                 "usage"
+#             )
+
+#             return Response({
+
+#                 "status": False,
+
+#                 "message":
+#                     "Residential property limit reached. Please upgrade your plan.",
+
+#                 "remaining_property":
+#                     remaining_property,
+
+#                 "residential_remaining":
+#                     residential_remaining,
+
+#                 "commercial_remaining":
+#                     commercial_remaining
+
+#             }, status=400)
+
+#         if (
+#             category_type == "commercial"
+#             and not selected_subscription
+#         ):
+
+#             create_notification(
+#                 agent,
+#                 "Commercial Limit Reached",
+#                 "You have reached your commercial property listing limit. Please upgrade your plan.",
+#                 "usage"
+#             )
+
+#             return Response({
+
+#                 "status": False,
+
+#                 "message":
+#                     "Commercial property limit reached. Please upgrade your plan.",
+
+#                 "remaining_property":
+#                     remaining_property,
+
+#                 "residential_remaining":
+#                     residential_remaining,
+
+#                 "commercial_remaining":
+#                     commercial_remaining
+
+#             }, status=400)
+
+#         if (
+#             category_type is None
+#             and not selected_subscription
+#         ):
+
+#             return Response({
+
+#                 "status": False,
+
+#                 "message":
+#                     "No subscription available for this property category. Please upgrade your plan.",
+
+#                 "remaining_property":
+#                     remaining_property,
+
+#                 "residential_remaining":
+#                     residential_remaining,
+
+#                 "commercial_remaining":
+#                     commercial_remaining
+
+#             }, status=400)
+
+#         serializer = AgentPropertySerializer(
+
+#             data=request.data,
+
+#             context={
+
+#                 "request":
+#                     request,
+
+#                 "amenities_list":
+#                     self.parse_list_field(
+#                         request,
+#                         "amenities"
+#                     ),
+
+#                 "selling_points_list":
+#                     self.parse_list_field(
+#                         request,
+#                         "selling_points"
+#                     ),
+
+#                 "landmarks_list":
+#                     self.parse_list_field(
+#                         request,
+#                         "landmarks"
+#                     ),
+
+#                 "field_values":
+#                     self.parse_list_field(
+#                         request,
+#                         "field_values"
+#                     ),
+
+#             }
+#         )
+
+#         if not serializer.is_valid():
+
+#             return Response(
+#                 serializer.errors,
+#                 status=400
+#             )
+
+#         with transaction.atomic():
+
+#             property_obj = serializer.save(
+
+#                 subscription=
+#                     selected_subscription,
+
+#                 paid=True
+
+#             )
+
+#             selected_subscription.used_listings = (
+#                 selected_subscription.used_listings
+#                 or 0
+#             ) + 1
+
+#             selected_subscription.save(
+#                 update_fields=[
+#                     "used_listings"
+#                 ]
+#             )
+
+#             agent.total_property_used = (
+#                 agent.total_property_used
+#                 or 0
+#             ) + 1
+
+#             agent.save(
+#                 update_fields=[
+#                     "total_property_used"
+#                 ]
+#             )
+
+#         selected_featured_subscription = None
+
+#         active_featured_subscriptions = (
+#             Subscription.objects.filter(
+#                 agent=agent,
+#                 is_active=True,
+#                 featured_limit__gt=0
+#             )
+#             .order_by("end_date")
+#         )
+
+#         for subscription in (
+#             active_featured_subscriptions
+#         ):
+
+#             if (
+#                 subscription.featured_used
+#                 <
+#                 subscription.featured_limit
+#             ):
+
+#                 selected_featured_subscription = (
+#                     subscription
+#                 )
+
+#                 break
+
+#         if selected_featured_subscription:
+
+#             property_obj.is_featured = True
+
+#             property_obj.save(
+#                 update_fields=[
+#                     "is_featured"
+#                 ]
+#             )
+
+#             selected_featured_subscription.featured_used = (
+#                 selected_featured_subscription.featured_used
+#                 or 0
+#             ) + 1
+
+#             selected_featured_subscription.save(
+#                 update_fields=[
+#                     "featured_used"
+#                 ]
+#             )
+
+#         else:
+
+#             property_obj.is_featured = False
+
+#             property_obj.save(
+#                 update_fields=[
+#                     "is_featured"
+#                 ]
+#             )
+
+#         images = request.FILES.getlist(
+#             "images"
+#         )
+
+#         for img in images:
+#             print(
+#                 "Image:", img.name,
+#                 "| Size in KB:", round(img.size / 1024, 2),
+#                 "| Content type:", img.content_type
+#             )
+
+#             AgentPropertyImage.objects.create(
+#                 property=property_obj,
+#                 image=img
+#             )
+
+#         if (
+#             not property_obj.image
+#             and property_obj.images.exists()
+#         ):
+
+#             property_obj.image = (
+#                 property_obj.images
+#                 .first()
+#                 .image
+#             )
+
+#             property_obj.save()
+
+#         active_subscriptions = (
+#             Subscription.objects.filter(
+#                 agent=agent,
+#                 is_active=True
+#             )
+#             .order_by("end_date")
+#         )
+
+#         remaining = (
+#             self.get_total_remaining(
+#                 active_subscriptions
+#             )
+#         )
+
+#         (
+#             residential_remaining,
+#             commercial_remaining
+#         ) = self.get_category_remaining(
+#             active_subscriptions,
+#             agent
+#         )
+
+#         if (
+#             remaining <= 2
+#             and remaining > 0
+#         ):
+
+#             create_notification(
+#                 agent,
+#                 "Listing Limit Warning",
+#                 f"Only {remaining} property listings remaining.",
+#                 "usage"
+#             )
+
+#         if remaining == 0:
+
+#             create_notification(
+#                 agent,
+#                 "Property Limit Reached",
+#                 "You have used all your property listings. Please upgrade your plan.",
+#                 "usage"
+#             )
+
+#         return Response({
+
+#             "status": True,
+
+#             "message":
+#                 "Property created successfully",
+
+#             "remaining_listings":
+#                 remaining,
+
+#             "data":
+#                 AgentPropertySerializer(
+#                     property_obj,
+#                     context={
+#                         "request": request
+#                     }
+#                 ).data
+
+#         })
+
+
+from django.db import transaction
+from django.db.models import Q, F
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import ParseError
+
+
 class AgentPropertyAPIView(APIView):
     authentication_classes = [AgentJWTAuthentication]
     permission_classes = [IsAuthenticated]
-    # parser_classes = [MultiPartParser, FormParser]
     parser_classes = [
         ImageCompressionMultiPartParser,
         FormParser,
     ]
 
     def parse_list_field(self, request, field_name):
-
         raw_values = request.data.getlist(field_name)
 
         if not raw_values:
-
             value = request.data.get(field_name)
-
             if value:
                 raw_values = [value]
 
         parsed = []
 
-        for v in raw_values:
-
-            if not v:
+        for value in raw_values:
+            if not value:
                 continue
 
-            if isinstance(v, str):
-
+            if isinstance(value, str):
                 try:
-                    decoded = json.loads(v)
+                    decoded = json.loads(value)
                 except Exception:
                     continue
-
             else:
-                decoded = v
+                decoded = value
 
             if isinstance(decoded, list):
-
                 parsed.extend(decoded)
-
             elif isinstance(decoded, dict):
-
                 parsed.append(decoded)
 
         return parsed
 
-    
     def handle_exception(self, exc):
         if isinstance(exc, ParseError):
             return Response({
@@ -6037,667 +6790,494 @@ class AgentPropertyAPIView(APIView):
 
         return super().handle_exception(exc)
 
+    # --------------------------------------------------
+    # CATEGORY TYPE
+    # --------------------------------------------------
 
     def get_category_type(self, category_name):
+        category_name = (category_name or "").lower().strip()
 
-        category_name = category_name.lower().strip()
-
-        if any(
-            keyword in category_name
-            for keyword in [
-                "residential",
-                "land / plot"
-            ]
-        ):
+        if any(keyword in category_name for keyword in [
+            "residential",
+            "land / plot"
+        ]):
             return "residential"
 
-        if any(
-            keyword in category_name
-            for keyword in [
-                "commercial",
-                "industrial"
-            ]
-        ):
+        if any(keyword in category_name for keyword in [
+            "commercial",
+            "industrial"
+        ]):
             return "commercial"
 
         return None
 
-    def get_premium_plan(self, subscription):
+    # --------------------------------------------------
+    # GET PREMIUM PLAN
+    # --------------------------------------------------
 
-        premium = PremiumPlan.objects.filter(
-            name__iexact=str(
-                subscription.plan_name
-            ).strip()
+    def get_premium_plan(self, subscription):
+        return PremiumPlan.objects.filter(
+            name__iexact=str(subscription.plan_name).strip()
         ).first()
 
-        return premium
+    # --------------------------------------------------
+    # GET USED LISTINGS
+    # USED_LISTINGS IS THE PERMANENT COUNTER
+    # NEVER CALCULATE IT FROM PROPERTY ROWS
+    # --------------------------------------------------
 
-    def get_subscription_category_usage(
-        self,
-        subscription
-    ):
+    def get_subscription_used_count(self, subscription):
+        return subscription.used_listings or 0
 
-        residential_used = AgentProperty.objects.filter(
+    # --------------------------------------------------
+    # PREMIUM CATEGORY USAGE
+    # COUNT ALL CREATED PROPERTIES
+    # INCLUDING DELETED / EXPIRED PROPERTIES
+    # --------------------------------------------------
+
+    def get_subscription_category_usage(self, subscription):
+
+        properties = AgentProperty.objects.filter(
             subscription=subscription
-        ).filter(
-            Q(
-                category__name__icontains="residential"
-            )
-            |
-            Q(
-                category__name__icontains="land / plot"
-            )
-        ).count()
-
-        commercial_used = AgentProperty.objects.filter(
-            subscription=subscription
-        ).filter(
-            Q(
-                category__name__icontains="commercial"
-            )
-            |
-            Q(
-                category__name__icontains="industrial"
-            )
-        ).count()
-
-        return (
-            residential_used,
-            commercial_used
         )
 
-    def select_subscription(
-        self,
-        active_subscriptions,
-        category_type
-    ):
+        residential_used = properties.filter(
+            Q(category__name__icontains="residential") |
+            Q(category__name__icontains="land / plot")
+        ).count()
 
-        selected_subscription = None
+        commercial_used = properties.filter(
+            Q(category__name__icontains="commercial") |
+            Q(category__name__icontains="industrial")
+        ).count()
 
-        for subscription in active_subscriptions.order_by(
-            "end_date"
+        return residential_used, commercial_used
+
+    # --------------------------------------------------
+    # SELECT SUBSCRIPTION
+    # CHECK USED_LISTINGS BEFORE ALLOWING CREATION
+    # --------------------------------------------------
+
+    def select_subscription(self, active_subscriptions, category_type):
+
+        for subscription in sorted(
+            active_subscriptions,
+            key=lambda sub: sub.end_date
         ):
 
-            if subscription.plan_type == "elite":
+            plan_type = (
+                subscription.plan_type or ""
+            ).lower().strip()
 
-                used_listings = (
-                    subscription.used_listings or 0
-                )
-
-                property_limit = (
-                    subscription.property_limit or 0
-                )
-
-                if used_listings < property_limit:
-
-                    selected_subscription = (
-                        subscription
-                    )
-
-                    break
-
-                continue
-
-            premium = self.get_premium_plan(
+            property_limit = subscription.property_limit or 0
+            used_listings = self.get_subscription_used_count(
                 subscription
             )
 
-            if not premium:
-
+            # IMPORTANT:
+            # If used_listings reaches property_limit,
+            # NEVER create another property using this subscription.
+            if used_listings >= property_limit:
                 continue
 
-            (
-                residential_used,
-                commercial_used
-            ) = self.get_subscription_category_usage(
-                subscription
-            )
+            # --------------------------------------------------
+            # ELITE: ONE COMBINED LIMIT
+            # --------------------------------------------------
 
-            if category_type == "residential":
+            if plan_type == "elite":
+                return subscription
 
-                residential_limit = (
-                    premium.residential_limit or 0
-                )
+            # --------------------------------------------------
+            # PREMIUM: SEPARATE CATEGORY LIMITS
+            # --------------------------------------------------
 
-                if residential_used < residential_limit:
+            if plan_type == "premium":
 
-                    selected_subscription = (
+                premium = self.get_premium_plan(subscription)
+
+                if not premium:
+                    continue
+
+                residential_used, commercial_used = (
+                    self.get_subscription_category_usage(
                         subscription
                     )
-
-                    break
-
-            elif category_type == "commercial":
-
-                commercial_limit = (
-                    premium.commercial_limit or 0
                 )
 
-                if commercial_used < commercial_limit:
+                if category_type == "residential":
 
-                    selected_subscription = (
-                        subscription
+                    residential_limit = (
+                        premium.residential_limit or 0
                     )
 
-                    break
+                    if residential_used < residential_limit:
+                        return subscription
 
-        return selected_subscription
+                elif category_type == "commercial":
 
-    def get_category_remaining(
-        self,
-        active_subscriptions,
-        agent
-    ):
+                    commercial_limit = (
+                        premium.commercial_limit or 0
+                    )
 
-        residential_limit = 0
-        commercial_limit = 0
+                    if commercial_used < commercial_limit:
+                        return subscription
+
+        return None
+
+    # --------------------------------------------------
+    # CATEGORY REMAINING
+    # PREMIUM ONLY
+    # --------------------------------------------------
+
+    def get_category_remaining(self, active_subscriptions):
+
+        residential_remaining = 0
+        commercial_remaining = 0
 
         for subscription in active_subscriptions:
 
-            if subscription.plan_type == "elite":
+            plan_type = (
+                subscription.plan_type or ""
+            ).lower().strip()
 
+            if plan_type != "premium":
                 continue
 
-            premium = self.get_premium_plan(
-                subscription
-            )
+            premium = self.get_premium_plan(subscription)
 
             if not premium:
-
                 continue
 
-            residential_limit += (
-                premium.residential_limit or 0
+            residential_used, commercial_used = (
+                self.get_subscription_category_usage(
+                    subscription
+                )
             )
 
-            commercial_limit += (
-                premium.commercial_limit or 0
+            residential_remaining += max(
+                (premium.residential_limit or 0) - residential_used,
+                0
             )
 
-       
-        residential_used = AgentProperty.objects.filter(
-            agent=agent
-        ).filter(
-            Q(
-                category__name__icontains="residential"
+            commercial_remaining += max(
+                (premium.commercial_limit or 0) - commercial_used,
+                0
             )
-            |
-            Q(
-                category__name__icontains="land / plot"
-            )
-        ).count()
 
-        commercial_used = AgentProperty.objects.filter(
-            agent=agent
-        ).filter(
-            Q(
-                category__name__icontains="commercial"
-            )
-            |
-            Q(
-                category__name__icontains="industrial"
-            )
-        ).count()
+        return residential_remaining, commercial_remaining
 
-        residential_remaining = max(
-            residential_limit - residential_used,
-            0
-        )
+    # --------------------------------------------------
+    # TOTAL REMAINING
+    # USE STORED USED_LISTINGS FOR BOTH PLANS
+    # --------------------------------------------------
 
-        commercial_remaining = max(
-            commercial_limit - commercial_used,
-            0
-        )
+    def get_total_remaining(self, active_subscriptions):
 
-        return (
-            residential_remaining,
-            commercial_remaining
-        )
-
-    def get_total_remaining(
-        self,
-        active_subscriptions
-    ):
-
-        total_limit = 0
-        total_used = 0
+        total_remaining = 0
 
         for subscription in active_subscriptions:
 
-            if subscription.plan_type == "elite":
+            plan_type = (
+                subscription.plan_type or ""
+            ).lower().strip()
 
-                total_limit += (
-                    subscription.property_limit or 0
-                )
-
-                total_used += (
-                    subscription.used_listings or 0
-                )
-
+            if plan_type not in ["premium", "elite"]:
                 continue
 
-            premium = self.get_premium_plan(
+            property_limit = subscription.property_limit or 0
+
+            used_listings = self.get_subscription_used_count(
                 subscription
             )
 
-            if not premium:
-
-                continue
-
-            total_limit += (
-                (premium.residential_limit or 0)
-                +
-                (premium.commercial_limit or 0)
+            total_remaining += max(
+                property_limit - used_listings,
+                0
             )
 
-            (
-                residential_used,
-                commercial_used
-            ) = self.get_subscription_category_usage(
-                subscription
-            )
+        return total_remaining
 
-            total_used += (
-                residential_used
-                +
-                commercial_used
-            )
+    # --------------------------------------------------
+    # POST
+    # --------------------------------------------------
 
-        remaining = max(
-            total_limit - total_used,
-            0
-        )
-
-        return remaining
-
-    
     def post(self, request):
 
         agent = request.user
 
-       
-        category_id = request.data.get(
-            "category"
-        )
+        category_id = request.data.get("category")
 
         if not category_id:
-
             return Response({
-
                 "status": False,
-
-                "message":
-                    "Category is required"
-
+                "message": "Category is required"
             }, status=400)
 
         try:
-
-            category = Category.objects.get(
-                id=category_id
-            )
+            category = Category.objects.get(id=category_id)
 
         except Category.DoesNotExist:
-
             return Response({
-
                 "status": False,
-
-                "message":
-                    "Invalid category"
-
+                "message": "Invalid category"
             }, status=400)
 
-        category_name = (
-            category.name
-            .lower()
-            .strip()
-        )
+        category_type = self.get_category_type(category.name)
 
-        category_type = self.get_category_type(
-            category_name
-        )
-
-        active_subscriptions = (
-            Subscription.objects.filter(
-                agent=agent,
-                is_active=True
-            )
-            .order_by("end_date")
-        )
-
-        if not active_subscriptions.exists():
-
+        if category_type is None:
             return Response({
-
                 "status": False,
-
-                "message":
-                    "No active subscription found. Please upgrade your plan."
-
-            }, status=400)
-
-        remaining_property = (
-            self.get_total_remaining(
-                active_subscriptions
-            )
-        )
-
-
-        (
-            residential_remaining,
-            commercial_remaining
-        ) = self.get_category_remaining(
-            active_subscriptions,
-            agent
-        )
-
-        if remaining_property <= 0:
-
-            create_notification(
-                agent,
-                "Property Limit Reached",
-                "You have reached your total property listing limit. Please upgrade your plan.",
-                "usage"
-            )
-
-            return Response({
-
-                "status": False,
-
-                "message":
-                    "Property limit reached. Please upgrade your plan.",
-
-                "remaining_property":
-                    0,
-
-                "residential_remaining":
-                    residential_remaining,
-
-                "commercial_remaining":
-                    commercial_remaining
-
-            }, status=400)
-
-        selected_subscription = (
-            self.select_subscription(
-                active_subscriptions,
-                category_type
-            )
-        )
-
-        if (
-            category_type == "residential"
-            and not selected_subscription
-        ):
-
-            create_notification(
-                agent,
-                "Residential Limit Reached",
-                "You have reached your residential property listing limit. Please upgrade your plan.",
-                "usage"
-            )
-
-            return Response({
-
-                "status": False,
-
-                "message":
-                    "Residential property limit reached. Please upgrade your plan.",
-
-                "remaining_property":
-                    remaining_property,
-
-                "residential_remaining":
-                    residential_remaining,
-
-                "commercial_remaining":
-                    commercial_remaining
-
-            }, status=400)
-
-        if (
-            category_type == "commercial"
-            and not selected_subscription
-        ):
-
-            create_notification(
-                agent,
-                "Commercial Limit Reached",
-                "You have reached your commercial property listing limit. Please upgrade your plan.",
-                "usage"
-            )
-
-            return Response({
-
-                "status": False,
-
-                "message":
-                    "Commercial property limit reached. Please upgrade your plan.",
-
-                "remaining_property":
-                    remaining_property,
-
-                "residential_remaining":
-                    residential_remaining,
-
-                "commercial_remaining":
-                    commercial_remaining
-
-            }, status=400)
-
-        if (
-            category_type is None
-            and not selected_subscription
-        ):
-
-            return Response({
-
-                "status": False,
-
-                "message":
-                    "No subscription available for this property category. Please upgrade your plan.",
-
-                "remaining_property":
-                    remaining_property,
-
-                "residential_remaining":
-                    residential_remaining,
-
-                "commercial_remaining":
-                    commercial_remaining
-
+                "message": "Invalid property category."
             }, status=400)
 
         serializer = AgentPropertySerializer(
-
             data=request.data,
-
             context={
-
-                "request":
-                    request,
-
-                "amenities_list":
-                    self.parse_list_field(
-                        request,
-                        "amenities"
-                    ),
-
-                "selling_points_list":
-                    self.parse_list_field(
-                        request,
-                        "selling_points"
-                    ),
-
-                "landmarks_list":
-                    self.parse_list_field(
-                        request,
-                        "landmarks"
-                    ),
-
-                "field_values":
-                    self.parse_list_field(
-                        request,
-                        "field_values"
-                    ),
-
+                "request": request,
+                "amenities_list": self.parse_list_field(
+                    request, "amenities"
+                ),
+                "selling_points_list": self.parse_list_field(
+                    request, "selling_points"
+                ),
+                "landmarks_list": self.parse_list_field(
+                    request, "landmarks"
+                ),
+                "field_values": self.parse_list_field(
+                    request, "field_values"
+                ),
             }
         )
 
         if not serializer.is_valid():
-
             return Response(
                 serializer.errors,
                 status=400
             )
 
+        # --------------------------------------------------
+        # CREATE PROPERTY AND UPDATE SUBSCRIPTION COUNTERS
+        # --------------------------------------------------
+
         with transaction.atomic():
 
+            # Lock subscriptions to prevent simultaneous requests
+            # from using the same available listing slot.
+            active_subscriptions = list(
+                Subscription.objects.select_for_update().filter(
+                    agent=agent,
+                    is_active=True
+                ).order_by("end_date")
+            )
+
+            if not active_subscriptions:
+                return Response({
+                    "status": False,
+                    "message": "No active subscription found. Please upgrade your plan."
+                }, status=400)
+
+            remaining_property = self.get_total_remaining(
+                active_subscriptions
+            )
+
+            residential_remaining, commercial_remaining = (
+                self.get_category_remaining(active_subscriptions)
+            )
+
+            # --------------------------------------------------
+            # TOTAL LIMIT CHECK
+            # --------------------------------------------------
+
+            if remaining_property <= 0:
+                return Response({
+                    "status": False,
+                    "message": "Property limit reached. Please upgrade your plan.",
+                    "remaining_property": 0,
+                    "residential_remaining": residential_remaining,
+                    "commercial_remaining": commercial_remaining
+                }, status=400)
+
+            # --------------------------------------------------
+            # SELECT SUBSCRIPTION WITH AVAILABLE CAPACITY
+            # --------------------------------------------------
+
+            selected_subscription = self.select_subscription(
+                active_subscriptions,
+                category_type
+            )
+
+            if not selected_subscription:
+
+                if category_type == "residential":
+                    message = (
+                        "Residential property limit reached. "
+                        "Please upgrade your plan."
+                    )
+                else:
+                    message = (
+                        "Commercial property limit reached. "
+                        "Please upgrade your plan."
+                    )
+
+                return Response({
+                    "status": False,
+                    "message": message,
+                    "remaining_property": remaining_property,
+                    "residential_remaining": residential_remaining,
+                    "commercial_remaining": commercial_remaining
+                }, status=400)
+
+            # --------------------------------------------------
+            # FINAL COUNTER CHECK BEFORE SAVING
+            # --------------------------------------------------
+
+            selected_subscription.refresh_from_db()
+
+            current_used = (
+                selected_subscription.used_listings or 0
+            )
+
+            current_limit = (
+                selected_subscription.property_limit or 0
+            )
+
+            if current_used >= current_limit:
+                return Response({
+                    "status": False,
+                    "message": "Property limit reached. Please upgrade your plan.",
+                    "remaining_property": remaining_property,
+                    "residential_remaining": residential_remaining,
+                    "commercial_remaining": commercial_remaining
+                }, status=400)
+
+            # --------------------------------------------------
+            # SAVE PROPERTY
+            # --------------------------------------------------
+
             property_obj = serializer.save(
-
-                subscription=
-                    selected_subscription,
-
+                subscription=selected_subscription,
                 paid=True
-
             )
 
-            selected_subscription.used_listings = (
-                selected_subscription.used_listings
-                or 0
-            ) + 1
+            # --------------------------------------------------
+            # INCREMENT USED_LISTINGS BY ONE
+            # NEVER RESET IT FROM PROPERTY COUNT
+            # --------------------------------------------------
 
-            selected_subscription.save(
-                update_fields=[
-                    "used_listings"
-                ]
+            Subscription.objects.filter(
+                id=selected_subscription.id
+            ).update(
+                used_listings=F("used_listings") + 1
             )
+
+            selected_subscription.refresh_from_db()
+
+            # --------------------------------------------------
+            # UPDATE AGENT TOTAL PROPERTY COUNT
+            # --------------------------------------------------
 
             agent.total_property_used = (
-                agent.total_property_used
-                or 0
+                agent.total_property_used or 0
             ) + 1
 
             agent.save(
-                update_fields=[
-                    "total_property_used"
-                ]
+                update_fields=["total_property_used"]
             )
 
-        selected_featured_subscription = None
+            # --------------------------------------------------
+            # FEATURED LISTING
+            # --------------------------------------------------
 
-        active_featured_subscriptions = (
-            Subscription.objects.filter(
-                agent=agent,
-                is_active=True,
-                featured_limit__gt=0
-            )
-            .order_by("end_date")
-        )
+            selected_featured_subscription = None
 
-        for subscription in (
-            active_featured_subscriptions
-        ):
+            for subscription in active_subscriptions:
 
-            if (
-                subscription.featured_used
-                <
-                subscription.featured_limit
-            ):
+                if (
+                    (subscription.featured_used or 0)
+                    <
+                    (subscription.featured_limit or 0)
+                ):
+                    selected_featured_subscription = subscription
+                    break
 
-                selected_featured_subscription = (
-                    subscription
+            if selected_featured_subscription:
+
+                property_obj.is_featured = True
+
+                property_obj.save(
+                    update_fields=["is_featured"]
                 )
 
-                break
+                Subscription.objects.filter(
+                    id=selected_featured_subscription.id
+                ).update(
+                    featured_used=F("featured_used") + 1
+                )
 
-        if selected_featured_subscription:
+            else:
 
-            property_obj.is_featured = True
+                property_obj.is_featured = False
 
-            property_obj.save(
-                update_fields=[
-                    "is_featured"
-                ]
+                property_obj.save(
+                    update_fields=["is_featured"]
+                )
+
+            # --------------------------------------------------
+            # PROPERTY IMAGES
+            # --------------------------------------------------
+
+            images = request.FILES.getlist("images")
+
+            for img in images:
+
+                print(
+                    "Image:", img.name,
+                    "| Size in KB:", round(img.size / 1024, 2),
+                    "| Content type:", img.content_type
+                )
+
+                AgentPropertyImage.objects.create(
+                    property=property_obj,
+                    image=img
+                )
+
+            if (
+                not property_obj.image
+                and property_obj.images.exists()
+            ):
+
+                property_obj.image = (
+                    property_obj.images.first().image
+                )
+
+                property_obj.save(
+                    update_fields=["image"]
+                )
+
+            # --------------------------------------------------
+            # REFRESH SUBSCRIPTIONS AND GET REMAINING COUNTS
+            # --------------------------------------------------
+
+            active_subscriptions = list(
+                Subscription.objects.filter(
+                    agent=agent,
+                    is_active=True
+                ).order_by("end_date")
             )
 
-            selected_featured_subscription.featured_used = (
-                selected_featured_subscription.featured_used
-                or 0
-            ) + 1
-
-            selected_featured_subscription.save(
-                update_fields=[
-                    "featured_used"
-                ]
-            )
-
-        else:
-
-            property_obj.is_featured = False
-
-            property_obj.save(
-                update_fields=[
-                    "is_featured"
-                ]
-            )
-
-        images = request.FILES.getlist(
-            "images"
-        )
-
-        for img in images:
-            print(
-                "Image:", img.name,
-                "| Size in KB:", round(img.size / 1024, 2),
-                "| Content type:", img.content_type
-            )
-
-            AgentPropertyImage.objects.create(
-                property=property_obj,
-                image=img
-            )
-
-        if (
-            not property_obj.image
-            and property_obj.images.exists()
-        ):
-
-            property_obj.image = (
-                property_obj.images
-                .first()
-                .image
-            )
-
-            property_obj.save()
-
-        active_subscriptions = (
-            Subscription.objects.filter(
-                agent=agent,
-                is_active=True
-            )
-            .order_by("end_date")
-        )
-
-        remaining = (
-            self.get_total_remaining(
+            remaining = self.get_total_remaining(
                 active_subscriptions
             )
-        )
 
-        (
-            residential_remaining,
-            commercial_remaining
-        ) = self.get_category_remaining(
-            active_subscriptions,
-            agent
-        )
+            residential_remaining, commercial_remaining = (
+                self.get_category_remaining(active_subscriptions)
+            )
 
-        if (
-            remaining <= 2
-            and remaining > 0
-        ):
+        # --------------------------------------------------
+        # NOTIFICATIONS
+        # --------------------------------------------------
+
+        if 0 < remaining <= 2:
 
             create_notification(
                 agent,
@@ -6716,25 +7296,16 @@ class AgentPropertyAPIView(APIView):
             )
 
         return Response({
-
             "status": True,
-
-            "message":
-                "Property created successfully",
-
-            "remaining_listings":
-                remaining,
-
-            "data":
-                AgentPropertySerializer(
-                    property_obj,
-                    context={
-                        "request": request
-                    }
-                ).data
-
+            "message": "Property created successfully",
+            "remaining_listings": remaining,
+            # "residential_remaining": residential_remaining,
+            # "commercial_remaining": commercial_remaining,
+            "data": AgentPropertySerializer(
+                property_obj,
+                context={"request": request}
+            ).data
         })
-
 
 
 class PublicPropertyListAPIView(APIView):

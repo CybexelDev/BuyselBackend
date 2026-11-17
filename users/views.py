@@ -17236,7 +17236,7 @@ class SecretUserManageAPIView(APIView):
 
 
     def check_agent_permission(self, agent):
-        return agent.is_company_agent and agent.secret_properties
+        return agent.is_company_agent
 
 
     def post(self, request):
@@ -17425,7 +17425,7 @@ class SecretUserListAPIView(APIView):
     def get(self, request):
         agent = request.user
 
-        if not agent.is_company_agent or not agent.secret_properties:
+        if not agent.is_company_agent:
             return Response(
                 {"error": "You are not allowed to view secret users."},
                 status=status.HTTP_403_FORBIDDEN
